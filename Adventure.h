@@ -1,6 +1,6 @@
 //
 // Adventure: Revisited
-// C++ Version Copyright © 2006 Peter Hirschberg
+// C++ Version Copyright © 2007 Peter Hirschberg
 // peter@peterhirschberg.com
 // http://peterhirschberg.com
 //

@@ -1,0 +1,44 @@
+{
+    IBClasses = (
+        {
+            CLASS = AdventureController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {mDragonsHesitate = id; mDragonsRun = id; }; 
+            SUPERCLASS = NSController; 
+        }, 
+        {CLASS = AdventureView; LANGUAGE = ObjC; SUPERCLASS = NSView; }, 
+        {
+            ACTIONS = {
+                clickDragonsHesitate = id; 
+                clickDragonsRun = id; 
+                clickHelp = id; 
+                clickReset = id; 
+                clickSelect = id; 
+                update = id; 
+            }; 
+            CLASS = Controller; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {mMenuDragonsHesitate = id; mMenuDragonsRun = id; }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
+            ACTIONS = {
+                clickDragonsHesitate = id; 
+                clickDragonsRun = id; 
+                clickReset = id; 
+                clickSelect = id; 
+            }; 
+            CLASS = FirstResponder; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {ACTIONS = {}; CLASS = HelpView; LANGUAGE = ObjC; SUPERCLASS = WebView; }, 
+        {
+            CLASS = PreferencesWindow; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {mDragonsHesitate = NSButton; mDragonsRun = NSButton; }; 
+            SUPERCLASS = NSWindow; 
+        }
+    ); 
+    IBVersion = 1; 
+}
