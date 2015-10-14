@@ -352,7 +352,7 @@ void Platform_MakeSound(int nSound)
 
 float Platform_Random()
 {
-	long r = Random();
+	long r = random();
 	float val = ((float)r/32767.0f);
 	val = (val + 1) / 2;
 	return val;
