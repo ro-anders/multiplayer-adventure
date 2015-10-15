@@ -1,23 +1,20 @@
 //
 // Adventure: Revisited
-// C++ Version Copyright Â© 2007 Peter Hirschberg
+// C++ Version Copyright © 2006 Peter Hirschberg
 // peter@peterhirschberg.com
 // http://peterhirschberg.com
 //
 // Big thanks to Joel D. Park and others for annotating the original Adventure decompiled assembly code.
 // I relied heavily and deliberately on that commented code.
 //
-// Original AdventureÃ´ game Copyright Â© 1980 ATARI, INC.
+// Original Adventure™ game Copyright © 1980 ATARI, INC.
 // Any trademarks referenced herein are the property of their respective holders.
 // 
 // Original game written by Warren Robinett. Warren, you rock.
 //
 
-#ifdef WIN32
-#include <Windows.h>
-#include "stdafx.h"
-#endif
-
+#include <windows.h>
+#include "stdio.h"
 #include "Adventure.h"
 
 
@@ -25,10 +22,6 @@
 #define PLAYFIELD_VRES      20
 #define CLOCKS_HSYNC        2
 #define CLOCKS_VSYNC        4
-
-#ifndef max
-#define max(a,b) ((a > b) ? a : b);
-#endif
 
 // Types
 typedef struct OBJECT
@@ -84,10 +77,11 @@ typedef struct ROOM
 #define ROOMFLAG_LEFTTHINWALL   0x02 // bit 1 - 1 for left thin wall
 #define ROOMFLAG_RIGHTTHINWALL  0x04 // bit 2 - 1 for right thin wall
 
-enum
+static enum
 {
     OBJECT_NONE=-1,
     OBJECT_PORT1=0,
+	OBJECT_PORT4,
     OBJECT_PORT2,
     OBJECT_PORT3,
     OBJECT_NAME,
@@ -203,7 +197,7 @@ static const COLOR colorTable [] =
     { 0xd5,0xb5,0x43 }, // tan  (0xe8)
     { 0xa8,0xfc,0x41 }  // flash (0xcb)
 };  
-enum { COLOR_BLACK=0, COLOR_LTGRAY, COLOR_WHITE, COLOR_YELLOW, COLOR_ORANGE, COLOR_RED, COLOR_PURPLE, COLOR_BLUE, COLOR_LTCYAN, COLOR_CYAN, COLOR_DKGREEN, COLOR_LIMEGREEN, COLOR_OLIVEGREEN, COLOR_TAN, COLOR_FLASH };
+static enum { COLOR_BLACK=0, COLOR_LTGRAY, COLOR_WHITE, COLOR_YELLOW, COLOR_ORANGE, COLOR_RED, COLOR_PURPLE, COLOR_BLUE, COLOR_LTCYAN, COLOR_CYAN, COLOR_DKGREEN, COLOR_LIMEGREEN, COLOR_OLIVEGREEN, COLOR_TAN, COLOR_FLASH };
 
 // 
 // Room graphics
@@ -227,9 +221,9 @@ static const byte roomGfxBelowYellowCastle [] =
     0xF0,0xFF,0x0F,     // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRRRRRR
     0x00,0x00,0x00,                                                                                           
     0x00,0x00,0x00,                                                                                           
-    0x00,0x00,0x00,                                                                                           
-    0x00,0x00,0x00,                                                                                           
-    0x00,0x00,0x00,                                                                                           
+	0x00,0x00,0x00,
+	0x00,0x00,0x00,
+	0x00,0x00,0x00,
     0xF0,0xFF,0xFF      // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRRRRRR                                  
 };
                                                                                                                 
@@ -286,7 +280,7 @@ static const byte roomGfxBlueMazeTop[] =
 // Blue Maze #1                                                                                                      
 static const byte roomGfxBlueMaze1 [] =
 {
-    0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR                                      
+    0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR                                      
     0x00,0x00,0x00,          //                                                                               
     0xF0,0xFC,0xFF,          // XXXXXXXXXX  XXXXXXXXRRRRRRRR  RRRRRRRRRR                                      
     0xF0,0x00,0xC0,          // XXXX              XXRR              RRRR                                      
@@ -985,9 +979,10 @@ static BALL objectBall = { 0, 0, 0, 0, 0, OBJECT_NONE, 0, 0, false, false, OBJEC
 static OBJECT objectDefs [] =
 {
     { objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #1 Portcullis #1
-    { objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #2 Portcullis #2
+	{ objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #4 Portcullis #4
+	{ objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #2 Portcullis #2
     { objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #3 Portcullis #3
-    { objectGfxAuthor, 0, 0, COLOR_FLASH, 0x1E, 0x50, 0x69, 0, 0, 0, 0, 0, 0, false },   // #4 Name
+	{ objectGfxAuthor, 0, 0, COLOR_FLASH, 0x1E, 0x50, 0x69, 0, 0, 0, 0, 0, 0, false },   // #4 Name
     { objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, 0x00, 0x50, 0x40, 0, 0, 0, 0, 0, 0, false },// #5 Number
     { objectGfxDrag, dragonStates, 0, COLOR_RED, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #6 Dragon #1
     { objectGfxDrag, dragonStates, 0, COLOR_YELLOW, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },           // #7 Dragon #2
@@ -1008,8 +1003,9 @@ static OBJECT objectDefs [] =
 //        - object, room, x, y, state, movement(x/y)
 static const byte game1Objects [] =
 {
-    OBJECT_PORT1, 0x11, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 1
-    OBJECT_PORT2, 0x0F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 2
+	OBJECT_PORT1, 0x11, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 1
+	OBJECT_PORT4, 0x1F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 4
+	OBJECT_PORT2, 0x0F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 2
     OBJECT_PORT3, 0x10, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 3
     OBJECT_REDDRAGON, 0x0E, 0x50, 0x20, 0x00, 0x00, 0x00, // Red Dragon
     OBJECT_YELLOWDRAGON, 0x01, 0x50, 0x20, 0x00, 0x00, 0x00, // Yellow Dragon
@@ -1031,7 +1027,8 @@ static const byte game1Objects [] =
 static const byte game2Objects [] =
 {
     OBJECT_PORT1, 0x11, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 1
-    OBJECT_PORT2, 0x0F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 2
+	OBJECT_PORT4, 0x1F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 4
+	OBJECT_PORT2, 0x0F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 2
     OBJECT_PORT3, 0x10, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 3
     OBJECT_REDDRAGON, 0x14, 0x50, 0x20, 0x00, 3, 3, // Red Dragon
     OBJECT_YELLOWDRAGON, 0x19, 0x50, 0x20, 0x00, 3, 3, // Yellow Dragon
@@ -1076,7 +1073,7 @@ static ROOM roomDefs [] =
     { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_LIMEGREEN, 0x11,0x03,0x83,0x01 },       // 2 - Top Access
     { roomGfxLeftOfName, ROOMFLAG_RIGHTTHINWALL, COLOR_TAN, 0x06,0x01,0x86,0x02 },       // 3 - Left of Name
     { roomGfxBlueMazeTop, ROOMFLAG_NONE, COLOR_BLUE, 0x10,0x05,0x07,0x06 },       // 4 - Top of Blue Maze
-    { roomGfxBlueMaze1, ROOMFLAG_NONE, COLOR_BLUE, 0x1D,0x06,0x08,0x04 },       // 5 - Blue Maze #1
+    { roomGfxBlueMaze1, ROOMFLAG_NONE, COLOR_BLUE, 0x1F,0x06,0x08,0x04 },       // 5 - Blue Maze #1
     { roomGfxBlueMazeBottom, ROOMFLAG_NONE, COLOR_BLUE, 0x07,0x04,0x03,0x05 },       // 6 - Bottom of Blue Maze
     { roomGfxBlueMazeCenter, ROOMFLAG_NONE, COLOR_BLUE, 0x04,0x08,0x06,0x08 },       // 7 - Center of Blue Maze
     { roomGfxBlueMazeEntry, ROOMFLAG_NONE, COLOR_BLUE, 0x05,0x07,0x01,0x07 },       // 8 - Blue Maze Entry
@@ -1101,7 +1098,9 @@ static ROOM roomDefs [] =
     { roomGfxTwoExitRoom, ROOMFLAG_NONE, COLOR_RED, 0x89,0x89,0x89,0x89 },       // 1B - Black Castle Entry
     { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE, 0x1D,0x07,0x8C,0x08 },       // 1C - Other Purple Room
     { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_RED, 0x8F,0x01,0x10,0x03 },       // 1D - Top Entry Room
-    { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_PURPLE, 0x06,0x01,0x06,0x03 }        // 1E - Name Room
+    { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_PURPLE, 0x06,0x01,0x06,0x03 },        // 1E - Name Room
+	{ roomGfxCastle, ROOMFLAG_NONE, COLOR_DKGREEN, 0x05, 0x06, 0x05, 0x04 },            // 1F - Green Castle
+	{ roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_DKGREEN, 0x20, 0x20, 0x20, 0x20 },       // 20 - Yellow Castle Entry
 };
 
 
@@ -1119,13 +1118,13 @@ static const byte roomLevelDiffs [] =
 // Castle Entry Rooms (Yellow, White, Black)
 static const byte entryRoomOffsets[] =
 {
-	 0x12,0x1A,0x1B
+	 0x12,0x20,0x1A,0x1B
 };
 
 // Castle Rooms (Yellow, White, Black)                                                                               
 static const byte castleRoomOffsets[] =
 {
-	 0x11,0x0F,0x10
+	 0x11,0x1F,0x0F,0x10
 };
 
 // Magnet Object Matrix                                                                             
@@ -1531,16 +1530,27 @@ void BallMovement()
             }
             else if (objectBall.room==entryRoomOffsets[OBJECT_PORT3])
             {            
-                objectBall.x = 0xA0;
+				objectBall.x = 0xA0;
                 objectBall.y = 0x2C*2;
 
-                objectBall.previousX = objectBall.x;
-                objectBall.previousY = objectBall.y;
+				objectBall.previousX = objectBall.x;
+				objectBall.previousY = objectBall.y;
 
-                objectBall.room = castleRoomOffsets[OBJECT_PORT3];
-                objectBall.room = AdjustRoomLevel(objectBall.room);
-            }
-            else
+				objectBall.room = castleRoomOffsets[OBJECT_PORT3];
+				objectBall.room = AdjustRoomLevel(objectBall.room);
+			}
+			else if (objectBall.room == entryRoomOffsets[OBJECT_PORT4])
+			{
+				objectBall.x = 0xA0;
+				objectBall.y = 0x2C * 2;
+
+				objectBall.previousX = objectBall.x;
+				objectBall.previousY = objectBall.y;
+
+				objectBall.room = castleRoomOffsets[OBJECT_PORT4];
+				objectBall.room = AdjustRoomLevel(objectBall.room);
+			}
+			else
             {
                 // Just lookup the next room down and switch to that room
                 // Wrap the ball to the top of the screen
@@ -1655,7 +1665,8 @@ void MoveGroundObject()
 {
     OBJECT* port1 = &objectDefs[OBJECT_PORT1];
     OBJECT* port2 = &objectDefs[OBJECT_PORT2];
-    OBJECT* port3 = &objectDefs[OBJECT_PORT3];
+	OBJECT* port3 = &objectDefs[OBJECT_PORT3];
+	OBJECT* port4 = &objectDefs[OBJECT_PORT4];
 
     // Handle ball going into the castles
     if (objectBall.room == port1->room && port1->state != 0x0C && CollisionCheckObject(port1, (objectBall.x-4), (objectBall.y-1), 8, 8))
@@ -1672,13 +1683,20 @@ void MoveGroundObject()
         objectBall.previousY = objectBall.y;
         port2->state = 0; // make sure it stays unlocked in case we are walking in with the key
     }
-    else if (objectBall.room == port3->room && port3->state != 0x0C && CollisionCheckObject(port3, (objectBall.x-4), (objectBall.y-1), 8, 8))
-    {
-        objectBall.room = entryRoomOffsets[OBJECT_PORT3];
-        objectBall.y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
-        objectBall.previousY = objectBall.y;
-        port3->state = 0; // make sure it stays unlocked in case we are walking in with the key
-    }
+	else if (objectBall.room == port3->room && port3->state != 0x0C && CollisionCheckObject(port3, (objectBall.x - 4), (objectBall.y - 1), 8, 8))
+	{
+		objectBall.room = entryRoomOffsets[OBJECT_PORT3];
+		objectBall.y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN - 2;
+		objectBall.previousY = objectBall.y;
+		port3->state = 0; // make sure it stays unlocked in case we are walking in with the key
+	}
+	else if (objectBall.room == port4->room && port4->state != 0x0C && CollisionCheckObject(port4, (objectBall.x - 4), (objectBall.y - 1), 8, 8))
+	{
+		objectBall.room = entryRoomOffsets[OBJECT_PORT4];
+		objectBall.y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN - 2;
+		objectBall.previousY = objectBall.y;
+		port4->state = 0; // make sure it stays unlocked in case we are walking in with the key
+	}
 
     // Move any objects that need moving, and wrap objects from room to room
     for (int i=OBJECT_REDDRAGON; objectDefs[i].gfxData; i++)
@@ -1717,12 +1735,17 @@ void MoveGroundObject()
                 object->y = 0x5C;
                 object->room = AdjustRoomLevel(castleRoomOffsets[OBJECT_PORT2]);
             }
-            else if (object->room == entryRoomOffsets[OBJECT_PORT3])
-            {            
-                object->y = 0x5C;
-                object->room = AdjustRoomLevel(castleRoomOffsets[OBJECT_PORT3]);
-            }
-            else
+			else if (object->room == entryRoomOffsets[OBJECT_PORT3])
+			{
+				object->y = 0x5C;
+				object->room = AdjustRoomLevel(castleRoomOffsets[OBJECT_PORT3]);
+			}
+			else if (object->room == entryRoomOffsets[OBJECT_PORT4])
+			{
+				object->y = 0x5C;
+				object->room = AdjustRoomLevel(castleRoomOffsets[OBJECT_PORT4]);
+			}
+			else
             {
                 object->y = 0x69;
                 object->room = AdjustRoomLevel(roomDefs[object->room].roomDown);
@@ -1997,7 +2020,8 @@ void Portals()
 {
     OBJECT* port1 = &objectDefs[OBJECT_PORT1];
     OBJECT* port2 = &objectDefs[OBJECT_PORT2];
-    OBJECT* port3 = &objectDefs[OBJECT_PORT3];
+	OBJECT* port3 = &objectDefs[OBJECT_PORT3];
+	OBJECT* port4 = &objectDefs[OBJECT_PORT4];
 
     const OBJECT* yellowKey = &objectDefs[OBJECT_YELLOWKEY];
     const OBJECT* whiteKey = &objectDefs[OBJECT_WHITEKEY];
@@ -2071,6 +2095,31 @@ void Portals()
         // Port 3 is locked
         roomDefs[entryRoomOffsets[OBJECT_PORT3]].roomDown = entryRoomOffsets[OBJECT_PORT3];
     }
+
+	if ((port4->room == objectBall.room) && (yellowKey->room == objectBall.room) && (port4->state == 0 || port4->state == 12))
+	{
+		// Toggle the port state
+		if (CollisionCheckObjectObject(port4, yellowKey))
+			port4->state++;
+	}
+	if (port4->state != 0 && port4->state != 12)
+	{
+		// Raise/lower the port
+		port4->state++;
+	}
+	if (port4->state > 22)
+	{
+		// Port 4 is unlocked
+		port4->state = 0;
+		roomDefs[entryRoomOffsets[OBJECT_PORT4]].roomDown = castleRoomOffsets[OBJECT_PORT4];
+	}
+	else if (port4->state == 12)
+	{
+		// Port 4 is locked
+		roomDefs[entryRoomOffsets[OBJECT_PORT4]].roomDown = entryRoomOffsets[OBJECT_PORT4];
+	}
+
+
 }
 
 void MoveGreenDragon()
