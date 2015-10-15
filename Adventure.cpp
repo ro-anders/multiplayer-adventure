@@ -1,20 +1,23 @@
 //
 // Adventure: Revisited
-// C++ Version Copyright © 2006 Peter Hirschberg
+// C++ Version Copyright Â© 2007 Peter Hirschberg
 // peter@peterhirschberg.com
 // http://peterhirschberg.com
 //
 // Big thanks to Joel D. Park and others for annotating the original Adventure decompiled assembly code.
 // I relied heavily and deliberately on that commented code.
 //
-// Original Adventure™ game Copyright © 1980 ATARI, INC.
+// Original AdventureÃ´ game Copyright Â© 1980 ATARI, INC.
 // Any trademarks referenced herein are the property of their respective holders.
 // 
 // Original game written by Warren Robinett. Warren, you rock.
 //
 
-#include <windows.h>
-#include "stdio.h"
+#ifdef WIN32
+#include <Windows.h>
+#include "stdafx.h"
+#endif
+
 #include "Adventure.h"
 
 
@@ -22,6 +25,10 @@
 #define PLAYFIELD_VRES      20
 #define CLOCKS_HSYNC        2
 #define CLOCKS_VSYNC        4
+
+#ifndef max
+#define max(a,b) ((a > b) ? a : b);
+#endif
 
 // Types
 typedef struct OBJECT
@@ -77,7 +84,7 @@ typedef struct ROOM
 #define ROOMFLAG_LEFTTHINWALL   0x02 // bit 1 - 1 for left thin wall
 #define ROOMFLAG_RIGHTTHINWALL  0x04 // bit 2 - 1 for right thin wall
 
-static enum
+enum
 {
     OBJECT_NONE=-1,
     OBJECT_PORT1=0,
@@ -196,7 +203,7 @@ static const COLOR colorTable [] =
     { 0xd5,0xb5,0x43 }, // tan  (0xe8)
     { 0xa8,0xfc,0x41 }  // flash (0xcb)
 };  
-static enum { COLOR_BLACK=0, COLOR_LTGRAY, COLOR_WHITE, COLOR_YELLOW, COLOR_ORANGE, COLOR_RED, COLOR_PURPLE, COLOR_BLUE, COLOR_LTCYAN, COLOR_CYAN, COLOR_DKGREEN, COLOR_LIMEGREEN, COLOR_OLIVEGREEN, COLOR_TAN, COLOR_FLASH };
+enum { COLOR_BLACK=0, COLOR_LTGRAY, COLOR_WHITE, COLOR_YELLOW, COLOR_ORANGE, COLOR_RED, COLOR_PURPLE, COLOR_BLUE, COLOR_LTCYAN, COLOR_CYAN, COLOR_DKGREEN, COLOR_LIMEGREEN, COLOR_OLIVEGREEN, COLOR_TAN, COLOR_FLASH };
 
 // 
 // Room graphics
