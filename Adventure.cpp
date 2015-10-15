@@ -15,6 +15,7 @@
 
 #include <windows.h>
 #include "stdio.h"
+#include "Sync.h"
 #include "Adventure.h"
 
 
@@ -49,7 +50,9 @@ typedef struct BALL
     int y;                      // y position
     int previousX;              // previous x position
     int previousY;              // previous y position
-    int linkedObject;           // index of linked (carried) object
+	int velx;					// Current horizontal speed (walls notwithstanding).  Positive = right.  Negative = left.
+	int vely;					// Current vertical speed (walls notwithstanding).  Positive = right.  Negative = down.
+	int linkedObject;           // index of linked (carried) object
     int linkedObjectX;          // X value representing the offset from the ball to the object being carried
     int linkedObjectY;          // Y value representing the offset from the ball to the object being carried
     bool hitX;                  // the ball hit something on the X axis
@@ -110,6 +113,7 @@ static enum
 // Functions from original game
 static void SetupRoomObjects();
 static void BallMovement();
+static void OtherBallMovement();
 static void MoveCarriedObject();
 static void MoveGroundObject();
 static void PrintDisplay();
@@ -1009,10 +1013,24 @@ static const byte portStates [] =
     0,0,1,1,2,2,3,3,4,4,5,5,6,6,5,5,4,4,3,3,2,2,1,1
 };
 
+static BALL objectBall = { 
+	0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
+	OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/, false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/, 
+	objectGfxPlayer2/*gfxData*/ 
+};
 
-// The ball
-static BALL objectBall = { 0, 0, 0, 0, 0, OBJECT_NONE, 0, 0, false, false, OBJECT_NONE, objectGfxPlayer2 };
-
+static int MAX_PLAYERS = 3;
+static BALL otherBalls[] = {
+	{
+		0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
+		OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/, 
+		false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer3/*gfxData*/
+	}, {
+		0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
+		OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/, 
+		false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer3/*gfxData*/
+	}
+};
 
 //
 // Indexed array of all objects and their properties
@@ -1232,6 +1250,8 @@ static const int batMatrix [] =
 
 void Adventure_Run()
 {
+	Sync_StartFrame();
+
     // read the console switches every frame
     bool select, reset;
     Platform_ReadConsoleSwitches(&select, &reset);
@@ -1247,7 +1267,16 @@ void Adventure_Run()
         objectBall.previousY = objectBall.y;
         objectBall.linkedObject = OBJECT_NONE;  // Not carrying anything
 
-        displayedRoomIndex = objectBall.room;
+		otherBalls[0].room = 0x11;                 // Put us in the yellow castle
+		otherBalls[0].x = 0x56 * 2;                  //
+		otherBalls[0].y = 0x20 * 2;                  //
+		otherBalls[0].previousX = objectBall.x;
+		otherBalls[0].previousY = objectBall.y;
+		otherBalls[0].linkedObject = OBJECT_NONE;  // Not carrying anything
+
+		otherBalls[1].gfxData = (const byte*)NULL;
+
+		displayedRoomIndex = objectBall.room;
 
         // Make the bat want something right away
         batFedUpTimer = 0xff;
@@ -1333,6 +1362,8 @@ void Adventure_Run()
                 {
                     // Check ball collisions and move ball
                     BallMovement();
+					// Move all the other players
+					OtherBallMovement();
 
                     // Move the carried object
                     MoveCarriedObject();
@@ -1516,6 +1547,7 @@ void BallMovement()
     // store the existing ball location
     int tempX = objectBall.x;
     int tempY = objectBall.y;
+	bool velocityChanged = false;
 
     bool eaten = ((objectDefs[OBJECT_YELLOWDRAGON].linkedObject == OBJECT_BALL)
                     || (objectDefs[OBJECT_GREENDRAGON].linkedObject == OBJECT_BALL)
@@ -1528,8 +1560,18 @@ void BallMovement()
     displayedRoomIndex = objectBall.room;
 
     // Move the ball on the Y axis
-    if (joyUp) objectBall.y+=6;
-    if (joyDown) objectBall.y-=6;
+	int newVelY = 0;
+	if (joyUp) {
+		if (!joyDown) {
+			newVelY = 6;
+		}
+	}
+	else if (joyDown) {
+		newVelY = -6;
+	}
+	objectBall.y += newVelY;
+	velocityChanged = (objectBall.vely != newVelY);
+	objectBall.vely = newVelY;
 
     if (!eaten)
     {
@@ -1636,8 +1678,18 @@ void BallMovement()
     objectBall.previousX = objectBall.x;
 
     // Move the ball on the X axis
-    if (joyRight) objectBall.x+=6;
-    if (joyLeft) objectBall.x-=6;
+	int newVelX = 0;
+	if (joyRight) {
+		if (!joyLeft) {
+			newVelX = 6;
+		}
+	}
+	else if (joyLeft) {
+		newVelX = -6;
+	}
+	objectBall.x += newVelX;
+	velocityChanged = velocityChanged || (objectBall.velx != newVelX);
+	objectBall.velx = newVelX;
 
     if (!eaten)
     {
@@ -1686,6 +1738,26 @@ void BallMovement()
     {
         objectBall.hitX = true;
     }
+
+	if (velocityChanged) {
+		Sync_SetBall(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
+	}
+}
+
+void OtherBallMovement() {
+	for (int i = 0; i < (MAX_PLAYERS - 1); ++i) {
+		BALL_SYNC* movement = Sync_GetLatestBallSync(i);
+		if (movement != NULL) {
+			otherBalls[i].room = movement->room;
+			otherBalls[i].x = movement->posx;
+			otherBalls[i].y = movement->posy;
+			otherBalls[i].velx = movement->velx;
+			otherBalls[i].vely = movement->vely;
+		}
+
+		otherBalls[i].x += otherBalls[i].velx;
+		otherBalls[i].y += otherBalls[i].vely;
+	}
 
 }
 
@@ -1893,6 +1965,13 @@ void PrintDisplay()
     //
     color = colorTable[roomDefs[displayedRoomIndex].color];
 	DrawBall(&objectBall, color);
+
+	// Draw other balls in the room
+	for (int i = 0; i < MAX_PLAYERS-1; ++i) {
+		if ((otherBalls[i].gfxData != NULL) && (objectBall.room == otherBalls[i].room)) {
+			DrawBall(&otherBalls[i], color);
+		}
+	}
 
     //
     // Draw any objects in the room
