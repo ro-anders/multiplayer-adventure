@@ -54,7 +54,8 @@ typedef struct BALL
     int linkedObjectY;          // Y value representing the offset from the ball to the object being carried
     bool hitX;                  // the ball hit something on the X axis
     bool hitY;                  // the ball hit something on the Y axis
-    int hitObject;               // the object that the ball hit
+    int hitObject;              // the object that the ball hit
+	const byte* gfxData;		// graphics data for ball
 }BALL;
 
 typedef struct COLOR
@@ -126,6 +127,7 @@ static int AdjustRoomLevel(int room);
 // My helper functions
 static void DrawObjects(int room);
 static void DrawObject(const OBJECT* object);
+void DrawBall(const BALL* ball, COLOR color);
 static bool CrossingBridge(int room, int x, int y);
 static bool CollisionCheckBallWithWalls(int room, int x, int y);
 static int CollisionCheckBallWithObjects(int startIndex);
@@ -523,6 +525,46 @@ static const byte numberStates [] =
 {
     0,1,2
 };
+
+static const byte objectGfxPlayer1[] =
+{
+	8,
+	0xFF,				   // XXXXXXXX
+	0xFF,				   // XXXXXXXX
+	0xFF,				   // XXXXXXXX
+	0xFF,				   // XXXXXXXX
+	0xFF,				   // XXXXXXXX
+	0xFF,				   // XXXXXXXX
+	0xFF,				   // XXXXXXXX
+	0xFF 				   // XXXXXXXX
+};
+
+static const byte objectGfxPlayer2[] =
+{
+	8,
+	0xFF,				   // XXXXXXXX
+	0xBD,				   // X XXXX X
+	0xDB,				   // XX XX XX
+	0xE7,				   // XXX  XXX
+	0xE7,				   // XXX  XXX
+	0xDB,				   // XX XX XX
+	0xBD,				   // X XXXX X
+	0xFF 				   // XXXXXXXX
+};
+
+static const byte objectGfxPlayer3[] =
+{
+	8,
+	0xFF,				   // XXXXXXXX
+	0xE7,				   // XXX  XXX
+	0xE7,				   // XXX  XXX
+	0x81,				   // X      X
+	0x81,				   // X      X
+	0xE7,				   // XXX  XXX
+	0xE7,				   // XXX  XXX
+	0xFF 				   // XXXXXXXX
+};
+
 
 // Object #0B : State FF : Graphic
 static const byte objectGfxKey [] =
@@ -969,7 +1011,7 @@ static const byte portStates [] =
 
 
 // The ball
-static BALL objectBall = { 0, 0, 0, 0, 0, OBJECT_NONE, 0, 0, false, false, OBJECT_NONE };
+static BALL objectBall = { 0, 0, 0, 0, 0, OBJECT_NONE, 0, 0, false, false, OBJECT_NONE, objectGfxPlayer2 };
 
 
 //
@@ -1850,9 +1892,7 @@ void PrintDisplay()
     // Draw the ball object
     //
     color = colorTable[roomDefs[displayedRoomIndex].color];
-    int x = (objectBall.x-4) & ~0x00000001;
-    int y = (objectBall.y-10) & ~0x00000001;
-    Platform_PaintPixel(color.r, color.g, color.b, x, y, 8, 8);
+	DrawBall(&objectBall, color);
 
     //
     // Draw any objects in the room
@@ -2468,29 +2508,52 @@ void DrawObjects(int room)
 
 }
 
+void DrawBall(const BALL* ball, COLOR color)
+{
+	int left = (ball->x - 4) & ~0x00000001;
+	int bottom = (ball->y - 10) & ~0x00000001; // Don't know why ball is drawn 2 pixels below y value
+
+	// scan the data
+	const byte* rowByte = ball->gfxData;
+	++rowByte; // We know the ball is height=8 so skip that entry in the array
+	for (int row = bottom+7; row >= bottom; --row, ++rowByte)
+	{
+		for (int bit = 0; bit < 8; bit++)
+		{
+			// If there is a bit in the graphics matric at this row and bit, paint a pixel
+			if (*rowByte & (1 << (7 - bit))) {
+				int x = left + bit;
+				if (x < ADVENTURE_SCREEN_WIDTH) {
+					Platform_PaintPixel(color.r, color.g, color.b, x, row, 1, 1);
+				}
+			}
+		}
+	}
+}
+
 void DrawObject(const OBJECT* object)
 {
-    // Get object color, size, and position
-    COLOR color = object->color == COLOR_FLASH ? GetFlashColor() : colorTable[object->color];
-    int cx = object->x * 2;
-    int cy = object->y * 2;
+	// Get object color, size, and position
+	COLOR color = object->color == COLOR_FLASH ? GetFlashColor() : colorTable[object->color];
+	int cx = object->x * 2;
+	int cy = object->y * 2;
     int size = (object->size/2) + 1;
 
-    // Look up the index to the current state for this object
-    int stateIndex = object->states ? object->states[object->state] : 0;
+	// Look up the index to the current state for this object
+	int stateIndex = object->states ? object->states[object->state] : 0;
     
-    // Get the height, then the data
-    // (the first byte of the data is the height)
-    const byte* dataP = object->gfxData;
-    int objHeight = *dataP;
-    ++dataP;
+	// Get the height, then the data
+	// (the first byte of the data is the height)
+	const byte* dataP = object->gfxData;
+	int objHeight = *dataP;
+	++dataP;
 
-    // Index into the proper state
+	// Index into the proper state
     for (int x=0; x < stateIndex; x++)
-    {
-        dataP += objHeight; // skip over the data
-        objHeight = *dataP;
-        ++dataP;
+	{
+		dataP += objHeight; // skip over the data
+		objHeight = *dataP;
+		++dataP;
     }
 
     // Adjust for proper position
