@@ -112,7 +112,9 @@ static enum
 
 // Functions from original game
 static void SetupRoomObjects();
-static void BallMovement();
+void ReactToCollision(BALL* ball);
+static void BallMovement(BALL* ball);
+static void ThisBallMovement();
 static void OtherBallMovement();
 static void MoveCarriedObject();
 static void MoveGroundObject();
@@ -132,9 +134,9 @@ static int AdjustRoomLevel(int room);
 static void DrawObjects(int room);
 static void DrawObject(const OBJECT* object);
 void DrawBall(const BALL* ball, COLOR color);
-static bool CrossingBridge(int room, int x, int y);
+static bool CrossingBridge(int room, int x, int y, BALL* ball);
 static bool CollisionCheckBallWithWalls(int room, int x, int y);
-static int CollisionCheckBallWithObjects(int startIndex);
+static int CollisionCheckBallWithObjects(BALL* ball, int startIndex);
 bool CollisionCheckObjectObject(const OBJECT* object1, const OBJECT* object2);
 static bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, int height);
 void CalcPlayerSpriteExtents(const OBJECT* object, int* cx, int* cy, int* cw, int* ch);
@@ -1268,8 +1270,8 @@ void Adventure_Run()
         objectBall.linkedObject = OBJECT_NONE;  // Not carrying anything
 
 		otherBalls[0].room = 0x11;                 // Put us in the yellow castle
-		otherBalls[0].x = 0x56 * 2;                  //
-		otherBalls[0].y = 0x20 * 2;                  //
+		otherBalls[0].x = (0x50 * 2) + 20;                  //
+		otherBalls[0].y = (0x20 * 2) - 5;                  //
 		otherBalls[0].previousX = objectBall.x;
 		otherBalls[0].previousY = objectBall.y;
 		otherBalls[0].linkedObject = OBJECT_NONE;  // Not carrying anything
@@ -1361,7 +1363,7 @@ void Adventure_Run()
                 if (gameState == GAMESTATE_ACTIVE_1)
                 {
                     // Check ball collisions and move ball
-                    BallMovement();
+                    ThisBallMovement();
 					// Move all the other players
 					OtherBallMovement();
 
@@ -1382,7 +1384,7 @@ void Adventure_Run()
                     if (!objectBall.hitX && !objectBall.hitY)
                     {
                         // Make sure stuff we are carrying stays out of our way
-                        int hitObject = CollisionCheckBallWithObjects(0);
+                        int hitObject = CollisionCheckBallWithObjects(&objectBall, 0);
                         if ((hitObject > OBJECT_NONE) && (hitObject == objectBall.linkedObject))
                         {
                             int diffX = objectBall.x - objectBall.previousX;
@@ -1392,28 +1394,12 @@ void Adventure_Run()
                             objectBall.linkedObjectY += diffY/2;
                         }
                     }
-                    if (objectBall.hitX)
-                    {
-                        if ((objectBall.hitObject > OBJECT_NONE) && (objectBall.hitObject == objectBall.linkedObject))
-                        {
-                            int diffX = objectBall.x - objectBall.previousX;
-                            objectBall.linkedObjectX += diffX/2;
-                        }
-
-                        objectBall.x = objectBall.previousX;
-                        objectBall.hitX = false;
-                    }
-                    if (objectBall.hitY)
-                    {
-                        if ((objectBall.hitObject > OBJECT_NONE) && (objectBall.hitObject == objectBall.linkedObject))
-                        {
-                            int diffY = objectBall.y - objectBall.previousY;
-                            objectBall.linkedObjectY += diffY/2;
-                        }
-
-                        objectBall.y = objectBall.previousY;
-                        objectBall.hitY = false;
-                    }
+					ReactToCollision(&objectBall);
+					for (int i = 0; i < (MAX_PLAYERS - 1); ++i) {
+						if (otherBalls[i].room != 0) { // TODO: Don't know if this is how we want to test for player 3 being there.
+							ReactToCollision(otherBalls + i);
+						}
+					}
 
                     // Increment the last object drawn
                     ++displayListIndex;
@@ -1542,24 +1528,36 @@ void SetupRoomObjects()
     }
 }
 
-void BallMovement()
+void ReactToCollision(BALL* ball) {
+	if (ball->hitX)
+	{
+		// TODO: Don't think we're doing this right
+		if ((ball->hitObject > OBJECT_NONE) && (ball->hitObject == ball->linkedObject))
+		{
+			int diffX = ball->x - ball->previousX;
+			ball->linkedObjectX += diffX / 2;
+		}
+
+		ball->x = ball->previousX;
+		ball->hitX = false;
+	}
+	if (ball->hitY)
+	{
+		if ((ball->hitObject > OBJECT_NONE) && (ball->hitObject == ball->linkedObject))
+		{
+			int diffY = ball->y - ball->previousY;
+			ball->linkedObjectY += diffY / 2;
+		}
+
+		ball->y = ball->previousY;
+		ball->hitY = false;
+	}
+}
+
+void ThisBallMovement()
 {
-    // store the existing ball location
-    int tempX = objectBall.x;
-    int tempY = objectBall.y;
+	// Read the joystick and translate into a velocity
 	bool velocityChanged = false;
-
-    bool eaten = ((objectDefs[OBJECT_YELLOWDRAGON].linkedObject == OBJECT_BALL)
-                    || (objectDefs[OBJECT_GREENDRAGON].linkedObject == OBJECT_BALL)
-                    || (objectDefs[OBJECT_REDDRAGON].linkedObject == OBJECT_BALL));
-
-    // mark the existing Y location as the previous Y location
-    objectBall.previousY = objectBall.y;
-
-    objectBall.hitObject = OBJECT_NONE;
-    displayedRoomIndex = objectBall.room;
-
-    // Move the ball on the Y axis
 	int newVelY = 0;
 	if (joyUp) {
 		if (!joyDown) {
@@ -1569,115 +1567,9 @@ void BallMovement()
 	else if (joyDown) {
 		newVelY = -6;
 	}
-	objectBall.y += newVelY;
 	velocityChanged = (objectBall.vely != newVelY);
 	objectBall.vely = newVelY;
 
-    if (!eaten)
-    {
-        // Wrap rooms in Y if necessary
-        if (objectBall.y > (ADVENTURE_OVERSCAN + ADVENTURE_SCREEN_HEIGHT) + 6)
-        {
-            // Wrap the ball to the bottom of the screen
-            objectBall.y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
-            objectBall.previousY = objectBall.y;
-
-            // Set the new room
-            const ROOM* currentRoom = &roomDefs[objectBall.room];
-            objectBall.room = currentRoom->roomUp;
-            objectBall.room = AdjustRoomLevel(objectBall.room);
-        }
-        else if (objectBall.y < 0x0D*2)
-        {
-            // Handle ball leaving the castles
-            if (objectBall.room==entryRoomOffsets[OBJECT_PORT1])
-            {            
-                objectBall.x = 0xA0;
-                objectBall.y = 0x2C*2;
-
-                objectBall.previousX = objectBall.x;
-                objectBall.previousY = objectBall.y;
-
-                objectBall.room = castleRoomOffsets[OBJECT_PORT1];
-                objectBall.room = AdjustRoomLevel(objectBall.room);
-            }
-            else if (objectBall.room==entryRoomOffsets[OBJECT_PORT2])
-            {            
-                objectBall.x = 0xA0;
-                objectBall.y = 0x2C*2;
-
-                objectBall.previousX = objectBall.x;
-                objectBall.previousY = objectBall.y;
-
-                objectBall.room = castleRoomOffsets[OBJECT_PORT2];
-                objectBall.room = AdjustRoomLevel(objectBall.room);
-            }
-            else if (objectBall.room==entryRoomOffsets[OBJECT_PORT3])
-            {            
-				objectBall.x = 0xA0;
-                objectBall.y = 0x2C*2;
-
-				objectBall.previousX = objectBall.x;
-				objectBall.previousY = objectBall.y;
-
-				objectBall.room = castleRoomOffsets[OBJECT_PORT3];
-				objectBall.room = AdjustRoomLevel(objectBall.room);
-			}
-			else if (objectBall.room == entryRoomOffsets[OBJECT_PORT4])
-			{
-				objectBall.x = 0xA0;
-				objectBall.y = 0x2C * 2;
-
-				objectBall.previousX = objectBall.x;
-				objectBall.previousY = objectBall.y;
-
-				objectBall.room = castleRoomOffsets[OBJECT_PORT4];
-				objectBall.room = AdjustRoomLevel(objectBall.room);
-			}
-			else
-            {
-                // Just lookup the next room down and switch to that room
-                // Wrap the ball to the top of the screen
-                int newY = (ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN);
-
-                const ROOM* currentRoom = &roomDefs[objectBall.room];
-                int roomDown = AdjustRoomLevel(currentRoom->roomDown);
-
-                if (CollisionCheckBallWithWalls(roomDown, tempX, newY))
-                {
-                    // We've hit a wall on the next screen
-                    objectBall.hitY = true;
-                    displayedRoomIndex = roomDown;
-                }
-                else
-                {
-                    // Set the new room
-                    objectBall.y = newY;
-                    objectBall.room = roomDown;
-                }
-            }
-        }
-        // Collision check the ball with the new Y coordinate against walls and objects
-        // For collisions with objects, we only care about hitting non-carryable objects at this point
-        int hitObject = CollisionCheckBallWithObjects(0);
-        bool crossingBridge = CrossingBridge(objectBall.room, tempX, objectBall.y);
-        bool hitWall = crossingBridge ? false : CollisionCheckBallWithWalls(objectBall.room, tempX, objectBall.y);
-        if (hitWall || (hitObject > OBJECT_NONE))
-        {
-            // Hit a wall or non-carryable object
-            objectBall.hitY = true;
-            objectBall.hitObject = hitObject;
-        }
-    }
-    else
-    {
-        objectBall.hitY = true;
-    }
-
-    // mark the existing X location as the previous X location
-    objectBall.previousX = objectBall.x;
-
-    // Move the ball on the X axis
 	int newVelX = 0;
 	if (joyRight) {
 		if (!joyLeft) {
@@ -1687,76 +1579,181 @@ void BallMovement()
 	else if (joyLeft) {
 		newVelX = -6;
 	}
-	objectBall.x += newVelX;
 	velocityChanged = velocityChanged || (objectBall.velx != newVelX);
 	objectBall.velx = newVelX;
 
-    if (!eaten)
-    {
-        // Wrap rooms in X if necessary
-        if (objectBall.x >= (ADVENTURE_SCREEN_WIDTH-4))
-        {
-            // Wrap the ball to the left side of the screen
-            objectBall.x = 5;
-
-            // Is it room #3 (Right to secret room)
-            if (objectBall.room == 0x3)
-            {
-                // Set room to secret room
-                objectBall.room = 0x1e;
-            }
-            else
-            {
-                // Set the new room
-                const ROOM* currentRoom = &roomDefs[objectBall.room];
-                objectBall.room = currentRoom->roomRight;
-            }
-            objectBall.room = AdjustRoomLevel(objectBall.room);
-        }
-        else if (objectBall.x < 4)
-        {
-            // Wrap the ball to the right side of the screen
-            objectBall.x = ADVENTURE_SCREEN_WIDTH-5;
-
-            // Set the new room
-            const ROOM* currentRoom = &roomDefs[objectBall.room];
-            objectBall.room = currentRoom->roomLeft;
-            objectBall.room = AdjustRoomLevel(objectBall.room);
-        }
-        // Collision check the ball with the new Y coordinate against walls and objects
-        // For collisions with objects, we only care about hitting non-carryable objects at this point
-        int hitObject = CollisionCheckBallWithObjects(0);
-        int hitWall = CollisionCheckBallWithWalls(objectBall.room, objectBall.x, tempY);
-        if (hitWall || (hitObject > OBJECT_NONE))
-        {
-            // Hit a wall or non-carryable object
-            objectBall.hitX = true;
-            objectBall.hitObject = hitObject;
-        }
-    }
-    else
-    {
-        objectBall.hitX = true;
-    }
+	BallMovement(&objectBall);
 
 	if (velocityChanged) {
 		Sync_SetBall(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
 	}
 }
 
+void BallMovement(BALL* ball) {
+	bool isCurrentPlayer = (ball == &objectBall);
+    // store the existing ball location
+    int tempX = ball->x;
+    int tempY = ball->y;
+
+    bool eaten = ((objectDefs[OBJECT_YELLOWDRAGON].linkedObject == OBJECT_BALL) // TODO: Not right when ball is not this player
+                    || (objectDefs[OBJECT_GREENDRAGON].linkedObject == OBJECT_BALL)
+                    || (objectDefs[OBJECT_REDDRAGON].linkedObject == OBJECT_BALL));
+
+    // mark the existing Y location as the previous Y location
+    ball->previousY = ball->y;
+
+    ball->hitObject = OBJECT_NONE;
+	if (isCurrentPlayer) {
+		displayedRoomIndex = ball->room;
+	}
+
+    // Move the ball on the Y axis
+	ball->y += ball->vely;
+
+    if (!eaten)
+    {
+        // Wrap rooms in Y if necessary
+        if (ball->y > (ADVENTURE_OVERSCAN + ADVENTURE_SCREEN_HEIGHT) + 6)
+        {
+            // Wrap the ball to the bottom of the screen
+            ball->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
+            ball->previousY = ball->y;
+
+            // Set the new room
+            const ROOM* currentRoom = &roomDefs[ball->room];
+            ball->room = currentRoom->roomUp;
+            ball->room = AdjustRoomLevel(ball->room);
+        }
+        else if (ball->y < 0x0D*2)
+        {
+			bool leftCastle = false;
+			for (int portalCtr = OBJECT_PORT1; !leftCastle && (portalCtr <= OBJECT_PORT3); ++portalCtr) {
+				if (ball->room == entryRoomOffsets[portalCtr])
+				{
+					ball->x = 0xA0;
+					ball->y = 0x2C * 2;
+
+					ball->previousX = ball->x;
+					ball->previousY = ball->y;
+
+					ball->room = castleRoomOffsets[portalCtr];
+					ball->room = AdjustRoomLevel(ball->room);
+					leftCastle = true;
+				}
+			}
+
+			if (!leftCastle)
+            {
+                // Just lookup the next room down and switch to that room
+                // Wrap the ball to the top of the screen
+                int newY = (ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN);
+
+                const ROOM* currentRoom = &roomDefs[ball->room];
+                int roomDown = AdjustRoomLevel(currentRoom->roomDown);
+
+                if (CollisionCheckBallWithWalls(roomDown, tempX, newY))
+                {
+                    // We've hit a wall on the next screen
+                    ball->hitY = true;
+					if (isCurrentPlayer) {
+						displayedRoomIndex = roomDown;
+					}
+                }
+                else
+                {
+                    // Set the new room
+                    ball->y = newY;
+                    ball->room = roomDown;
+                }
+            }
+        }
+        // Collision check the ball with the new Y coordinate against walls and objects
+        // For collisions with objects, we only care about hitting non-carryable objects at this point
+        int hitObject = CollisionCheckBallWithObjects(ball, 0);
+        bool crossingBridge = CrossingBridge(ball->room, tempX, ball->y, ball);
+        bool hitWall = crossingBridge ? false : CollisionCheckBallWithWalls(ball->room, tempX, ball->y);
+        if (hitWall || (hitObject > OBJECT_NONE))
+        {
+            // Hit a wall or non-carryable object
+            ball->hitY = true;
+            ball->hitObject = hitObject;
+        }
+    }
+    else
+    {
+        ball->hitY = true;
+    }
+
+    // mark the existing X location as the previous X location
+    ball->previousX = ball->x;
+
+    // Move the ball on the X axis
+	ball->x += ball->velx;
+
+    if (!eaten)
+    {
+        // Wrap rooms in X if necessary
+        if (ball->x >= (ADVENTURE_SCREEN_WIDTH-4))
+        {
+            // Wrap the ball to the left side of the screen
+            ball->x = 5;
+
+            // Is it room #3 (Right to secret room)
+            if (ball->room == 0x3)
+            {
+                // Set room to secret room
+                ball->room = 0x1e;
+            }
+            else
+            {
+                // Set the new room
+                const ROOM* currentRoom = &roomDefs[ball->room];
+                ball->room = currentRoom->roomRight;
+            }
+            ball->room = AdjustRoomLevel(ball->room);
+        }
+        else if (ball->x < 4)
+        {
+            // Wrap the ball to the right side of the screen
+            ball->x = ADVENTURE_SCREEN_WIDTH-5;
+
+            // Set the new room
+            const ROOM* currentRoom = &roomDefs[ball->room];
+            ball->room = currentRoom->roomLeft;
+            ball->room = AdjustRoomLevel(ball->room);
+        }
+        // Collision check the ball with the new Y coordinate against walls and objects
+        // For collisions with objects, we only care about hitting non-carryable objects at this point
+        int hitObject = CollisionCheckBallWithObjects(ball, 0);
+        int hitWall = CollisionCheckBallWithWalls(ball->room, ball->x, tempY);
+        if (hitWall || (hitObject > OBJECT_NONE))
+        {
+            // Hit a wall or non-carryable object
+            ball->hitX = true;
+            ball->hitObject = hitObject;
+        }
+    }
+    else
+    {
+        ball->hitX = true;
+    }
+
+}
+
 void OtherBallMovement() {
 	for (int i = 0; i < (MAX_PLAYERS - 1); ++i) {
-		BALL_SYNC* movement = Sync_GetLatestBallSync(i);
-		if (movement != NULL) {
-			otherBalls[i].room = movement->room;
-			otherBalls[i].x = movement->posx;
-			otherBalls[i].y = movement->posy;
-			otherBalls[i].velx = movement->velx;
-			otherBalls[i].vely = movement->vely;
-		}
+		if (otherBalls[i].room != 0) { // TODO: Don't know if this is how we want to test for player 3 being there.
+			BALL_SYNC* movement = Sync_GetLatestBallSync(i);
+			if (movement != NULL) {
+				otherBalls[i].room = movement->room;
+				otherBalls[i].x = movement->posx;
+				otherBalls[i].y = movement->posy;
+				otherBalls[i].velx = movement->velx;
+				otherBalls[i].vely = movement->vely;
+			}
 
-		otherBalls[i].x += otherBalls[i].velx;
-		otherBalls[i].y += otherBalls[i].vely;
+			BallMovement(otherBalls+i);
+		}
 	}
 
 }
@@ -1993,14 +1990,14 @@ void PickupPutdown()
     else
     {
         // See if we are touching any carryable objects
-        int hitIndex = CollisionCheckBallWithObjects(OBJECT_SWORD);
+        int hitIndex = CollisionCheckBallWithObjects(&objectBall, OBJECT_SWORD);
         if (hitIndex > OBJECT_NONE)
         {
             // Ignore the object we are already carrying
             if (hitIndex == objectBall.linkedObject)
             {
                 // Check the remainder of the objects
-                hitIndex = CollisionCheckBallWithObjects(hitIndex + 1);
+                hitIndex = CollisionCheckBallWithObjects(&objectBall, hitIndex + 1);
             }
 
             if (hitIndex > OBJECT_NONE)
@@ -2751,12 +2748,12 @@ bool CollisionCheckBallWithWalls(int room, int x, int y)
     return hitWall;
 }
 
-static bool CrossingBridge(int room, int x, int y)
+static bool CrossingBridge(int room, int x, int y, BALL* ball)
 {
     // Check going through the bridge
     const OBJECT* bridge = &objectDefs[OBJECT_BRIDGE];
     if ((bridge->room == room)
-        && (objectBall.linkedObject != OBJECT_BRIDGE))
+        && (ball->linkedObject != OBJECT_BRIDGE))
     {
         int xDiff = (x/2) - bridge->x;
         if ((xDiff >=0x0A) && (xDiff <= 0x17))
@@ -2772,16 +2769,16 @@ static bool CrossingBridge(int room, int x, int y)
     return false;
 }
 
-static int CollisionCheckBallWithObjects(int startIndex)
+static int CollisionCheckBallWithObjects(BALL* ball, int startIndex)
 {
     // Go through all the objects
     for (int i=startIndex; objectDefs[i].gfxData; i++)
     {
         // If this object is in the current room, check it against the ball
         const OBJECT* object = &objectDefs[i];
-        if (object->displayed && (objectBall.room == object->room))
+        if (object->displayed && (ball->room == object->room))
         {
-            if (CollisionCheckObject(object, objectBall.x-4,(objectBall.y-1), 8, 8))
+            if (CollisionCheckObject(object, ball->x-4,(ball->y-1), 8, 8))
             {
                 // return the index of the object
                 return i;
