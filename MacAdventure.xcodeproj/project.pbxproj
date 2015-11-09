@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		406DD3161BF0CFCC0016FDB8 /* Sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 406DD3141BF0CFCC0016FDB8 /* Sync.cpp */; };
 		8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
@@ -26,6 +27,8 @@
 		29B97319FDCFA39411CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* MacAdventure_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MacAdventure_Prefix.pch; sourceTree = "<group>"; };
+		406DD3141BF0CFCC0016FDB8 /* Sync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sync.cpp; sourceTree = "<group>"; };
+		406DD3151BF0CFCC0016FDB8 /* Sync.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Sync.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* MacAdventure.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacAdventure.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D009FDD10BCA0A64007C5A37 /* MacAdventureIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MacAdventureIcon.icns; sourceTree = "<group>"; };
@@ -90,6 +93,8 @@
 		29B97314FDCFA39411CA2CEA /* MacAdventure */ = {
 			isa = PBXGroup;
 			children = (
+				406DD3141BF0CFCC0016FDB8 /* Sync.cpp */,
+				406DD3151BF0CFCC0016FDB8 /* Sync.h */,
 				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
@@ -197,6 +202,7 @@
 				D03144A90BC73147001DA96E /* Adventure.cpp in Sources */,
 				D03144AE0BC7319C001DA96E /* AdventureView.mm in Sources */,
 				D0CB871F0BD1989F006F6C1D /* Controller.mm in Sources */,
+				406DD3161BF0CFCC0016FDB8 /* Sync.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

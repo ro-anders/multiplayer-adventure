@@ -1,6 +1,9 @@
 
 
+#ifdef WIN32
 #include "stdafx.h"
+#endif
+
 #include "Sync.h"
 
 // The existing adventure port doesn't do a lot of dynamic memory allocation, but instead 
@@ -53,7 +56,7 @@ void Sync_SetBall(int room, int posx, int posy, int velx, int vely) {
 BALL_SYNC* Sync_GetLatestBallSync(int player) {
 
 	if (!received[player]) {
-		return NULL;
+		return 0x0;
 	}
 	else {
 		received[player] = false;
@@ -66,22 +69,23 @@ void mockOtherPlayer() {
 	// TODO - Not finished yet.
 	int newX = 0;
 	int newY = 0;
-	if (GetAsyncKeyState(0x41/*A*/)) {
-		newX = -1;
-	}
-	else if (GetAsyncKeyState(0x44/*D*/)) {
-		newX = 1;
-	}
-	else if (GetAsyncKeyState(0x57/*W*/)) {
-		newY = 1;
-	}
-	else if (GetAsyncKeyState(0x58/*X*/)) {
-		newY = -1;
-	}
-	else {
-		newX = lastX;
-		newY = lastY;
-	}
+    
+	//if (GetAsyncKeyState(0x41/*A*/)) {
+	//	newX = -1;
+	//}
+	//else if (GetAsyncKeyState(0x44/*D*/)) {
+	//	newX = 1;
+	//}
+	//else if (GetAsyncKeyState(0x57/*W*/)) {
+	//	newY = 1;
+	//}
+	//else if (GetAsyncKeyState(0x58/*X*/)) {
+	//	newY = -1;
+	//}
+	//else {
+	//	newX = lastX;
+	//	newY = lastY;
+	//}
 
 }
 

@@ -13,10 +13,17 @@
 // Original game written by Warren Robinett. Warren, you rock.
 //
 
-#include <windows.h>
+#ifdef WIN32
+#include <Windows.h>
 #include "stdio.h"
+#endif
+
 #include "Sync.h"
 #include "Adventure.h"
+
+#ifndef max
+#define max(a,b) ((a > b) ? a : b);
+#endif
 
 
 #define PLAYFIELD_HRES      20  // 40 with 2nd half mirrored/repeated
@@ -1276,7 +1283,7 @@ void Adventure_Run()
 		otherBalls[0].previousY = objectBall.y;
 		otherBalls[0].linkedObject = OBJECT_NONE;  // Not carrying anything
 
-		otherBalls[1].gfxData = (const byte*)NULL;
+		otherBalls[1].gfxData = (const byte*)0x0;
 
 		displayedRoomIndex = objectBall.room;
 
@@ -1744,7 +1751,7 @@ void OtherBallMovement() {
 	for (int i = 0; i < (MAX_PLAYERS - 1); ++i) {
 		if (otherBalls[i].room != 0) { // TODO: Don't know if this is how we want to test for player 3 being there.
 			BALL_SYNC* movement = Sync_GetLatestBallSync(i);
-			if (movement != NULL) {
+			if (movement != 0x0) {
 				otherBalls[i].room = movement->room;
 				otherBalls[i].x = movement->posx;
 				otherBalls[i].y = movement->posy;
@@ -1965,7 +1972,7 @@ void PrintDisplay()
 
 	// Draw other balls in the room
 	for (int i = 0; i < MAX_PLAYERS-1; ++i) {
-		if ((otherBalls[i].gfxData != NULL) && (objectBall.room == otherBalls[i].room)) {
+		if ((otherBalls[i].gfxData != 0x0) && (objectBall.room == otherBalls[i].room)) {
 			DrawBall(&otherBalls[i], color);
 		}
 	}
