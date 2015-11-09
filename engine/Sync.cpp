@@ -28,10 +28,6 @@ static bool received[] = { false, false };
 
 static int frameNum = 0;
 
-// Used only for mocking another player
-static int lastX = 0;
-static int lastY = 0;
-
 void Sync_StartFrame() {
 	++frameNum;
 }
@@ -63,29 +59,5 @@ BALL_SYNC* Sync_GetLatestBallSync(int player) {
 		current[player] = 1 - current[player];
 		return &ballSyncStates[player][current[player]];
 	}
-}
-
-void mockOtherPlayer() {
-	// TODO - Not finished yet.
-	int newX = 0;
-	int newY = 0;
-    
-	//if (GetAsyncKeyState(0x41/*A*/)) {
-	//	newX = -1;
-	//}
-	//else if (GetAsyncKeyState(0x44/*D*/)) {
-	//	newX = 1;
-	//}
-	//else if (GetAsyncKeyState(0x57/*W*/)) {
-	//	newY = 1;
-	//}
-	//else if (GetAsyncKeyState(0x58/*X*/)) {
-	//	newY = -1;
-	//}
-	//else {
-	//	newX = lastX;
-	//	newY = lastY;
-	//}
-
 }
 
