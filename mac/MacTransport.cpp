@@ -21,11 +21,16 @@
 // End socket includes
 
 
-MacTransport::MacTransport() {
-    
+MacTransport::MacTransport() :
+    PACKET_DELIMETER('\0')
+{
+    streamBufferSize = 1024;
+    streamBuffer = new char[streamBufferSize]; // TODO: Make this more dynamic.
+    charsInStreamBuffer = 0;
 }
 
 MacTransport::~MacTransport() {
+    delete [] streamBuffer;
     if (serverSocketFd > 0) {
         close(serverSocketFd);
     }
@@ -46,18 +51,72 @@ void MacTransport::connect() {
 }
 
 int MacTransport::sendPacket(const char* packetData) {
+    char delimStr[1];
+    delimStr[0] = PACKET_DELIMETER;
     int n = write(socketFd,packetData,strlen(packetData));
-    if (n < 0)
+    if (n < 0) {
         error("ERROR writing to socket");
-
+    } else {
+        int n2 = write(socketFd, delimStr, 1);
+        if (n2 < 0) {
+            error("ERROR writing to socket");
+        } else {
+            printf("Sent \"%s\"\n", packetData);
+        }
+    }
+    return n;
 }
 
 int MacTransport::getPacket(char* buffer, int bufferLength) {
-    bzero(buffer,bufferLength);
-    int n = read(socketFd, buffer, bufferLength-1);
-    if (n < 0) error("ERROR reading from socket");
-    printf("Here is the message: %s\n",buffer);
+    int hitError = 0;
+    int delimeterIndex = -1;
+    int startOfNewData = 0;
+    while ((delimeterIndex < 0) && !hitError) {
+        
+        // Search through the new data for a delimeter.
+        for(int ctr=startOfNewData; (delimeterIndex < 0) && (ctr<charsInStreamBuffer); ++ctr) {
+            delimeterIndex = (streamBuffer[ctr] == PACKET_DELIMETER ? ctr : -1);
+        }
+        
+        // Detect if we've run out of buffer.
+        if ((delimeterIndex < 0) && (charsInStreamBuffer >= streamBufferSize)) {
+            printf("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
+            streamBuffer[streamBufferSize-1] = '\0';
+            delimeterIndex = streamBufferSize-1;
+        }
 
+        if (delimeterIndex < 0) {
+            // If we don't have delimeter, pull more data off the socket
+            startOfNewData = charsInStreamBuffer;
+            int charsToRead = streamBufferSize-charsInStreamBuffer;
+            int n = read(socketFd, streamBuffer+charsInStreamBuffer, charsToRead);
+            if (n < 0) {
+                hitError = n;
+            } else {
+                charsInStreamBuffer += n;
+            }
+        }
+    }
+    
+    int charsInPacket = 0;
+    if (!hitError) {
+        // Copy the data into the passed in buffer.
+        charsInPacket = delimeterIndex; // We don't copy the delimeter
+        if (delimeterIndex >= bufferLength) {
+            printf("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
+            charsInPacket = bufferLength-1;
+        }
+        memcpy(buffer, streamBuffer, charsInPacket * sizeof(char));
+        bzero(buffer+charsInPacket, bufferLength-charsInPacket);
+        
+        // Remove the characters from the stream buffer
+        memmove(streamBuffer, streamBuffer+delimeterIndex+1, (charsInStreamBuffer-delimeterIndex-1)*sizeof(char));
+        charsInStreamBuffer = charsInStreamBuffer-delimeterIndex-1;
+    }
+    
+    if (hitError) error("ERROR reading from socket");
+    printf("Received message: \"%s\"\n",buffer);
+    return (hitError ? hitError : charsInPacket);
 }
 
 int MacTransport::openServerSocket(int portno) {
@@ -124,5 +183,39 @@ void MacTransport::error(const char *msg)
 {
     perror(msg);
     exit(1);
+}
+
+void MacTransport::testSockets() {
+    int NUM_MESSAGES = 10;
+    Transport* t = new MacTransport();
+    t->connect();
+    if (t->getConnectNumber() == 1) {
+        for(int ctr=0; ctr<NUM_MESSAGES; ++ctr) {
+            char message[256];
+            sprintf(message, "Message %d\n\0", (ctr+1));
+            int charsSent = t->sendPacket(message);
+            if (charsSent <= 0) {
+                perror("Error sending packet");
+            }
+        }
+    } else {
+        for(int ctr=0;ctr<NUM_MESSAGES;++ctr) {
+            char buffer[256];
+            int charsReceived = t->getPacket(buffer, 256);
+            if (charsReceived < 0) {
+                perror("Error receiving packet");
+            } else if (charsReceived == 0) {
+                printf("Received no data.\n");
+            }
+        }
+    }
+    // Pause
+    printf("Hit Return to exit");
+    char tmpBuffer[256];
+    fgets(tmpBuffer,255,stdin);
+    printf("Exiting");
+    delete t;
+    exit(0);
+    
 }
 

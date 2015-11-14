@@ -10,6 +10,12 @@ typedef struct BALL_SYNC
 	int relativeFrame;		// A guess to how many frames ago the player made this change in movement
 }BALL_SYNC;
 
+class Transport;
+/**
+ * Call to setup the sync tool.  Like a constructor.
+ */
+void Sync_Setup(Transport*);
+
 /**
  * Call this before the start of each frame.
  * Allows the syncer to correlate how many frames ago an action was performed.

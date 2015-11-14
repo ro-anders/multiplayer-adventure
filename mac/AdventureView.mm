@@ -53,28 +53,12 @@ bool gMenuItemSelect = FALSE;
 - (id)initWithFrame:(NSRect)frameRect
 {
 	[super initWithFrame:frameRect];
-
+    MacTransport::testSockets();
     Transport* transport = new MacTransport();
     transport->connect();
-    if (transport->getConnectNumber() == 2) {
-        int charsSent = transport->sendPacket("Hello!");
-        if (charsSent <= 0) {
-            printf("Error sending packet");
-        } else {
-            printf("Sent packet!");
-        }
-    } else {
-        char buffer[256];
-        int charsReceived = transport->getPacket(buffer, 256);
-        if (charsReceived <= 0) {
-            printf("Error receiving packet");
-        } else {
-            printf("Received packet: %s", buffer);
-        }
-    }
-
 	if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
 	{
+        Adventure_Setup(transport);
 		timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
 												 target: self
 											   selector: @selector(update:)

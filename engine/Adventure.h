@@ -24,6 +24,8 @@ typedef unsigned long color;
 typedef unsigned char byte;
 
 // Game funtions
+class Transport;
+void Adventure_Setup(Transport* transport);
 void Adventure_Run();
 
 // Platform-dependant functions

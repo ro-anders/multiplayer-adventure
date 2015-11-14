@@ -1256,6 +1256,12 @@ static const int batMatrix [] =
        0x00                                                                                                   
 };
 
+static Transport* transport;
+
+void Adventure_Setup(Transport* inTransport) {
+    transport = inTransport;
+}
+
 
 void Adventure_Run()
 {

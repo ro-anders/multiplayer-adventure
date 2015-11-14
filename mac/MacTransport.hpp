@@ -25,12 +25,22 @@ public:
     int sendPacket(const char* packetData);
     
     int getPacket(char* buffer, int bufferLength);
+    
+    static void testSockets();
 
 private:
+    
+    const char PACKET_DELIMETER; // Character used to signify end of packet.
     
     int serverSocketFd; // Only used if this is the server-side of the socket
     
     int socketFd; // Used both if this is the client-side or the server-side of the socket
+    
+    char* streamBuffer; // Buffer to store data until end of packet is reached.
+    
+    int streamBufferSize; // Size of stream buffer
+    
+    int charsInStreamBuffer; // Number of characters read into stream buffer
     
     int openServerSocket(int port);
     
