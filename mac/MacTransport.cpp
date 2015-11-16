@@ -155,7 +155,7 @@ int MacTransport::openServerSocket(int portno) {
                        &clilen);
     if (socketFd < 0)
         error("ERROR on accept");
-    //    fcntl(socketFd, F_SETFL, O_NONBLOCK);
+    fcntl(socketFd, F_SETFL, O_NONBLOCK);
 
     return 0;
 
@@ -201,7 +201,7 @@ void MacTransport::testSockets() {
     int NUM_MESSAGES = 10;
     Transport* t = new MacTransport();
     t->connect();
-    if (t->getConnectNumber() == 1) {
+    if (t->getConnectNumber() == 2) {
         for(int ctr=0; ctr<NUM_MESSAGES; ++ctr) {
             char message[256];
             sprintf(message, "Message %d\n\0", (ctr+1));
@@ -210,7 +210,7 @@ void MacTransport::testSockets() {
                 perror("Error sending packet");
             }
             if (ctr == (NUM_MESSAGES/2)) {
-                printf("Pausing");
+                printf("Pausing\n");
                 sleep(5);
             }
         }
