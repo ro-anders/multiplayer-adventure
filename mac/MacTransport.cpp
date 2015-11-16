@@ -69,9 +69,10 @@ int MacTransport::sendPacket(const char* packetData) {
 
 int MacTransport::getPacket(char* buffer, int bufferLength) {
     int hitError = 0;
+    int ranOutOfData = 0;
     int delimeterIndex = -1;
     int startOfNewData = 0;
-    while ((delimeterIndex < 0) && !hitError) {
+    while ((delimeterIndex < 0) && !hitError && !ranOutOfData) {
         
         // Search through the new data for a delimeter.
         for(int ctr=startOfNewData; (delimeterIndex < 0) && (ctr<charsInStreamBuffer); ++ctr) {
@@ -90,7 +91,11 @@ int MacTransport::getPacket(char* buffer, int bufferLength) {
             startOfNewData = charsInStreamBuffer;
             int charsToRead = streamBufferSize-charsInStreamBuffer;
             int n = read(socketFd, streamBuffer+charsInStreamBuffer, charsToRead);
-            if (n < 0) {
+            if (n == -1) {
+                // Socket has no more data.  Return no data even if we have some sitting in the stream buffer.
+                ranOutOfData = 1;
+            }
+            else if (n < 0) {
                 hitError = n;
             } else {
                 charsInStreamBuffer += n;
@@ -99,7 +104,13 @@ int MacTransport::getPacket(char* buffer, int bufferLength) {
     }
     
     int charsInPacket = 0;
-    if (!hitError) {
+    if (hitError) {
+        error("ERROR reading from socket");
+    } else if (ranOutOfData) {
+        charsInPacket = 0;
+        buffer[0] = '\0';
+        printf("Received no message.");
+    } else {
         // Copy the data into the passed in buffer.
         charsInPacket = delimeterIndex; // We don't copy the delimeter
         if (delimeterIndex >= bufferLength) {
@@ -107,15 +118,14 @@ int MacTransport::getPacket(char* buffer, int bufferLength) {
             charsInPacket = bufferLength-1;
         }
         memcpy(buffer, streamBuffer, charsInPacket * sizeof(char));
-        bzero(buffer+charsInPacket, bufferLength-charsInPacket);
-        
+        buffer[charsInPacket] = '\0';
+
         // Remove the characters from the stream buffer
         memmove(streamBuffer, streamBuffer+delimeterIndex+1, (charsInStreamBuffer-delimeterIndex-1)*sizeof(char));
         charsInStreamBuffer = charsInStreamBuffer-delimeterIndex-1;
+        printf("Received message: \"%s\"\n",buffer);
     }
     
-    if (hitError) error("ERROR reading from socket");
-    printf("Received message: \"%s\"\n",buffer);
     return (hitError ? hitError : charsInPacket);
 }
 
@@ -162,7 +172,6 @@ void MacTransport::openClientSocket(int portno) {
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFd < 0)
         error("ERROR opening socket");
-    //    fcntl(socketFd, F_SETFL, O_NONBLOCK);
     server = gethostbyname("localhost");
     if (server == NULL) {
         fprintf(stderr,"ERROR, no such host\n");
@@ -174,8 +183,11 @@ void MacTransport::openClientSocket(int portno) {
           (char *)&serv_addr.sin_addr.s_addr,
           server->h_length);
     serv_addr.sin_port = htons(portno);
-    if (::connect(socketFd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
+    n = ::connect(socketFd,(struct sockaddr *) &serv_addr,sizeof(serv_addr));
+    if (n < 0) {
         error("ERROR connecting");
+    }
+    fcntl(socketFd, F_SETFL, O_NONBLOCK);
 }
 
 
@@ -197,8 +209,14 @@ void MacTransport::testSockets() {
             if (charsSent <= 0) {
                 perror("Error sending packet");
             }
+            if (ctr == (NUM_MESSAGES/2)) {
+                printf("Pausing");
+                sleep(5);
+            }
         }
     } else {
+        // We wait a second for the sender to send some stuff
+        sleep(2);
         for(int ctr=0;ctr<NUM_MESSAGES;++ctr) {
             char buffer[256];
             int charsReceived = t->getPacket(buffer, 256);
