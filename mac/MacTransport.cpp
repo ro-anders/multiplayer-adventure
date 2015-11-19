@@ -109,7 +109,6 @@ int MacTransport::getPacket(char* buffer, int bufferLength) {
     } else if (ranOutOfData) {
         charsInPacket = 0;
         buffer[0] = '\0';
-        printf("Received no message.");
     } else {
         // Copy the data into the passed in buffer.
         charsInPacket = delimeterIndex; // We don't copy the delimeter
@@ -133,9 +132,7 @@ int MacTransport::openServerSocket(int portno) {
     printf("Opening server socket\n");
     
     socklen_t clilen;
-    char buffer[256];
     struct sockaddr_in serv_addr, cli_addr;
-    int n;
     serverSocketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocketFd < 0)
         error("ERROR opening socket");

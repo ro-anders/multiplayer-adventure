@@ -1,4 +1,4 @@
-
+         
 
 #ifdef WIN32
 #include "stdafx.h"
@@ -13,62 +13,92 @@
 
 static Transport* transport;
 
-// The state of other players is kept in a an array, where each player gets two BALL_SYNC structures, the one the player
-// last requested and the one the player will receive on the next request.
+static int thisPlayer = 0;
 
+static int numPlayers;
+static int numOtherPlayers;
 
-static BALL_SYNC ballSyncStates[2][2] = {
-	{
-		{ 1 /*player*/, 0x11 /*room*/, 0x50 * 2 /*posx*/, 0x20 * 2 /*posy*/, 0 /*velx*/, 0 /*vely*/, 0 /*relativeFrame*/ },
-		{ 1 /*player*/, 0x11 /*room*/, 0x55 * 2 /*posx*/, 0x20 * 2 /*posy*/, 0 /*velx*/, 0 /*vely*/, 0 /*relativeFrame*/ }
-	}, {
-		{ 2 /*player*/, 0x11 /*room*/, 0x50 * 2 /*posx*/, 0x20 * 2 /*posy*/, 0 /*velx*/, 0 /*vely*/, 0 /*relativeFrame*/ },
-		{ 2 /*player*/, 0x11 /*room*/, 0x55 * 2 /*posx*/, 0x20 * 2 /*posy*/, 0 /*velx*/, 0 /*vely*/, 0 /*relativeFrame*/ }
-	}
-};
+static int MAX_MESSAGE_SIZE = 256;
+static char sendBuffer[256];
+static char receiveBuffer[256];
 
-static int current[] = { 0, 0 };
-static bool received[] = { false, false };
+static PlayerMoveAction** playersLastMove;
 
 static int frameNum = 0;
 
-void Sync_Setup(Transport* inTransport) {
+void Sync_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport) {
+    numPlayers = inNumPlayers;
+    numOtherPlayers = numPlayers - 1;
+    thisPlayer = inThisPlayer;
     transport = inTransport;
+    
+    playersLastMove = new PlayerMoveAction*[numPlayers];
+    for(int ctr=0; ctr<numOtherPlayers; ++ctr) {
+        playersLastMove[ctr] = 0x0;
+    }
 }
 
 void Sync_StartFrame() {
 	++frameNum;
 }
 
-void Sync_SetBall(int room, int posx, int posy, int velx, int vely) {
-	// TODO: Send this to the other games.
-    transport->sendPacket("updating ball state");
-
-	// Mock a player2 by having it do exactly what player1 does only 20 pixels to the right.
-	int slot = 1 - current[0];
-	ballSyncStates[0][slot].room = room;
-	ballSyncStates[0][slot].posx = posx + 20;
-	ballSyncStates[0][slot].posy = posy - 5;
-	ballSyncStates[0][slot].velx = velx;
-	ballSyncStates[0][slot].vely = vely;
-	ballSyncStates[0][slot].relativeFrame = 0;
-	if ((ballSyncStates[0][slot].velx != ballSyncStates[0][1 - slot].velx) ||
-		(ballSyncStates[0][slot].vely != ballSyncStates[0][1 - slot].vely)) {
-		received[0] = true;
-	}
+void Sync_BroadcastAction(RemoteAction* action) {
+    action->serialize(sendBuffer, MAX_MESSAGE_SIZE);
+    transport->sendPacket(sendBuffer);
 }
 
-BALL_SYNC* Sync_GetLatestBallSync(int player) {
-    char buffer[256];
-    transport->getPacket(buffer, 256);
-    
-	if (!received[player]) {
-		return 0x0;
-	}
-	else {
-		received[player] = false;
-		current[player] = 1 - current[player];
-		return &ballSyncStates[player][current[player]];
-	}
+void Sync_PullLatestMessages() {
+    int numChars = transport->getPacket(receiveBuffer, MAX_MESSAGE_SIZE);
+    while(numChars > 0) {
+        // TODO: We know it's a Player Move action - that's the only one so far
+        PlayerMoveAction* nextAction = new PlayerMoveAction();
+        nextAction->deserialize(receiveBuffer);
+        int messageSender = nextAction->sender;
+        if (playersLastMove[messageSender-1] != 0x0) {
+            delete playersLastMove[messageSender-1];
+        }
+        playersLastMove[messageSender-1] = nextAction;
+        
+        numChars = transport->getPacket(receiveBuffer, MAX_MESSAGE_SIZE);
+    }
 }
 
+PlayerMoveAction* Sync_GetLatestBallSync(int player) {
+    PlayerMoveAction* rtn = playersLastMove[player-1];
+    playersLastMove[player-1] = 0x0;
+    return rtn;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+//
+// RemoteAction
+//
+
+////////////////////////////////////////////////////////////////////////////////////////////
+//
+// PlayerMoveAction
+//
+
+PlayerMoveAction::PlayerMoveAction() {}
+
+PlayerMoveAction::PlayerMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely) {
+    sender = inSender;
+    room = inRoom;
+    posx = inPosx;
+    posy = inPosy;
+    velx = inVelx;
+    vely = inVely;
+}
+
+int PlayerMoveAction::serialize(char* buffer, int bufferLength) {
+    // TODO - Right now we are ignoring bufferLength
+    //int numChars = sprintf(buffer, "BALL-sd%d-rm%d-px%d-py%d-vx%d-vy%d", sender, room, posx, posy, velx, vely);
+    int numChars = sprintf(buffer, "BALL %d %d %d %d %d %d", sender, room, posx, posy, velx, vely);
+    printf("Serialized ball state to %d chars: %s", numChars, buffer);
+    return numChars;
+}
+
+void PlayerMoveAction::deserialize(const char *message) {
+    char type[8];
+    sscanf(message, "%s %d %d %d %d %d %d", type, &sender, &room, &posx, &posy, &velx, &vely);
+}

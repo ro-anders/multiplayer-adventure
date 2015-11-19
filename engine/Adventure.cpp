@@ -19,6 +19,7 @@
 #endif
 
 #include "Sync.h"
+#include "Transport.hpp"
 #include "Adventure.h"
 
 #ifndef max
@@ -1257,15 +1258,21 @@ static const int batMatrix [] =
 };
 
 static Transport* transport;
+static int numPlayers;
+static int thisPlayer;
 
-void Adventure_Setup(Transport* inTransport) {
+void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport) {
+    numPlayers = inNumPlayers;
+    thisPlayer = inThisPlayer;
     transport = inTransport;
+    Sync_Setup(numPlayers, thisPlayer, transport);
 }
 
 
 void Adventure_Run()
 {
 	Sync_StartFrame();
+    Sync_PullLatestMessages();
 
     // read the console switches every frame
     bool select, reset;
@@ -1282,9 +1289,9 @@ void Adventure_Run()
         objectBall.previousY = objectBall.y;
         objectBall.linkedObject = OBJECT_NONE;  // Not carrying anything
 
-		otherBalls[0].room = 0x11;                 // Put us in the yellow castle
-		otherBalls[0].x = (0x50 * 2) + 20;                  //
-		otherBalls[0].y = (0x20 * 2) - 5;                  //
+		otherBalls[0].room = 0x11;                 // Put other in the yellow castle
+		otherBalls[0].x = 0x50*2;                  //
+		otherBalls[0].y = 0x20*2;                  //
 		otherBalls[0].previousX = objectBall.x;
 		otherBalls[0].previousY = objectBall.y;
 		otherBalls[0].linkedObject = OBJECT_NONE;  // Not carrying anything
@@ -1598,7 +1605,9 @@ void ThisBallMovement()
 	BallMovement(&objectBall);
 
 	if (velocityChanged) {
-		Sync_SetBall(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
+        // TODO: Do we want to be constantly allocating space?
+        PlayerMoveAction* moveAction = new PlayerMoveAction(thisPlayer, objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
+        Sync_BroadcastAction(moveAction);
 	}
 }
 
@@ -1756,7 +1765,11 @@ void BallMovement(BALL* ball) {
 void OtherBallMovement() {
 	for (int i = 0; i < (MAX_PLAYERS - 1); ++i) {
 		if (otherBalls[i].room != 0) { // TODO: Don't know if this is how we want to test for player 3 being there.
-			BALL_SYNC* movement = Sync_GetLatestBallSync(i);
+            // player=1 0->2, 1->3
+            // player=2 0->1, 1->3
+            // player=3 0->1 1->2
+            int syncIndex = (i >= thisPlayer-1 ? i+2 : i+1);
+			PlayerMoveAction* movement = Sync_GetLatestBallSync(syncIndex);
 			if (movement != 0x0) {
 				otherBalls[i].room = movement->room;
 				otherBalls[i].x = movement->posx;

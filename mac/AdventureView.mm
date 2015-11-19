@@ -53,12 +53,15 @@ bool gMenuItemSelect = FALSE;
 - (id)initWithFrame:(NSRect)frameRect
 {
 	[super initWithFrame:frameRect];
-    MacTransport::testSockets();
+    // TODO: Pull other player info off of command line
+    int numberPlayers = 2;
     Transport* transport = new MacTransport();
     transport->connect();
+    int thisPlayer = transport->getConnectNumber();
 	if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
 	{
-        Adventure_Setup(transport);
+        // TODO: Pull other player in
+        Adventure_Setup(numberPlayers, thisPlayer, transport);
 		timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
 												 target: self
 											   selector: @selector(update:)

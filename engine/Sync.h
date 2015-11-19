@@ -11,10 +11,35 @@ typedef struct BALL_SYNC
 }BALL_SYNC;
 
 class Transport;
+
+class RemoteAction {
+public:
+    int sender;				// The number of the player sending this action (1-3)
+    virtual int serialize(char* buffer, int bufferLength) = 0;
+    virtual void deserialize(const char* message) = 0;
+};
+
+class PlayerMoveAction: public RemoteAction {
+public:
+    int room;				// The room the player was in
+    int posx;				// The x-coordinate of the player in the room
+    int posy;				// The y-coordinate of the player in the room
+    int velx;				// -1 for moving left, 1 for right, and 0 for still or just up/down
+    int vely;				// -1 for down, 1 for up, and 0 for still or just left/right
+    
+    PlayerMoveAction();
+    
+    PlayerMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
+    
+    int serialize(char* buffer, int bufferLength);
+    
+    void deserialize(const char* message);
+};
+
 /**
  * Call to setup the sync tool.  Like a constructor.
  */
-void Sync_Setup(Transport*);
+void Sync_Setup(int numPlayers, int thisPlayer, Transport* transport);
 
 /**
  * Call this before the start of each frame.
@@ -23,15 +48,23 @@ void Sync_Setup(Transport*);
 void Sync_StartFrame();
 
 /**
- *  Get the latest changes to another player.  Returns the last known state of a
- * player including their position and velocity.  Caller does not need to worry about
- * memory management, but the returned pointer is only valid until then next call of
- * this method.  If no changes have been received since the last call, this will return
- * null.
+ * This pulls messages off the socket until there are none waiting.
+ * This does not process them, but demuxes them and puts them where they can be grabbed 
+ * when it is time to process that type of message.
  */
-BALL_SYNC* Sync_GetLatestBallSync(int player);
+void Sync_PullLatestMessages();
 
 /**
- * Notify other players of changes to your state.
+ *  Get the latest changes to another player.  Returns the last known state of a
+ * player including their position and velocity.  Caller must delete this object.
+ * If no changes have been received since the last call, this will return
+ * null.
  */
-void Sync_SetBall(int room, int posx, int posy, int velx, int vely);
+PlayerMoveAction* Sync_GetLatestBallSync(int player);
+
+/**
+ * Broadcast an event to the other players
+ * @param action an action to broadcast.  The Sync now owns this action and is responsible
+ * for deleting it.
+ */
+void Sync_BroadcastAction(RemoteAction* action);
