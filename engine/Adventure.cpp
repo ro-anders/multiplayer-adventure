@@ -1023,26 +1023,24 @@ static const byte portStates [] =
     0,0,1,1,2,2,3,3,4,4,5,5,6,6,5,5,4,4,3,3,2,2,1,1
 };
 
-static BALL structBall = {
-	0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
-	OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/, false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/, 
-	objectGfxPlayer2/*gfxData*/ 
-};
-
-static BALL* objectBall = &structBall;
 
 static int MAX_PLAYERS = 3;
-static BALL otherBalls[] = {
-	{
-		0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
-		OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/, 
-		false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer3/*gfxData*/
-	}, {
+static BALL balls[] = {
+    {
+        0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
+        OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/,
+        false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer3/*gfxData*/
+    }, {
+        0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
+        OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/,
+        false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer3/*gfxData*/
+    }, {
 		0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
 		OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/, 
 		false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer3/*gfxData*/
 	}
 };
+static BALL* objectBall = 0x0;
 
 //
 // Indexed array of all objects and their properties
@@ -1268,6 +1266,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport)
     thisPlayer = inThisPlayer;
     transport = inTransport;
     Sync_Setup(numPlayers, thisPlayer, transport);
+    objectBall = &balls[thisPlayer];
 }
 
 
@@ -1290,15 +1289,6 @@ void Adventure_Run()
         objectBall->previousX = objectBall->x;
         objectBall->previousY = objectBall->y;
         objectBall->linkedObject = OBJECT_NONE;  // Not carrying anything
-
-		otherBalls[0].room = 0x11;                 // Put other in the yellow castle
-		otherBalls[0].x = 0x50*2;                  //
-		otherBalls[0].y = 0x20*2;                  //
-		otherBalls[0].previousX = objectBall->x;
-		otherBalls[0].previousY = objectBall->y;
-		otherBalls[0].linkedObject = OBJECT_NONE;  // Not carrying anything
-
-		otherBalls[1].gfxData = (const byte*)0x0;
 
 		displayedRoomIndex = objectBall->room;
 
@@ -1416,11 +1406,10 @@ void Adventure_Run()
                             objectBall->linkedObjectY += diffY/2;
                         }
                     }
-					ReactToCollision(objectBall);
-					for (int i = 0; i < (MAX_PLAYERS - 1); ++i) {
-						if (otherBalls[i].room != 0) { // TODO: Don't know if this is how we want to test for player 3 being there.
-							ReactToCollision(otherBalls + i);
-						}
+					for (int i = 0; i < MAX_PLAYERS; ++i) {
+                        // TODO: Does this work correctly when remote player is not in same room
+                        // as current player?
+                        ReactToCollision(balls + i);
 					}
 
                     // Increment the last object drawn
@@ -1765,22 +1754,18 @@ void BallMovement(BALL* ball) {
 }
 
 void OtherBallMovement() {
-	for (int i = 0; i < (MAX_PLAYERS - 1); ++i) {
-		if (otherBalls[i].room != 0) { // TODO: Don't know if this is how we want to test for player 3 being there.
-            // player=1 0->2, 1->3
-            // player=2 0->1, 1->3
-            // player=3 0->1 1->2
-            int syncIndex = (i >= thisPlayer-1 ? i+2 : i+1);
-			PlayerMoveAction* movement = Sync_GetLatestBallSync(syncIndex);
-			if (movement != 0x0) {
-				otherBalls[i].room = movement->room;
-				otherBalls[i].x = movement->posx;
-				otherBalls[i].y = movement->posy;
-				otherBalls[i].velx = movement->velx;
-				otherBalls[i].vely = movement->vely;
-			}
-
-			BallMovement(otherBalls+i);
+	for (int i = 0; i < numPlayers; ++i) {
+        if (i != thisPlayer) {
+            PlayerMoveAction* movement = Sync_GetLatestBallSync(i);
+            if (movement != 0x0) {
+                balls[i].room = movement->room;
+                balls[i].x = movement->posx;
+                balls[i].y = movement->posy;
+                balls[i].velx = movement->velx;
+                balls[i].vely = movement->vely;
+            }
+            
+            BallMovement(balls+i);
 		}
 	}
 
@@ -1986,15 +1971,13 @@ void PrintDisplay()
     }
 
     //
-    // Draw the ball object
+    // Draw the balls
     //
     color = colorTable[roomDefs[displayedRoomIndex].color];
-	DrawBall(objectBall, color);
 
-	// Draw other balls in the room
-	for (int i = 0; i < MAX_PLAYERS-1; ++i) {
-		if ((otherBalls[i].gfxData != 0x0) && (objectBall->room == otherBalls[i].room)) {
-			DrawBall(&otherBalls[i], color);
+	for (int i = 0; i < numPlayers; ++i) {
+		if (objectBall->room == balls[i].room) {
+			DrawBall(&balls[i], color);
 		}
 	}
 

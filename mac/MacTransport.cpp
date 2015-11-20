@@ -47,7 +47,7 @@ void MacTransport::connect() {
     if (busy) {
         openClientSocket(port);
     }
-    connectNumber = (busy ? 2 : 1);
+    connectNumber = (busy ? 1 : 0);
 }
 
 int MacTransport::sendPacket(const char* packetData) {
@@ -198,7 +198,7 @@ void MacTransport::testSockets() {
     int NUM_MESSAGES = 10;
     Transport* t = new MacTransport();
     t->connect();
-    if (t->getConnectNumber() == 2) {
+    if (t->getConnectNumber() == 1) {
         for(int ctr=0; ctr<NUM_MESSAGES; ++ctr) {
             char message[256];
             sprintf(message, "Message %d\n\0", (ctr+1));

@@ -13,7 +13,7 @@
 
 static Transport* transport;
 
-static int thisPlayer = 0;
+static int thisPlayer = -1;
 
 static int numPlayers;
 static int numOtherPlayers;
