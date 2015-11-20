@@ -89,7 +89,7 @@ typedef struct ROOM
 #define ROOMFLAG_LEFTTHINWALL   0x02 // bit 1 - 1 for left thin wall
 #define ROOMFLAG_RIGHTTHINWALL  0x04 // bit 2 - 1 for right thin wall
 
-static enum
+enum
 {
     OBJECT_NONE=-1,
     OBJECT_PORT1=0,
@@ -213,7 +213,7 @@ static const COLOR colorTable [] =
     { 0xd5,0xb5,0x43 }, // tan  (0xe8)
     { 0xa8,0xfc,0x41 }  // flash (0xcb)
 };  
-static enum { COLOR_BLACK=0, COLOR_LTGRAY, COLOR_WHITE, COLOR_YELLOW, COLOR_ORANGE, COLOR_RED, COLOR_PURPLE, COLOR_BLUE, COLOR_LTCYAN, COLOR_CYAN, COLOR_DKGREEN, COLOR_LIMEGREEN, COLOR_OLIVEGREEN, COLOR_TAN, COLOR_FLASH };
+enum { COLOR_BLACK=0, COLOR_LTGRAY, COLOR_WHITE, COLOR_YELLOW, COLOR_ORANGE, COLOR_RED, COLOR_PURPLE, COLOR_BLUE, COLOR_LTCYAN, COLOR_CYAN, COLOR_DKGREEN, COLOR_LIMEGREEN, COLOR_OLIVEGREEN, COLOR_TAN, COLOR_FLASH };
 
 // 
 // Room graphics
@@ -1023,11 +1023,13 @@ static const byte portStates [] =
     0,0,1,1,2,2,3,3,4,4,5,5,6,6,5,5,4,4,3,3,2,2,1,1
 };
 
-static BALL objectBall = { 
+static BALL structBall = {
 	0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
 	OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/, false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/, 
 	objectGfxPlayer2/*gfxData*/ 
 };
+
+static BALL* objectBall = &structBall;
 
 static int MAX_PLAYERS = 3;
 static BALL otherBalls[] = {
@@ -1282,23 +1284,23 @@ void Adventure_Run()
     // Reset switch
     if ((gameState != GAMESTATE_WIN) && switchReset && !reset)
     {
-        objectBall.room = 0x11;                 // Put us in the yellow castle
-        objectBall.x = 0x50*2;                  //
-        objectBall.y = 0x20*2;                  //
-        objectBall.previousX = objectBall.x;
-        objectBall.previousY = objectBall.y;
-        objectBall.linkedObject = OBJECT_NONE;  // Not carrying anything
+        objectBall->room = 0x11;                 // Put us in the yellow castle
+        objectBall->x = 0x50*2;                  //
+        objectBall->y = 0x20*2;                  //
+        objectBall->previousX = objectBall->x;
+        objectBall->previousY = objectBall->y;
+        objectBall->linkedObject = OBJECT_NONE;  // Not carrying anything
 
 		otherBalls[0].room = 0x11;                 // Put other in the yellow castle
 		otherBalls[0].x = 0x50*2;                  //
 		otherBalls[0].y = 0x20*2;                  //
-		otherBalls[0].previousX = objectBall.x;
-		otherBalls[0].previousY = objectBall.y;
+		otherBalls[0].previousX = objectBall->x;
+		otherBalls[0].previousY = objectBall->y;
 		otherBalls[0].linkedObject = OBJECT_NONE;  // Not carrying anything
 
 		otherBalls[1].gfxData = (const byte*)0x0;
 
-		displayedRoomIndex = objectBall.room;
+		displayedRoomIndex = objectBall->room;
 
         // Make the bat want something right away
         batFedUpTimer = 0xff;
@@ -1339,9 +1341,9 @@ void Adventure_Run()
 
             // Display the room and objects
             displayedRoomIndex = 0;
-            objectBall.room = 0;
-            objectBall.x = 0;
-            objectBall.y = 0;
+            objectBall->room = 0;
+            objectBall->x = 0;
+            objectBall->y = 0;
             PrintDisplay();
         }
         else if (ISGAMEACTIVE())
@@ -1364,13 +1366,13 @@ void Adventure_Run()
             {
                 // Go to game level selection screen if select switch hit
                 gameState = GAMESTATE_GAMESELECT;
-                objectBall.room = 0;
-                objectBall.x = 0;
-                objectBall.y = 0;
-                objectBall.previousX = objectBall.x;
-                objectBall.previousY = objectBall.y;
+                objectBall->room = 0;
+                objectBall->x = 0;
+                objectBall->y = 0;
+                objectBall->previousX = objectBall->x;
+                objectBall->previousY = objectBall->y;
 
-                displayedRoomIndex = objectBall.room;
+                displayedRoomIndex = objectBall->room;
 
                 // Setup the room and object
                 PrintDisplay();
@@ -1401,20 +1403,20 @@ void Adventure_Run()
                     PickupPutdown();
 
                     // Check ball collisions
-                    if (!objectBall.hitX && !objectBall.hitY)
+                    if (!objectBall->hitX && !objectBall->hitY)
                     {
                         // Make sure stuff we are carrying stays out of our way
-                        int hitObject = CollisionCheckBallWithObjects(&objectBall, 0);
-                        if ((hitObject > OBJECT_NONE) && (hitObject == objectBall.linkedObject))
+                        int hitObject = CollisionCheckBallWithObjects(objectBall, 0);
+                        if ((hitObject > OBJECT_NONE) && (hitObject == objectBall->linkedObject))
                         {
-                            int diffX = objectBall.x - objectBall.previousX;
-                            objectBall.linkedObjectX += diffX/2;
+                            int diffX = objectBall->x - objectBall->previousX;
+                            objectBall->linkedObjectX += diffX/2;
 
-                            int diffY = objectBall.y - objectBall.previousY;
-                            objectBall.linkedObjectY += diffY/2;
+                            int diffY = objectBall->y - objectBall->previousY;
+                            objectBall->linkedObjectY += diffY/2;
                         }
                     }
-					ReactToCollision(&objectBall);
+					ReactToCollision(objectBall);
 					for (int i = 0; i < (MAX_PLAYERS - 1); ++i) {
 						if (otherBalls[i].room != 0) { // TODO: Don't know if this is how we want to test for player 3 being there.
 							ReactToCollision(otherBalls + i);
@@ -1587,8 +1589,8 @@ void ThisBallMovement()
 	else if (joyDown) {
 		newVelY = -6;
 	}
-	velocityChanged = (objectBall.vely != newVelY);
-	objectBall.vely = newVelY;
+	velocityChanged = (objectBall->vely != newVelY);
+	objectBall->vely = newVelY;
 
 	int newVelX = 0;
 	if (joyRight) {
@@ -1599,20 +1601,20 @@ void ThisBallMovement()
 	else if (joyLeft) {
 		newVelX = -6;
 	}
-	velocityChanged = velocityChanged || (objectBall.velx != newVelX);
-	objectBall.velx = newVelX;
+	velocityChanged = velocityChanged || (objectBall->velx != newVelX);
+	objectBall->velx = newVelX;
 
-	BallMovement(&objectBall);
+	BallMovement(objectBall);
 
 	if (velocityChanged) {
         // TODO: Do we want to be constantly allocating space?
-        PlayerMoveAction* moveAction = new PlayerMoveAction(thisPlayer, objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
+        PlayerMoveAction* moveAction = new PlayerMoveAction(thisPlayer, objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
         Sync_BroadcastAction(moveAction);
 	}
 }
 
 void BallMovement(BALL* ball) {
-	bool isCurrentPlayer = (ball == &objectBall);
+	bool isCurrentPlayer = (ball == objectBall);
     // store the existing ball location
     int tempX = ball->x;
     int tempY = ball->y;
@@ -1786,12 +1788,12 @@ void OtherBallMovement() {
 
 void MoveCarriedObject()
 {
-    if (objectBall.linkedObject >= 0)
+    if (objectBall->linkedObject >= 0)
     {
-        OBJECT* object = &objectDefs[objectBall.linkedObject];
-        object->x = (objectBall.x/2) + objectBall.linkedObjectX;
-        object->y = (objectBall.y/2) + objectBall.linkedObjectY;
-        object->room = objectBall.room;
+        OBJECT* object = &objectDefs[objectBall->linkedObject];
+        object->x = (objectBall->x/2) + objectBall->linkedObjectX;
+        object->y = (objectBall->y/2) + objectBall->linkedObjectY;
+        object->room = objectBall->room;
     }
 
     // Seems like a weird place to call this but this matches the original game
@@ -1806,32 +1808,32 @@ void MoveGroundObject()
 	OBJECT* port4 = &objectDefs[OBJECT_PORT4];
 
     // Handle ball going into the castles
-    if (objectBall.room == port1->room && port1->state != 0x0C && CollisionCheckObject(port1, (objectBall.x-4), (objectBall.y-1), 8, 8))
+    if (objectBall->room == port1->room && port1->state != 0x0C && CollisionCheckObject(port1, (objectBall->x-4), (objectBall->y-1), 8, 8))
     {
-        objectBall.room = entryRoomOffsets[OBJECT_PORT1];
-        objectBall.y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
-        objectBall.previousY = objectBall.y;
+        objectBall->room = entryRoomOffsets[OBJECT_PORT1];
+        objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
+        objectBall->previousY = objectBall->y;
         port1->state = 0; // make sure it stays unlocked in case we are walking in with the key
     }
-    else if (objectBall.room == port2->room && port2->state != 0x0C && CollisionCheckObject(port2, (objectBall.x-4), (objectBall.y-1), 8, 8))
+    else if (objectBall->room == port2->room && port2->state != 0x0C && CollisionCheckObject(port2, (objectBall->x-4), (objectBall->y-1), 8, 8))
     {
-        objectBall.room = entryRoomOffsets[OBJECT_PORT2];
-        objectBall.y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
-        objectBall.previousY = objectBall.y;
+        objectBall->room = entryRoomOffsets[OBJECT_PORT2];
+        objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
+        objectBall->previousY = objectBall->y;
         port2->state = 0; // make sure it stays unlocked in case we are walking in with the key
     }
-	else if (objectBall.room == port3->room && port3->state != 0x0C && CollisionCheckObject(port3, (objectBall.x - 4), (objectBall.y - 1), 8, 8))
+	else if (objectBall->room == port3->room && port3->state != 0x0C && CollisionCheckObject(port3, (objectBall->x - 4), (objectBall->y - 1), 8, 8))
 	{
-		objectBall.room = entryRoomOffsets[OBJECT_PORT3];
-		objectBall.y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN - 2;
-		objectBall.previousY = objectBall.y;
+		objectBall->room = entryRoomOffsets[OBJECT_PORT3];
+		objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN - 2;
+		objectBall->previousY = objectBall->y;
 		port3->state = 0; // make sure it stays unlocked in case we are walking in with the key
 	}
-	else if (objectBall.room == port4->room && port4->state != 0x0C && CollisionCheckObject(port4, (objectBall.x - 4), (objectBall.y - 1), 8, 8))
+	else if (objectBall->room == port4->room && port4->state != 0x0C && CollisionCheckObject(port4, (objectBall->x - 4), (objectBall->y - 1), 8, 8))
 	{
-		objectBall.room = entryRoomOffsets[OBJECT_PORT4];
-		objectBall.y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN - 2;
-		objectBall.previousY = objectBall.y;
+		objectBall->room = entryRoomOffsets[OBJECT_PORT4];
+		objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN - 2;
+		objectBall->previousY = objectBall->y;
 		port4->state = 0; // make sure it stays unlocked in case we are walking in with the key
 	}
 
@@ -1922,7 +1924,7 @@ void PrintDisplay()
     Platform_PaintPixel(colorBackground.r, colorBackground.g, colorBackground.b, 0, 0, ADVENTURE_SCREEN_WIDTH, ADVENTURE_TOTAL_SCREEN_HEIGHT);
 
     // paint the surround under the playfield layer
-    if ((objectSurround.room == objectBall.room) && (objectSurround.state == 0))
+    if ((objectSurround.room == objectBall->room) && (objectSurround.state == 0))
        DrawObject(&objectSurround);
 
     // get the playfield mirror flag
@@ -1987,11 +1989,11 @@ void PrintDisplay()
     // Draw the ball object
     //
     color = colorTable[roomDefs[displayedRoomIndex].color];
-	DrawBall(&objectBall, color);
+	DrawBall(objectBall, color);
 
 	// Draw other balls in the room
 	for (int i = 0; i < MAX_PLAYERS-1; ++i) {
-		if ((otherBalls[i].gfxData != 0x0) && (objectBall.room == otherBalls[i].room)) {
+		if ((otherBalls[i].gfxData != 0x0) && (objectBall->room == otherBalls[i].room)) {
 			DrawBall(&otherBalls[i], color);
 		}
 	}
@@ -2005,10 +2007,10 @@ void PrintDisplay()
 
 void PickupPutdown()
 {
-    if (joyFire && (objectBall.linkedObject >= 0))
+    if (joyFire && (objectBall->linkedObject >= 0))
     {
         // Put down the current object!
-        objectBall.linkedObject = OBJECT_NONE;
+        objectBall->linkedObject = OBJECT_NONE;
 
         // Play the sound
         Platform_MakeSound(SOUND_PUTDOWN);
@@ -2016,24 +2018,24 @@ void PickupPutdown()
     else
     {
         // See if we are touching any carryable objects
-        int hitIndex = CollisionCheckBallWithObjects(&objectBall, OBJECT_SWORD);
+        int hitIndex = CollisionCheckBallWithObjects(objectBall, OBJECT_SWORD);
         if (hitIndex > OBJECT_NONE)
         {
             // Ignore the object we are already carrying
-            if (hitIndex == objectBall.linkedObject)
+            if (hitIndex == objectBall->linkedObject)
             {
                 // Check the remainder of the objects
-                hitIndex = CollisionCheckBallWithObjects(&objectBall, hitIndex + 1);
+                hitIndex = CollisionCheckBallWithObjects(objectBall, hitIndex + 1);
             }
 
             if (hitIndex > OBJECT_NONE)
             {
                 // Pick up this object!
-                objectBall.linkedObject = hitIndex;
+                objectBall->linkedObject = hitIndex;
 
                 // calculate the XY offsets from the ball's position
-                objectBall.linkedObjectX = objectDefs[hitIndex].x - (objectBall.x/2);
-                objectBall.linkedObjectY = objectDefs[hitIndex].y - (objectBall.y/2);
+                objectBall->linkedObjectX = objectDefs[hitIndex].x - (objectBall->x/2);
+                objectBall->linkedObjectY = objectDefs[hitIndex].y - (objectBall->y/2);
 
                 // Play the sound
                 Platform_MakeSound(SOUND_PICKUP);
@@ -2045,13 +2047,13 @@ void PickupPutdown()
 void Surround()
 {
     // get the playfield data
-    const ROOM* currentRoom = &roomDefs[objectBall.room];
+    const ROOM* currentRoom = &roomDefs[objectBall->room];
     if (currentRoom->color == COLOR_LTGRAY)
     {
         // Put it in the same room as the ball (player) and center it under the ball
-        objectSurround.room = objectBall.room;
-        objectSurround.x = (objectBall.x-0x1E)/2;
-        objectSurround.y = (objectBall.y+0x18)/2;
+        objectSurround.room = objectBall->room;
+        objectSurround.x = (objectBall->x-0x1E)/2;
+        objectSurround.y = (objectBall->y+0x18)/2;
     }
     else
     {
@@ -2134,10 +2136,10 @@ void MoveBat()
 
                     // If the bat grabs something that the ball is carrying, the bat gets it
                     // This allows the bat to take something we are carrying
-                    if (*matrixP == objectBall.linkedObject)
+                    if (*matrixP == objectBall->linkedObject)
                     {
                         // Now we have nothing
-                        objectBall.linkedObject = OBJECT_NONE;
+                        objectBall->linkedObject = OBJECT_NONE;
                     }
 
                     // Pick it up
@@ -2169,7 +2171,7 @@ void Portals()
     const OBJECT* whiteKey = &objectDefs[OBJECT_WHITEKEY];
     const OBJECT* blackKey = &objectDefs[OBJECT_BLACKKEY];
 
-    if ((port1->room == objectBall.room) && (yellowKey->room == objectBall.room) && (port1->state == 0 || port1->state == 12))
+    if ((port1->room == objectBall->room) && (yellowKey->room == objectBall->room) && (port1->state == 0 || port1->state == 12))
     {
         // Toggle the port state
         if (CollisionCheckObjectObject(port1, yellowKey))
@@ -2192,7 +2194,7 @@ void Portals()
         roomDefs[entryRoomOffsets[OBJECT_PORT1]].roomDown = entryRoomOffsets[OBJECT_PORT1];
     }
 
-    if ((port2->room == objectBall.room) && (whiteKey->room == objectBall.room) && (port2->state == 0 || port2->state == 12))
+    if ((port2->room == objectBall->room) && (whiteKey->room == objectBall->room) && (port2->state == 0 || port2->state == 12))
     {
         // Toggle the port state
         if (CollisionCheckObjectObject(port2, whiteKey))
@@ -2215,7 +2217,7 @@ void Portals()
         roomDefs[entryRoomOffsets[OBJECT_PORT2]].roomDown = entryRoomOffsets[OBJECT_PORT2];
     }
 
-    if ((port3->room == objectBall.room) && (blackKey->room == objectBall.room) && (port3->state == 0 || port3->state == 12))
+    if ((port3->room == objectBall->room) && (blackKey->room == objectBall->room) && (port3->state == 0 || port3->state == 12))
     {
         // Toggle the port state
         if (CollisionCheckObjectObject(port3, blackKey))
@@ -2238,7 +2240,7 @@ void Portals()
         roomDefs[entryRoomOffsets[OBJECT_PORT3]].roomDown = entryRoomOffsets[OBJECT_PORT3];
     }
 
-	if ((port4->room == objectBall.room) && (yellowKey->room == objectBall.room) && (port4->state == 0 || port4->state == 12))
+	if ((port4->room == objectBall->room) && (yellowKey->room == objectBall->room) && (port4->state == 0 || port4->state == 12))
 	{
 		// Toggle the port state
 		if (CollisionCheckObjectObject(port4, yellowKey))
@@ -2287,7 +2289,7 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
     if (dragon->state == 0)
     {
         // Has the Ball hit the Dragon?
-        if ((objectBall.room == dragon->room) && CollisionCheckObject(dragon, (objectBall.x-4), (objectBall.y-4), 8, 8))
+        if ((objectBall->room == dragon->room) && CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-4), 8, 8))
         {
             // Set the State to 03 (roar)
             dragon->state = 3;
@@ -2296,8 +2298,8 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
             *timer = 0xFC - dragonDiff[(gameLevel*2) + ((gameDifficultyLeft==DIFFICULTY_A) ? 1 : 0)];
             
             // Set the dragon's position to the same as the ball
-            dragon->x = (objectBall.x/2);
-            dragon->y = (objectBall.y/2);
+            dragon->x = (objectBall->x/2);
+            dragon->y = (objectBall->y/2);
 
             dragon->movementX = 0;
             dragon->movementY = 0;
@@ -2350,11 +2352,11 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
                     {
                         if (*(matrixP+1) == OBJECT_BALL)
                         {
-                            if (objectBall.room == dragon->room)
+                            if (objectBall->room == dragon->room)
                             {
                                 seekDir = 1;
-                                seekX = objectBall.x/2;
-                                seekY = objectBall.y/2;
+                                seekX = objectBall->x/2;
+                                seekY = objectBall->y/2;
                             }
                         }
                     }
@@ -2410,12 +2412,12 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
     else if (dragon->state == 2)
     {
         // Eaten
-        objectBall.room = dragon->room;
-        objectBall.x = (dragon->x + 3) * 2;
-        objectBall.y = (dragon->y - 10) * 2;
+        objectBall->room = dragon->room;
+        objectBall->x = (dragon->x + 3) * 2;
+        objectBall->y = (dragon->y - 10) * 2;
         dragon->movementX = 0;
         dragon->movementY = 0;
-        displayedRoomIndex = objectBall.room;
+        displayedRoomIndex = objectBall->room;
     }
     else if (dragon->state == 3)
     {
@@ -2423,7 +2425,7 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
         if ((*timer) <= 0)
         {
             // Has the Ball hit the Dragon?
-            if ((objectBall.room == dragon->room) && CollisionCheckObject(dragon, (objectBall.x-4), (objectBall.y-1), 8, 8))
+            if ((objectBall->room == dragon->room) && CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-1), 8, 8))
             {
                 // Set the State to 01 (eaten)
                 dragon->linkedObject = OBJECT_BALL;
@@ -2451,7 +2453,7 @@ void Magnet()
     {
         // Look for items in the magnet matrix that are in the same room as the magnet
         OBJECT* object = &objectDefs[magnetMatrix[i]];
-        if ((magnetMatrix[i] != objectBall.linkedObject) && (object->room == magnet->room))
+        if ((magnetMatrix[i] != objectBall->linkedObject) && (object->room == magnet->room))
         {
             // horizontal axis
             if (object->x < magnet->x)
