@@ -1029,11 +1029,11 @@ static BALL balls[] = {
     {
         0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
         OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/,
-        false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer3/*gfxData*/
+        false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer1/*gfxData*/
     }, {
         0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
         OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/,
-        false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer3/*gfxData*/
+        false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer2/*gfxData*/
     }, {
 		0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
 		OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/, 
@@ -2267,6 +2267,35 @@ void MoveRedDragon()
     MoveDragon(&objectDefs[OBJECT_REDDRAGON], redDragonMatrix, 3, &timer);
 }
 
+/**
+ * Returns the ball closest to the point in the adventure.
+ */
+BALL* closestBall(int room, int x, int y) {
+    int shortestDistance = 10000; // Some big number greater than the diagnol of the board
+    BALL* found = 0x0;
+    for(int ctr=0; ctr<numPlayers; ++ctr) {
+        if (balls[ctr].room == room)
+        {
+            // Figure out the distance (which is really the max difference along one axis)
+            int xdist = balls[ctr].x/2 - x;
+            if (xdist < 0) {
+                xdist = -xdist;
+            }
+            int ydist = balls[ctr].y/2 - y;
+            if (ydist < 0) {
+                ydist = -ydist;
+            }
+            int dist = (xdist > ydist ? xdist : ydist);
+            
+            if (dist < shortestDistance) {
+                shortestDistance = dist;
+                found = &balls[ctr];
+            }
+        }
+    }
+    return found;
+}
+
 void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
 {
     if (dragon->state == 0)
@@ -2335,11 +2364,11 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
                     {
                         if (*(matrixP+1) == OBJECT_BALL)
                         {
-                            if (objectBall->room == dragon->room)
-                            {
+                            BALL* closest = closestBall(dragon->room, dragon->x, dragon->y);
+                            if (closest != 0x0) {
                                 seekDir = 1;
-                                seekX = objectBall->x/2;
-                                seekY = objectBall->y/2;
+                                seekX = closest->x/2;
+                                seekY = closest->y/2;
                             }
                         }
                     }
