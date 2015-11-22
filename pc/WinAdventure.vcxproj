@@ -55,7 +55,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
@@ -87,25 +87,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Adventure.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="Sync.cpp" />
+    <ClCompile Include="..\engine\Adventure.cpp" />
+    <ClCompile Include="..\engine\Sync.cpp" />
+    <ClCompile Include="..\engine\Transport.cpp" />
+    <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="WinAdventure.cpp" />
+    <ClCompile Include="WinTransport.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Adventure.h" />
-    <ClInclude Include="Resource.h" />
+    <ClInclude Include="..\engine\Adventure.h" />
+    <ClInclude Include="..\engine\Sync.h" />
+    <ClInclude Include="..\engine\Transport.hpp" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="Sync.h" />
     <ClInclude Include="WinAdventure.h" />
+    <ClInclude Include="WinTransport.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico" />

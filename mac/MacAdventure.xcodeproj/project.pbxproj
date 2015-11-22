@@ -7,15 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		407773D31BF2AC9C00454AC5 /* Transport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 407773D11BF2AC9C00454AC5 /* Transport.cpp */; };
+		407773D61BF2AF6000454AC5 /* MacTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 407773D41BF2AF6000454AC5 /* MacTransport.cpp */; };
+		4084EC8F1BF22AEE00E8F375 /* Adventure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4084EC8B1BF22AEE00E8F375 /* Adventure.cpp */; };
+		4084EC901BF22AEE00E8F375 /* Sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4084EC8D1BF22AEE00E8F375 /* Sync.cpp */; };
+		40E47FB11BF22BA20052B84E /* AdventureView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40E47FAE1BF22BA20052B84E /* AdventureView.mm */; };
+		40E47FB21BF22BA20052B84E /* Controller.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40E47FB01BF22BA20052B84E /* Controller.mm */; };
 		8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		D009FDD20BCA0A64007C5A37 /* MacAdventureIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = D009FDD10BCA0A64007C5A37 /* MacAdventureIcon.icns */; };
-		D03144A90BC73147001DA96E /* Adventure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D03144A70BC73147001DA96E /* Adventure.cpp */; };
-		D03144AE0BC7319C001DA96E /* AdventureView.mm in Sources */ = {isa = PBXBuildFile; fileRef = D03144AD0BC7319C001DA96E /* AdventureView.mm */; };
 		D06FE00F0BC856BF005633CA /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D06FE00E0BC856BF005633CA /* Carbon.framework */; };
-		D0CB871F0BD1989F006F6C1D /* Controller.mm in Sources */ = {isa = PBXBuildFile; fileRef = D0CB871E0BD1989F006F6C1D /* Controller.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,16 +29,23 @@
 		29B97319FDCFA39411CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* MacAdventure_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MacAdventure_Prefix.pch; sourceTree = "<group>"; };
+		407773D11BF2AC9C00454AC5 /* Transport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Transport.cpp; path = ../engine/Transport.cpp; sourceTree = "<group>"; };
+		407773D21BF2AC9C00454AC5 /* Transport.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Transport.hpp; path = ../engine/Transport.hpp; sourceTree = "<group>"; };
+		407773D41BF2AF6000454AC5 /* MacTransport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MacTransport.cpp; sourceTree = "<group>"; };
+		407773D51BF2AF6000454AC5 /* MacTransport.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = MacTransport.hpp; sourceTree = "<group>"; };
+		4084EC8B1BF22AEE00E8F375 /* Adventure.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Adventure.cpp; path = ../engine/Adventure.cpp; sourceTree = "<group>"; };
+		4084EC8C1BF22AEE00E8F375 /* Adventure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Adventure.h; path = ../engine/Adventure.h; sourceTree = "<group>"; };
+		4084EC8D1BF22AEE00E8F375 /* Sync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Sync.cpp; path = ../engine/Sync.cpp; sourceTree = "<group>"; };
+		4084EC8E1BF22AEE00E8F375 /* Sync.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Sync.h; path = ../engine/Sync.h; sourceTree = "<group>"; };
+		40E47FAD1BF22BA20052B84E /* AdventureView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AdventureView.h; sourceTree = "<group>"; };
+		40E47FAE1BF22BA20052B84E /* AdventureView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AdventureView.mm; sourceTree = "<group>"; };
+		40E47FAF1BF22BA20052B84E /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Controller.h; sourceTree = "<group>"; };
+		40E47FB01BF22BA20052B84E /* Controller.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Controller.mm; sourceTree = "<group>"; };
+		40E47FB51BF22CC60052B84E /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = stdafx.h; path = ../stdafx.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* MacAdventure.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacAdventure.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D009FDD10BCA0A64007C5A37 /* MacAdventureIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MacAdventureIcon.icns; sourceTree = "<group>"; };
-		D03144A70BC73147001DA96E /* Adventure.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Adventure.cpp; sourceTree = "<group>"; };
-		D03144A80BC73147001DA96E /* Adventure.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Adventure.h; sourceTree = "<group>"; };
-		D03144AD0BC7319C001DA96E /* AdventureView.mm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.objcpp; path = AdventureView.mm; sourceTree = "<group>"; };
-		D0318D100BC715B800206D19 /* AdventureView.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = AdventureView.h; sourceTree = "<group>"; };
 		D06FE00E0BC856BF005633CA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
-		D0CB871D0BD1989F006F6C1D /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Controller.h; sourceTree = "<group>"; };
-		D0CB871E0BD1989F006F6C1D /* Controller.mm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.objcpp; path = Controller.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,10 +64,8 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				D0CB871E0BD1989F006F6C1D /* Controller.mm */,
-				D0CB871D0BD1989F006F6C1D /* Controller.h */,
-				D03144AD0BC7319C001DA96E /* AdventureView.mm */,
-				D0318D100BC715B800206D19 /* AdventureView.h */,
+				407773D01BF2AC5900454AC5 /* engine */,
+				407773CF1BF2AC3700454AC5 /* mac */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -90,6 +98,7 @@
 		29B97314FDCFA39411CA2CEA /* MacAdventure */ = {
 			isa = PBXGroup;
 			children = (
+				40E47FB51BF22CC60052B84E /* stdafx.h */,
 				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
@@ -102,8 +111,10 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				D03144A70BC73147001DA96E /* Adventure.cpp */,
-				D03144A80BC73147001DA96E /* Adventure.h */,
+				4084EC8B1BF22AEE00E8F375 /* Adventure.cpp */,
+				4084EC8C1BF22AEE00E8F375 /* Adventure.h */,
+				4084EC8D1BF22AEE00E8F375 /* Sync.cpp */,
+				4084EC8E1BF22AEE00E8F375 /* Sync.h */,
 				32CA4F630368D1EE00C91783 /* MacAdventure_Prefix.pch */,
 				29B97316FDCFA39411CA2CEA /* main.m */,
 			);
@@ -129,6 +140,28 @@
 				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		407773CF1BF2AC3700454AC5 /* mac */ = {
+			isa = PBXGroup;
+			children = (
+				40E47FAD1BF22BA20052B84E /* AdventureView.h */,
+				40E47FAE1BF22BA20052B84E /* AdventureView.mm */,
+				40E47FAF1BF22BA20052B84E /* Controller.h */,
+				40E47FB01BF22BA20052B84E /* Controller.mm */,
+				407773D41BF2AF6000454AC5 /* MacTransport.cpp */,
+				407773D51BF2AF6000454AC5 /* MacTransport.hpp */,
+			);
+			name = mac;
+			sourceTree = "<group>";
+		};
+		407773D01BF2AC5900454AC5 /* engine */ = {
+			isa = PBXGroup;
+			children = (
+				407773D11BF2AC9C00454AC5 /* Transport.cpp */,
+				407773D21BF2AC9C00454AC5 /* Transport.hpp */,
+			);
+			name = engine;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -194,9 +227,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
-				D03144A90BC73147001DA96E /* Adventure.cpp in Sources */,
-				D03144AE0BC7319C001DA96E /* AdventureView.mm in Sources */,
-				D0CB871F0BD1989F006F6C1D /* Controller.mm in Sources */,
+				407773D31BF2AC9C00454AC5 /* Transport.cpp in Sources */,
+				407773D61BF2AF6000454AC5 /* MacTransport.cpp in Sources */,
+				4084EC8F1BF22AEE00E8F375 /* Adventure.cpp in Sources */,
+				4084EC901BF22AEE00E8F375 /* Sync.cpp in Sources */,
+				40E47FB21BF22BA20052B84E /* Controller.mm in Sources */,
+				40E47FB11BF22BA20052B84E /* AdventureView.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -16,6 +16,8 @@
 
 #import "AdventureView.h"
 #include "Adventure.h"
+#include "Transport.hpp"
+#include "MacTransport.hpp"
 
 bool CreateOffscreen(int aWidth, int aHeight);
 void FreeOffscreen();
@@ -51,9 +53,15 @@ bool gMenuItemSelect = FALSE;
 - (id)initWithFrame:(NSRect)frameRect
 {
 	[super initWithFrame:frameRect];
-
+    // TODO: Pull other player info off of command line
+    int numberPlayers = 2;
+    Transport* transport = new MacTransport();
+    transport->connect();
+    int thisPlayer = transport->getConnectNumber();
 	if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
 	{
+        // TODO: Pull other player in
+        Adventure_Setup(numberPlayers, thisPlayer, transport);
 		timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
 												 target: self
 											   selector: @selector(update:)
@@ -357,8 +365,6 @@ float Platform_Random()
 	val = (val + 1) / 2;
 	return val;
 }
-
-
 
 
 
