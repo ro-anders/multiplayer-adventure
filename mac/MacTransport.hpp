@@ -2,9 +2,6 @@
 //  MacTransport.hpp
 //  MacAdventure
 //
-//  Created by Robert Antonucci on 11/10/15.
-//
-//
 
 #ifndef MacTransport_hpp
 #define MacTransport_hpp

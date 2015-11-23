@@ -15,9 +15,10 @@
 
 #ifdef WIN32
 #include <Windows.h>
-#include "stdio.h"
 #endif
 
+#include <stdlib.h>
+#include <stdio.h>
 #include "Sync.h"
 #include "Transport.hpp"
 #include "Adventure.h"
@@ -1046,7 +1047,7 @@ static BALL* objectBall = 0x0;
 // Indexed array of all objects and their properties
 //
 
-static OBJECT objectDefs [] =
+static OBJECT objectSmefs [] =
 {
     { objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #1 Portcullis #1
 	{ objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #4 Portcullis #4
@@ -1068,6 +1069,7 @@ static OBJECT objectDefs [] =
     { objectGfxMagnet, 0, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },            // #11 Magnet
     { (const byte*)0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, false}                                  // #12 Null
 };
+static OBJECT** objectDefs = 0x0;
 
 // Object locations (room and coordinate) for game 01
 //        - object, room, x, y, state, movement(x/y)
@@ -1264,6 +1266,13 @@ static int thisPlayer;
 void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport) {
     numPlayers = inNumPlayers;
     thisPlayer = inThisPlayer;
+    
+    // Setup the structures
+    objectDefs = (OBJECT**)malloc((OBJECT_MAGNET+2)*sizeof(OBJECT*));
+    for(int ctr=OBJECT_PORT1; ctr<OBJECT_MAGNET+2; ++ctr) { // TODO: Relies on magnet being the last object
+        objectDefs[ctr] = &objectSmefs[ctr];
+    }
+    // Setup the transport
     transport = inTransport;
     Sync_Setup(numPlayers, thisPlayer, transport);
     objectBall = &balls[thisPlayer];
@@ -1304,13 +1313,13 @@ void Adventure_Run()
         else
         {
             // Else we just bring the dragons to life
-            objectDefs[OBJECT_YELLOWDRAGON].state = 0x0;
-            objectDefs[OBJECT_GREENDRAGON].state = 0x0;
-            objectDefs[OBJECT_REDDRAGON].state = 0x0;
+            objectDefs[OBJECT_YELLOWDRAGON]->state = 0x0;
+            objectDefs[OBJECT_GREENDRAGON]->state = 0x0;
+            objectDefs[OBJECT_REDDRAGON]->state = 0x0;
 
-            objectDefs[OBJECT_YELLOWDRAGON].linkedObject = OBJECT_NONE;
-            objectDefs[OBJECT_GREENDRAGON].linkedObject = OBJECT_NONE;
-            objectDefs[OBJECT_REDDRAGON].linkedObject = OBJECT_NONE;
+            objectDefs[OBJECT_YELLOWDRAGON]->linkedObject = OBJECT_NONE;
+            objectDefs[OBJECT_GREENDRAGON]->linkedObject = OBJECT_NONE;
+            objectDefs[OBJECT_REDDRAGON]->linkedObject = OBJECT_NONE;
         }
 
         gameState = GAMESTATE_ACTIVE_1;
@@ -1320,7 +1329,7 @@ void Adventure_Run()
         // Is the game active?
         if (gameState == GAMESTATE_GAMESELECT)
         {
-            objectDefs[OBJECT_NUMBER].state = gameLevel;
+            objectDefs[OBJECT_NUMBER]->state = gameLevel;
 
             // Cycle through the game levels
             if (switchSelect && !select)
@@ -1341,7 +1350,7 @@ void Adventure_Run()
             // Get the room the chalise is in
 
             // Is it in the yellow castle?
-            if (objectDefs[OBJECT_CHALISE].room == 0x12)
+            if (objectDefs[OBJECT_CHALISE]->room == 0x12)
             {
                 // Play end noise
 
@@ -1476,9 +1485,9 @@ void Adventure_Run()
 void SetupRoomObjects()
 {
     // Init all objects
-    for (int i=0; objectDefs[i].gfxData; i++)
+    for (int i=0; objectDefs[i]->gfxData; i++)
     {
-        OBJECT* object = &objectDefs[i];
+        OBJECT* object = objectDefs[i];
         object->movementX = 0;
         object->movementY = 0;
         object->linkedObject = OBJECT_NONE;
@@ -1501,12 +1510,12 @@ void SetupRoomObjects()
         signed char movementX = *(p++);
         signed char movementY = *(p++);
 
-        objectDefs[object].room = room;
-        objectDefs[object].x = xpos;
-        objectDefs[object].y = ypos;
-        objectDefs[object].state = state;
-        objectDefs[object].movementX = movementX;
-        objectDefs[object].movementY = movementY;
+        objectDefs[object]->room = room;
+        objectDefs[object]->x = xpos;
+        objectDefs[object]->y = ypos;
+        objectDefs[object]->state = state;
+        objectDefs[object]->movementX = movementX;
+        objectDefs[object]->movementY = movementY;
     };
 
     // Put objects in random rooms for level 3
@@ -1526,7 +1535,7 @@ void SetupRoomObjects()
                 int room = Platform_Random() * 0x1f;
                 if (room >= lower && room <= upper)
                 {
-                    objectDefs[object].room = room;
+                    objectDefs[object]->room = room;
                     break;
                 }
             }
@@ -1608,9 +1617,9 @@ void BallMovement(BALL* ball) {
     int tempX = ball->x;
     int tempY = ball->y;
 
-    bool eaten = ((objectDefs[OBJECT_YELLOWDRAGON].linkedObject == OBJECT_BALL) // TODO: Not right when ball is not this player
-                    || (objectDefs[OBJECT_GREENDRAGON].linkedObject == OBJECT_BALL)
-                    || (objectDefs[OBJECT_REDDRAGON].linkedObject == OBJECT_BALL));
+    bool eaten = ((objectDefs[OBJECT_YELLOWDRAGON]->linkedObject == OBJECT_BALL) // TODO: Not right when ball is not this player
+                    || (objectDefs[OBJECT_GREENDRAGON]->linkedObject == OBJECT_BALL)
+                    || (objectDefs[OBJECT_REDDRAGON]->linkedObject == OBJECT_BALL));
 
     // mark the existing Y location as the previous Y location
     ball->previousY = ball->y;
@@ -1775,7 +1784,7 @@ void MoveCarriedObject()
 {
     if (objectBall->linkedObject >= 0)
     {
-        OBJECT* object = &objectDefs[objectBall->linkedObject];
+        OBJECT* object = objectDefs[objectBall->linkedObject];
         object->x = (objectBall->x/2) + objectBall->linkedObjectX;
         object->y = (objectBall->y/2) + objectBall->linkedObjectY;
         object->room = objectBall->room;
@@ -1787,10 +1796,10 @@ void MoveCarriedObject()
 
 void MoveGroundObject()
 {
-    OBJECT* port1 = &objectDefs[OBJECT_PORT1];
-    OBJECT* port2 = &objectDefs[OBJECT_PORT2];
-	OBJECT* port3 = &objectDefs[OBJECT_PORT3];
-	OBJECT* port4 = &objectDefs[OBJECT_PORT4];
+    OBJECT* port1 = objectDefs[OBJECT_PORT1];
+    OBJECT* port2 = objectDefs[OBJECT_PORT2];
+	OBJECT* port3 = objectDefs[OBJECT_PORT3];
+	OBJECT* port4 = objectDefs[OBJECT_PORT4];
 
     // Handle ball going into the castles
     if (objectBall->room == port1->room && port1->state != 0x0C && CollisionCheckObject(port1, (objectBall->x-4), (objectBall->y-1), 8, 8))
@@ -1823,9 +1832,9 @@ void MoveGroundObject()
 	}
 
     // Move any objects that need moving, and wrap objects from room to room
-    for (int i=OBJECT_REDDRAGON; objectDefs[i].gfxData; i++)
+    for (int i=OBJECT_REDDRAGON; objectDefs[i]->gfxData; i++)
     {
-        OBJECT* object = &objectDefs[i];
+        OBJECT* object = objectDefs[i];
 
         // Apply movement
         object->x += object->movementX;
@@ -1886,7 +1895,7 @@ void MoveGroundObject()
         // Move the linked object
         if (object->linkedObject > OBJECT_NONE)
         {
-            OBJECT* linkedObj = &objectDefs[object->linkedObject];
+            OBJECT* linkedObj = objectDefs[object->linkedObject];
             linkedObj->x = object->x + object->linkedObjectX;
             linkedObj->y = object->y + object->linkedObjectY;
             linkedObj->room = object->room;
@@ -2017,8 +2026,8 @@ void PickupPutdown()
                 objectBall->linkedObject = hitIndex;
 
                 // calculate the XY offsets from the ball's position
-                objectBall->linkedObjectX = objectDefs[hitIndex].x - (objectBall->x/2);
-                objectBall->linkedObjectY = objectDefs[hitIndex].y - (objectBall->y/2);
+                objectBall->linkedObjectX = objectDefs[hitIndex]->x - (objectBall->x/2);
+                objectBall->linkedObjectY = objectDefs[hitIndex]->y - (objectBall->y/2);
 
                 // Play the sound
                 Platform_MakeSound(SOUND_PICKUP);
@@ -2046,7 +2055,7 @@ void Surround()
 
 void MoveBat()
 {
-    OBJECT* bat = &objectDefs[OBJECT_BAT];
+    OBJECT* bat = objectDefs[OBJECT_BAT];
 
     static int flapTimer = 0;
     if (++flapTimer >= 0x04)
@@ -2076,7 +2085,7 @@ void MoveBat()
         do
         {
             // Get the object it is seeking
-            const OBJECT* seekObject = &objectDefs[*matrixP];
+            const OBJECT* seekObject = objectDefs[*matrixP];
             if ((seekObject->room == bat->room) && (bat->linkedObject != *matrixP))
             {
                 int seekX = seekObject->x;
@@ -2145,14 +2154,14 @@ void MoveBat()
 
 void Portals()
 {
-    OBJECT* port1 = &objectDefs[OBJECT_PORT1];
-    OBJECT* port2 = &objectDefs[OBJECT_PORT2];
-	OBJECT* port3 = &objectDefs[OBJECT_PORT3];
-	OBJECT* port4 = &objectDefs[OBJECT_PORT4];
+    OBJECT* port1 = objectDefs[OBJECT_PORT1];
+    OBJECT* port2 = objectDefs[OBJECT_PORT2];
+	OBJECT* port3 = objectDefs[OBJECT_PORT3];
+	OBJECT* port4 = objectDefs[OBJECT_PORT4];
 
-    const OBJECT* yellowKey = &objectDefs[OBJECT_YELLOWKEY];
-    const OBJECT* whiteKey = &objectDefs[OBJECT_WHITEKEY];
-    const OBJECT* blackKey = &objectDefs[OBJECT_BLACKKEY];
+    const OBJECT* yellowKey = objectDefs[OBJECT_YELLOWKEY];
+    const OBJECT* whiteKey = objectDefs[OBJECT_WHITEKEY];
+    const OBJECT* blackKey = objectDefs[OBJECT_BLACKKEY];
 
     if ((port1->room == objectBall->room) && (yellowKey->room == objectBall->room) && (port1->state == 0 || port1->state == 12))
     {
@@ -2252,19 +2261,19 @@ void Portals()
 void MoveGreenDragon()
 {
     static int timer = 0;
-    MoveDragon(&objectDefs[OBJECT_GREENDRAGON], greenDragonMatrix, 2, &timer);
+    MoveDragon(objectDefs[OBJECT_GREENDRAGON], greenDragonMatrix, 2, &timer);
 }
 
 void MoveYellowDragon()
 {
     static int timer = 0;
-    MoveDragon(&objectDefs[OBJECT_YELLOWDRAGON], yellowDragonMatrix, 2, &timer);
+    MoveDragon(objectDefs[OBJECT_YELLOWDRAGON], yellowDragonMatrix, 2, &timer);
 }
 
 void MoveRedDragon()
 {
     static int timer = 0;
-    MoveDragon(&objectDefs[OBJECT_REDDRAGON], redDragonMatrix, 3, &timer);
+    MoveDragon(objectDefs[OBJECT_REDDRAGON], redDragonMatrix, 3, &timer);
 }
 
 /**
@@ -2321,7 +2330,7 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
         }
 
         // Has the Sword hit the Dragon?
-        if (CollisionCheckObjectObject(dragon, &objectDefs[OBJECT_SWORD]))
+        if (CollisionCheckObjectObject(dragon, objectDefs[OBJECT_SWORD]))
         {
             // Set the State to 01 (Dead)
             dragon->state = 1;
@@ -2346,10 +2355,10 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
                 int seekObject = *(matrixP+1); 
 
                 // Dragon fleeing an object
-                if ((fleeObject > OBJECT_NONE) && &objectDefs[fleeObject] != dragon)
+                if ((fleeObject > OBJECT_NONE) && objectDefs[fleeObject] != dragon)
                 {
                     // get the object it is fleeing
-                    const OBJECT* object = &objectDefs[fleeObject];
+                    const OBJECT* object = objectDefs[fleeObject];
                     if (object->room == dragon->room)
                     {
                         seekDir = -1;
@@ -2377,7 +2386,7 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
                     if ((seekDir == 0) && (seekObject > OBJECT_NONE))
                     {
                         // Get the object it is seeking
-                        const OBJECT* object = &objectDefs[seekObject];
+                        const OBJECT* object = objectDefs[seekObject];
                         if (object->room == dragon->room)
                         {
                             seekDir = 1;
@@ -2458,13 +2467,13 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
 
 void Magnet()
 {
-    const OBJECT* magnet = &objectDefs[OBJECT_MAGNET];
+    const OBJECT* magnet = objectDefs[OBJECT_MAGNET];
     
     int i=0;
     while (magnetMatrix[i])
     {
         // Look for items in the magnet matrix that are in the same room as the magnet
-        OBJECT* object = &objectDefs[magnetMatrix[i]];
+        OBJECT* object = objectDefs[magnetMatrix[i]];
         if ((magnetMatrix[i] != objectBall->linkedObject) && (object->room == magnet->room))
         {
             // horizontal axis
@@ -2517,17 +2526,17 @@ void DrawObjects(int room)
     int colorFirst = -1;
     int colorLast = -1;
 
-    for (int i=0; objectDefs[i].gfxData; i++)
+    for (int i=0; objectDefs[i]->gfxData; i++)
     {
         // Init it to not displayed
-        objectDefs[i].displayed = false;
-        if (objectDefs[i].room == room)
+        objectDefs[i]->displayed = false;
+        if (objectDefs[i]->room == room)
         {
             // This object is in the current room - add it to the list
             displayList[numAdded++] = i;
 
-            if (colorFirst < 0) colorFirst = objectDefs[i].color;
-            colorLast = objectDefs[i].color;
+            if (colorFirst < 0) colorFirst = objectDefs[i]->color;
+            colorLast = objectDefs[i]->color;
         }
     }
 
@@ -2559,9 +2568,9 @@ void DrawObjects(int room)
         {
             if (displayList[i] > OBJECT_NONE)
             {
-                DrawObject(&objectDefs[displayList[i]]);
-                objectDefs[displayList[i]].displayed = true;
-                colorLast = objectDefs[displayList[i]].color;
+                DrawObject(objectDefs[displayList[i]]);
+                objectDefs[displayList[i]]->displayed = true;
+                colorLast = objectDefs[displayList[i]]->color;
             }
             else if (displayList[i] == OBJECT_SURROUND)
             {
@@ -2585,8 +2594,8 @@ void DrawObjects(int room)
         {
             if (displayList[i] > OBJECT_NONE)
             {
-                objectDefs[displayList[i]].displayed = true;
-                colorLast = objectDefs[displayList[i]].color;
+                objectDefs[displayList[i]]->displayed = true;
+                colorLast = objectDefs[displayList[i]]->color;
             }
             else if (displayList[i] == OBJECT_SURROUND)
             {
@@ -2602,10 +2611,10 @@ void DrawObjects(int room)
         }
 
         // Now just paint everything in this room so we bypass the flicker if desired
-        for (int i=0; objectDefs[i].gfxData; i++)
+        for (int i=0; objectDefs[i]->gfxData; i++)
         {
-            if (objectDefs[i].room == room)
-                DrawObject(&objectDefs[i]);
+            if (objectDefs[i]->room == room)
+                DrawObject(objectDefs[i]);
         }
     }
 
@@ -2731,7 +2740,7 @@ bool CollisionCheckBallWithWalls(int room, int x, int y)
     if ((currentRoom->flags & ROOMFLAG_RIGHTTHINWALL) && ((x+4) > 0x96*2))
     {
         // If the dot is in this room, allow passage through the wall into the Easter Egg room
-        if (objectDefs[OBJECT_DOT].room != room)
+        if (objectDefs[OBJECT_DOT]->room != room)
             hitWall = true;
     }
 
@@ -2791,7 +2800,7 @@ bool CollisionCheckBallWithWalls(int room, int x, int y)
 static bool CrossingBridge(int room, int x, int y, BALL* ball)
 {
     // Check going through the bridge
-    const OBJECT* bridge = &objectDefs[OBJECT_BRIDGE];
+    const OBJECT* bridge = objectDefs[OBJECT_BRIDGE];
     if ((bridge->room == room)
         && (ball->linkedObject != OBJECT_BRIDGE))
     {
@@ -2812,10 +2821,10 @@ static bool CrossingBridge(int room, int x, int y, BALL* ball)
 static int CollisionCheckBallWithObjects(BALL* ball, int startIndex)
 {
     // Go through all the objects
-    for (int i=startIndex; objectDefs[i].gfxData; i++)
+    for (int i=startIndex; objectDefs[i]->gfxData; i++)
     {
         // If this object is in the current room, check it against the ball
-        const OBJECT* object = &objectDefs[i];
+        const OBJECT* object = objectDefs[i];
         if (object->displayed && (ball->room == object->room))
         {
             if (CollisionCheckObject(object, ball->x-4,(ball->y-1), 8, 8))

@@ -1,10 +1,5 @@
 //
 //  Transport.hpp
-//  MacAdventure
-//
-//  Created by Robert Antonucci on 11/10/15.
-//
-//
 
 #ifndef Transport_hpp
 #define Transport_hpp
@@ -13,6 +8,9 @@
 
 class Transport {
 public:
+    
+    virtual ~Transport() = 0;
+    
     virtual void connect() = 0;
     
     virtual int sendPacket(const char* packetData) = 0;

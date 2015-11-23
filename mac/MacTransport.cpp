@@ -2,9 +2,6 @@
 //  MacTransport.cpp
 //  MacAdventure
 //
-//  Created by Robert Antonucci on 11/10/15.
-//
-//
 
 #include "MacTransport.hpp"
 
@@ -30,6 +27,7 @@ MacTransport::MacTransport() :
 }
 
 MacTransport::~MacTransport() {
+    // TODO: Call super-class's destructor
     delete [] streamBuffer;
     if (serverSocketFd > 0) {
         close(serverSocketFd);
