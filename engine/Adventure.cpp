@@ -19,9 +19,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "Adventure.h"
+
+#include "adventure_sys.h"
+#include "GameObject.hpp"
 #include "Sync.h"
 #include "Transport.hpp"
-#include "Adventure.h"
 
 #ifndef max
 #define max(a,b) ((a > b) ? a : b);
@@ -34,23 +38,6 @@
 #define CLOCKS_VSYNC        4
 
 // Types
-typedef struct OBJECT
-{
-    const byte* gfxData;        // graphics data for each state
-    const byte* states;         // array of indicies for each state
-    int state;                  // current state
-    int color;                  // color
-    int room;                   // room
-    int x;                      // x position
-    int y;                      // y position
-    int movementX;              // horizontal movement
-    int movementY;              // vertical movement
-    int size;                   // size (used for bridge and surround)
-    int linkedObject;           // index of linked (carried) object
-    int linkedObjectX;
-    int linkedObjectY;
-    bool displayed;             // flag indicating object was displayed (when more than maxDisplayableObjects for instance)
-}OBJECT;
 
 typedef struct BALL
 {
@@ -629,11 +616,8 @@ static const byte objectGfxSurround [] =
     0xFF                   // XXXXXXXX                                                                  
 };
 
-OBJECT objectSurround = 
-{
-    objectGfxSurround, 0, 0, COLOR_ORANGE, -1, 0, 0, 0, 0, 0x07
-};
-                                                                                                                  
+OBJECT& objectSurround = *new OBJECT(objectGfxSurround, 0, 0, COLOR_ORANGE, -1, 0, 0, 0x07);
+
 // Object #0A : State FF : Graphic                                                                                   
 static const byte objectGfxBridge [] =
 {
@@ -1047,7 +1031,8 @@ static BALL* objectBall = 0x0;
 // Indexed array of all objects and their properties
 //
 
-static OBJECT objectSmefs [] =
+// Original ganme object definitions
+/*
 {
     { objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #1 Portcullis #1
 	{ objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #4 Portcullis #4
@@ -1069,6 +1054,7 @@ static OBJECT objectSmefs [] =
     { objectGfxMagnet, 0, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },            // #11 Magnet
     { (const byte*)0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, false}                                  // #12 Null
 };
+*/
 static OBJECT** objectDefs = 0x0;
 
 // Object locations (room and coordinate) for game 01
@@ -1268,10 +1254,28 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport)
     thisPlayer = inThisPlayer;
     
     // Setup the structures
-    objectDefs = (OBJECT**)malloc((OBJECT_MAGNET+2)*sizeof(OBJECT*));
-    for(int ctr=OBJECT_PORT1; ctr<OBJECT_MAGNET+2; ++ctr) { // TODO: Relies on magnet being the last object
-        objectDefs[ctr] = &objectSmefs[ctr];
-    }
+    int numObjects = OBJECT_MAGNET+2;
+    objectDefs = (OBJECT**)malloc(numObjects*sizeof(OBJECT*));
+    objectDefs[OBJECT_PORT1] = new OBJECT(objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0);
+    objectDefs[OBJECT_PORT4] = new OBJECT(objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0);
+    objectDefs[OBJECT_PORT2] = new OBJECT(objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0);
+    objectDefs[OBJECT_PORT3] = new OBJECT(objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0);
+    objectDefs[OBJECT_NAME] = new OBJECT(objectGfxAuthor, 0, 0, COLOR_FLASH, 0x1E, 0x50, 0x69);
+    objectDefs[OBJECT_NUMBER] = new OBJECT(objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, 0x00, 0x50, 0x40);
+    objectDefs[OBJECT_REDDRAGON] = new OBJECT(objectGfxDrag, dragonStates, 0, COLOR_RED, -1, 0, 0);
+    objectDefs[OBJECT_YELLOWDRAGON] = new OBJECT(objectGfxDrag, dragonStates, 0, COLOR_YELLOW, -1, 0, 0);
+    objectDefs[OBJECT_GREENDRAGON] = new OBJECT(objectGfxDrag, dragonStates, 0, COLOR_LIMEGREEN, -1, 0, 0);
+    objectDefs[OBJECT_SWORD] = new OBJECT(objectGfxSword, 0, 0, COLOR_YELLOW, -1, 0, 0);
+    objectDefs[OBJECT_BRIDGE] = new OBJECT(objectGfxBridge, 0, 0, COLOR_PURPLE, -1, 0, 0, 0x07);
+    objectDefs[OBJECT_YELLOWKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0);
+    objectDefs[OBJECT_WHITEKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0);
+    objectDefs[OBJECT_BLACKKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
+    objectDefs[OBJECT_BAT] = new OBJECT(objectGfxBat, batStates, 0, COLOR_BLACK, -1, 0, 0);
+    objectDefs[OBJECT_DOT] = new OBJECT(objectGfxDot, 0, 0, COLOR_LTGRAY, -1, 0, 0);
+    objectDefs[OBJECT_CHALISE] = new OBJECT(objectGfxChallise, 0, 0, COLOR_FLASH, -1, 0, 0);
+    objectDefs[OBJECT_MAGNET] = new OBJECT(objectGfxMagnet, 0, 0, COLOR_BLACK, -1, 0, 0);
+    objectDefs[numObjects-1] = new OBJECT((const byte*)0, 0, 0, 0, -1, 0, 0);  // #12 Null
+
     // Setup the transport
     transport = inTransport;
     Sync_Setup(numPlayers, thisPlayer, transport);

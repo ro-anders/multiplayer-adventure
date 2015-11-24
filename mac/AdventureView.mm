@@ -14,7 +14,8 @@
 //
 
 
-#import "AdventureView.h"
+#include "adventure_sys.h"
+#include "AdventureView.h"
 #include "Adventure.h"
 #include "Transport.hpp"
 #include "MacTransport.hpp"
