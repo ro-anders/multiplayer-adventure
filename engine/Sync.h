@@ -1,4 +1,6 @@
 
+#include "RemoteAction.hpp"
+
 typedef struct BALL_SYNC
 {
 	int player;				// The player's number - 1-3
@@ -12,29 +14,6 @@ typedef struct BALL_SYNC
 
 class Transport;
 
-class RemoteAction {
-public:
-    int sender;				// The number of the player sending this action (1-3)
-    virtual int serialize(char* buffer, int bufferLength) = 0;
-    virtual void deserialize(const char* message) = 0;
-};
-
-class PlayerMoveAction: public RemoteAction {
-public:
-    int room;				// The room the player was in
-    int posx;				// The x-coordinate of the player in the room
-    int posy;				// The y-coordinate of the player in the room
-    int velx;				// -1 for moving left, 1 for right, and 0 for still or just up/down
-    int vely;				// -1 for down, 1 for up, and 0 for still or just left/right
-    
-    PlayerMoveAction();
-    
-    PlayerMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
-    
-    int serialize(char* buffer, int bufferLength);
-    
-    void deserialize(const char* message);
-};
 
 /**
  * Call to setup the sync tool.  Like a constructor.
@@ -61,6 +40,13 @@ void Sync_PullLatestMessages();
  * null.
  */
 PlayerMoveAction* Sync_GetLatestBallSync(int player);
+
+/**
+ * Get the next dragon action.  Caller must delete this object.
+ * If no actions have been received, this will return null.
+ */
+DragonMoveAction* Sync_GetNextDragonAction();
+
 
 /**
  * Broadcast an event to the other players

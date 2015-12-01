@@ -5,6 +5,9 @@
 #endif
 
 #include "Sync.h"
+
+#include "ActionQueue.hpp"
+#include "RemoteAction.hpp"
 #include "Transport.hpp"
 
 
@@ -22,6 +25,8 @@ static int MAX_MESSAGE_SIZE = 256;
 static char sendBuffer[256];
 static char receiveBuffer[256];
 
+static ActionQueue dragonMoves;
+
 static PlayerMoveAction** playersLastMove;
 
 static int frameNum = 0;
@@ -36,6 +41,7 @@ void Sync_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport) {
     for(int ctr=0; ctr<numOtherPlayers; ++ctr) {
         playersLastMove[ctr] = 0x0;
     }
+    
 }
 
 void Sync_StartFrame() {
@@ -47,17 +53,58 @@ void Sync_BroadcastAction(RemoteAction* action) {
     transport->sendPacket(sendBuffer);
 }
 
+void Sync_RejectMessage(const char* message, const char* errorMsg) {
+    printf("Cannot process message - %s: %s", errorMsg, message);
+}
+
+void handlePlayerMoveMessage(const char* message) {
+    PlayerMoveAction* nextAction = new PlayerMoveAction();
+    nextAction->deserialize(receiveBuffer);
+    int messageSender = nextAction->sender;
+    if (playersLastMove[messageSender-1] != 0x0) {
+        delete playersLastMove[messageSender-1];
+    }
+    playersLastMove[messageSender-1] = nextAction;
+}
+
+void handleDragonMoveMessage(const char* message) {
+    DragonMoveAction* nextAction = new DragonMoveAction();
+    nextAction->deserialize(receiveBuffer);
+    dragonMoves.enQ(nextAction);
+}
+
 void Sync_PullLatestMessages() {
     int numChars = transport->getPacket(receiveBuffer, MAX_MESSAGE_SIZE);
-    while(numChars > 0) {
-        // TODO: We know it's a Player Move action - that's the only one so far
-        PlayerMoveAction* nextAction = new PlayerMoveAction();
-        nextAction->deserialize(receiveBuffer);
-        int messageSender = nextAction->sender;
-        if (playersLastMove[messageSender-1] != 0x0) {
-            delete playersLastMove[messageSender-1];
+    while(numChars >= 4) {
+        char type[5] = "XXXX";
+        // First four characters are the type of message
+        for(int ctr=0; ctr<4; ++ctr) {
+            type[ctr] = receiveBuffer[ctr];
         }
-        playersLastMove[messageSender-1] = nextAction;
+        switch (receiveBuffer[0]) {
+            case 'P':
+                switch (receiveBuffer[1]) {
+                    case 'M': {
+                        handlePlayerMoveMessage(receiveBuffer);
+                        break;
+                    }
+                    default:
+                        printf("Message with unknown message type P%c: %s\n", receiveBuffer[1], receiveBuffer);
+                }
+                break;
+            case 'D':
+                switch (receiveBuffer[1]) {
+                    case 'M': {
+                        handleDragonMoveMessage(receiveBuffer);
+                        break;
+                    }
+                    default:
+                        printf("Message with unknown message type D%c: %s\n", receiveBuffer[1], receiveBuffer);
+                }
+                break;
+            default:
+                printf("Message with unknown message type %c*: %s\n", receiveBuffer[0], receiveBuffer);
+        }
         
         numChars = transport->getPacket(receiveBuffer, MAX_MESSAGE_SIZE);
     }
@@ -69,36 +116,11 @@ PlayerMoveAction* Sync_GetLatestBallSync(int player) {
     return rtn;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////
-//
-// RemoteAction
-//
-
-////////////////////////////////////////////////////////////////////////////////////////////
-//
-// PlayerMoveAction
-//
-
-PlayerMoveAction::PlayerMoveAction() {}
-
-PlayerMoveAction::PlayerMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely) {
-    sender = inSender;
-    room = inRoom;
-    posx = inPosx;
-    posy = inPosy;
-    velx = inVelx;
-    vely = inVely;
+DragonMoveAction* Sync_GetNextDragonAction() {
+    DragonMoveAction* next = NULL;
+    if (!dragonMoves.isEmpty()) {
+        next = (DragonMoveAction*)dragonMoves.deQ();
+    }
+    return next;
 }
 
-int PlayerMoveAction::serialize(char* buffer, int bufferLength) {
-    // TODO - Right now we are ignoring bufferLength
-    //int numChars = sprintf(buffer, "BALL-sd%d-rm%d-px%d-py%d-vx%d-vy%d", sender, room, posx, posy, velx, vely);
-    int numChars = sprintf(buffer, "BALL %d %d %d %d %d %d", sender, room, posx, posy, velx, vely);
-    printf("Serialized ball state to %d chars: %s", numChars, buffer);
-    return numChars;
-}
-
-void PlayerMoveAction::deserialize(const char *message) {
-    char type[8];
-    sscanf(message, "%s %d %d %d %d %d %d", type, &sender, &room, &posx, &posy, &velx, &vely);
-}

@@ -7,11 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		40509AAA1C05E9750008BACF /* ActionQueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40509AA41C05E9750008BACF /* ActionQueue.cpp */; };
+		40509AAB1C05E9750008BACF /* GameObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40509AA61C05E9750008BACF /* GameObject.cpp */; };
+		40509AAC1C05E9750008BACF /* RemoteAction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40509AA81C05E9750008BACF /* RemoteAction.cpp */; };
+		406CD1541C0C7C17002477BB /* Dragon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 406CD1521C0C7C17002477BB /* Dragon.cpp */; };
 		407773D31BF2AC9C00454AC5 /* Transport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 407773D11BF2AC9C00454AC5 /* Transport.cpp */; };
 		407773D61BF2AF6000454AC5 /* MacTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 407773D41BF2AF6000454AC5 /* MacTransport.cpp */; };
 		4084EC8F1BF22AEE00E8F375 /* Adventure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4084EC8B1BF22AEE00E8F375 /* Adventure.cpp */; };
 		4084EC901BF22AEE00E8F375 /* Sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4084EC8D1BF22AEE00E8F375 /* Sync.cpp */; };
-		40DA6AA81C03C74E00EBB2CE /* GameObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40DA6AA61C03C74E00EBB2CE /* GameObject.cpp */; };
 		40E47FB11BF22BA20052B84E /* AdventureView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40E47FAE1BF22BA20052B84E /* AdventureView.mm */; };
 		40E47FB21BF22BA20052B84E /* Controller.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40E47FB01BF22BA20052B84E /* Controller.mm */; };
 		8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
@@ -30,6 +33,14 @@
 		29B97319FDCFA39411CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* MacAdventure_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MacAdventure_Prefix.pch; sourceTree = "<group>"; };
+		40509AA41C05E9750008BACF /* ActionQueue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ActionQueue.cpp; path = ../engine/ActionQueue.cpp; sourceTree = "<group>"; };
+		40509AA51C05E9750008BACF /* ActionQueue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ActionQueue.hpp; path = ../engine/ActionQueue.hpp; sourceTree = "<group>"; };
+		40509AA61C05E9750008BACF /* GameObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GameObject.cpp; path = ../engine/GameObject.cpp; sourceTree = "<group>"; };
+		40509AA71C05E9750008BACF /* GameObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = GameObject.hpp; path = ../engine/GameObject.hpp; sourceTree = "<group>"; };
+		40509AA81C05E9750008BACF /* RemoteAction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RemoteAction.cpp; path = ../engine/RemoteAction.cpp; sourceTree = "<group>"; };
+		40509AA91C05E9750008BACF /* RemoteAction.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = RemoteAction.hpp; path = ../engine/RemoteAction.hpp; sourceTree = "<group>"; };
+		406CD1521C0C7C17002477BB /* Dragon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Dragon.cpp; path = ../engine/Dragon.cpp; sourceTree = "<group>"; };
+		406CD1531C0C7C17002477BB /* Dragon.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Dragon.hpp; path = ../engine/Dragon.hpp; sourceTree = "<group>"; };
 		407773D11BF2AC9C00454AC5 /* Transport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Transport.cpp; path = ../engine/Transport.cpp; sourceTree = "<group>"; };
 		407773D21BF2AC9C00454AC5 /* Transport.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Transport.hpp; path = ../engine/Transport.hpp; sourceTree = "<group>"; };
 		407773D41BF2AF6000454AC5 /* MacTransport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MacTransport.cpp; sourceTree = "<group>"; };
@@ -38,8 +49,6 @@
 		4084EC8C1BF22AEE00E8F375 /* Adventure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Adventure.h; path = ../engine/Adventure.h; sourceTree = "<group>"; };
 		4084EC8D1BF22AEE00E8F375 /* Sync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Sync.cpp; path = ../engine/Sync.cpp; sourceTree = "<group>"; };
 		4084EC8E1BF22AEE00E8F375 /* Sync.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Sync.h; path = ../engine/Sync.h; sourceTree = "<group>"; };
-		40DA6AA61C03C74E00EBB2CE /* GameObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameObject.cpp; sourceTree = "<group>"; };
-		40DA6AA71C03C74E00EBB2CE /* GameObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = GameObject.hpp; sourceTree = "<group>"; };
 		40DA6AA91C03C97800EBB2CE /* adventure_sys.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = adventure_sys.h; sourceTree = "<group>"; };
 		40E47FAD1BF22BA20052B84E /* AdventureView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AdventureView.h; sourceTree = "<group>"; };
 		40E47FAE1BF22BA20052B84E /* AdventureView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AdventureView.mm; sourceTree = "<group>"; };
@@ -162,11 +171,17 @@
 		407773D01BF2AC5900454AC5 /* engine */ = {
 			isa = PBXGroup;
 			children = (
+				40509AA41C05E9750008BACF /* ActionQueue.cpp */,
+				40509AA51C05E9750008BACF /* ActionQueue.hpp */,
+				40509AA61C05E9750008BACF /* GameObject.cpp */,
+				40509AA71C05E9750008BACF /* GameObject.hpp */,
+				40509AA81C05E9750008BACF /* RemoteAction.cpp */,
+				40509AA91C05E9750008BACF /* RemoteAction.hpp */,
 				407773D11BF2AC9C00454AC5 /* Transport.cpp */,
 				407773D21BF2AC9C00454AC5 /* Transport.hpp */,
-				40DA6AA61C03C74E00EBB2CE /* GameObject.cpp */,
-				40DA6AA71C03C74E00EBB2CE /* GameObject.hpp */,
 				40DA6AA91C03C97800EBB2CE /* adventure_sys.h */,
+				406CD1521C0C7C17002477BB /* Dragon.cpp */,
+				406CD1531C0C7C17002477BB /* Dragon.hpp */,
 			);
 			name = engine;
 			sourceTree = "<group>";
@@ -233,13 +248,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				40DA6AA81C03C74E00EBB2CE /* GameObject.cpp in Sources */,
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
 				407773D31BF2AC9C00454AC5 /* Transport.cpp in Sources */,
 				407773D61BF2AF6000454AC5 /* MacTransport.cpp in Sources */,
 				4084EC8F1BF22AEE00E8F375 /* Adventure.cpp in Sources */,
 				4084EC901BF22AEE00E8F375 /* Sync.cpp in Sources */,
 				40E47FB21BF22BA20052B84E /* Controller.mm in Sources */,
+				406CD1541C0C7C17002477BB /* Dragon.cpp in Sources */,
+				40509AAB1C05E9750008BACF /* GameObject.cpp in Sources */,
+				40509AAA1C05E9750008BACF /* ActionQueue.cpp in Sources */,
+				40509AAC1C05E9750008BACF /* RemoteAction.cpp in Sources */,
 				40E47FB11BF22BA20052B84E /* AdventureView.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

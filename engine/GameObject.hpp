@@ -1,10 +1,4 @@
-//
-//  GameObject.hpp
-//  MacAdventure
-//
-//  Created by Robert Antonucci on 11/23/15.
-//
-//
+
 
 #ifndef GameObject_hpp
 #define GameObject_hpp

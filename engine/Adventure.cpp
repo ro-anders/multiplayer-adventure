@@ -23,6 +23,7 @@
 #include "Adventure.h"
 
 #include "adventure_sys.h"
+#include "Dragon.hpp"
 #include "GameObject.hpp"
 #include "Sync.h"
 #include "Transport.hpp"
@@ -119,10 +120,8 @@ static void PickupPutdown();
 static void Surround();
 static void MoveBat();
 static void Portals();
-static void MoveGreenDragon();
-static void MoveYellowDragon();
-static void MoveRedDragon();
-static void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer);
+static void SyncDragons();
+static void MoveDragon(Dragon* dragon, const int* matrix, int speed);
 static void Magnet();
 static int AdjustRoomLevel(int room);
 
@@ -138,6 +137,8 @@ static bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, 
 void CalcPlayerSpriteExtents(const OBJECT* object, int* cx, int* cy, int* cw, int* ch);
 static bool HitTestRects(int ax, int ay, int awidth, int aheight,
                     int bx, int by, int bwidth, int bheight);
+static int distanceFromBall(BALL* ball, int x, int y);
+
 COLOR GetFlashColor();
 void AdvanceFlashColor();
 
@@ -680,89 +681,6 @@ static const byte batStates [] =
     0,1
 };
 
-static const byte objectGfxDrag [] =
-{
-    // Object #6 : State #00 : Graphic                                                                                   
-    20,
-    0x06,                  //      XX                                                                   
-    0x0F,                  //     XXXX                                                                  
-    0xF3,                  // XXXX  XX                                                                  
-    0xFE,                  // XXXXXXX                                                                   
-    0x0E,                  //     XXX                                                                   
-    0x04,                  //      X                                                                    
-    0x04,                  //      X                                                                    
-    0x1E,                  //    XXXX                                                                   
-    0x3F,                  //   XXXXXX                                                                  
-    0x7F,                  //  XXXXXXX                                                                  
-    0xE3,                  // XXX   XX                                                                  
-    0xC3,                  // XX    XX                                                                  
-    0xC3,                  // XX    XX                                                                  
-    0xC7,                  // XX   XXX                                                                  
-    0xFF,                  // XXXXXXXX                                                                  
-    0x3C,                  //   XXXX                                                                    
-    0x08,                  //     X                                                                     
-    0x8F,                  // X   XXXX                                                                  
-    0xE1,                  // XXX    X                                                                  
-    0x3F,                  //   XXXXXX                                                                  
-    // Object 6 : State 01 : Graphic                                                                                     
-    22,
-    0x80,                  // X                                                                         
-    0x40,                  //  X                                                                        
-    0x26,                  //   X  XX                                                                   
-    0x1F,                  //    XXXXX                                                                  
-    0x0B,                  //     X XX                                                                  
-    0x0E,                  //     XXX                                                                   
-    0x1E,                  //    XXXX                                                                   
-    0x24,                  //   X  X                                                                    
-    0x44,                  //  X   X                                                                    
-    0x8E,                  // X   XXX                                                                   
-    0x1E,                  //    XXXX                                                                  
-    0x3F,                  //   XXXXXX                                                                  
-    0x7F,                  //  XXXXXXX                                                                  
-    0x7F,                  //  XXXXXXX                                                                  
-    0x7F,                  //  XXXXXXX                                                                  
-    0x7F,                  //  XXXXXXX                                                                  
-    0x3E,                  //   XXXXX                                                                   
-    0x1C,                  //    XXX                                                                    
-    0x08,                  //     X                                                                     
-    0xF8,                  // XXXXX                                                                     
-    0x80,                  // X                                                                         
-    0xE0,                   // XXX                                                                       
-    // Object 6 : State 02 : Graphic                                                                                     
-    17,
-    0x0C,                  //     XX                                                                    
-    0x0C,                  //     XX                                                                    
-    0x0C,                  //     XX                                                                    
-    0x0E,                  //     XXX                                                                   
-    0x1B,                  //    XX X                                                                   
-    0x7F,                  //  XXXXXXX                                                                  
-    0xCE,                  // XX  XXX                                                                   
-    0x80,                  // X                                                                         
-    0xFC,                  // XXXXXX                                                                    
-    0xFE,                  // XXXXXXX                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0x7E,                  //  XXXXXX                                                                   
-    0x78,                  //  XXXX                                                                     
-    0x20,                  //   X                                                                       
-    0x6E,                  //  XX XXX                                                                   
-    0x42,                  //  X    X                                                                   
-    0x7E                   //  XXXXXX                                                                   
-};
-
-// Dragon states
-static const byte dragonStates [] = 
-{
-    0,2,0,1
-};
-
-// Dragon Difficulty
-static const byte dragonDiff [] =
-{
-       0xD0, 0xE8,           // Level 1 : Am, Pro
-       0xF0, 0xF6,           // Level 2 : Am, Pro
-       0xF0, 0xF6            // Level 3 : Am, Pro
-};
-
 // Object #9 : State FF : Graphics                                                                                   
 static const byte objectGfxSword [] =
 {
@@ -1070,7 +988,7 @@ static const byte game1Objects [] =
     OBJECT_GREENDRAGON, 0x1D, 0x50, 0x20, 0x00, 0x00, 0x00, // Green Dragon
     OBJECT_SWORD, 0x12, 0x20, 0x20, 0x00, 0x00, 0x00, // Sword
     OBJECT_BRIDGE, 0x04, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
-    OBJECT_YELLOWKEY, 0x11, 0x20, 0x40, 0x00, 0x00, 0x00, // Yellow Key
+    OBJECT_YELLOWKEY, 0x11, 0x20, 0x41, 0x00, 0x00, 0x00, // Yellow Key
     OBJECT_WHITEKEY, 0x0E, 0x20, 0x40, 0x00, 0x00, 0x00, // White Key
     OBJECT_BLACKKEY, 0x1D, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
     OBJECT_BAT, 0x1A, 0x20, 0x20, 0x00, 0x00, 0x00, // Bat
@@ -1249,9 +1167,19 @@ static Transport* transport;
 static int numPlayers;
 static int thisPlayer;
 
+static int numDragons = 3;
+static Dragon** dragons = NULL;
+
+
+
 void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport) {
     numPlayers = inNumPlayers;
     thisPlayer = inThisPlayer;
+    
+    dragons = (Dragon**)malloc(numDragons * sizeof(Dragon*));
+    dragons[0]= new Dragon(0, 0, COLOR_YELLOW, -1, 0, 0);
+    dragons[1] = new Dragon(1, 0, COLOR_LIMEGREEN, -1, 0, 0);
+    dragons[2] = new Dragon(2, 0, COLOR_RED, -1, 0, 0);
     
     // Setup the structures
     int numObjects = OBJECT_MAGNET+2;
@@ -1262,9 +1190,9 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport)
     objectDefs[OBJECT_PORT3] = new OBJECT(objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0);
     objectDefs[OBJECT_NAME] = new OBJECT(objectGfxAuthor, 0, 0, COLOR_FLASH, 0x1E, 0x50, 0x69);
     objectDefs[OBJECT_NUMBER] = new OBJECT(objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, 0x00, 0x50, 0x40);
-    objectDefs[OBJECT_REDDRAGON] = new OBJECT(objectGfxDrag, dragonStates, 0, COLOR_RED, -1, 0, 0);
-    objectDefs[OBJECT_YELLOWDRAGON] = new OBJECT(objectGfxDrag, dragonStates, 0, COLOR_YELLOW, -1, 0, 0);
-    objectDefs[OBJECT_GREENDRAGON] = new OBJECT(objectGfxDrag, dragonStates, 0, COLOR_LIMEGREEN, -1, 0, 0);
+    objectDefs[OBJECT_REDDRAGON] = dragons[2];
+    objectDefs[OBJECT_YELLOWDRAGON] =dragons[0];
+    objectDefs[OBJECT_GREENDRAGON] = dragons[1];
     objectDefs[OBJECT_SWORD] = new OBJECT(objectGfxSword, 0, 0, COLOR_YELLOW, -1, 0, 0);
     objectDefs[OBJECT_BRIDGE] = new OBJECT(objectGfxBridge, 0, 0, COLOR_PURPLE, -1, 0, 0, 0x07);
     objectDefs[OBJECT_YELLOWKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0);
@@ -1420,8 +1348,6 @@ void Adventure_Run()
                         }
                     }
 					for (int i = 0; i < MAX_PLAYERS; ++i) {
-                        // TODO: Does this work correctly when remote player is not in same room
-                        // as current player?
                         ReactToCollision(balls + i);
 					}
 
@@ -1444,14 +1370,17 @@ void Adventure_Run()
                 }
                 else if (gameState == GAMESTATE_ACTIVE_3)
                 {
+                    // Read remote dragon actions
+                    SyncDragons();
+                    
                     // Move and deal with the green dragon
-                    MoveGreenDragon();
+                    MoveDragon((Dragon*)objectDefs[OBJECT_GREENDRAGON], greenDragonMatrix, 2);
 
                     // Move and deal with the yellow dragon
-                    MoveYellowDragon();
+                    MoveDragon((Dragon*)objectDefs[OBJECT_YELLOWDRAGON], yellowDragonMatrix, 2);
 
                     // Move and deal with the red dragon
-                    MoveRedDragon();
+                    MoveDragon((Dragon*)objectDefs[OBJECT_REDDRAGON], redDragonMatrix, 3);
 
                     // Deal with the magnet
                     Magnet();
@@ -1782,6 +1711,27 @@ void OtherBallMovement() {
 		}
 	}
 
+}
+
+void SyncDragons() {
+    DragonMoveAction* next = Sync_GetNextDragonAction();
+    while (next != NULL) {
+        // If we are in the same room as the dragon and are closer to it than the reporting player,
+        // then we ignore reports and trust our internal state.  Otherwise, you use the reported state.
+        Dragon* dragon = dragons[next->dragonNum];
+        if ((dragon->room != objectBall->room) ||
+            (distanceFromBall(objectBall, dragon->x, dragon->y) > next->distance)) {
+            
+            dragon->room = next->room;
+            dragon->x = next->posx;
+            dragon->y = next->posy;
+            dragon->movementX = next->velx;
+            dragon->movementY = next->vely;
+            
+        }
+        delete next;
+        next = Sync_GetNextDragonAction();
+    }
 }
 
 void MoveCarriedObject()
@@ -2262,22 +2212,18 @@ void Portals()
 
 }
 
-void MoveGreenDragon()
-{
-    static int timer = 0;
-    MoveDragon(objectDefs[OBJECT_GREENDRAGON], greenDragonMatrix, 2, &timer);
-}
-
-void MoveYellowDragon()
-{
-    static int timer = 0;
-    MoveDragon(objectDefs[OBJECT_YELLOWDRAGON], yellowDragonMatrix, 2, &timer);
-}
-
-void MoveRedDragon()
-{
-    static int timer = 0;
-    MoveDragon(objectDefs[OBJECT_REDDRAGON], redDragonMatrix, 3, &timer);
+int distanceFromBall(BALL* ball, int x, int y) {
+    // Figure out the distance (which is really the max difference along one axis)
+    int xdist = ball->x/2 - x;
+    if (xdist < 0) {
+        xdist = -xdist;
+    }
+    int ydist = ball->y/2 - y;
+    if (ydist < 0) {
+        ydist = -ydist;
+    }
+    int dist = (xdist > ydist ? xdist : ydist);
+    return dist;
 }
 
 /**
@@ -2289,17 +2235,7 @@ BALL* closestBall(int room, int x, int y) {
     for(int ctr=0; ctr<numPlayers; ++ctr) {
         if (balls[ctr].room == room)
         {
-            // Figure out the distance (which is really the max difference along one axis)
-            int xdist = balls[ctr].x/2 - x;
-            if (xdist < 0) {
-                xdist = -xdist;
-            }
-            int ydist = balls[ctr].y/2 - y;
-            if (ydist < 0) {
-                ydist = -ydist;
-            }
-            int dist = (xdist > ydist ? xdist : ydist);
-            
+            int dist = distanceFromBall(&balls[ctr], x, y);
             if (dist < shortestDistance) {
                 shortestDistance = dist;
                 found = &balls[ctr];
@@ -2309,7 +2245,7 @@ BALL* closestBall(int room, int x, int y) {
     return found;
 }
 
-void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
+void MoveDragon(Dragon* dragon, const int* matrix, int speed)
 {
     if (dragon->state == 0)
     {
@@ -2318,10 +2254,9 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
         {
             // Set the State to 03 (roar)
             dragon->state = 3;
-
-            // Set the timer based on the game level and difficulty setting
-            *timer = 0xFC - dragonDiff[(gameLevel*2) + ((gameDifficultyLeft==DIFFICULTY_A) ? 1 : 0)];
             
+            dragon->resetTimer(gameLevel, gameDifficultyLeft==DIFFICULTY_A);
+
             // Set the dragon's position to the same as the ball
             dragon->x = (objectBall->x/2);
             dragon->y = (objectBall->y/2);
@@ -2403,28 +2338,39 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
                 // Move the dragon
                 if ((seekDir > 0) || (seekDir < 0))
                 {
-                    dragon->movementX = 0;
-                    dragon->movementY = 0;
+                    int newMovementX = 0;
+                    int newMovementY = 0;
 
                     // horizontal axis
                     if (dragon->x < seekX)
                     {
-                        dragon->movementX = seekDir*speed;
+                        newMovementX = seekDir*speed;
                     }
                     else if (dragon->x > seekX)
                     {
-                        dragon->movementX = -(seekDir*speed);
+                        newMovementX = -(seekDir*speed);
                     }
 
                     // vertical axis
                     if (dragon->y < seekY)
                     {
-                        dragon->movementY = seekDir*speed;
+                        newMovementY = seekDir*speed;
                     }
                     else if (dragon->y > seekY)
                     {
-                        dragon->movementY = -(seekDir*speed);
+                        newMovementY = -(seekDir*speed);
                     }
+                    
+                    // Notify others if we've changed our direction
+                    if ((dragon->room == objectBall->room) && ((newMovementX != dragon->movementX) || (newMovementY != dragon->movementY))) {
+                        printf("Dragon %d changing direction from (%d,%d) to (%d,%d)", dragon->dragonNumber, dragon->movementX,
+                               dragon->movementY, newMovementX, newMovementY);
+                        int distanceToMe = distanceFromBall(&balls[thisPlayer], dragon->x, dragon->y);
+                        DragonMoveAction* newAction = new DragonMoveAction(thisPlayer, dragon->room, dragon->x, dragon->y, newMovementX, newMovementY, dragon->dragonNumber, distanceToMe);
+                        Sync_BroadcastAction(newAction);
+                    }
+                    dragon->movementX = newMovementX;
+                    dragon->movementY = newMovementY;
 
                     // Found something - we're done
                     return;
@@ -2446,8 +2392,8 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
     }
     else if (dragon->state == 3)
     {
-        --(*timer);
-        if ((*timer) <= 0)
+        dragon->decrementTimer();
+        if (dragon->timerExpired())
         {
             // Has the Ball hit the Dragon?
             if ((objectBall->room == dragon->room) && CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-1), 8, 8))
