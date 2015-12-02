@@ -62,7 +62,7 @@ bool gMenuItemSelect = FALSE;
 	if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
 	{
         // TODO: Pull other player in
-        Adventure_Setup(numberPlayers, thisPlayer, transport);
+        Adventure_Setup(numberPlayers, thisPlayer, transport, 1, 0, 0);
 		timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
 												 target: self
 											   selector: @selector(update:)

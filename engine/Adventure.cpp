@@ -171,6 +171,7 @@ static int gameState = GAMESTATE_GAMESELECT;            // finite state machine
 static int gameDifficultyLeft = DIFFICULTY_B;           // 2600 left difficulty switch
 static int gameDifficultyRight = DIFFICULTY_B;          // 2600 right difficulty switch
 static int gameLevel = 0;                               // current game level (1,2,3 - zero justified)
+static int gameNum; // Which game is being played.  May be different from game level.
 
 static int displayedRoomIndex = 0;                                   // index of current (displayed) room
 
@@ -1167,19 +1168,28 @@ static Transport* transport;
 static int numPlayers;
 static int thisPlayer;
 
+/** We wait a few seconds between when the game comes up connected and when the game actually starts.
+ This is the countdown timer. */
+static int timeToStartGame;
+
 static int numDragons = 3;
 static Dragon** dragons = NULL;
 
 
 
-void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport) {
+void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport, int inGameNum,
+                     int initialLeftDiff, int initialRightDiff) {
     numPlayers = inNumPlayers;
     thisPlayer = inThisPlayer;
+    gameNum = inGameNum;
+    gameLevel = gameNum-1;
+    timeToStartGame = 60 * 3;
     
     dragons = (Dragon**)malloc(numDragons * sizeof(Dragon*));
     dragons[0]= new Dragon(0, 0, COLOR_YELLOW, -1, 0, 0);
     dragons[1] = new Dragon(1, 0, COLOR_LIMEGREEN, -1, 0, 0);
     dragons[2] = new Dragon(2, 0, COLOR_RED, -1, 0, 0);
+    
     
     // Setup the structures
     int numObjects = OBJECT_MAGNET+2;
@@ -1210,6 +1220,33 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport)
     objectBall = &balls[thisPlayer];
 }
 
+void ResetPlayer() {
+    if (gameState != GAMESTATE_GAMESELECT) {
+        objectBall->room = 0x11;                 // Put us in the yellow castle
+        objectBall->x = 0x50*2;                  //
+        objectBall->y = 0x20*2;                  //
+        objectBall->previousX = objectBall->x;
+        objectBall->previousY = objectBall->y;
+        objectBall->linkedObject = OBJECT_NONE;  // Not carrying anything
+        
+        displayedRoomIndex = objectBall->room;
+        
+        // Make the bat want something right away
+        batFedUpTimer = 0xff;
+        
+        // Set up objects, rooms, and positions
+        
+        // Else we just bring the dragons to life
+        objectDefs[OBJECT_YELLOWDRAGON]->state = 0x0;
+        objectDefs[OBJECT_GREENDRAGON]->state = 0x0;
+        objectDefs[OBJECT_REDDRAGON]->state = 0x0;
+        
+        objectDefs[OBJECT_YELLOWDRAGON]->linkedObject = OBJECT_NONE;
+        objectDefs[OBJECT_GREENDRAGON]->linkedObject = OBJECT_NONE;
+        objectDefs[OBJECT_REDDRAGON]->linkedObject = OBJECT_NONE;
+    }
+}
+
 
 void Adventure_Run()
 {
@@ -1224,58 +1261,31 @@ void Adventure_Run()
     // Reset switch
     if ((gameState != GAMESTATE_WIN) && switchReset && !reset)
     {
-        objectBall->room = 0x11;                 // Put us in the yellow castle
-        objectBall->x = 0x50*2;                  //
-        objectBall->y = 0x20*2;                  //
-        objectBall->previousX = objectBall->x;
-        objectBall->previousY = objectBall->y;
-        objectBall->linkedObject = OBJECT_NONE;  // Not carrying anything
-
-		displayedRoomIndex = objectBall->room;
-
-        // Make the bat want something right away
-        batFedUpTimer = 0xff;
-
-        // Set up objects, rooms, and positions
-        if (gameState == GAMESTATE_GAMESELECT)
-        {
-            // If started from the game selection screen, do a full init of level
-            SetupRoomObjects();
+        if (gameState != GAMESTATE_GAMESELECT) {
+            ResetPlayer();
         }
-        else
-        {
-            // Else we just bring the dragons to life
-            objectDefs[OBJECT_YELLOWDRAGON]->state = 0x0;
-            objectDefs[OBJECT_GREENDRAGON]->state = 0x0;
-            objectDefs[OBJECT_REDDRAGON]->state = 0x0;
-
-            objectDefs[OBJECT_YELLOWDRAGON]->linkedObject = OBJECT_NONE;
-            objectDefs[OBJECT_GREENDRAGON]->linkedObject = OBJECT_NONE;
-            objectDefs[OBJECT_REDDRAGON]->linkedObject = OBJECT_NONE;
-        }
-
-        gameState = GAMESTATE_ACTIVE_1;
     }
     else
     {
         // Is the game active?
         if (gameState == GAMESTATE_GAMESELECT)
         {
-            objectDefs[OBJECT_NUMBER]->state = gameLevel;
+            --timeToStartGame;
+            if (timeToStartGame <= 0) {
+                SetupRoomObjects();
+                gameState = GAMESTATE_ACTIVE_1;
+                ResetPlayer();
+            } else {
+                int displayNum = timeToStartGame / 60;
+                objectDefs[OBJECT_NUMBER]->state = displayNum;
 
-            // Cycle through the game levels
-            if (switchSelect && !select)
-            {
-                ++gameLevel;
-                if (gameLevel > 2) gameLevel = 0;
+                // Display the room and objects
+                displayedRoomIndex = 0;
+                objectBall->room = 0;
+                objectBall->x = 0;
+                objectBall->y = 0;
+                PrintDisplay();
             }
-
-            // Display the room and objects
-            displayedRoomIndex = 0;
-            objectBall->room = 0;
-            objectBall->x = 0;
-            objectBall->y = 0;
-            PrintDisplay();
         }
         else if (ISGAMEACTIVE())
         {

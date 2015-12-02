@@ -21,7 +21,7 @@
 
 // Game funtions
 class Transport;
-void Adventure_Setup(int numPlayers, int thisPlayer, Transport* transport);
+void Adventure_Setup(int numPlayers, int thisPlayer, Transport* transport, int gameNum, int initialLeftDiff, int initialRightDiff);
 void Adventure_Run();
 
 // Platform-dependant functions
