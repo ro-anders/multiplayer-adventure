@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #endif
 
-#include "Sync.h"
+#include "Sync.hpp"
 
 #include "ActionQueue.hpp"
 #include "RemoteAction.hpp"
@@ -14,28 +14,13 @@
 // The existing adventure port doesn't do a lot of dynamic memory allocation, but instead 
 // allocates everything up front.  We'll stick to that paradigm as much as possible.
 
-static Transport* transport;
 
-static int thisPlayer = -1;
-
-static int numPlayers;
-static int numOtherPlayers;
-
-static int MAX_MESSAGE_SIZE = 256;
-static char sendBuffer[256];
-static char receiveBuffer[256];
-
-static ActionQueue dragonMoves;
-
-static PlayerMoveAction** playersLastMove;
-
-static int frameNum = 0;
-
-void Sync_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport) {
-    numPlayers = inNumPlayers;
-    numOtherPlayers = numPlayers - 1;
-    thisPlayer = inThisPlayer;
-    transport = inTransport;
+Sync::Sync(int inNumPlayers, int inThisPlayer, Transport* inTransport) :
+    numPlayers(inNumPlayers),
+    numOtherPlayers(numPlayers-1),
+    thisPlayer(inThisPlayer),
+    transport(inTransport)
+{
     
     playersLastMove = new PlayerMoveAction*[numPlayers];
     for(int ctr=0; ctr<numOtherPlayers; ++ctr) {
@@ -44,20 +29,20 @@ void Sync_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport) {
     
 }
 
-void Sync_StartFrame() {
+void Sync::StartFrame() {
 	++frameNum;
 }
 
-void Sync_BroadcastAction(RemoteAction* action) {
+void Sync::BroadcastAction(RemoteAction* action) {
     action->serialize(sendBuffer, MAX_MESSAGE_SIZE);
     transport->sendPacket(sendBuffer);
 }
 
-void Sync_RejectMessage(const char* message, const char* errorMsg) {
+void Sync::RejectMessage(const char* message, const char* errorMsg) {
     printf("Cannot process message - %s: %s", errorMsg, message);
 }
 
-void handlePlayerMoveMessage(const char* message) {
+void Sync::handlePlayerMoveMessage(const char* message) {
     PlayerMoveAction* nextAction = new PlayerMoveAction();
     nextAction->deserialize(receiveBuffer);
     int messageSender = nextAction->sender;
@@ -67,13 +52,19 @@ void handlePlayerMoveMessage(const char* message) {
     playersLastMove[messageSender-1] = nextAction;
 }
 
-void handleDragonMoveMessage(const char* message) {
+void Sync::handleDragonMoveMessage(const char* message) {
     DragonMoveAction* nextAction = new DragonMoveAction();
     nextAction->deserialize(receiveBuffer);
     dragonMoves.enQ(nextAction);
 }
 
-void Sync_PullLatestMessages() {
+void Sync::handlePlayerPickupMessage(const char* message) {
+    PlayerPickupAction* nextAction = new PlayerPickupAction();
+    nextAction->deserialize(receiveBuffer);
+    playerPickups.enQ(nextAction);
+}
+
+void Sync::PullLatestMessages() {
     int numChars = transport->getPacket(receiveBuffer, MAX_MESSAGE_SIZE);
     while(numChars >= 4) {
         char type[5] = "XXXX";
@@ -86,6 +77,10 @@ void Sync_PullLatestMessages() {
                 switch (receiveBuffer[1]) {
                     case 'M': {
                         handlePlayerMoveMessage(receiveBuffer);
+                        break;
+                    }
+                    case 'P': {
+                        handlePlayerPickupMessage(receiveBuffer);
                         break;
                     }
                     default:
@@ -110,13 +105,13 @@ void Sync_PullLatestMessages() {
     }
 }
 
-PlayerMoveAction* Sync_GetLatestBallSync(int player) {
+PlayerMoveAction* Sync::GetLatestBallSync(int player) {
     PlayerMoveAction* rtn = playersLastMove[player-1];
     playersLastMove[player-1] = 0x0;
     return rtn;
 }
 
-DragonMoveAction* Sync_GetNextDragonAction() {
+DragonMoveAction* Sync::GetNextDragonAction() {
     DragonMoveAction* next = NULL;
     if (!dragonMoves.isEmpty()) {
         next = (DragonMoveAction*)dragonMoves.deQ();
@@ -124,3 +119,11 @@ DragonMoveAction* Sync_GetNextDragonAction() {
     return next;
 }
 
+PlayerPickupAction* Sync::GetNextPickupAction() {
+    PlayerPickupAction* next = NULL;
+    if (!playerPickups.isEmpty()) {
+        next = (PlayerPickupAction*)playerPickups.deQ();
+    }
+    return next;
+
+}

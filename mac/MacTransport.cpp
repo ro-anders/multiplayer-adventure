@@ -163,7 +163,6 @@ void MacTransport::openClientSocket(int portno) {
     struct sockaddr_in serv_addr;
     struct hostent *server;
     
-    char buffer[256];
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFd < 0)
         error("ERROR opening socket");

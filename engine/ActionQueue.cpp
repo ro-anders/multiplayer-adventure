@@ -67,6 +67,14 @@ RemoteAction* ActionQueue::deQ() {
     return result;
 }
 
+RemoteAction* ActionQueue::peek() {
+    if (isEmpty()) {
+        return NULL;
+    } else {
+        return array[first];
+    }
+}
+
 int ActionQueue::isEmpty() {
     return (last == -1);
 }

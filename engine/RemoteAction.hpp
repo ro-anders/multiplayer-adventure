@@ -8,6 +8,10 @@
 class RemoteAction {
 public:
     int sender;				// The number of the player sending this action (1-3)
+    RemoteAction();
+    RemoteAction(int inSender);
+    virtual ~RemoteAction();
+    
     virtual int serialize(char* buffer, int bufferLength) = 0;
     virtual void deserialize(const char* message) = 0;
 };
@@ -37,6 +41,8 @@ public:
     
     PlayerMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
     
+    ~PlayerMoveAction();
+    
     int serialize(char* buffer, int bufferLength);
     
     void deserialize(const char* message);
@@ -52,11 +58,37 @@ public:
     DragonMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely,
                      int inDragonNum, int inDistance);
     
+    ~DragonMoveAction();
+    
     int serialize(char* buffer, int bufferLength);
     
     void deserialize(const char* message);
     
 };
 
+class PlayerPickupAction: public RemoteAction {
+public:
+    int pickupObject;
+    int pickupX;
+    int pickupY;
+    int dropObject;
+    int dropRoom;
+    int dropX;
+    int dropY;
+    
+    PlayerPickupAction();
+    
+    PlayerPickupAction(int inSender, int inPickupObject, int inPickupX, int inPickupY, int dropObject, int inRoom, int dropX, int dropY);
+    
+    ~PlayerPickupAction();
+    
+    void setPickup(int inPickupObject, int inPickupX, int inPickupY);
+    
+    void setDrop(int inDropObject, int inDropRoom, int inDropX, int inDropY);
+    
+    int serialize(char* buffer, int bufferLength);
+    
+    void deserialize(const char* message);
+};
 
 #endif /* RemoteAction_hpp */

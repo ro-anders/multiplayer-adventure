@@ -48,13 +48,13 @@
 		4084EC8B1BF22AEE00E8F375 /* Adventure.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Adventure.cpp; path = ../engine/Adventure.cpp; sourceTree = "<group>"; };
 		4084EC8C1BF22AEE00E8F375 /* Adventure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Adventure.h; path = ../engine/Adventure.h; sourceTree = "<group>"; };
 		4084EC8D1BF22AEE00E8F375 /* Sync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Sync.cpp; path = ../engine/Sync.cpp; sourceTree = "<group>"; };
-		4084EC8E1BF22AEE00E8F375 /* Sync.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Sync.h; path = ../engine/Sync.h; sourceTree = "<group>"; };
 		40DA6AA91C03C97800EBB2CE /* adventure_sys.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = adventure_sys.h; sourceTree = "<group>"; };
 		40E47FAD1BF22BA20052B84E /* AdventureView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AdventureView.h; sourceTree = "<group>"; };
 		40E47FAE1BF22BA20052B84E /* AdventureView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AdventureView.mm; sourceTree = "<group>"; };
 		40E47FAF1BF22BA20052B84E /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Controller.h; sourceTree = "<group>"; };
 		40E47FB01BF22BA20052B84E /* Controller.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Controller.mm; sourceTree = "<group>"; };
 		40E47FB51BF22CC60052B84E /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = stdafx.h; path = ../stdafx.h; sourceTree = "<group>"; };
+		40E8214E1C0FACB9004CCADB /* Sync.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Sync.hpp; path = ../engine/Sync.hpp; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* MacAdventure.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacAdventure.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D009FDD10BCA0A64007C5A37 /* MacAdventureIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MacAdventureIcon.icns; sourceTree = "<group>"; };
@@ -126,8 +126,6 @@
 			children = (
 				4084EC8B1BF22AEE00E8F375 /* Adventure.cpp */,
 				4084EC8C1BF22AEE00E8F375 /* Adventure.h */,
-				4084EC8D1BF22AEE00E8F375 /* Sync.cpp */,
-				4084EC8E1BF22AEE00E8F375 /* Sync.h */,
 				32CA4F630368D1EE00C91783 /* MacAdventure_Prefix.pch */,
 				29B97316FDCFA39411CA2CEA /* main.m */,
 			);
@@ -171,17 +169,19 @@
 		407773D01BF2AC5900454AC5 /* engine */ = {
 			isa = PBXGroup;
 			children = (
+				40DA6AA91C03C97800EBB2CE /* adventure_sys.h */,
 				40509AA41C05E9750008BACF /* ActionQueue.cpp */,
 				40509AA51C05E9750008BACF /* ActionQueue.hpp */,
+				406CD1521C0C7C17002477BB /* Dragon.cpp */,
+				406CD1531C0C7C17002477BB /* Dragon.hpp */,
 				40509AA61C05E9750008BACF /* GameObject.cpp */,
 				40509AA71C05E9750008BACF /* GameObject.hpp */,
 				40509AA81C05E9750008BACF /* RemoteAction.cpp */,
 				40509AA91C05E9750008BACF /* RemoteAction.hpp */,
+				40E8214E1C0FACB9004CCADB /* Sync.hpp */,
+				4084EC8D1BF22AEE00E8F375 /* Sync.cpp */,
 				407773D11BF2AC9C00454AC5 /* Transport.cpp */,
 				407773D21BF2AC9C00454AC5 /* Transport.hpp */,
-				40DA6AA91C03C97800EBB2CE /* adventure_sys.h */,
-				406CD1521C0C7C17002477BB /* Dragon.cpp */,
-				406CD1531C0C7C17002477BB /* Dragon.hpp */,
 			);
 			name = engine;
 			sourceTree = "<group>";

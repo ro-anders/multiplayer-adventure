@@ -20,6 +20,8 @@ public:
     
     RemoteAction* deQ();
     
+    RemoteAction* peek();
+    
     int isEmpty();
     
     int numEntries();

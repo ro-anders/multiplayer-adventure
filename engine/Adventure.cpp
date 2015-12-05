@@ -25,7 +25,7 @@
 #include "adventure_sys.h"
 #include "Dragon.hpp"
 #include "GameObject.hpp"
-#include "Sync.h"
+#include "Sync.hpp"
 #include "Transport.hpp"
 
 #ifndef max
@@ -113,10 +113,11 @@ void ReactToCollision(BALL* ball);
 static void BallMovement(BALL* ball);
 static void ThisBallMovement();
 static void OtherBallMovement();
-static void MoveCarriedObject();
+static void MoveCarriedObjects();
 static void MoveGroundObject();
 static void PrintDisplay();
 static void PickupPutdown();
+static void OthersPickupPutdown();
 static void Surround();
 static void MoveBat();
 static void Portals();
@@ -1164,6 +1165,7 @@ static const int batMatrix [] =
        0x00                                                                                                   
 };
 
+static Sync* sync;
 static Transport* transport;
 static int numPlayers;
 static int thisPlayer;
@@ -1216,7 +1218,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
 
     // Setup the transport
     transport = inTransport;
-    Sync_Setup(numPlayers, thisPlayer, transport);
+    sync = new Sync(numPlayers, thisPlayer, transport);
     objectBall = &balls[thisPlayer];
 }
 
@@ -1250,8 +1252,8 @@ void ResetPlayer() {
 
 void Adventure_Run()
 {
-	Sync_StartFrame();
-    Sync_PullLatestMessages();
+	sync->StartFrame();
+    sync->PullLatestMessages();
 
     // read the console switches every frame
     bool select, reset;
@@ -1331,7 +1333,7 @@ void Adventure_Run()
 					OtherBallMovement();
 
                     // Move the carried object
-                    MoveCarriedObject();
+                    MoveCarriedObjects();
 
                     // Setup the room and object
                     PrintDisplay();
@@ -1342,6 +1344,7 @@ void Adventure_Run()
                 {
                     // Deal with object pickup and putdown
                     PickupPutdown();
+                    OthersPickupPutdown();
 
                     // Check ball collisions
                     if (!objectBall->hitX && !objectBall->hitY)
@@ -1550,7 +1553,7 @@ void ThisBallMovement()
 	if (velocityChanged) {
         // TODO: Do we want to be constantly allocating space?
         PlayerMoveAction* moveAction = new PlayerMoveAction(thisPlayer, objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
-        Sync_BroadcastAction(moveAction);
+        sync->BroadcastAction(moveAction);
 	}
 }
 
@@ -1708,7 +1711,7 @@ void BallMovement(BALL* ball) {
 void OtherBallMovement() {
 	for (int i = 0; i < numPlayers; ++i) {
         if (i != thisPlayer) {
-            PlayerMoveAction* movement = Sync_GetLatestBallSync(i);
+            PlayerMoveAction* movement = sync->GetLatestBallSync(i);
             if (movement != 0x0) {
                 balls[i].room = movement->room;
                 balls[i].x = movement->posx;
@@ -1724,7 +1727,7 @@ void OtherBallMovement() {
 }
 
 void SyncDragons() {
-    DragonMoveAction* next = Sync_GetNextDragonAction();
+    DragonMoveAction* next = sync->GetNextDragonAction();
     while (next != NULL) {
         // If we are in the same room as the dragon and are closer to it than the reporting player,
         // then we ignore reports and trust our internal state.  Otherwise, you use the reported state.
@@ -1740,18 +1743,21 @@ void SyncDragons() {
             
         }
         delete next;
-        next = Sync_GetNextDragonAction();
+        next = sync->GetNextDragonAction();
     }
 }
 
-void MoveCarriedObject()
+void MoveCarriedObjects()
 {
-    if (objectBall->linkedObject >= 0)
-    {
-        OBJECT* object = objectDefs[objectBall->linkedObject];
-        object->x = (objectBall->x/2) + objectBall->linkedObjectX;
-        object->y = (objectBall->y/2) + objectBall->linkedObjectY;
-        object->room = objectBall->room;
+    for(int ctr=0; ctr<numPlayers; ++ctr) {
+        BALL* nextBall = &balls[ctr];
+        if (nextBall->linkedObject != OBJECT_NONE)
+        {
+            OBJECT* object = objectDefs[nextBall->linkedObject];
+            object->x = (nextBall->x/2) + nextBall->linkedObjectX;
+            object->y = (nextBall->y/2) + nextBall->linkedObjectY;
+            object->room = nextBall->room;
+        }
     }
 
     // Seems like a weird place to call this but this matches the original game
@@ -1961,12 +1967,58 @@ void PrintDisplay()
 
 }
 
+void OthersPickupPutdown() {
+    PlayerPickupAction* action = sync->GetNextPickupAction();
+    while (action != NULL) {
+        int actorNum = action->sender;
+        BALL* actor = &balls[actorNum];
+        if (action->dropObject != OBJECT_NONE) {
+            printf("Received drop action for player %d who is carrying %d\n", actorNum, actor->linkedObject);
+        }
+        if ((action->dropObject != OBJECT_NONE) && (actor->linkedObject == action->dropObject)) {
+            printf("Player %d dropped object %d\n", actorNum, action->dropObject);
+            actor->linkedObject = OBJECT_NONE;
+            OBJECT* dropped = objectDefs[action->dropObject];
+            dropped->room = action->dropRoom;
+            dropped->x = action->dropX;
+            dropped->y = action->dropY;
+        }
+        if (action->pickupObject != OBJECT_NONE) {
+            actor->linkedObject = action->pickupObject;
+            actor->linkedObjectX = action->pickupX;
+            actor->linkedObjectY = action->pickupY;
+            printf("Setting player %d to carrying %d\n", actorNum, actor->linkedObject);
+            // If anybody else was carrying this object, take it away.
+            for(int ctr=0; ctr<numPlayers; ++ctr) {
+                if ((ctr != actorNum) && (balls[ctr].linkedObject==action->pickupObject)) {
+                    printf("Player %d took object %d from player %d\n", action->sender, actor->linkedObject, thisPlayer);
+                    balls[ctr].linkedObject = OBJECT_NONE;
+                }
+            }
+            // If they are in the same room as you, play the pickup sound
+            if (actor->room == objectBall->room) {
+                Platform_MakeSound(SOUND_PICKUP);
+            }
+        }
+        delete action;
+        action = sync->GetNextPickupAction();
+    }
+}
+
 void PickupPutdown()
 {
     if (joyFire && (objectBall->linkedObject >= 0))
     {
+        int dropped = objectBall->linkedObject;
+        OBJECT* droppedObject = objectDefs[dropped];
+        
         // Put down the current object!
         objectBall->linkedObject = OBJECT_NONE;
+        
+        // Tell other clients about the drop
+        PlayerPickupAction* action = new PlayerPickupAction(thisPlayer, OBJECT_NONE, 0, 0, dropped, droppedObject->room,
+                                                           droppedObject->x, droppedObject->y);
+        sync->BroadcastAction(action);
 
         // Play the sound
         Platform_MakeSound(SOUND_PUTDOWN);
@@ -1986,13 +2038,34 @@ void PickupPutdown()
 
             if (hitIndex > OBJECT_NONE)
             {
+                // TODO: Handle when we are just repositioning the object we are currently holding
+                
+                // Collect info about whether we are also dropping an object (for when we broadcast the action)
+                PlayerPickupAction* action = new PlayerPickupAction(thisPlayer, OBJECT_NONE, 0, 0, OBJECT_NONE, 0, 0, 0);
+                int dropIndex = objectBall->linkedObject;
+                if (dropIndex > OBJECT_NONE) {
+                    OBJECT* dropped = objectDefs[dropIndex];
+                    action->setDrop(dropIndex, dropped->room, dropped->x, dropped->y);
+                }
+                
                 // Pick up this object!
                 objectBall->linkedObject = hitIndex;
 
                 // calculate the XY offsets from the ball's position
                 objectBall->linkedObjectX = objectDefs[hitIndex]->x - (objectBall->x/2);
                 objectBall->linkedObjectY = objectDefs[hitIndex]->y - (objectBall->y/2);
+                
+                // Take it away from anyone else if they were holding it.
+                for(int ctr=0; ctr<numPlayers; ++ctr) {
+                    if ((ctr != thisPlayer) && (balls[ctr].linkedObject == hitIndex)) {
+                        balls[ctr].linkedObject = OBJECT_NONE;
+                    }
+                }
 
+                // Broadcast that we picked up an object
+                action->setPickup(hitIndex, objectBall->linkedObjectX, objectBall->linkedObjectY);
+                sync->BroadcastAction(action);
+                
                 // Play the sound
                 Platform_MakeSound(SOUND_PICKUP);
             }
@@ -2377,7 +2450,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
                                dragon->movementY, newMovementX, newMovementY);
                         int distanceToMe = distanceFromBall(&balls[thisPlayer], dragon->x, dragon->y);
                         DragonMoveAction* newAction = new DragonMoveAction(thisPlayer, dragon->room, dragon->x, dragon->y, newMovementX, newMovementY, dragon->dragonNumber, distanceToMe);
-                        Sync_BroadcastAction(newAction);
+                        sync->BroadcastAction(newAction);
                     }
                     dragon->movementX = newMovementX;
                     dragon->movementY = newMovementY;
