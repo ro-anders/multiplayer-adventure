@@ -1358,6 +1358,12 @@ void Adventure_Run()
 
                             int diffY = objectBall->y - objectBall->previousY;
                             objectBall->linkedObjectY += diffY/2;
+                            
+                            // Adjusting how we hold an object is broadcast to other players as a pickup action
+                            PlayerPickupAction* action = new PlayerPickupAction(thisPlayer,
+                                hitObject, objectBall->linkedObjectX, objectBall->linkedObjectY, OBJECT_NONE, 0, 0, 0);
+                            sync->BroadcastAction(action);
+                            
                         }
                     }
 					for (int i = 0; i < MAX_PLAYERS; ++i) {
