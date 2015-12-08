@@ -951,30 +951,6 @@ static BALL* objectBall = 0x0;
 // Indexed array of all objects and their properties
 //
 
-// Original ganme object definitions
-/*
-{
-    { objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #1 Portcullis #1
-	{ objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #4 Portcullis #4
-	{ objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #2 Portcullis #2
-    { objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #3 Portcullis #3
-	{ objectGfxAuthor, 0, 0, COLOR_FLASH, 0x1E, 0x50, 0x69, 0, 0, 0, 0, 0, 0, false },   // #4 Name
-    { objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, 0x00, 0x50, 0x40, 0, 0, 0, 0, 0, 0, false },// #5 Number
-    { objectGfxDrag, dragonStates, 0, COLOR_RED, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #6 Dragon #1
-    { objectGfxDrag, dragonStates, 0, COLOR_YELLOW, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },           // #7 Dragon #2
-    { objectGfxDrag, dragonStates, 0, COLOR_LIMEGREEN, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },        // #8 Dragon #3
-    { objectGfxSword, 0, 0, COLOR_YELLOW, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },            // #9 Sword
-    { objectGfxBridge, 0, 0, COLOR_PURPLE, -1, 0, 0, 0, 0, 0x07, 0, 0, 0, false },        // #0A Bridge
-    { objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #0B - Key #1
-    { objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },               // #0C - Key #2
-    { objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },               // #0D - Key #3
-    { objectGfxBat, batStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },               // #0E - Bat
-    { objectGfxDot, 0, 0, COLOR_LTGRAY, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },// #0F - Black Dot
-    { objectGfxChallise, 0, 0, COLOR_FLASH, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },          // #10 Challise
-    { objectGfxMagnet, 0, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },            // #11 Magnet
-    { (const byte*)0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, false}                                  // #12 Null
-};
-*/
 static OBJECT** objectDefs = 0x0;
 
 // Object locations (room and coordinate) for game 01
@@ -1733,20 +1709,33 @@ void OtherBallMovement() {
 }
 
 void SyncDragons() {
-    DragonMoveAction* next = sync->GetNextDragonAction();
+    RemoteAction* next = sync->GetNextDragonAction();
     while (next != NULL) {
-        // If we are in the same room as the dragon and are closer to it than the reporting player,
-        // then we ignore reports and trust our internal state.  Otherwise, you use the reported state.
-        Dragon* dragon = dragons[next->dragonNum];
-        if ((dragon->room != objectBall->room) ||
-            (distanceFromBall(objectBall, dragon->x, dragon->y) > next->distance)) {
-            
-            dragon->room = next->room;
-            dragon->x = next->posx;
-            dragon->y = next->posy;
-            dragon->movementX = next->velx;
-            dragon->movementY = next->vely;
-            
+        if (next->typeCode == DragonStateAction::CODE) {
+            DragonStateAction* nextState = (DragonStateAction*)next;
+            Dragon* dragon = dragons[nextState->dragonNum];
+            // TODO: Right now only roar is implemented
+            // We ignore roar actions if we are already in an eaten state or dead state
+            if ((Dragon::STALKING != Dragon::EATEN) && (dragon->state != Dragon::DEAD)) {
+                dragon->roar(nextState->posx, nextState->posy, gameLevel, gameDifficultyLeft==DIFFICULTY_A);
+                // Play the sound
+                Platform_MakeSound(SOUND_ROAR);
+            }
+        } else {
+            // If we are in the same room as the dragon and are closer to it than the reporting player,
+            // then we ignore reports and trust our internal state.  Otherwise, you use the reported state.
+            DragonMoveAction* nextMove = (DragonMoveAction*)next;
+            Dragon* dragon = dragons[nextMove->dragonNum];
+            if ((dragon->room != objectBall->room) ||
+                (distanceFromBall(objectBall, dragon->x, dragon->y) > nextMove->distance)) {
+                
+                dragon->room = nextMove->room;
+                dragon->x = nextMove->posx;
+                dragon->y = nextMove->posy;
+                dragon->movementX = nextMove->velx;
+                dragon->movementY = nextMove->vely;
+                
+            }
         }
         delete next;
         next = sync->GetNextDragonAction();
@@ -2336,22 +2325,17 @@ BALL* closestBall(int room, int x, int y) {
 
 void MoveDragon(Dragon* dragon, const int* matrix, int speed)
 {
-    if (dragon->state == 0)
+    if (dragon->state == Dragon::STALKING)
     {
         // Has the Ball hit the Dragon?
         if ((objectBall->room == dragon->room) && CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-4), 8, 8))
         {
-            // Set the State to 03 (roar)
-            dragon->state = 3;
+            dragon->roar(objectBall->x/2, objectBall->y/2,gameLevel, gameDifficultyLeft==DIFFICULTY_A);
             
-            dragon->resetTimer(gameLevel, gameDifficultyLeft==DIFFICULTY_A);
-
-            // Set the dragon's position to the same as the ball
-            dragon->x = (objectBall->x/2);
-            dragon->y = (objectBall->y/2);
-
-            dragon->movementX = 0;
-            dragon->movementY = 0;
+            // Notify others
+            DragonStateAction* action = new DragonStateAction(thisPlayer, dragon->dragonNumber, Dragon::ROAR, dragon->room, dragon->x, dragon->y);
+            
+            sync->BroadcastAction(action);
 
             // Play the sound
             Platform_MakeSound(SOUND_ROAR);
@@ -2361,7 +2345,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
         if (CollisionCheckObjectObject(dragon, objectDefs[OBJECT_SWORD]))
         {
             // Set the State to 01 (Dead)
-            dragon->state = 1;
+            dragon->state = Dragon::DEAD;
             dragon->movementX = 0;
             dragon->movementY = 0;
         
@@ -2369,7 +2353,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
             Platform_MakeSound(SOUND_DRAGONDIE);
         }
 
-        if (dragon->state == 0)
+        if (dragon->state == Dragon::STALKING)
         {
             // Go through the dragon's object matrix
             // Difficulty switch determines flee or don't flee from sword
@@ -2452,8 +2436,6 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
                     
                     // Notify others if we've changed our direction
                     if ((dragon->room == objectBall->room) && ((newMovementX != dragon->movementX) || (newMovementY != dragon->movementY))) {
-                        printf("Dragon %d changing direction from (%d,%d) to (%d,%d)", dragon->dragonNumber, dragon->movementX,
-                               dragon->movementY, newMovementX, newMovementY);
                         int distanceToMe = distanceFromBall(&balls[thisPlayer], dragon->x, dragon->y);
                         DragonMoveAction* newAction = new DragonMoveAction(thisPlayer, dragon->room, dragon->x, dragon->y, newMovementX, newMovementY, dragon->dragonNumber, distanceToMe);
                         sync->BroadcastAction(newAction);
@@ -2469,7 +2451,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
 
         }
     }
-    else if (dragon->state == 2)
+    else if (dragon->state == Dragon::EATEN)
     {
         // Eaten
         objectBall->room = dragon->room;
@@ -2479,7 +2461,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
         dragon->movementY = 0;
         displayedRoomIndex = objectBall->room;
     }
-    else if (dragon->state == 3)
+    else if (dragon->state == Dragon::ROAR)
     {
         dragon->decrementTimer();
         if (dragon->timerExpired())
@@ -2489,7 +2471,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
             {
                 // Set the State to 01 (eaten)
                 dragon->linkedObject = OBJECT_BALL;
-                dragon->state = 2;
+                dragon->state = Dragon::EATEN;
 
                 // Play the sound
                 Platform_MakeSound(SOUND_EATEN);
@@ -2497,7 +2479,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
             else
             {
                 // Go back to stalking
-                dragon->state = 0;
+                dragon->state = Dragon::STALKING;
             }
         }
     }

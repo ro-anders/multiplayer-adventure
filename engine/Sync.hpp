@@ -38,7 +38,7 @@ public:
      * Get the next dragon action.  Caller must delete this object.
      * If no actions have been received, this will return null.
      */
-    DragonMoveAction* GetNextDragonAction();
+    RemoteAction* GetNextDragonAction();
     
     /**
      * Get the next player pickup or player drop action.
@@ -76,9 +76,11 @@ private:
     
     void handlePlayerMoveMessage(const char* message);
 
-    void handleDragonMoveMessage(const char* message);
-    
     void handlePlayerPickupMessage(const char* message);
+    
+    void handleDragonMoveMessage(const char* message);
+
+    void handleDragonStateMessage(const char* message);
 
 
 

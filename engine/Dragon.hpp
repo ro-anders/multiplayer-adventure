@@ -7,6 +7,12 @@
 
 class Dragon: public OBJECT {
 public:
+    
+    static const int STALKING;
+    static const int DEAD;
+    static const int EATEN;
+    static const int ROAR;
+    
     Dragon(int number, int inState, int inColor, int inRoom, int inX, int inY);
     
     ~Dragon();
@@ -21,6 +27,8 @@ public:
     void decrementTimer();
     
     int timerExpired();
+    
+    void roar(int atX, int atY, int gameLevel, int dragonDifficulty);
     
     int dragonNumber;
 

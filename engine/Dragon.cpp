@@ -1,6 +1,11 @@
 
 #include "Dragon.hpp"
 
+const int Dragon::STALKING = 0;
+const int Dragon::DEAD = 1;
+const int Dragon::EATEN = 2;
+const int Dragon::ROAR = 3;
+
 // Dragon states
 static const byte dragonStates [] =
 {
@@ -106,4 +111,18 @@ void Dragon::decrementTimer() {
 
 int Dragon::timerExpired() {
     return (timer <= 0);
+}
+
+void Dragon::roar(int atX, int atY, int gameLevel, int dragonDifficulty) {
+    state = ROAR;
+    
+    resetTimer(gameLevel, dragonDifficulty);
+    
+    // Set the dragon's position to the same as the ball
+    x = atX;
+    y = atY;
+    
+    movementX = 0;
+    movementY = 0;
+    
 }

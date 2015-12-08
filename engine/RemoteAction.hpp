@@ -8,8 +8,10 @@
 class RemoteAction {
 public:
     int sender;				// The number of the player sending this action (1-3)
-    RemoteAction();
-    RemoteAction(int inSender);
+    const char* typeCode;
+    RemoteAction(const char* inCode);
+    RemoteAction(const char* inCode, int inSender);
+
     virtual ~RemoteAction();
     
     virtual int serialize(char* buffer, int bufferLength) = 0;
@@ -24,9 +26,9 @@ public:
     int velx;				// -1 for moving left, 1 for right, and 0 for still or just up/down
     int vely;				// -1 for down, 1 for up, and 0 for still or just left/right
     
-    MoveAction();
+    MoveAction(const char* inCode);
     
-    MoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
+    MoveAction(const char* inCode, int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
     
     virtual ~MoveAction();
     
@@ -37,6 +39,9 @@ public:
 
 class PlayerMoveAction: public MoveAction {
 public:
+
+    static const char* CODE;
+
     PlayerMoveAction();
     
     PlayerMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
@@ -48,10 +53,39 @@ public:
     void deserialize(const char* message);
 };
 
+class PlayerPickupAction: public RemoteAction {
+public:
+    int pickupObject;
+    int pickupX;
+    int pickupY;
+    int dropObject;
+    int dropRoom;
+    int dropX;
+    int dropY;
+    
+    static const char* CODE;
+
+    PlayerPickupAction();
+    
+    PlayerPickupAction(int inSender, int inPickupObject, int inPickupX, int inPickupY, int dropObject, int inRoom, int dropX, int dropY);
+    
+    ~PlayerPickupAction();
+    
+    void setPickup(int inPickupObject, int inPickupX, int inPickupY);
+    
+    void setDrop(int inDropObject, int inDropRoom, int inDropX, int inDropY);
+    
+    int serialize(char* buffer, int bufferLength);
+    
+    void deserialize(const char* message);
+};
+
 class DragonMoveAction: public MoveAction {
 public:
     int dragonNum;          // 0=Rhindle, 1=Yorgle, 2=Grindle
     int distance;           // Distance from player reporting position
+    
+    static const char* CODE;
     
     DragonMoveAction();
     
@@ -66,29 +100,26 @@ public:
     
 };
 
-class PlayerPickupAction: public RemoteAction {
+class DragonStateAction: public RemoteAction {
 public:
-    int pickupObject;
-    int pickupX;
-    int pickupY;
-    int dropObject;
-    int dropRoom;
-    int dropX;
-    int dropY;
+    int dragonNum;          // 0=Rhindle, 1=Yorgle, 2=Grindle
+    int newState;
+    int room;
+    int posx;
+    int posy;
     
-    PlayerPickupAction();
+    static const char* CODE;
     
-    PlayerPickupAction(int inSender, int inPickupObject, int inPickupX, int inPickupY, int dropObject, int inRoom, int dropX, int dropY);
+    DragonStateAction();
     
-    ~PlayerPickupAction();
+    DragonStateAction(int inSender, int inDragonNum, int inState, int inRoom, int inPosx, int inPosy);
     
-    void setPickup(int inPickupObject, int inPickupX, int inPickupY);
-    
-    void setDrop(int inDropObject, int inDropRoom, int inDropX, int inDropY);
+    ~DragonStateAction();
     
     int serialize(char* buffer, int bufferLength);
     
     void deserialize(const char* message);
+    
 };
 
 #endif /* RemoteAction_hpp */

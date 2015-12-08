@@ -58,6 +58,12 @@ void Sync::handleDragonMoveMessage(const char* message) {
     dragonMoves.enQ(nextAction);
 }
 
+void Sync::handleDragonStateMessage(const char* message) {
+    DragonStateAction* nextAction = new DragonStateAction();
+    nextAction->deserialize(receiveBuffer);
+    dragonMoves.enQ(nextAction);
+}
+
 void Sync::handlePlayerPickupMessage(const char* message) {
     PlayerPickupAction* nextAction = new PlayerPickupAction();
     nextAction->deserialize(receiveBuffer);
@@ -93,6 +99,10 @@ void Sync::PullLatestMessages() {
                         handleDragonMoveMessage(receiveBuffer);
                         break;
                     }
+                    case 'S': {
+                        handleDragonStateMessage(receiveBuffer);
+                        break;
+                    }
                     default:
                         printf("Message with unknown message type D%c: %s\n", receiveBuffer[1], receiveBuffer);
                 }
@@ -111,10 +121,10 @@ PlayerMoveAction* Sync::GetLatestBallSync(int player) {
     return rtn;
 }
 
-DragonMoveAction* Sync::GetNextDragonAction() {
-    DragonMoveAction* next = NULL;
+RemoteAction* Sync::GetNextDragonAction() {
+    RemoteAction* next = NULL;
     if (!dragonMoves.isEmpty()) {
-        next = (DragonMoveAction*)dragonMoves.deQ();
+        next = dragonMoves.deQ();
     }
     return next;
 }
