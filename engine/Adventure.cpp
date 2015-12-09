@@ -23,6 +23,7 @@
 #include "Adventure.h"
 
 #include "adventure_sys.h"
+#include "Bat.hpp"
 #include "Dragon.hpp"
 #include "GameObject.hpp"
 #include "Sync.hpp"
@@ -651,38 +652,6 @@ static const byte objectGfxBridge [] =
     0xC3                   // XX    XX                                                                  
 };
 
-static const byte objectGfxBat [] =
-{
-    // Object #0E : State 03 : Graphic                                                                                   
-    7,
-    0x81,                  // X      X                                                                  
-    0x81,                  // X      X                                                                  
-    0xC3,                  // XX    XX                                                                  
-    0xC3,                  // XX    XX                                                                  
-    0xFF,                  // XXXXXXXX                                                                  
-    0x5A,                  //  X XX X                                                                   
-    0x66,                  //  XX  XX                                                                   
-    // Object #0E : State FF : Graphic                                                                                   
-    11,
-    0x01,                  //        X                                                                  
-    0x80,                  // X                                                                         
-    0x01,                  //        X                                                                  
-    0x80,                  // X                                                                         
-    0x3C,                  //   XXXX                                                                    
-    0x5A,                  //  X XX X                                                                   
-    0x66,                  //  XX  XX                                                                   
-    0xC3,                  // XX    XX                                                                  
-    0x81,                  // X      X                                                                  
-    0x81,                  // X      X                                                                  
-    0x81                   // X      X                                                                  
-};
-
-// Bat states
-static const byte batStates [] = 
-{
-    0,1
-};
-
 // Object #9 : State FF : Graphics                                                                                   
 static const byte objectGfxSword [] =
 {
@@ -950,7 +919,6 @@ static BALL* objectBall = 0x0;
 //
 // Indexed array of all objects and their properties
 //
-
 static OBJECT** objectDefs = 0x0;
 
 // Object locations (room and coordinate) for game 01
@@ -1186,7 +1154,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     objectDefs[OBJECT_YELLOWKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0);
     objectDefs[OBJECT_WHITEKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0);
     objectDefs[OBJECT_BLACKKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
-    objectDefs[OBJECT_BAT] = new OBJECT(objectGfxBat, batStates, 0, COLOR_BLACK, -1, 0, 0);
+    objectDefs[OBJECT_BAT] = new Bat(COLOR_BLACK, -1, 0, 0);
     objectDefs[OBJECT_DOT] = new OBJECT(objectGfxDot, 0, 0, COLOR_LTGRAY, -1, 0, 0);
     objectDefs[OBJECT_CHALISE] = new OBJECT(objectGfxChallise, 0, 0, COLOR_FLASH, -1, 0, 0);
     objectDefs[OBJECT_MAGNET] = new OBJECT(objectGfxMagnet, 0, 0, COLOR_BLACK, -1, 0, 0);
@@ -1716,7 +1684,7 @@ void SyncDragons() {
             Dragon* dragon = dragons[nextState->dragonNum];
             // TODO: Right now only roar is implemented
             // We ignore roar actions if we are already in an eaten state or dead state
-            if ((Dragon::STALKING != Dragon::EATEN) && (dragon->state != Dragon::DEAD)) {
+            if ((dragon->state != Dragon::EATEN) && (dragon->state != Dragon::DEAD)) {
                 dragon->roar(nextState->posx, nextState->posy, gameLevel, gameDifficultyLeft==DIFFICULTY_A);
                 // Play the sound
                 Platform_MakeSound(SOUND_ROAR);
