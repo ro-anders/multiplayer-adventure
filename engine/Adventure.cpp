@@ -1187,7 +1187,7 @@ void ResetPlayer() {
         // Else we just bring the dragons to life
         for(int ctr=0; ctr<numDragons; ++ctr) {
             dragons[ctr]->state = 0;
-            dragons[ctr]->linkedObject = OBJECT_NONE;
+            dragons[ctr]->eaten = NULL;
         }
     }
 }
@@ -1388,7 +1388,7 @@ void SetupRoomObjects()
     };
     // Set to no carried objects
     for(int ctr=0; ctr<numDragons; ++ctr) {
-        dragons[ctr]->linkedObject = OBJECT_NONE;
+        dragons[ctr]->eaten = NULL;
     }
     bat->linkedObject = OBJECT_NONE;
 
@@ -1518,7 +1518,7 @@ void BallMovement(BALL* ball) {
     
     bool eaten = false;
     for(int ctr=0; ctr<numDragons && !eaten; ++ctr) {
-        eaten = dragons[ctr]->linkedObject == OBJECT_BALL; // TODO: Not right when ball is not this
+        eaten = (dragons[ctr]->eaten == ball);
     }
 
     // mark the existing Y location as the previous Y location
@@ -1840,12 +1840,12 @@ void MoveGroundObject()
         // TODO: Seems awfully inefficient and with C++ multiple inheritance not even sure
         // that pointer equality check will always work.  Think about another way.
         for (int ctr=0; ctr<numDragons; ++ctr) {
-            if ((object == dragons[ctr]) && (dragons[ctr]->linkedObject != OBJECT_NONE))
+            if ((object == dragons[ctr]) && (dragons[ctr]->eaten != NULL))
             {
                 Dragon* dragon = dragons[ctr];
-                OBJECT* linkedObj = objectDefs[dragon->linkedObject];
-                linkedObj->x = object->x + dragon->linkedObjectX;
-                linkedObj->y = object->y + dragon->linkedObjectY;
+                BALL* linkedObj = dragon->eaten;
+                linkedObj->x = object->x + dragon->eatenX;
+                linkedObj->y = object->y + dragon->eatenY;
                 linkedObj->room = object->room;
             }
         }
@@ -2452,7 +2452,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
             if ((objectBall->room == dragon->room) && CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-1), 8, 8))
             {
                 // Set the State to 01 (eaten)
-                dragon->linkedObject = OBJECT_BALL;
+                dragon->eaten = objectBall;
                 dragon->state = Dragon::EATEN;
 
                 // Play the sound

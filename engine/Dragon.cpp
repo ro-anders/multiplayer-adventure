@@ -95,9 +95,9 @@ Dragon::Dragon(int inNumber, int inState, int inColor, int inRoom, int inX, int 
     OBJECT(objectGfxDrag, dragonStates, inState, inColor, inRoom, inX, inY, 0),
     dragonNumber(inNumber),
     timer(0),
-linkedObject(0),
-linkedObjectX(0),
-linkedObjectY(0)
+    eaten(NULL),
+    eatenX(0),
+    eatenY(0)
 {}
 
 Dragon::~Dragon() {

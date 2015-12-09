@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include "GameObject.hpp"
 
+class BALL;
+
 class Dragon: public OBJECT {
 public:
     
@@ -13,9 +15,9 @@ public:
     static const int EATEN;
     static const int ROAR;
     
-    int linkedObject;           // index of linked (carried) object
-    int linkedObjectX;
-    int linkedObjectY;
+    BALL* eaten;
+    int eatenX;
+    int eatenY;
 
     
     Dragon(int number, int inState, int inColor, int inRoom, int inX, int inY);
