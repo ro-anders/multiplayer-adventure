@@ -12,9 +12,6 @@ OBJECT::OBJECT(const byte* inGfxData, const byte* inStates, int inState, int inC
     movementY(0),
     x(inX),
     y(inY),
-    linkedObject(0),
-    linkedObjectX(0),
-    linkedObjectY(0),
     size(inSize)
 {
     

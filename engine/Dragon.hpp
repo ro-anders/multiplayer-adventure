@@ -13,6 +13,11 @@ public:
     static const int EATEN;
     static const int ROAR;
     
+    int linkedObject;           // index of linked (carried) object
+    int linkedObjectX;
+    int linkedObjectY;
+
+    
     Dragon(int number, int inState, int inColor, int inRoom, int inX, int inY);
     
     ~Dragon();

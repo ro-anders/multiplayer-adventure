@@ -35,6 +35,9 @@ static const byte batStates [] =
 
 
 Bat::Bat(int inColor, int inRoom, int inX, int inY) :
-  OBJECT(objectGfxBat, batStates, 0, inColor, inRoom, inX, inY) {}
+  OBJECT(objectGfxBat, batStates, 0, inColor, inRoom, inX, inY),
+  linkedObject(0),
+  linkedObjectX(0),
+  linkedObjectY(0) {}
 
 Bat::~Bat() {}

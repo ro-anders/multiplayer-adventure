@@ -20,9 +20,6 @@ public:
     int movementX;              // horizontal movement
     int movementY;              // vertical movement
     int size;                   // size (used for bridge and surround)
-    int linkedObject;           // index of linked (carried) object
-    int linkedObjectX;
-    int linkedObjectY;
     bool displayed;             // flag indicating object was displayed (when more than maxDisplayableObjects for instance)
 
     OBJECT(const byte* inGfxData, const byte* inStates, int inState, int inColor, int inRoom, int inX, int inY,

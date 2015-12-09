@@ -1120,6 +1120,7 @@ static int timeToStartGame;
 
 static int numDragons = 3;
 static Dragon** dragons = NULL;
+static Bat* bat = NULL;
 
 
 
@@ -1135,6 +1136,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     dragons[0]= new Dragon(0, 0, COLOR_YELLOW, -1, 0, 0);
     dragons[1] = new Dragon(1, 0, COLOR_LIMEGREEN, -1, 0, 0);
     dragons[2] = new Dragon(2, 0, COLOR_RED, -1, 0, 0);
+    bat = new Bat(COLOR_BLACK, -1, 0, 0);
     
     
     // Setup the structures
@@ -1154,7 +1156,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     objectDefs[OBJECT_YELLOWKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0);
     objectDefs[OBJECT_WHITEKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0);
     objectDefs[OBJECT_BLACKKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
-    objectDefs[OBJECT_BAT] = new Bat(COLOR_BLACK, -1, 0, 0);
+    objectDefs[OBJECT_BAT] = bat;
     objectDefs[OBJECT_DOT] = new OBJECT(objectGfxDot, 0, 0, COLOR_LTGRAY, -1, 0, 0);
     objectDefs[OBJECT_CHALISE] = new OBJECT(objectGfxChallise, 0, 0, COLOR_FLASH, -1, 0, 0);
     objectDefs[OBJECT_MAGNET] = new OBJECT(objectGfxMagnet, 0, 0, COLOR_BLACK, -1, 0, 0);
@@ -1183,13 +1185,10 @@ void ResetPlayer() {
         // Set up objects, rooms, and positions
         
         // Else we just bring the dragons to life
-        objectDefs[OBJECT_YELLOWDRAGON]->state = 0x0;
-        objectDefs[OBJECT_GREENDRAGON]->state = 0x0;
-        objectDefs[OBJECT_REDDRAGON]->state = 0x0;
-        
-        objectDefs[OBJECT_YELLOWDRAGON]->linkedObject = OBJECT_NONE;
-        objectDefs[OBJECT_GREENDRAGON]->linkedObject = OBJECT_NONE;
-        objectDefs[OBJECT_REDDRAGON]->linkedObject = OBJECT_NONE;
+        for(int ctr=0; ctr<numDragons; ++ctr) {
+            dragons[ctr]->state = 0;
+            dragons[ctr]->linkedObject = OBJECT_NONE;
+        }
     }
 }
 
@@ -1386,8 +1385,12 @@ void SetupRoomObjects()
         OBJECT* object = objectDefs[i];
         object->movementX = 0;
         object->movementY = 0;
-        object->linkedObject = OBJECT_NONE;
     };
+    // Set to no carried objects
+    for(int ctr=0; ctr<numDragons; ++ctr) {
+        dragons[ctr]->linkedObject = OBJECT_NONE;
+    }
+    bat->linkedObject = OBJECT_NONE;
 
     // Read the object initialization table for the current game level
     const byte* p;
@@ -1512,10 +1515,11 @@ void BallMovement(BALL* ball) {
     // store the existing ball location
     int tempX = ball->x;
     int tempY = ball->y;
-
-    bool eaten = ((objectDefs[OBJECT_YELLOWDRAGON]->linkedObject == OBJECT_BALL) // TODO: Not right when ball is not this player
-                    || (objectDefs[OBJECT_GREENDRAGON]->linkedObject == OBJECT_BALL)
-                    || (objectDefs[OBJECT_REDDRAGON]->linkedObject == OBJECT_BALL));
+    
+    bool eaten = false;
+    for(int ctr=0; ctr<numDragons && !eaten; ++ctr) {
+        eaten = dragons[ctr]->linkedObject == OBJECT_BALL; // TODO: Not right when ball is not this
+    }
 
     // mark the existing Y location as the previous Y location
     ball->previousY = ball->y;
@@ -1825,13 +1829,25 @@ void MoveGroundObject()
             object->room = AdjustRoomLevel(roomDefs[object->room].roomRight);
         }
 
-        // Move the linked object
-        if (object->linkedObject > OBJECT_NONE)
+        // If the object has a linked object
+        if ((object == bat) && (bat->linkedObject != OBJECT_NONE))
         {
-            OBJECT* linkedObj = objectDefs[object->linkedObject];
-            linkedObj->x = object->x + object->linkedObjectX;
-            linkedObj->y = object->y + object->linkedObjectY;
+            OBJECT* linkedObj = objectDefs[bat->linkedObject];
+            linkedObj->x = object->x + bat->linkedObjectX;
+            linkedObj->y = object->y + bat->linkedObjectY;
             linkedObj->room = object->room;
+        }
+        // TODO: Seems awfully inefficient and with C++ multiple inheritance not even sure
+        // that pointer equality check will always work.  Think about another way.
+        for (int ctr=0; ctr<numDragons; ++ctr) {
+            if ((object == dragons[ctr]) && (dragons[ctr]->linkedObject != OBJECT_NONE))
+            {
+                Dragon* dragon = dragons[ctr];
+                OBJECT* linkedObj = objectDefs[dragon->linkedObject];
+                linkedObj->x = object->x + dragon->linkedObjectX;
+                linkedObj->y = object->y + dragon->linkedObjectY;
+                linkedObj->room = object->room;
+            }
         }
     }
 }
@@ -2055,8 +2071,6 @@ void Surround()
 
 void MoveBat()
 {
-    OBJECT* bat = objectDefs[OBJECT_BAT];
-
     static int flapTimer = 0;
     if (++flapTimer >= 0x04)
     {
