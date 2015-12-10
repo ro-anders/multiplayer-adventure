@@ -24,7 +24,7 @@ Sync::Sync(int inNumPlayers, int inThisPlayer, Transport* inTransport) :
     
     playersLastMove = new PlayerMoveAction*[numPlayers];
     for(int ctr=0; ctr<numOtherPlayers; ++ctr) {
-        playersLastMove[ctr] = 0x0;
+        playersLastMove[ctr] = NULL;
     }
     
 }
@@ -46,10 +46,10 @@ void Sync::handlePlayerMoveMessage(const char* message) {
     PlayerMoveAction* nextAction = new PlayerMoveAction();
     nextAction->deserialize(receiveBuffer);
     int messageSender = nextAction->sender;
-    if (playersLastMove[messageSender-1] != 0x0) {
-        delete playersLastMove[messageSender-1];
+    if (playersLastMove[messageSender] != NULL) {
+        delete playersLastMove[messageSender];
     }
-    playersLastMove[messageSender-1] = nextAction;
+    playersLastMove[messageSender] = nextAction;
 }
 
 void Sync::handleDragonMoveMessage(const char* message) {
@@ -116,8 +116,8 @@ void Sync::PullLatestMessages() {
 }
 
 PlayerMoveAction* Sync::GetLatestBallSync(int player) {
-    PlayerMoveAction* rtn = playersLastMove[player-1];
-    playersLastMove[player-1] = 0x0;
+    PlayerMoveAction* rtn = playersLastMove[player];
+    playersLastMove[player] = NULL;
     return rtn;
 }
 

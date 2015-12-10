@@ -1166,6 +1166,8 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     transport = inTransport;
     sync = new Sync(numPlayers, thisPlayer, transport);
     objectBall = &balls[thisPlayer];
+    
+    printf("Player %d setup.\n", thisPlayer);
 }
 
 void ResetPlayer() {
@@ -1686,12 +1688,19 @@ void SyncDragons() {
         if (next->typeCode == DragonStateAction::CODE) {
             DragonStateAction* nextState = (DragonStateAction*)next;
             Dragon* dragon = dragons[nextState->dragonNum];
-            // TODO: Right now only roar is implemented
-            // We ignore roar actions if we are already in an eaten state or dead state
-            if ((dragon->state != Dragon::EATEN) && (dragon->state != Dragon::DEAD)) {
-                dragon->roar(nextState->posx, nextState->posy, gameLevel, gameDifficultyLeft==DIFFICULTY_A);
+            if (nextState->newState == Dragon::EATEN) {
+                // Set the State to 01 (eaten)
+                dragon->eaten = &balls[nextState->sender];
+                dragon->state = Dragon::EATEN;
                 // Play the sound
-                Platform_MakeSound(SOUND_ROAR);
+                Platform_MakeSound(SOUND_EATEN);
+            } else if (nextState->newState == Dragon::ROAR) {
+                // We ignore roar actions if we are already in an eaten state or dead state
+                if ((dragon->state != Dragon::EATEN) && (dragon->state != Dragon::DEAD)) {
+                    dragon->roar(nextState->posx, nextState->posy, gameLevel, gameDifficultyLeft==DIFFICULTY_A);
+                    // Play the sound
+                    Platform_MakeSound(SOUND_ROAR);
+                }
             }
         } else {
             // If we are in the same room as the dragon and are closer to it than the reporting player,
@@ -2439,12 +2448,14 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
     else if (dragon->state == Dragon::EATEN)
     {
         // Eaten
-        objectBall->room = dragon->room;
-        objectBall->x = (dragon->x + 3) * 2;
-        objectBall->y = (dragon->y - 10) * 2;
+        dragon->eaten->room = dragon->room;
+        dragon->eaten->x = (dragon->x + 3) * 2;
+        dragon->eaten->y = (dragon->y - 10) * 2;
         dragon->movementX = 0;
         dragon->movementY = 0;
-        displayedRoomIndex = objectBall->room;
+        if (objectBall == dragon->eaten) {
+            displayedRoomIndex = objectBall->room;
+        }
     }
     else if (dragon->state == Dragon::ROAR)
     {
@@ -2457,6 +2468,12 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
                 // Set the State to 01 (eaten)
                 dragon->eaten = objectBall;
                 dragon->state = Dragon::EATEN;
+
+                // Notify others
+                DragonStateAction* action = new DragonStateAction(thisPlayer, dragon->dragonNumber, Dragon::EATEN, dragon->room, dragon->x, dragon->y);
+                
+                sync->BroadcastAction(action);
+                
 
                 // Play the sound
                 Platform_MakeSound(SOUND_EATEN);
