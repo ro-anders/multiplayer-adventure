@@ -1695,11 +1695,14 @@ void SyncDragons() {
             }
         } else {
             // If we are in the same room as the dragon and are closer to it than the reporting player,
-            // then we ignore reports and trust our internal state.  Otherwise, you use the reported state.
+            // then we ignore reports and trust our internal state.
+            // If the dragon is not in stalking state we ignore it.
+            // Otherwise, you use the reported state.
             DragonMoveAction* nextMove = (DragonMoveAction*)next;
             Dragon* dragon = dragons[nextMove->dragonNum];
-            if ((dragon->room != objectBall->room) ||
-                (distanceFromBall(objectBall, dragon->x, dragon->y) > nextMove->distance)) {
+            if ((dragon->state == Dragon::STALKING) &&
+                ((dragon->room != objectBall->room) ||
+                (distanceFromBall(objectBall, dragon->x, dragon->y) > nextMove->distance))) {
                 
                 dragon->room = nextMove->room;
                 dragon->x = nextMove->posx;
