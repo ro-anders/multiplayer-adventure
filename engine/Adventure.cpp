@@ -1694,7 +1694,17 @@ void SyncDragons() {
                 dragon->state = Dragon::EATEN;
                 // Play the sound
                 Platform_MakeSound(SOUND_EATEN);
-            } else if (nextState->newState == Dragon::ROAR) {
+            } else if (nextState->newState == Dragon::DEAD) {
+                // We ignore die actions if the dragon has already eaten somebody.
+                if (dragon->state != Dragon::EATEN) {
+                    dragon->state = Dragon::DEAD;
+                    dragon->movementX = 0;
+                    dragon->movementY = 0;
+                    // Play the sound
+                    Platform_MakeSound(SOUND_DRAGONDIE);
+                }
+            }
+            else if (nextState->newState == Dragon::ROAR) {
                 // We ignore roar actions if we are already in an eaten state or dead state
                 if ((dragon->state != Dragon::EATEN) && (dragon->state != Dragon::DEAD)) {
                     dragon->roar(nextState->posx, nextState->posy, gameLevel, gameDifficultyLeft==DIFFICULTY_A);
@@ -2342,7 +2352,12 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
             dragon->state = Dragon::DEAD;
             dragon->movementX = 0;
             dragon->movementY = 0;
-        
+
+            // Notify others
+            DragonStateAction* action = new DragonStateAction(thisPlayer, dragon->dragonNumber, Dragon::DEAD, dragon->room, dragon->x, dragon->y);
+            
+            sync->BroadcastAction(action);
+            
             // Play the sound
             Platform_MakeSound(SOUND_DRAGONDIE);
         }
