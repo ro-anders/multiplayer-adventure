@@ -23,9 +23,11 @@
 #include "Adventure.h"
 
 #include "adventure_sys.h"
+#include "color.h"
 #include "Bat.hpp"
 #include "Dragon.hpp"
 #include "GameObject.hpp"
+#include "Portcullis.hpp"
 #include "Sync.hpp"
 #include "Transport.hpp"
 
@@ -58,11 +60,6 @@ typedef struct BALL
     int hitObject;              // the object that the ball hit
 	const byte* gfxData;		// graphics data for ball
 }BALL;
-
-typedef struct COLOR
-{
-    int r,g,b;
-}COLOR;
 
 typedef struct ROOM
 {
@@ -183,29 +180,6 @@ static int winFlashTimer=0;
 
 static int flashColorHue=0;
 static int flashColorLum=0;
-
-//
-// Color lookup table (RGB)
-//
-static const COLOR colorTable [] = 
-{
-    { 0x00,0x00,0x00 }, // black (0x0)
-    { 0xcd,0xcd,0xcd }, // light gray (0x08)
-    { 0xff,0xff,0xff }, // white (0x0e)
-    { 0xFF,0xD8,0x4C }, // yellow (0x1a)
-    { 0xff,0x98,0x2c }, // orange (0x28)
-    { 0xfa,0x52,0x55 }, // red (0x36)
-    { 0xA2,0x51,0xD9 }, // purple (0x66)
-    { 0x6b,0x64,0xff }, // blue (0x86)
-    { 0x55,0xb6,0xff }, // light cyan  (0x98)
-    { 0x61,0xd0,0x70 }, // cyan  (0xa8)
-    { 0x21,0xd9,0x1b }, // dark green (0xb8)
-    { 0x86,0xd9,0x22 }, // lime green (0xc8)
-    { 0xa1,0xb0,0x34 }, // olive green (0xd8)
-    { 0xd5,0xb5,0x43 }, // tan  (0xe8)
-    { 0xa8,0xfc,0x41 }  // flash (0xcb)
-};  
-enum { COLOR_BLACK=0, COLOR_LTGRAY, COLOR_WHITE, COLOR_YELLOW, COLOR_ORANGE, COLOR_RED, COLOR_PURPLE, COLOR_BLUE, COLOR_LTCYAN, COLOR_CYAN, COLOR_DKGREEN, COLOR_LIMEGREEN, COLOR_OLIVEGREEN, COLOR_TAN, COLOR_FLASH };
 
 // 
 // Room graphics
@@ -800,104 +774,6 @@ static const byte objectGfxMagnet [] =
     0xC3                   // XX    XX                                                                  
 };
 
-// Object #1 States 940FF (Graphic)                                                                                  
-static const byte objectGfxPort [] = 
-{
-    // state 1
-    4,
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    // state 2
-    6,
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    // state 3
-    8,
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    // state 4
-    10,
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    // state 5
-    12,
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    // state 6
-    14,
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    // state 7
-    16,
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA                   // X X X X                                                                   
-};
-
-
-
-// Portcullis states
-static const byte portStates [] = 
-{
-    0,0,1,1,2,2,3,3,4,4,5,5,6,6,5,5,4,4,3,3,2,2,1,1
-};
-
-
 static int MAX_PLAYERS = 3;
 static BALL balls[] = {
     {
@@ -1037,19 +913,7 @@ static const byte roomLevelDiffs [] =
     0x03,0x0c,0x0c,            // up from room 1d (top entry room)    
 };
 
-// Castle Entry Rooms (Yellow, White, Black)
-static const byte entryRoomOffsets[] =
-{
-	 0x12,0x20,0x1A,0x1B
-};
-
-// Castle Rooms (Yellow, White, Black)                                                                               
-static const byte castleRoomOffsets[] =
-{
-	 0x11,0x1F,0x0F,0x10
-};
-
-// Magnet Object Matrix                                                                             
+// Magnet Object Matrix
 static const int magnetMatrix[] =
 {
        OBJECT_YELLOWKEY,    // Yellow Key
@@ -1121,7 +985,8 @@ static int timeToStartGame;
 static int numDragons = 3;
 static Dragon** dragons = NULL;
 static Bat* bat = NULL;
-
+static int numPorts = 4;
+static Portcullis** ports = NULL;
 
 
 void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport, int inGameNum,
@@ -1138,14 +1003,26 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     dragons[2] = new Dragon(2, 0, COLOR_RED, -1, 0, 0);
     bat = new Bat(COLOR_BLACK, -1, 0, 0);
     
-    
-    // Setup the structures
+    // We need to setup the keys before the portcullises
     int numObjects = OBJECT_MAGNET+2;
     objectDefs = (OBJECT**)malloc(numObjects*sizeof(OBJECT*));
-    objectDefs[OBJECT_PORT1] = new OBJECT(objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0);
-    objectDefs[OBJECT_PORT4] = new OBJECT(objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0);
-    objectDefs[OBJECT_PORT2] = new OBJECT(objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0);
-    objectDefs[OBJECT_PORT3] = new OBJECT(objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0);
+    objectDefs[OBJECT_YELLOWKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0);
+    objectDefs[OBJECT_WHITEKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0);
+    objectDefs[OBJECT_BLACKKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
+    
+    
+    numPorts = numPlayers + 2;
+    ports = (Portcullis**)malloc(5 * sizeof(Portcullis*)); // We always create 5 even though we might only use 4.
+    ports[0] = new Portcullis(0x11, 0x12, objectDefs[OBJECT_YELLOWKEY]); // Gold
+    ports[1] = new Portcullis(0x0F, 0x1A, objectDefs[OBJECT_BLACKKEY]); // Black
+    ports[2] = new Portcullis(0x10, 0x1B, objectDefs[OBJECT_WHITEKEY]); // White
+    ports[3] = new Portcullis(0x1F, 0x20, objectDefs[OBJECT_YELLOWKEY]); // Copper
+    
+    // Setup the structures
+    objectDefs[OBJECT_PORT1] = ports[0];
+    objectDefs[OBJECT_PORT4] = ports[3];
+    objectDefs[OBJECT_PORT2] = ports[1];
+    objectDefs[OBJECT_PORT3] = ports[2];
     objectDefs[OBJECT_NAME] = new OBJECT(objectGfxAuthor, 0, 0, COLOR_FLASH, 0x1E, 0x50, 0x69);
     objectDefs[OBJECT_NUMBER] = new OBJECT(objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, 0x00, 0x50, 0x40);
     objectDefs[OBJECT_REDDRAGON] = dragons[2];
@@ -1153,9 +1030,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     objectDefs[OBJECT_GREENDRAGON] = dragons[1];
     objectDefs[OBJECT_SWORD] = new OBJECT(objectGfxSword, 0, 0, COLOR_YELLOW, -1, 0, 0);
     objectDefs[OBJECT_BRIDGE] = new OBJECT(objectGfxBridge, 0, 0, COLOR_PURPLE, -1, 0, 0, 0x07);
-    objectDefs[OBJECT_YELLOWKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0);
-    objectDefs[OBJECT_WHITEKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0);
-    objectDefs[OBJECT_BLACKKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
+    // Keys defined above
     objectDefs[OBJECT_BAT] = bat;
     objectDefs[OBJECT_DOT] = new OBJECT(objectGfxDot, 0, 0, COLOR_LTGRAY, -1, 0, 0);
     objectDefs[OBJECT_CHALISE] = new OBJECT(objectGfxChallise, 0, 0, COLOR_FLASH, -1, 0, 0);
@@ -1551,8 +1426,9 @@ void BallMovement(BALL* ball) {
         else if (ball->y < 0x0D*2)
         {
 			bool leftCastle = false;
-			for (int portalCtr = OBJECT_PORT1; !leftCastle && (portalCtr <= OBJECT_PORT3); ++portalCtr) {
-				if (ball->room == entryRoomOffsets[portalCtr])
+			for (int portalCtr = 0; !leftCastle && (portalCtr < numPorts); ++portalCtr) {
+                Portcullis* port = ports[portalCtr];
+				if (ball->room == port->insideRoom)
 				{
 					ball->x = 0xA0;
 					ball->y = 0x2C * 2;
@@ -1560,7 +1436,7 @@ void BallMovement(BALL* ball) {
 					ball->previousX = ball->x;
 					ball->previousY = ball->y;
 
-					ball->room = castleRoomOffsets[portalCtr];
+					ball->room = port->room;
 					ball->room = AdjustRoomLevel(ball->room);
 					leftCastle = true;
 				}
@@ -1755,40 +1631,23 @@ void MoveCarriedObjects()
 
 void MoveGroundObject()
 {
-    OBJECT* port1 = objectDefs[OBJECT_PORT1];
-    OBJECT* port2 = objectDefs[OBJECT_PORT2];
-	OBJECT* port3 = objectDefs[OBJECT_PORT3];
-	OBJECT* port4 = objectDefs[OBJECT_PORT4];
-
     // Handle ball going into the castles
-    if (objectBall->room == port1->room && port1->state != 0x0C && CollisionCheckObject(port1, (objectBall->x-4), (objectBall->y-1), 8, 8))
-    {
-        objectBall->room = entryRoomOffsets[OBJECT_PORT1];
-        objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
-        objectBall->previousY = objectBall->y;
-        port1->state = 0; // make sure it stays unlocked in case we are walking in with the key
+    for(int ctr=0; ctr<numPorts; ++ctr) {
+        Portcullis* nextPort = ports[ctr];
+        if (objectBall->room == nextPort->room && nextPort->state != 0x0C && CollisionCheckObject(nextPort, (objectBall->x-4), (objectBall->y-1), 8, 8))
+        {
+            objectBall->room = nextPort->insideRoom;
+            objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
+            objectBall->previousY = objectBall->y;
+            nextPort->state = 0; // make sure it stays unlocked in case we are walking in with the key
+            
+            // Report both the ball entering the castle and the castle gate changing state.
+            PlayerMoveAction* moveAction = new PlayerMoveAction(thisPlayer, objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
+            sync->BroadcastAction(moveAction);
+            
+            break;
+        }
     }
-    else if (objectBall->room == port2->room && port2->state != 0x0C && CollisionCheckObject(port2, (objectBall->x-4), (objectBall->y-1), 8, 8))
-    {
-        objectBall->room = entryRoomOffsets[OBJECT_PORT2];
-        objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
-        objectBall->previousY = objectBall->y;
-        port2->state = 0; // make sure it stays unlocked in case we are walking in with the key
-    }
-	else if (objectBall->room == port3->room && port3->state != 0x0C && CollisionCheckObject(port3, (objectBall->x - 4), (objectBall->y - 1), 8, 8))
-	{
-		objectBall->room = entryRoomOffsets[OBJECT_PORT3];
-		objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN - 2;
-		objectBall->previousY = objectBall->y;
-		port3->state = 0; // make sure it stays unlocked in case we are walking in with the key
-	}
-	else if (objectBall->room == port4->room && port4->state != 0x0C && CollisionCheckObject(port4, (objectBall->x - 4), (objectBall->y - 1), 8, 8))
-	{
-		objectBall->room = entryRoomOffsets[OBJECT_PORT4];
-		objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN - 2;
-		objectBall->previousY = objectBall->y;
-		port4->state = 0; // make sure it stays unlocked in case we are walking in with the key
-	}
 
     // Move any objects that need moving, and wrap objects from room to room
     for (int i=OBJECT_REDDRAGON; objectDefs[i]->gfxData; i++)
@@ -1817,27 +1676,17 @@ void MoveGroundObject()
         if (object->y < 0x0D)
         {
             // Handle object leaving the castles
-            if (object->room == entryRoomOffsets[OBJECT_PORT1])
-            {            
-                object->y = 0x5C;
-                object->room = AdjustRoomLevel(castleRoomOffsets[OBJECT_PORT1]);
+            bool leftCastle = false;
+            for (int ctr=0; (ctr < numPorts) && (!leftCastle); ++ctr) {
+                if (object->room == ports[ctr]->insideRoom)
+                {
+                    object->y = 0x5C;
+                    object->room = AdjustRoomLevel(ports[ctr]->room);
+                    // TODO: Do we need to broadcast leaving the castle?  Seems there might be quite a jump.
+                    leftCastle = true;
+                }
             }
-            else if (object->room == entryRoomOffsets[OBJECT_PORT2])
-            {            
-                object->y = 0x5C;
-                object->room = AdjustRoomLevel(castleRoomOffsets[OBJECT_PORT2]);
-            }
-			else if (object->room == entryRoomOffsets[OBJECT_PORT3])
-			{
-				object->y = 0x5C;
-				object->room = AdjustRoomLevel(castleRoomOffsets[OBJECT_PORT3]);
-			}
-			else if (object->room == entryRoomOffsets[OBJECT_PORT4])
-			{
-				object->y = 0x5C;
-				object->room = AdjustRoomLevel(castleRoomOffsets[OBJECT_PORT4]);
-			}
-			else
+			if (!leftCastle)
             {
                 object->y = 0x69;
                 object->room = AdjustRoomLevel(roomDefs[object->room].roomDown);
@@ -2190,108 +2039,43 @@ void MoveBat()
 
 void Portals()
 {
-    OBJECT* port1 = objectDefs[OBJECT_PORT1];
-    OBJECT* port2 = objectDefs[OBJECT_PORT2];
-	OBJECT* port3 = objectDefs[OBJECT_PORT3];
-	OBJECT* port4 = objectDefs[OBJECT_PORT4];
+    for(int ctr=0; ctr<numPorts; ++ctr) {
+        Portcullis* port = ports[ctr];
+        
+        if ((port->key->room == port->room) &&
+            (port->state == Portcullis::OPEN_STATE || port->state == Portcullis::CLOSED_STATE))
+        {
+            // Someone has to be in the room for the key to trigger the gate
+            bool seen = false;
+            for(int ctr=0; !seen && ctr<numPlayers; ++ctr) {
+                seen = (balls[ctr].room == port->room);
+            }
+            if (seen) {
+                // Toggle the port state
+                if (CollisionCheckObjectObject(port, port->key))
+                    port->state++;
+            }
+        }
+        if (port->state != Portcullis::OPEN_STATE && port->state != Portcullis::CLOSED_STATE)
+        {
+            // Raise/lower the port
+            port->state++;
+        }
+        if (port->state > 22)
+        {
+            // Port is unlocked
+            port->state = Portcullis::OPEN_STATE;
+            roomDefs[port->insideRoom].roomDown = port->room;
+        }
+        else if (port->state == Portcullis::CLOSED_STATE)
+        {
+            // Port is locked
+            roomDefs[port->insideRoom].roomDown = port->insideRoom;
+        }
+        
 
-    const OBJECT* yellowKey = objectDefs[OBJECT_YELLOWKEY];
-    const OBJECT* whiteKey = objectDefs[OBJECT_WHITEKEY];
-    const OBJECT* blackKey = objectDefs[OBJECT_BLACKKEY];
-
-    if ((port1->room == objectBall->room) && (yellowKey->room == objectBall->room) && (port1->state == 0 || port1->state == 12))
-    {
-        // Toggle the port state
-        if (CollisionCheckObjectObject(port1, yellowKey))
-            port1->state++;
     }
-    if (port1->state != 0 && port1->state != 12)
-    {
-        // Raise/lower the port
-        port1->state++;
-    }
-    if (port1->state > 22)
-    {
-        // Port 1 is unlocked
-        port1->state = 0;
-        roomDefs[entryRoomOffsets[OBJECT_PORT1]].roomDown = castleRoomOffsets[OBJECT_PORT1];
-    }
-    else if (port1->state == 12)
-    {
-        // Port 1 is locked
-        roomDefs[entryRoomOffsets[OBJECT_PORT1]].roomDown = entryRoomOffsets[OBJECT_PORT1];
-    }
-
-    if ((port2->room == objectBall->room) && (whiteKey->room == objectBall->room) && (port2->state == 0 || port2->state == 12))
-    {
-        // Toggle the port state
-        if (CollisionCheckObjectObject(port2, whiteKey))
-            port2->state++;
-    }
-    if (port2->state != 0 && port2->state != 12)
-    {
-        // Raise/lower the port
-        port2->state++;
-    }
-    if (port2->state > 22)
-    {
-        // Port 2 is unlocked
-        port2->state = 0;
-        roomDefs[entryRoomOffsets[OBJECT_PORT2]].roomDown = castleRoomOffsets[OBJECT_PORT2];
-    }
-    else if (port2->state == 12)
-    {
-        // Port 2 is locked
-        roomDefs[entryRoomOffsets[OBJECT_PORT2]].roomDown = entryRoomOffsets[OBJECT_PORT2];
-    }
-
-    if ((port3->room == objectBall->room) && (blackKey->room == objectBall->room) && (port3->state == 0 || port3->state == 12))
-    {
-        // Toggle the port state
-        if (CollisionCheckObjectObject(port3, blackKey))
-            port3->state++;
-    }
-    if (port3->state != 0 && port3->state != 12)
-    {
-        // Raise/lower the port
-        port3->state++;
-    }
-    if (port3->state > 22)
-    {
-        // Port 3 is unlocked
-        port3->state = 0;
-        roomDefs[entryRoomOffsets[OBJECT_PORT3]].roomDown = castleRoomOffsets[OBJECT_PORT3];
-    }
-    else if (port3->state == 12)
-    {
-        // Port 3 is locked
-        roomDefs[entryRoomOffsets[OBJECT_PORT3]].roomDown = entryRoomOffsets[OBJECT_PORT3];
-    }
-
-	if ((port4->room == objectBall->room) && (yellowKey->room == objectBall->room) && (port4->state == 0 || port4->state == 12))
-	{
-		// Toggle the port state
-		if (CollisionCheckObjectObject(port4, yellowKey))
-			port4->state++;
-	}
-	if (port4->state != 0 && port4->state != 12)
-	{
-		// Raise/lower the port
-		port4->state++;
-	}
-	if (port4->state > 22)
-	{
-		// Port 4 is unlocked
-		port4->state = 0;
-		roomDefs[entryRoomOffsets[OBJECT_PORT4]].roomDown = castleRoomOffsets[OBJECT_PORT4];
-	}
-	else if (port4->state == 12)
-	{
-		// Port 4 is locked
-		roomDefs[entryRoomOffsets[OBJECT_PORT4]].roomDown = entryRoomOffsets[OBJECT_PORT4];
-	}
-
-
+    
 }
 
 int distanceFromBall(BALL* ball, int x, int y) {

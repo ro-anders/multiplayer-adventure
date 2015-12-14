@@ -18,6 +18,7 @@
 		4084EC901BF22AEE00E8F375 /* Sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4084EC8D1BF22AEE00E8F375 /* Sync.cpp */; };
 		40E47FB11BF22BA20052B84E /* AdventureView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40E47FAE1BF22BA20052B84E /* AdventureView.mm */; };
 		40E47FB21BF22BA20052B84E /* Controller.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40E47FB01BF22BA20052B84E /* Controller.mm */; };
+		40F99C051C1A31930032B2A2 /* Portcullis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40F99C031C1A31930032B2A2 /* Portcullis.cpp */; };
 		8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
@@ -58,6 +59,9 @@
 		40E47FB01BF22BA20052B84E /* Controller.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Controller.mm; sourceTree = "<group>"; };
 		40E47FB51BF22CC60052B84E /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = stdafx.h; path = ../stdafx.h; sourceTree = "<group>"; };
 		40E8214E1C0FACB9004CCADB /* Sync.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Sync.hpp; path = ../engine/Sync.hpp; sourceTree = "<group>"; };
+		40F99C031C1A31930032B2A2 /* Portcullis.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Portcullis.cpp; path = ../engine/Portcullis.cpp; sourceTree = "<group>"; };
+		40F99C041C1A31930032B2A2 /* Portcullis.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Portcullis.hpp; path = ../engine/Portcullis.hpp; sourceTree = "<group>"; };
+		40F99C061C1A334B0032B2A2 /* color.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = color.h; path = ../engine/color.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* MacAdventure.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacAdventure.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D009FDD10BCA0A64007C5A37 /* MacAdventureIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MacAdventureIcon.icns; sourceTree = "<group>"; };
@@ -173,6 +177,7 @@
 			isa = PBXGroup;
 			children = (
 				40DA6AA91C03C97800EBB2CE /* adventure_sys.h */,
+				40F99C061C1A334B0032B2A2 /* color.h */,
 				40509AA41C05E9750008BACF /* ActionQueue.cpp */,
 				40509AA51C05E9750008BACF /* ActionQueue.hpp */,
 				40740BAC1C1859730018AE6D /* Bat.cpp */,
@@ -181,6 +186,8 @@
 				406CD1531C0C7C17002477BB /* Dragon.hpp */,
 				40509AA61C05E9750008BACF /* GameObject.cpp */,
 				40509AA71C05E9750008BACF /* GameObject.hpp */,
+				40F99C031C1A31930032B2A2 /* Portcullis.cpp */,
+				40F99C041C1A31930032B2A2 /* Portcullis.hpp */,
 				40509AA81C05E9750008BACF /* RemoteAction.cpp */,
 				40509AA91C05E9750008BACF /* RemoteAction.hpp */,
 				40E8214E1C0FACB9004CCADB /* Sync.hpp */,
@@ -263,6 +270,7 @@
 				406CD1541C0C7C17002477BB /* Dragon.cpp in Sources */,
 				40509AAB1C05E9750008BACF /* GameObject.cpp in Sources */,
 				40509AAA1C05E9750008BACF /* ActionQueue.cpp in Sources */,
+				40F99C051C1A31930032B2A2 /* Portcullis.cpp in Sources */,
 				40509AAC1C05E9750008BACF /* RemoteAction.cpp in Sources */,
 				40E47FB11BF22BA20052B84E /* AdventureView.mm in Sources */,
 			);
