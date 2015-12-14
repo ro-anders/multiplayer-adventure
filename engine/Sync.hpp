@@ -59,7 +59,6 @@ private:
     int thisPlayer = -1;
     
     int numPlayers;
-    int numOtherPlayers;
     
     int MAX_MESSAGE_SIZE = 256;
     char sendBuffer[256];

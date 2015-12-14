@@ -17,12 +17,11 @@
 
 Sync::Sync(int inNumPlayers, int inThisPlayer, Transport* inTransport) :
     numPlayers(inNumPlayers),
-    numOtherPlayers(numPlayers-1),
     thisPlayer(inThisPlayer),
     transport(inTransport)
 {
     playersLastMove = new PlayerMoveAction*[numPlayers];
-    for(int ctr=0; ctr<numOtherPlayers; ++ctr) {
+    for(int ctr=0; ctr<numPlayers; ++ctr) {
         playersLastMove[ctr] = NULL;
     }
     
@@ -115,9 +114,6 @@ void Sync::PullLatestMessages() {
 }
 
 PlayerMoveAction* Sync::GetLatestBallSync(int player) {
-    if (playersLastMove[player] != NULL) {
-        printf("Returning move of player %d: %p", player, playersLastMove[player]);
-    }
     PlayerMoveAction* rtn = playersLastMove[player];
     playersLastMove[player] = NULL;
     return rtn;
