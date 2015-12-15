@@ -122,4 +122,24 @@ public:
     
 };
 
+class PortcullisStateAction: public RemoteAction {
+public:
+    int portNumber;
+    int newState;
+    
+    static const char* CODE;
+    
+    PortcullisStateAction();
+    
+    PortcullisStateAction(int inSender, int portNumber, int newState);
+    
+    ~PortcullisStateAction();
+    
+    int serialize(char* buffer, int bufferLength);
+    
+    void deserialize(const char* message);
+};
+
+
+
 #endif /* RemoteAction_hpp */

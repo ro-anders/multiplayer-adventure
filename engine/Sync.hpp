@@ -41,6 +41,12 @@ public:
     RemoteAction* GetNextDragonAction();
     
     /**
+     * Get the next portcullis action.  Caller must delete this object.
+     * If no actions have been received, this will return null.
+     */
+    PortcullisStateAction* GetNextPortcullisAction();
+    
+    /**
      * Get the next player pickup or player drop action.
      * If no actions have been received, this will return null.
      */
@@ -66,6 +72,7 @@ private:
     
     ActionQueue dragonMoves;
     ActionQueue playerPickups;
+    ActionQueue gateStateChanges;
     
     PlayerMoveAction** playersLastMove;
     
@@ -80,6 +87,8 @@ private:
     void handleDragonMoveMessage(const char* message);
 
     void handleDragonStateMessage(const char* message);
+
+    void handlePortcullisStateMessage(const char* message);
 
 
 

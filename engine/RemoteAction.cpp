@@ -188,3 +188,35 @@ void DragonStateAction::deserialize(const char *message) {
            type, &sender, &dragonNum, &newState, &room, &posx, &posy);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////
+//
+// PortcullisStateAction
+//
+
+const char* PortcullisStateAction::CODE = "GS";
+
+PortcullisStateAction::PortcullisStateAction() :
+RemoteAction(CODE) {}
+
+PortcullisStateAction::PortcullisStateAction(int inSender, int inPortNumber, int inNewSate) :
+RemoteAction(CODE, inSender),
+portNumber(inPortNumber),
+newState(inNewSate) {}
+
+PortcullisStateAction::~PortcullisStateAction() {}
+
+int PortcullisStateAction::serialize(char* buffer, int bufferLength) {
+    // TODO - Right now we are ignoring bufferLength
+    // TODO - Reuse base class serialize
+    int numChars = sprintf(buffer, "GS %d %d %d",
+                           sender, portNumber, newState);
+    return numChars;
+}
+
+void PortcullisStateAction::deserialize(const char *message) {
+    char type[8];
+    sscanf(message, "%s %d %d %d", type, &sender, &portNumber, &newState);
+}
+
+
+

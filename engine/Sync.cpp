@@ -68,6 +68,14 @@ void Sync::handlePlayerPickupMessage(const char* message) {
     playerPickups.enQ(nextAction);
 }
 
+void Sync::handlePortcullisStateMessage(const char* message) {
+    PortcullisStateAction* nextAction = new PortcullisStateAction();
+    nextAction->deserialize(receiveBuffer);
+    gateStateChanges.enQ(nextAction);
+}
+
+
+
 void Sync::PullLatestMessages() {
     int numChars = transport->getPacket(receiveBuffer, MAX_MESSAGE_SIZE);
     while(numChars >= 4) {
@@ -105,6 +113,16 @@ void Sync::PullLatestMessages() {
                         printf("Message with unknown message type D%c: %s\n", receiveBuffer[1], receiveBuffer);
                 }
                 break;
+            case 'G':
+                switch (receiveBuffer[1]) {
+                    case 'S': {
+                        handlePortcullisStateMessage(receiveBuffer);
+                        break;
+                    }
+                    default:
+                        printf("Message with unknown message type C%c: %s\n", receiveBuffer[1], receiveBuffer);
+                }
+                break;
             default:
                 printf("Message with unknown message type %c*: %s\n", receiveBuffer[0], receiveBuffer);
         }
@@ -126,6 +144,16 @@ RemoteAction* Sync::GetNextDragonAction() {
     }
     return next;
 }
+
+PortcullisStateAction* Sync::GetNextPortcullisAction() {
+    RemoteAction* next = NULL;
+    if (!gateStateChanges.isEmpty()) {
+        next = gateStateChanges.deQ();
+    }
+    return (PortcullisStateAction*)next;
+}
+
+
 
 PlayerPickupAction* Sync::GetNextPickupAction() {
     PlayerPickupAction* next = NULL;

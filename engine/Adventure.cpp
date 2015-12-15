@@ -1425,6 +1425,7 @@ void BallMovement(BALL* ball) {
         }
         else if (ball->y < 0x0D*2)
         {
+            // Handle the ball leaving a castle.
 			bool leftCastle = false;
 			for (int portalCtr = 0; !leftCastle && (portalCtr < numPorts); ++portalCtr) {
                 Portcullis* port = ports[portalCtr];
@@ -1632,8 +1633,8 @@ void MoveCarriedObjects()
 void MoveGroundObject()
 {
     // Handle ball going into the castles
-    for(int ctr=0; ctr<numPorts; ++ctr) {
-        Portcullis* nextPort = ports[ctr];
+    for(int portalCtr=0; portalCtr<numPorts; ++portalCtr) {
+        Portcullis* nextPort = ports[portalCtr];
         if (objectBall->room == nextPort->room && nextPort->state != 0x0C && CollisionCheckObject(nextPort, (objectBall->x-4), (objectBall->y-1), 8, 8))
         {
             objectBall->room = nextPort->insideRoom;
@@ -1644,6 +1645,8 @@ void MoveGroundObject()
             // Report both the ball entering the castle and the castle gate changing state.
             PlayerMoveAction* moveAction = new PlayerMoveAction(thisPlayer, objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
             sync->BroadcastAction(moveAction);
+            PortcullisStateAction* gateAction = new PortcullisStateAction(thisPlayer, portalCtr, nextPort->state);
+            sync->BroadcastAction(gateAction);
             
             break;
         }
@@ -2039,8 +2042,18 @@ void MoveBat()
 
 void Portals()
 {
-    for(int ctr=0; ctr<numPorts; ++ctr) {
-        Portcullis* port = ports[ctr];
+    // Handle any remote changes to the portal.
+    PortcullisStateAction* nextAction = sync->GetNextPortcullisAction();
+    while (nextAction != NULL) {
+        ports[nextAction->portNumber]->state = nextAction->newState;
+        
+        delete nextAction;
+        nextAction = sync->GetNextPortcullisAction();
+    }
+    
+    // Handle all the local actions of portals
+    for(int portalCtr=0; portalCtr<numPorts; ++portalCtr) {
+        Portcullis* port = ports[portalCtr];
         
         if ((port->key->room == port->room) &&
             (port->state == Portcullis::OPEN_STATE || port->state == Portcullis::CLOSED_STATE))
@@ -2052,8 +2065,15 @@ void Portals()
             }
             if (seen) {
                 // Toggle the port state
-                if (CollisionCheckObjectObject(port, port->key))
+                if (CollisionCheckObjectObject(port, port->key)) {
                     port->state++;
+                    // If we are in the same room, broadcast the state change
+                    if (objectBall->room == port->room) {
+                        PortcullisStateAction* gateAction = new PortcullisStateAction(thisPlayer, portalCtr, port->state);
+                        sync->BroadcastAction(gateAction);
+                    }
+                }
+
             }
         }
         if (port->state != Portcullis::OPEN_STATE && port->state != Portcullis::CLOSED_STATE)
