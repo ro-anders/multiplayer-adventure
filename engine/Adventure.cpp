@@ -24,6 +24,7 @@
 
 #include "adventure_sys.h"
 #include "color.h"
+#include "Ball.hpp"
 #include "Bat.hpp"
 #include "Dragon.hpp"
 #include "GameObject.hpp"
@@ -42,24 +43,6 @@
 #define CLOCKS_VSYNC        4
 
 // Types
-
-typedef struct BALL
-{
-    int room;                   // room
-    int x;                      // x position
-    int y;                      // y position
-    int previousX;              // previous x position
-    int previousY;              // previous y position
-	int velx;					// Current horizontal speed (walls notwithstanding).  Positive = right.  Negative = left.
-	int vely;					// Current vertical speed (walls notwithstanding).  Positive = right.  Negative = down.
-	int linkedObject;           // index of linked (carried) object
-    int linkedObjectX;          // X value representing the offset from the ball to the object being carried
-    int linkedObjectY;          // Y value representing the offset from the ball to the object being carried
-    bool hitX;                  // the ball hit something on the X axis
-    bool hitY;                  // the ball hit something on the Y axis
-    int hitObject;              // the object that the ball hit
-	const byte* gfxData;		// graphics data for ball
-}BALL;
 
 typedef struct ROOM
 {
@@ -506,46 +489,6 @@ static const byte numberStates [] =
     0,1,2
 };
 
-static const byte objectGfxPlayer1[] =
-{
-	8,
-	0xFF,				   // XXXXXXXX
-	0xFF,				   // XXXXXXXX
-	0xFF,				   // XXXXXXXX
-	0xFF,				   // XXXXXXXX
-	0xFF,				   // XXXXXXXX
-	0xFF,				   // XXXXXXXX
-	0xFF,				   // XXXXXXXX
-	0xFF 				   // XXXXXXXX
-};
-
-static const byte objectGfxPlayer2[] =
-{
-	8,
-	0xFF,				   // XXXXXXXX
-	0xBD,				   // X XXXX X
-	0xDB,				   // XX XX XX
-	0xE7,				   // XXX  XXX
-	0xE7,				   // XXX  XXX
-	0xDB,				   // XX XX XX
-	0xBD,				   // X XXXX X
-	0xFF 				   // XXXXXXXX
-};
-
-static const byte objectGfxPlayer3[] =
-{
-	8,
-	0xFF,				   // XXXXXXXX
-	0xE7,				   // XXX  XXX
-	0xE7,				   // XXX  XXX
-	0x81,				   // X      X
-	0x81,				   // X      X
-	0xE7,				   // XXX  XXX
-	0xE7,				   // XXX  XXX
-	0xFF 				   // XXXXXXXX
-};
-
-
 // Object #0B : State FF : Graphic
 static const byte objectGfxKey [] =
 {
@@ -774,22 +717,7 @@ static const byte objectGfxMagnet [] =
     0xC3                   // XX    XX                                                                  
 };
 
-static int MAX_PLAYERS = 3;
-static BALL balls[] = {
-    {
-        0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
-        OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/,
-        false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer1/*gfxData*/
-    }, {
-        0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
-        OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/,
-        false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer2/*gfxData*/
-    }, {
-		0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
-		OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/, 
-		false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer3/*gfxData*/
-	}
-};
+static BALL** balls;
 static BALL* objectBall = 0x0;
 
 //
@@ -1036,36 +964,39 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     objectDefs[OBJECT_CHALISE] = new OBJECT(objectGfxChallise, 0, 0, COLOR_FLASH, -1, 0, 0);
     objectDefs[OBJECT_MAGNET] = new OBJECT(objectGfxMagnet, 0, 0, COLOR_BLACK, -1, 0, 0);
     objectDefs[numObjects-1] = new OBJECT((const byte*)0, 0, 0, 0, -1, 0, 0);  // #12 Null
+    
+    // Setup the players
+    balls = (BALL**)malloc(numPlayers * sizeof(BALL*));
+    balls[0] = new BALL(0);
+    balls[1] = new BALL(1);
+    objectBall = balls[thisPlayer];
 
     // Setup the transport
     transport = inTransport;
     sync = new Sync(numPlayers, thisPlayer, transport);
-    objectBall = &balls[thisPlayer];
     
     printf("Player %d setup.\n", thisPlayer);
 }
 
 void ResetPlayer() {
-    if (gameState != GAMESTATE_GAMESELECT) {
-        objectBall->room = 0x11;                 // Put us in the yellow castle
-        objectBall->x = 0x50*2;                  //
-        objectBall->y = 0x20*2;                  //
-        objectBall->previousX = objectBall->x;
-        objectBall->previousY = objectBall->y;
-        objectBall->linkedObject = OBJECT_NONE;  // Not carrying anything
-        
-        displayedRoomIndex = objectBall->room;
-        
-        // Make the bat want something right away
-        batFedUpTimer = 0xff;
-        
-        // Set up objects, rooms, and positions
-        
-        // Else we just bring the dragons to life
-        for(int ctr=0; ctr<numDragons; ++ctr) {
-            dragons[ctr]->state = 0;
-            dragons[ctr]->eaten = NULL;
-        }
+    objectBall->room = 0x11;                 // Put us in the yellow castle
+    objectBall->x = 0x50*2;                  //
+    objectBall->y = 0x20*2;                  //
+    objectBall->previousX = objectBall->x;
+    objectBall->previousY = objectBall->y;
+    objectBall->linkedObject = OBJECT_NONE;  // Not carrying anything
+    
+    displayedRoomIndex = objectBall->room;
+    
+    // Make the bat want something right away
+    batFedUpTimer = 0xff;
+    
+    // Set up objects, rooms, and positions
+    
+    // Else we just bring the dragons to life
+    for(int ctr=0; ctr<numDragons; ++ctr) {
+        dragons[ctr]->state = 0;
+        dragons[ctr]->eaten = NULL;
     }
 }
 
@@ -1186,8 +1117,8 @@ void Adventure_Run()
                             
                         }
                     }
-					for (int i = 0; i < MAX_PLAYERS; ++i) {
-                        ReactToCollision(balls + i);
+					for (int i = 0; i < numPlayers; ++i) {
+                        ReactToCollision(balls[i]);
 					}
 
                     // Increment the last object drawn
@@ -1546,14 +1477,14 @@ void OtherBallMovement() {
         if (i != thisPlayer) {
             PlayerMoveAction* movement = sync->GetLatestBallSync(i);
             if (movement != 0x0) {
-                balls[i].room = movement->room;
-                balls[i].x = movement->posx;
-                balls[i].y = movement->posy;
-                balls[i].velx = movement->velx;
-                balls[i].vely = movement->vely;
+                balls[i]->room = movement->room;
+                balls[i]->x = movement->posx;
+                balls[i]->y = movement->posy;
+                balls[i]->velx = movement->velx;
+                balls[i]->vely = movement->vely;
             }
             
-            BallMovement(balls+i);
+            BallMovement(balls[i]);
 		}
 	}
 
@@ -1567,7 +1498,7 @@ void SyncDragons() {
             Dragon* dragon = dragons[nextState->dragonNum];
             if (nextState->newState == Dragon::EATEN) {
                 // Set the State to 01 (eaten)
-                dragon->eaten = &balls[nextState->sender];
+                dragon->eaten = balls[nextState->sender];
                 dragon->state = Dragon::EATEN;
                 // Play the sound
                 Platform_MakeSound(SOUND_EATEN);
@@ -1616,7 +1547,7 @@ void SyncDragons() {
 void MoveCarriedObjects()
 {
     for(int ctr=0; ctr<numPlayers; ++ctr) {
-        BALL* nextBall = &balls[ctr];
+        BALL* nextBall = balls[ctr];
         if (nextBall->linkedObject != OBJECT_NONE)
         {
             OBJECT* object = objectDefs[nextBall->linkedObject];
@@ -1808,8 +1739,8 @@ void PrintDisplay()
     color = colorTable[roomDefs[displayedRoomIndex].color];
 
 	for (int i = 0; i < numPlayers; ++i) {
-		if (objectBall->room == balls[i].room) {
-			DrawBall(&balls[i], color);
+		if (objectBall->room == balls[i]->room) {
+			DrawBall(balls[i], color);
 		}
 	}
 
@@ -1824,7 +1755,7 @@ void OthersPickupPutdown() {
     PlayerPickupAction* action = sync->GetNextPickupAction();
     while (action != NULL) {
         int actorNum = action->sender;
-        BALL* actor = &balls[actorNum];
+        BALL* actor = balls[actorNum];
         if (action->dropObject != OBJECT_NONE) {
             printf("Received drop action for player %d who is carrying %d\n", actorNum, actor->linkedObject);
         }
@@ -1843,9 +1774,9 @@ void OthersPickupPutdown() {
             printf("Setting player %d to carrying %d\n", actorNum, actor->linkedObject);
             // If anybody else was carrying this object, take it away.
             for(int ctr=0; ctr<numPlayers; ++ctr) {
-                if ((ctr != actorNum) && (balls[ctr].linkedObject==action->pickupObject)) {
+                if ((ctr != actorNum) && (balls[ctr]->linkedObject==action->pickupObject)) {
                     printf("Player %d took object %d from player %d\n", action->sender, actor->linkedObject, thisPlayer);
-                    balls[ctr].linkedObject = OBJECT_NONE;
+                    balls[ctr]->linkedObject = OBJECT_NONE;
                 }
             }
             // If they are in the same room as you, play the pickup sound
@@ -1910,8 +1841,8 @@ void PickupPutdown()
                 
                 // Take it away from anyone else if they were holding it.
                 for(int ctr=0; ctr<numPlayers; ++ctr) {
-                    if ((ctr != thisPlayer) && (balls[ctr].linkedObject == hitIndex)) {
-                        balls[ctr].linkedObject = OBJECT_NONE;
+                    if ((ctr != thisPlayer) && (balls[ctr]->linkedObject == hitIndex)) {
+                        balls[ctr]->linkedObject = OBJECT_NONE;
                     }
                 }
 
@@ -2061,7 +1992,7 @@ void Portals()
             // Someone has to be in the room for the key to trigger the gate
             bool seen = false;
             for(int ctr=0; !seen && ctr<numPlayers; ++ctr) {
-                seen = (balls[ctr].room == port->room);
+                seen = (balls[ctr]->room == port->room);
             }
             if (seen) {
                 // Toggle the port state
@@ -2119,12 +2050,12 @@ BALL* closestBall(int room, int x, int y) {
     int shortestDistance = 10000; // Some big number greater than the diagnol of the board
     BALL* found = 0x0;
     for(int ctr=0; ctr<numPlayers; ++ctr) {
-        if (balls[ctr].room == room)
+        if (balls[ctr]->room == room)
         {
-            int dist = distanceFromBall(&balls[ctr], x, y);
+            int dist = distanceFromBall(balls[ctr], x, y);
             if (dist < shortestDistance) {
                 shortestDistance = dist;
-                found = &balls[ctr];
+                found = balls[ctr];
             }
         }
     }
@@ -2249,7 +2180,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
                     
                     // Notify others if we've changed our direction
                     if ((dragon->room == objectBall->room) && ((newMovementX != dragon->movementX) || (newMovementY != dragon->movementY))) {
-                        int distanceToMe = distanceFromBall(&balls[thisPlayer], dragon->x, dragon->y);
+                        int distanceToMe = distanceFromBall(balls[thisPlayer], dragon->x, dragon->y);
                         DragonMoveAction* newAction = new DragonMoveAction(thisPlayer, dragon->room, dragon->x, dragon->y, newMovementX, newMovementY, dragon->dragonNumber, distanceToMe);
                         sync->BroadcastAction(newAction);
                     }
