@@ -35,22 +35,39 @@ public:
     PlayerMoveAction* GetLatestBallSync(int player);
     
     /**
+     * Get the next player pickup or player drop action.
+     * Caller must delete this action.
+     * If no actions have been received, this will return null.
+     */
+    PlayerPickupAction* GetNextPickupAction();
+    
+    /**
+     * Get the next player reset action.
+     * Caller must delete this action.
+     * If no actions have been received, this will return null.
+     */
+    PlayerResetAction* GetNextResetAction();
+    
+    /**
+     * If another player has won, this will return that action.
+     * Otherwise will return null.
+     * Caller must delete this action.
+     */
+    PlayerWinAction* GetGameWon();
+    
+    /**
      * Get the next dragon action.  Caller must delete this object.
+     * Caller must delete this action.
      * If no actions have been received, this will return null.
      */
     RemoteAction* GetNextDragonAction();
     
     /**
      * Get the next portcullis action.  Caller must delete this object.
+     * Caller must delete this action.
      * If no actions have been received, this will return null.
      */
     PortcullisStateAction* GetNextPortcullisAction();
-    
-    /**
-     * Get the next player pickup or player drop action.
-     * If no actions have been received, this will return null.
-     */
-    PlayerPickupAction* GetNextPickupAction();
     
     /**
      * Broadcast an event to the other players
@@ -72,9 +89,12 @@ private:
     
     ActionQueue dragonMoves;
     ActionQueue playerPickups;
+    ActionQueue playerResets;
     ActionQueue gateStateChanges;
     
     PlayerMoveAction** playersLastMove;
+    
+    PlayerWinAction* gameWon;
     
     int frameNum = 0;
     
@@ -83,6 +103,10 @@ private:
     void handlePlayerMoveMessage(const char* message);
 
     void handlePlayerPickupMessage(const char* message);
+
+    void handlePlayerResetMessage(const char* message);
+    
+    void handlePlayerWinMessage(const char* message);
     
     void handleDragonMoveMessage(const char* message);
 

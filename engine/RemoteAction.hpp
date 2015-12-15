@@ -80,6 +80,40 @@ public:
     void deserialize(const char* message);
 };
 
+class PlayerResetAction: public RemoteAction {
+public:
+    
+    static const char* CODE;
+    
+    PlayerResetAction();
+    
+    PlayerResetAction(int inSender);
+    
+    ~PlayerResetAction();
+    
+    int serialize(char* buffer, int bufferLength);
+    
+    void deserialize(const char* message);
+};
+
+class PlayerWinAction: public RemoteAction {
+public:
+    int winInRoom;
+    
+    static const char* CODE;
+    
+    PlayerWinAction();
+    
+    PlayerWinAction(int sender, int winInRoom);
+    
+    ~PlayerWinAction();
+    
+    int serialize(char* buffer, int bufferLength);
+    
+    void deserialize(const char* message);
+};
+
+
 class DragonMoveAction: public MoveAction {
 public:
     int dragonNum;          // 0=Rhindle, 1=Yorgle, 2=Grindle

@@ -1,5 +1,6 @@
 
 
+
 #include "RemoteAction.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -8,11 +9,11 @@
 //
 
 RemoteAction::RemoteAction(const char* inCode) :
-  typeCode(inCode) {}
+typeCode(inCode) {}
 
 RemoteAction::RemoteAction(const char* inCode, int inSender) :
-  typeCode(inCode),
-  sender(inSender) {}
+typeCode(inCode),
+sender(inSender) {}
 
 RemoteAction::~RemoteAction() {}
 
@@ -22,13 +23,13 @@ RemoteAction::~RemoteAction() {}
 //
 
 MoveAction::MoveAction(const char* inCode) :
-  RemoteAction(inCode) {}
+RemoteAction(inCode) {}
 
 
 MoveAction::~MoveAction() {}
 
 MoveAction::MoveAction(const char* inCode, int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
-    RemoteAction(inCode, inSender)
+RemoteAction(inCode, inSender)
 {
     room = inRoom;
     posx = inPosx;
@@ -45,10 +46,10 @@ MoveAction::MoveAction(const char* inCode, int inSender, int inRoom, int inPosx,
 const char* PlayerMoveAction::CODE = "PM";
 
 PlayerMoveAction::PlayerMoveAction() :
-  MoveAction(CODE) {}
+MoveAction(CODE) {}
 
 PlayerMoveAction::PlayerMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
-    MoveAction(CODE, inSender, inRoom, inPosx, inPosy, inVelx, inVely)
+MoveAction(CODE, inSender, inRoom, inPosx, inPosy, inVelx, inVely)
 {}
 
 PlayerMoveAction::~PlayerMoveAction() {}
@@ -72,18 +73,18 @@ void PlayerMoveAction::deserialize(const char *message) {
 const char* PlayerPickupAction::CODE = "DM";
 
 PlayerPickupAction::PlayerPickupAction() :
-  RemoteAction(CODE) {}
+RemoteAction(CODE) {}
 
 PlayerPickupAction::PlayerPickupAction(int inSender, int inPickupObject, int inPickupX, int inPickupY,
                                        int inDropObject, int inDropRoom, int inDropX, int inDropY) :
-  RemoteAction(CODE, inSender),
-  pickupObject(inPickupObject),
-  pickupX(inPickupX),
-  pickupY(inPickupY),
-  dropObject(inDropObject),
-  dropRoom(inDropRoom),
-  dropX(inDropX),
-  dropY(inDropY)
+RemoteAction(CODE, inSender),
+pickupObject(inPickupObject),
+pickupX(inPickupX),
+pickupY(inPickupY),
+dropObject(inDropObject),
+dropRoom(inDropRoom),
+dropX(inDropX),
+dropY(inDropY)
 {}
 
 PlayerPickupAction::~PlayerPickupAction() {}
@@ -121,19 +122,78 @@ void PlayerPickupAction::deserialize(const char *message) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //
+// PlayerResetAction
+//
+
+const char* PlayerResetAction::CODE = "PR";
+
+PlayerResetAction::PlayerResetAction() :
+RemoteAction(CODE) {}
+
+PlayerResetAction::PlayerResetAction(int inSender) :
+RemoteAction(CODE, inSender) {}
+
+PlayerResetAction::~PlayerResetAction() {}
+
+
+int PlayerResetAction::serialize(char* buffer, int bufferLength) {
+    // TODO - Right now we are ignoring bufferLength
+    // TODO - Reuse base class serialize
+    int numChars = sprintf(buffer, "PR %d", sender);
+    return numChars;
+}
+
+void PlayerResetAction::deserialize(const char *message) {
+    char type[8];
+    sscanf(message, "%s %d", type, &sender);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+//
+// PlayerWinAction
+//
+
+const char* PlayerWinAction::CODE = "PW";
+
+PlayerWinAction::PlayerWinAction() :
+RemoteAction(CODE) {}
+
+PlayerWinAction::PlayerWinAction(int inSender, int inWinInRoom) :
+RemoteAction(CODE, inSender),
+winInRoom(inWinInRoom){}
+
+PlayerWinAction::~PlayerWinAction() {}
+
+
+int PlayerWinAction::serialize(char* buffer, int bufferLength) {
+    // TODO - Right now we are ignoring bufferLength
+    // TODO - Reuse base class serialize
+    int numChars = sprintf(buffer, "PW %d %d", sender, winInRoom);
+    return numChars;
+}
+
+void PlayerWinAction::deserialize(const char *message) {
+    char type[8];
+    sscanf(message, "%s %d %d", type, &sender, &winInRoom);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+//
 // DragonMoveAction
 //
 
 const char* DragonMoveAction::CODE = "DM";
 
 DragonMoveAction::DragonMoveAction() :
-  MoveAction(CODE) {}
+MoveAction(CODE) {}
 
 DragonMoveAction::DragonMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely,
                                    int inDragonNum, int inDistance) :
-  MoveAction(CODE, inSender, inRoom, inPosx, inPosy, inVelx, inVely),
-  dragonNum(inDragonNum),
-  distance(inDistance)
+MoveAction(CODE, inSender, inRoom, inPosx, inPosy, inVelx, inVely),
+dragonNum(inDragonNum),
+distance(inDistance)
 {}
 
 DragonMoveAction::~DragonMoveAction() {}
@@ -161,15 +221,15 @@ void DragonMoveAction::deserialize(const char *message) {
 const char* DragonStateAction::CODE = "DS";
 
 DragonStateAction::DragonStateAction() :
-  RemoteAction(CODE) {}
+RemoteAction(CODE) {}
 
 DragonStateAction::DragonStateAction(int inSender, int inDragonNum, int inState, int inRoom, int inPosx, int inPosy) :
-  RemoteAction(CODE, inSender),
-  dragonNum(inDragonNum),
-  newState(inState),
-  room(inRoom),
-  posx(inPosx),
-  posy(inPosy)
+RemoteAction(CODE, inSender),
+dragonNum(inDragonNum),
+newState(inState),
+room(inRoom),
+posx(inPosx),
+posy(inPosy)
 {}
 
 DragonStateAction::~DragonStateAction() {}
@@ -217,6 +277,7 @@ void PortcullisStateAction::deserialize(const char *message) {
     char type[8];
     sscanf(message, "%s %d %d %d", type, &sender, &portNumber, &newState);
 }
+
 
 
 

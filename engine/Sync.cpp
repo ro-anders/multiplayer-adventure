@@ -18,6 +18,7 @@
 Sync::Sync(int inNumPlayers, int inThisPlayer, Transport* inTransport) :
     numPlayers(inNumPlayers),
     thisPlayer(inThisPlayer),
+    gameWon(NULL),
     transport(inTransport)
 {
     playersLastMove = new PlayerMoveAction*[numPlayers];
@@ -68,13 +69,26 @@ void Sync::handlePlayerPickupMessage(const char* message) {
     playerPickups.enQ(nextAction);
 }
 
+void Sync::handlePlayerResetMessage(const char* message) {
+    PlayerResetAction* nextAction = new PlayerResetAction();
+    nextAction->deserialize(receiveBuffer);
+    playerResets.enQ(nextAction);
+}
+
 void Sync::handlePortcullisStateMessage(const char* message) {
     PortcullisStateAction* nextAction = new PortcullisStateAction();
     nextAction->deserialize(receiveBuffer);
     gateStateChanges.enQ(nextAction);
 }
 
-
+void Sync::handlePlayerWinMessage(const char* message) {
+    // Don't know how we'd get this, but we ignore any win message after we receive the first one.
+    if (gameWon == NULL) {
+        PlayerWinAction* nextAction = new PlayerWinAction();
+        nextAction->deserialize(receiveBuffer);
+        gameWon = nextAction;
+    }
+}
 
 void Sync::PullLatestMessages() {
     int numChars = transport->getPacket(receiveBuffer, MAX_MESSAGE_SIZE);
@@ -93,6 +107,14 @@ void Sync::PullLatestMessages() {
                     }
                     case 'P': {
                         handlePlayerPickupMessage(receiveBuffer);
+                        break;
+                    }
+                    case 'R': {
+                        handlePlayerResetMessage(receiveBuffer);
+                        break;
+                    }
+                    case 'W': {
+                        handlePlayerWinMessage(receiveBuffer);
                         break;
                     }
                     default:
