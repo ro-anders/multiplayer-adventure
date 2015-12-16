@@ -193,3 +193,9 @@ PlayerPickupAction* Sync::GetNextPickupAction() {
     return next;
 
 }
+
+PlayerWinAction* Sync::GetGameWon() {
+    PlayerWinAction* next = gameWon;
+    gameWon = NULL;
+    return next;
+}

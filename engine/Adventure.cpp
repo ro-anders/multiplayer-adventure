@@ -122,6 +122,8 @@ static bool HitTestRects(int ax, int ay, int awidth, int aheight,
 static int distanceFromBall(BALL* ball, int x, int y);
 static void ResetPlayers();
 static void ResetPlayer(BALL* ball);
+static void WinGame();
+
 
 COLOR GetFlashColor();
 void AdvanceFlashColor();
@@ -742,7 +744,7 @@ static const byte game1Objects [] =
     OBJECT_BRIDGE, 0x04, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
     OBJECT_YELLOWKEY, 0x11, 0x20, 0x41, 0x00, 0x00, 0x00, // Yellow Key
     OBJECT_WHITEKEY, 0x0E, 0x20, 0x40, 0x00, 0x00, 0x00, // White Key
-    OBJECT_BLACKKEY, 0x1D, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
+    OBJECT_BLACKKEY, 0x10/*0x1D*/, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
     OBJECT_BAT, 0x1A, 0x20, 0x20, 0x00, 0x00, 0x00, // Bat
     OBJECT_DOT, 0x15, 0x51, 0x12, 0x00, 0x00, 0x00, // Dot
     OBJECT_CHALISE, 0x1C, 0x30, 0x20, 0x00, 0x00, 0x00, // Challise
@@ -944,8 +946,8 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     numPorts = numPlayers + 2;
     ports = (Portcullis**)malloc(5 * sizeof(Portcullis*)); // We always create 5 even though we might only use 4.
     ports[0] = new Portcullis(0x11, 0x12, objectDefs[OBJECT_YELLOWKEY]); // Gold
-    ports[1] = new Portcullis(0x0F, 0x1A, objectDefs[OBJECT_BLACKKEY]); // Black
-    ports[2] = new Portcullis(0x10, 0x1B, objectDefs[OBJECT_WHITEKEY]); // White
+    ports[1] = new Portcullis(0x0F, 0x1A, objectDefs[OBJECT_WHITEKEY]); // White
+    ports[2] = new Portcullis(0x10, 0x1B, objectDefs[OBJECT_BLACKKEY]); // Black
     ports[3] = new Portcullis(0x1F, 0x20, objectDefs[OBJECT_YELLOWKEY]); // Copper
     
     // Setup the structures
@@ -1064,19 +1066,20 @@ void Adventure_Run()
         }
         else if (ISGAMEACTIVE())
         {
+            // See if anyone else won the game
+            PlayerWinAction* lost = sync->GetGameWon();
+            if (lost != NULL) {
+                WinGame();
+                delete lost;
+                lost = NULL;
+            }
             // Get the room the chalise is in
-
-            // Is it in the yellow castle?
-            if (objectDefs[OBJECT_CHALISE]->room == 0x12)
+            // Is it in the home castle?
+            else if (objectDefs[OBJECT_CHALISE]->room == objectBall->homeGate->insideRoom)
             {
-                // Play end noise
-
-                // Go to won state
-                gameState = GAMESTATE_WIN;
-                winFlashTimer = 0xff;
-
-                // Play the sound
-                Platform_MakeSound(SOUND_WON);
+                WinGame();
+                PlayerWinAction* won = new PlayerWinAction(thisPlayer, objectBall->room);
+                sync->BroadcastAction(won);
             }
             else if (switchSelect && !select)
             {
@@ -1275,6 +1278,15 @@ void SetupRoomObjects()
         }
         while (object > OBJECT_NONE);
     }
+}
+
+void WinGame() {
+    // Go to won state
+    gameState = GAMESTATE_WIN;
+    winFlashTimer = 0xff;
+    
+    // Play the sound
+    Platform_MakeSound(SOUND_WON);
 }
 
 void ReactToCollision(BALL* ball) {
