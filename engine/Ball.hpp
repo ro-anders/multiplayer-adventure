@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include "adventure_sys.h"
 
+class Portcullis;
+
 class BALL
 {
 public:
@@ -23,8 +25,9 @@ public:
     bool hitY;                  // the ball hit something on the Y axis
     int hitObject;              // the object that the ball hit
     const byte* gfxData;		// graphics data for ball
+    Portcullis* homeGate;
    
-    BALL(int numPlayer);
+    BALL(int numPlayer, Portcullis* homeGate);
     
     ~BALL();
 };

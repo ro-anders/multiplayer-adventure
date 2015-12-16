@@ -120,6 +120,8 @@ void CalcPlayerSpriteExtents(const OBJECT* object, int* cx, int* cy, int* cw, in
 static bool HitTestRects(int ax, int ay, int awidth, int aheight,
                     int bx, int by, int bwidth, int bheight);
 static int distanceFromBall(BALL* ball, int x, int y);
+static void ResetPlayers();
+static void ResetPlayer(BALL* ball);
 
 COLOR GetFlashColor();
 void AdvanceFlashColor();
@@ -967,8 +969,8 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     
     // Setup the players
     balls = (BALL**)malloc(numPlayers * sizeof(BALL*));
-    balls[0] = new BALL(0);
-    balls[1] = new BALL(1);
+    balls[0] = new BALL(0, ports[0]);
+    balls[1] = new BALL(1, ports[3]);
     objectBall = balls[thisPlayer];
 
     // Setup the transport
@@ -978,25 +980,34 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     printf("Player %d setup.\n", thisPlayer);
 }
 
-void ResetPlayer() {
-    objectBall->room = 0x11;                 // Put us in the yellow castle
-    objectBall->x = 0x50*2;                  //
-    objectBall->y = 0x20*2;                  //
-    objectBall->previousX = objectBall->x;
-    objectBall->previousY = objectBall->y;
-    objectBall->linkedObject = OBJECT_NONE;  // Not carrying anything
+void ResetPlayers() {
+    for(int ctr=0; ctr<numPlayers; ++ctr) {
+        ResetPlayer(balls[ctr]);
+    }
+}
+
+void ResetPlayer(BALL* ball) {
+    ball->room = ball->homeGate->room;                 // Put us at our home castle
+    ball->x = 0x50*2;                  //
+    ball->y = 0x20*2;                  //
+    ball->previousX = objectBall->x;
+    ball->previousY = objectBall->y;
+    ball->linkedObject = OBJECT_NONE;  // Not carrying anything
     
     displayedRoomIndex = objectBall->room;
     
     // Make the bat want something right away
     batFedUpTimer = 0xff;
     
-    // Set up objects, rooms, and positions
-    
-    // Else we just bring the dragons to life
+    // Bring the dragons back to life
     for(int ctr=0; ctr<numDragons; ++ctr) {
-        dragons[ctr]->state = 0;
-        dragons[ctr]->eaten = NULL;
+        Dragon* dragon = dragons[ctr];
+        if (dragon->state == Dragon::DEAD) {
+            dragon->state = Dragon::STALKING;
+        } else if (dragon->eaten == ball) {
+            dragon->state = Dragon::STALKING;
+            dragon->eaten = NULL;
+        }
     }
 }
 
@@ -1012,10 +1023,21 @@ void Adventure_Run()
     Platform_ReadDifficultySwitches(&gameDifficultyLeft, &gameDifficultyRight);
 
     // Reset switch
+    // First check for other resets
+    PlayerResetAction* otherReset = sync->GetNextResetAction();
+    while (otherReset != NULL) {
+        ResetPlayer(balls[otherReset->sender]);
+        delete otherReset;
+        otherReset = sync->GetNextResetAction();
+    }
     if ((gameState != GAMESTATE_WIN) && switchReset && !reset)
     {
         if (gameState != GAMESTATE_GAMESELECT) {
-            ResetPlayer();
+            ResetPlayer(objectBall);
+            // Broadcast to everyone else
+            PlayerResetAction* action = new PlayerResetAction(thisPlayer);
+            sync->BroadcastAction(action);
+            
         }
     }
     else
@@ -1027,7 +1049,7 @@ void Adventure_Run()
             if (timeToStartGame <= 0) {
                 SetupRoomObjects();
                 gameState = GAMESTATE_ACTIVE_1;
-                ResetPlayer();
+                ResetPlayers();
             } else {
                 int displayNum = timeToStartGame / 60;
                 objectDefs[OBJECT_NUMBER]->state = displayNum;

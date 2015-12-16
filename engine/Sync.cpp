@@ -159,6 +159,14 @@ PlayerMoveAction* Sync::GetLatestBallSync(int player) {
     return rtn;
 }
 
+PlayerResetAction* Sync::GetNextResetAction() {
+    RemoteAction* next = NULL;
+    if (!playerResets.isEmpty()) {
+        next = playerResets.deQ();
+    }
+    return (PlayerResetAction*)next;
+}
+
 RemoteAction* Sync::GetNextDragonAction() {
     RemoteAction* next = NULL;
     if (!dragonMoves.isEmpty()) {

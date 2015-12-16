@@ -1,5 +1,6 @@
 
 #include "Ball.hpp"
+#include "Portcullis.hpp"
 
 static const byte objectGfxPlayer1[] =
 {
@@ -41,7 +42,7 @@ static const byte objectGfxPlayer3[] =
 };
 
 
-BALL::BALL(int inPlayerNum) :
+BALL::BALL(int inPlayerNum, Portcullis* inHomeGate) :
     playerNum(inPlayerNum),
     room(0),
     x(0),
@@ -56,4 +57,5 @@ BALL::BALL(int inPlayerNum) :
     hitX(false),
     hitY(false),
     hitObject(-1), // TODO: This should be OBJECT_NONE
-    gfxData((playerNum == 1 ? objectGfxPlayer1 : (playerNum == 2 ? objectGfxPlayer2 : objectGfxPlayer3))) {}
+    gfxData((playerNum == 1 ? objectGfxPlayer1 : (playerNum == 2 ? objectGfxPlayer2 : objectGfxPlayer3))),
+    homeGate(inHomeGate) {}
