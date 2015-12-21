@@ -219,7 +219,7 @@ static const byte roomGfxNumberRoom [] =
     0x30,0x00,0x00,     // XX                                    RR                                      
     0x30,0x00,0x00,     // XX                                    RR                                      
     0x30,0x00,0x00,     // XX                                    RR                                      
-    0xF0,0xFF,0x0F      // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR                                      
+    0xF0,0xFF,0x0F      // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR                                      
 };
 
 // `                                                                                                     
@@ -249,7 +249,9 @@ static const byte roomGfxBlueMazeTop[] =
 // Blue Maze #1                                                                                                      
 static const byte roomGfxBlueMaze1 [] =
 {
-    0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR                                      
+    // Top exit only present with 3 players
+    
+    0xF0,0xFF,0xFF/*0x0F*/,  // XXXXXXXXXXXXXXXX--------RRRRRRRRRRRRRRRR
     0x00,0x00,0x00,          //                                                                               
     0xF0,0xFC,0xFF,          // XXXXXXXXXX  XXXXXXXXRRRRRRRR  RRRRRRRRRR                                      
     0xF0,0x00,0xC0,          // XXXX              XXRR              RRRR                                      

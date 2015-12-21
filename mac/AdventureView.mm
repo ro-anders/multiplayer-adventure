@@ -17,6 +17,7 @@
 #include "adventure_sys.h"
 #include "AdventureView.h"
 #include "Adventure.h"
+#include "args.h"
 #include "Transport.hpp"
 #include "MacTransport.hpp"
 
@@ -55,14 +56,45 @@ bool gMenuItemSelect = FALSE;
 {
 	[super initWithFrame:frameRect];
     // TODO: Pull other player info off of command line
-    int numberPlayers = 2;
-    Transport* transport = new MacTransport();
-    transport->connect();
-    int thisPlayer = transport->getConnectNumber();
+    int argc;
+    char** argv;
+    Args_GetArgs(&argc, &argv);
+    int numPlayers;
+    int thisPlayer;
+    Transport* transport;
+    
+    int gameLevel = 1;
+    if (argc > 2) {
+        gameLevel = atoi(argv[1]);
+    }
+    
+    // Read the command line arguments and setup the communication with the other players
+    const int DEFAULT_PORT = 5678;
+    if (argc <= 2) {
+        numPlayers = 2;
+        transport = new MacTransport();
+        transport->connect();
+        thisPlayer = transport->getConnectNumber();
+    } else {
+        numPlayers = argc-2;
+        thisPlayer = atoi(argv[2])-1;
+        char* otherPlayer1 = argv[3];
+        int port1 = DEFAULT_PORT;
+        if (strlen(otherPlayer1) <= 5) {
+            // It is just a port.
+            port1 = atoi(otherPlayer1);
+            transport = new MacTransport(port1);
+        } else {
+            char* ip1 = NULL;
+            Transport::parseUrl(otherPlayer1, &ip1, &port1);
+            transport = new MacTransport(ip1, port1);
+        }
+        transport->connect();
+    }
+    
 	if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
 	{
-        // TODO: Pull other player in
-        Adventure_Setup(numberPlayers, thisPlayer, transport, 1, 0, 0);
+        Adventure_Setup(numPlayers, thisPlayer, transport, 1, 0, 0);
 		timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
 												 target: self
 											   selector: @selector(update:)

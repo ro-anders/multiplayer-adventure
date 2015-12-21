@@ -15,8 +15,12 @@
 
 
 #import <Cocoa/Cocoa.h>
+#import "args.h"
 
 int main(int argc, char *argv[])
 {
+    Args_SetArgs(argc, argv);
+    Args_GetArgs(&argc, &argv);
+
     return NSApplicationMain(argc,  (const char **) argv);
 }
