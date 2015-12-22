@@ -62,10 +62,11 @@ typedef struct ROOM
 enum
 {
     OBJECT_NONE=-1,
-    OBJECT_PORT1=0,
-	OBJECT_PORT4,
-    OBJECT_PORT2,
-    OBJECT_PORT3,
+    OBJECT_YELLOW_PORT=0,
+    OBJECT_COPPER_PORT,
+	OBJECT_JADE_PORT,
+    OBJECT_WHITE_PORT,
+    OBJECT_BLACK_PORT,
     OBJECT_NAME,
     OBJECT_NUMBER,
     OBJECT_REDDRAGON,
@@ -74,6 +75,7 @@ enum
     OBJECT_SWORD,
     OBJECT_BRIDGE,
     OBJECT_YELLOWKEY,
+    OBJECT_COPPERKEY,
     OBJECT_WHITEKEY,
     OBJECT_BLACKKEY,
     OBJECT_BAT,
@@ -105,7 +107,6 @@ static void Portals();
 static void SyncDragons();
 static void MoveDragon(Dragon* dragon, const int* matrix, int speed);
 static void Magnet();
-static int AdjustRoomLevel(int room);
 
 // My helper functions
 static void DrawObjects(int room);
@@ -157,6 +158,7 @@ static int gameState = GAMESTATE_GAMESELECT;            // finite state machine
 static int gameDifficultyLeft = DIFFICULTY_B;           // 2600 left difficulty switch
 static int gameDifficultyRight = DIFFICULTY_B;          // 2600 right difficulty switch
 static int gameLevel = 0;                               // current game level (1,2,3 - zero justified)
+static int gameBoard = 0;                               // The board setup.  Level 1 = 0, Levels 2 & 3 = 1, Gauntlet = 2
 static int gameNum; // Which game is being played.  May be different from game level.
 
 static int displayedRoomIndex = 0;                                   // index of current (displayed) room
@@ -731,20 +733,109 @@ static BALL* objectBall = 0x0;
 //
 static OBJECT** objectDefs = 0x0;
 
+enum
+{
+    NUMBER_ROOM=0x00,
+    MAIN_HALL_LEFT=0x01,
+    MAIN_HALL_CENTER=0x02,
+    MAIN_HALL_RIGHT=0x03,
+    BLUE_MAZE_BLACK_END=0x04,
+    BLUE_MAZE_JADE_END=0x05,
+    BLUE_MAZE_LARGE_ROOM=0x06,
+    BLUE_MAZE_VERT_PATHS=0x07,
+    BLUE_MAZE_HALL_END=0x08,
+    
+    WHITE_MAZE_HALL_END=0x0a,
+    
+    SOUTH_HALL_RIGHT=0x0c,
+    SOUTH_HALL_LEFT=0x0d,
+    
+    WHITE_CASTLE=0x0f,
+    BLACK_CASTLE=0x10,
+    GOLD_CASTLE=0x11,
+    
+    BLACK_MAZE_1=0x13,
+    BLACK_MAZE_2=0x14,
+    BLACK_MAZE_3=0x15,
+    BLACK_MAZE_ENTRY=0x16,
+    
+    BLACK_FOYER=0x1b,
+    BLACK_INNERMOST_ROOM=0x1c,
+    SOUTH_EAST_ROOM=0x1d,
+    
+    JADE_CASTLE=0x1f,
+    JADE_FOYER=0x20,
+    COPPER_CASTLE=0x21,
+    COPPER_FOYER=0x22
+};
+
+//
+// Indexed array of all rooms and their properties
+//
+static ROOM roomDefs [] =
+{
+    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE,                                       // 0 - Number Room
+        NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM},
+    { roomGfxBelowYellowCastle, ROOMFLAG_LEFTTHINWALL, COLOR_OLIVEGREEN,                    // 1 - Main Hall Left
+        BLUE_MAZE_HALL_END, MAIN_HALL_CENTER,BLACK_CASTLE, MAIN_HALL_RIGHT},
+    { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_LIMEGREEN,                             // 2 - Main Hall Center
+        GOLD_CASTLE, MAIN_HALL_RIGHT, BLUE_MAZE_JADE_END, MAIN_HALL_LEFT },
+    { roomGfxSideCorridor, ROOMFLAG_RIGHTTHINWALL, COLOR_TAN,                                 // 3 - Main Hall Right
+        COPPER_CASTLE, MAIN_HALL_LEFT,SOUTH_EAST_ROOM, MAIN_HALL_CENTER },
+    { roomGfxBlueMazeTop, ROOMFLAG_NONE, COLOR_BLUE, 0x10,0x05,0x07,0x06 },       // 4 - Blue Maze next to Black Castle
+    { roomGfxBlueMaze1, ROOMFLAG_NONE, COLOR_BLUE, 0x1F,0x06,0x08,0x04 },       // 5 - Blue Maze next to Jade Castle
+    { roomGfxBlueMazeBottom, ROOMFLAG_NONE, COLOR_BLUE, 0x07,0x04,0x03,0x05 },       // 6 - Large Room at Bottom of Blue Maze
+    { roomGfxBlueMazeCenter, ROOMFLAG_NONE, COLOR_BLUE, 0x04,0x08,0x06,0x08 },       // 7 - Blue Maze with all vertical paths
+    { roomGfxBlueMazeEntry, ROOMFLAG_NONE, COLOR_BLUE, 0x05,0x07,0x01,0x07 },       // 8 - Blue Maze next to Main Hall
+    { roomGfxMazeMiddle, ROOMFLAG_NONE, COLOR_LTGRAY, 0x0A,0x0A,0x0B,0x0A },       // 9 - Maze Middle
+    { roomGfxMazeEntry, ROOMFLAG_NONE, COLOR_LTGRAY, 0x03,0x09,0x09,0x09 },       // A - Maze Entry
+    { roomGfxMazeSide, ROOMFLAG_NONE, COLOR_LTGRAY, 0x09,0x0C,0x1C,0x0D },       // B - Maze Side
+    { roomGfxSideCorridor, ROOMFLAG_RIGHTTHINWALL, COLOR_LTCYAN, 0x1C,0x0D,0x1D,0x0B },       // C - Side Corridor
+    { roomGfxSideCorridor, ROOMFLAG_LEFTTHINWALL, COLOR_DKGREEN, 0x0F,0x0B,0x0E,0x0C },       // D - Side Corridor
+    { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_CYAN, 0x0D,0x10,0x0F,0x10 },       // E - Top Entry Room
+    { roomGfxCastle, ROOMFLAG_NONE, COLOR_WHITE, 0x0E,0x0F,0x0D,0x0F },       // F - White Castle
+    { roomGfxCastle, ROOMFLAG_NONE, COLOR_BLACK, 0x01,0x1C,0x04,0x1C },       // 10 - Black Castle
+    { roomGfxCastle, ROOMFLAG_NONE, COLOR_YELLOW, 0x06,0x03,0x02,0x01 },            // 11 - Yellow Castle
+    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_YELLOW, 0x12,0x12,0x12,0x12 },       // 12 - Yellow Castle Entry
+    { roomGfxBlackMaze1, ROOMFLAG_NONE, COLOR_LTGRAY, 0x15,0x14,0x15,0x16 },       // 13 - Black Maze #1
+    { roomGfxBlackMaze2, ROOMFLAG_MIRROR, COLOR_LTGRAY, 0x16,0x15,0x16,0x13 },       // 14 - Black Maze #2
+    { roomGfxBlackMaze3, ROOMFLAG_MIRROR, COLOR_LTGRAY, 0x13,0x16,0x13,0x14 },       // 15 - Black Maze #3
+    { roomGfxBlackMazeEntry, ROOMFLAG_NONE, COLOR_LTGRAY, 0x14,0x13,0x1B,0x15 },       // 16 - Black Maze Entry
+    { roomGfxRedMaze1, ROOMFLAG_NONE, COLOR_RED, 0x19,0x18,0x19,0x18 },       // 17 - Red Maze #1
+    { roomGfxRedMazeTop, ROOMFLAG_NONE, COLOR_RED, 0x1A,0x17,0x1A,0x17 },       // 18 - Top of Red Maze
+    { roomGfxRedMazeBottom, ROOMFLAG_NONE, COLOR_RED, 0x17,0x1A,0x17,0x1A },       // 19 - Bottom of Red Maze
+    { roomGfxWhiteCastleEntry, ROOMFLAG_NONE, COLOR_RED, 0x18,0x19,0x18,0x19 },       // 1A - White Castle Entry
+    { roomGfxTwoExitRoom, ROOMFLAG_NONE, COLOR_RED,                                       // 1B - Black Castle First Room
+        BLACK_INNERMOST_ROOM,  BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM },
+    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE,                               // 1C - Second Room in Black Castle
+        SOUTH_EAST_ROOM, BLUE_MAZE_VERT_PATHS, BLACK_FOYER, BLUE_MAZE_HALL_END},    // TODO: Used to be north of se room.
+    { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_RED, // 1D - Southeast corner of world (different place in different levels
+        MAIN_HALL_RIGHT, MAIN_HALL_LEFT, BLACK_CASTLE, MAIN_HALL_RIGHT },
+    { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_PURPLE, 0x06,0x01,0x06,0x03 },        // 1E - Name Room
+	{ roomGfxCastle, ROOMFLAG_NONE, COLOR_DKGREEN, 0x05, 0x06, 0x05, 0x04 },            // 1F - Jade Castle
+	{ roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_DKGREEN, 0x20, 0x20, 0x20, 0x20 },       // 20 - Copper Castle Entry
+    { roomGfxCastle, ROOMFLAG_NONE, COLOR_COPPER,
+        BLUE_MAZE_LARGE_ROOM, MAIN_HALL_LEFT, MAIN_HALL_RIGHT, GOLD_CASTLE},
+    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_COPPER,                                     // 21 - Copper Foyer
+        COPPER_FOYER, COPPER_FOYER, COPPER_FOYER, COPPER_FOYER}
+};
+
+
 // Object locations (room and coordinate) for game 01
 //        - object, room, x, y, state, movement(x/y)
 static const byte game1Objects [] =
 {
-	OBJECT_PORT1, 0x11, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 1
-	OBJECT_PORT4, 0x1F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 4
-	OBJECT_PORT2, 0x0F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 2
-    OBJECT_PORT3, 0x10, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 3
+    OBJECT_YELLOW_PORT, 0x11, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 1
+    OBJECT_JADE_PORT, 0x1F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 4
+    OBJECT_WHITE_PORT, 0x0F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 2
+    OBJECT_BLACK_PORT, 0x10, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 3
     OBJECT_REDDRAGON, 0x0E, 0x50, 0x20, 0x00, 0x00, 0x00, // Red Dragon
     OBJECT_YELLOWDRAGON, 0x01, 0x50, 0x20, 0x00, 0x00, 0x00, // Yellow Dragon
     OBJECT_GREENDRAGON, 0x1D, 0x50, 0x20, 0x00, 0x00, 0x00, // Green Dragon
     OBJECT_SWORD, 0x12, 0x20, 0x20, 0x00, 0x00, 0x00, // Sword
     OBJECT_BRIDGE, 0x04, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
     OBJECT_YELLOWKEY, 0x11, 0x20, 0x41, 0x00, 0x00, 0x00, // Yellow Key
+    OBJECT_COPPERKEY, COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Yellow Key
     OBJECT_WHITEKEY, 0x0E, 0x20, 0x40, 0x00, 0x00, 0x00, // White Key
     OBJECT_BLACKKEY, 0x10/*0x1D*/, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
     OBJECT_BAT, 0x1A, 0x20, 0x20, 0x00, 0x00, 0x00, // Bat
@@ -758,10 +849,10 @@ static const byte game1Objects [] =
 //        - object, room, x, y, state, movement(x/y)
 static const byte game2Objects [] =
 {
-    OBJECT_PORT1, 0x11, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 1
-	OBJECT_PORT4, 0x1F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 4
-	OBJECT_PORT2, 0x0F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 2
-    OBJECT_PORT3, 0x10, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 3
+    OBJECT_YELLOW_PORT, 0x11, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 1
+    OBJECT_JADE_PORT, 0x1F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 4
+    OBJECT_WHITE_PORT, 0x0F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 2
+    OBJECT_BLACK_PORT, 0x10, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 3
     OBJECT_REDDRAGON, 0x14, 0x50, 0x20, 0x00, 3, 3, // Red Dragon
     OBJECT_YELLOWDRAGON, 0x19, 0x50, 0x20, 0x00, 3, 3, // Yellow Dragon
     OBJECT_GREENDRAGON, 0x04, 0x50, 0x20, 0x00, 3, 3, // Green Dragon
@@ -781,70 +872,18 @@ static const byte game2Objects [] =
 // Ex. the chalise can only exist in rooms 13-1A
 static const int roomBoundsData [] =
 {
-   OBJECT_CHALISE, 0x13, 0x1A,
-   OBJECT_REDDRAGON, 0x01, 0x1D,
-   OBJECT_YELLOWDRAGON, 0x01, 0x1D,
-   OBJECT_GREENDRAGON, 0x01, 0x1D,
-   OBJECT_SWORD, 0x01, 0x1D,
-   OBJECT_BRIDGE, 0x01, 0x1D,
-   OBJECT_YELLOWKEY, 0x01, 0x1D,
-   OBJECT_WHITEKEY, 0x01, 0x16,
-   OBJECT_BLACKKEY, 0x01, 0x12,
-   OBJECT_BAT, 0x01, 0x1D,
-   OBJECT_MAGNET, 0x01, 0x1D,
-   OBJECT_NONE, 0, 0
-};
-
-//
-// Indexed array of all rooms and their properties
-//
-static ROOM roomDefs [] =
-{
-    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE, 0x00,0x00,0x00,0x00 },       // 0 - Number Room
-    { roomGfxBelowYellowCastle, ROOMFLAG_LEFTTHINWALL, COLOR_OLIVEGREEN, 0x08,0x02,0x80,0x03 },       // 1 - Top Access
-    { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_LIMEGREEN, 0x11,0x03,0x83,0x01 },       // 2 - Top Access
-    { roomGfxLeftOfName, ROOMFLAG_RIGHTTHINWALL, COLOR_TAN, 0x06,0x01,0x86,0x02 },       // 3 - Left of Name
-    { roomGfxBlueMazeTop, ROOMFLAG_NONE, COLOR_BLUE, 0x10,0x05,0x07,0x06 },       // 4 - Top of Blue Maze
-    { roomGfxBlueMaze1, ROOMFLAG_NONE, COLOR_BLUE, 0x1F,0x06,0x08,0x04 },       // 5 - Blue Maze #1
-    { roomGfxBlueMazeBottom, ROOMFLAG_NONE, COLOR_BLUE, 0x07,0x04,0x03,0x05 },       // 6 - Bottom of Blue Maze
-    { roomGfxBlueMazeCenter, ROOMFLAG_NONE, COLOR_BLUE, 0x04,0x08,0x06,0x08 },       // 7 - Center of Blue Maze
-    { roomGfxBlueMazeEntry, ROOMFLAG_NONE, COLOR_BLUE, 0x05,0x07,0x01,0x07 },       // 8 - Blue Maze Entry
-    { roomGfxMazeMiddle, ROOMFLAG_NONE, COLOR_LTGRAY, 0x0A,0x0A,0x0B,0x0A },       // 9 - Maze Middle
-    { roomGfxMazeEntry, ROOMFLAG_NONE, COLOR_LTGRAY, 0x03,0x09,0x09,0x09 },       // A - Maze Entry
-    { roomGfxMazeSide, ROOMFLAG_NONE, COLOR_LTGRAY, 0x09,0x0C,0x1C,0x0D },       // B - Maze Side
-    { roomGfxSideCorridor, ROOMFLAG_RIGHTTHINWALL, COLOR_LTCYAN, 0x1C,0x0D,0x1D,0x0B },       // C - Side Corridor
-    { roomGfxSideCorridor, ROOMFLAG_LEFTTHINWALL, COLOR_DKGREEN, 0x0F,0x0B,0x0E,0x0C },       // D - Side Corridor
-    { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_CYAN, 0x0D,0x10,0x0F,0x10 },       // E - Top Entry Room
-    { roomGfxCastle, ROOMFLAG_NONE, COLOR_WHITE, 0x0E,0x0F,0x0D,0x0F },       // F - White Castle
-    { roomGfxCastle, ROOMFLAG_NONE, COLOR_BLACK, 0x01,0x1C,0x04,0x1C },       // 10 - Black Castle
-    { roomGfxCastle, ROOMFLAG_NONE, COLOR_YELLOW, 0x06,0x03,0x02,0x01 },            // 11 - Yellow Castle
-    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_YELLOW, 0x12,0x12,0x12,0x12 },       // 12 - Yellow Castle Entry
-    { roomGfxBlackMaze1, ROOMFLAG_NONE, COLOR_LTGRAY, 0x15,0x14,0x15,0x16 },       // 13 - Black Maze #1
-    { roomGfxBlackMaze2, ROOMFLAG_MIRROR, COLOR_LTGRAY, 0x16,0x15,0x16,0x13 },       // 14 - Black Maze #2
-    { roomGfxBlackMaze3, ROOMFLAG_MIRROR, COLOR_LTGRAY, 0x13,0x16,0x13,0x14 },       // 15 - Black Maze #3
-    { roomGfxBlackMazeEntry, ROOMFLAG_NONE, COLOR_LTGRAY, 0x14,0x13,0x1B,0x15 },       // 16 - Black Maze Entry
-    { roomGfxRedMaze1, ROOMFLAG_NONE, COLOR_RED, 0x19,0x18,0x19,0x18 },       // 17 - Red Maze #1
-    { roomGfxRedMazeTop, ROOMFLAG_NONE, COLOR_RED, 0x1A,0x17,0x1A,0x17 },       // 18 - Top of Red Maze
-    { roomGfxRedMazeBottom, ROOMFLAG_NONE, COLOR_RED, 0x17,0x1A,0x17,0x1A },       // 19 - Bottom of Red Maze
-    { roomGfxWhiteCastleEntry, ROOMFLAG_NONE, COLOR_RED, 0x18,0x19,0x18,0x19 },       // 1A - White Castle Entry
-    { roomGfxTwoExitRoom, ROOMFLAG_NONE, COLOR_RED, 0x89,0x89,0x89,0x89 },       // 1B - Black Castle Entry
-    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE, 0x1D,0x07,0x8C,0x08 },       // 1C - Other Purple Room
-    { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_RED, 0x8F,0x01,0x10,0x03 },       // 1D - Top Entry Room
-    { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_PURPLE, 0x06,0x01,0x06,0x03 },        // 1E - Name Room
-	{ roomGfxCastle, ROOMFLAG_NONE, COLOR_DKGREEN, 0x05, 0x06, 0x05, 0x04 },            // 1F - Green Castle
-	{ roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_DKGREEN, 0x20, 0x20, 0x20, 0x20 },       // 20 - Yellow Castle Entry
-};
-
-
-// Room differences for different levels (level 1,2,3)  
-static const byte roomLevelDiffs [] = 
-{
-    0x10,0x0f,0x0f,            // down from room 01                                                             
-    0x05,0x11,0x11,            // down from room 02                                                             
-    0x1d,0x0a,0x0a,            // down from room 03                                                             
-    0x1c,0x16,0x16,            // u/l/r/d from room 1b (black castle room)                                      
-    0x1b,0x0c,0x0c,            // down from room 1c                                                             
-    0x03,0x0c,0x0c,            // up from room 1d (top entry room)    
+    OBJECT_CHALISE, 0x13, 0x1A,
+    OBJECT_REDDRAGON, 0x01, 0x1D,
+    OBJECT_YELLOWDRAGON, 0x01, 0x1D,
+    OBJECT_GREENDRAGON, 0x01, 0x1D,
+    OBJECT_SWORD, 0x01, 0x1D,
+    OBJECT_BRIDGE, 0x01, 0x1D,
+    OBJECT_YELLOWKEY, 0x01, 0x1D,
+    OBJECT_WHITEKEY, 0x01, 0x16,
+    OBJECT_BLACKKEY, 0x01, 0x12,
+    OBJECT_BAT, 0x01, 0x1D,
+    OBJECT_MAGNET, 0x01, 0x1D,
+    OBJECT_NONE, 0, 0
 };
 
 // Magnet Object Matrix
@@ -929,6 +968,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     thisPlayer = inThisPlayer;
     gameNum = inGameNum;
     gameLevel = gameNum-1;
+    gameBoard = (gameLevel == 0 ? 0 : 1);
     timeToStartGame = 60 * 3;
     
     dragons = (Dragon**)malloc(numDragons * sizeof(Dragon*));
@@ -941,6 +981,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     int numObjects = OBJECT_MAGNET+2;
     objectDefs = (OBJECT**)malloc(numObjects*sizeof(OBJECT*));
     objectDefs[OBJECT_YELLOWKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0);
+    objectDefs[OBJECT_COPPERKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_COPPER, -1, 0, 0);
     objectDefs[OBJECT_WHITEKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0);
     objectDefs[OBJECT_BLACKKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
     
@@ -950,13 +991,16 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     ports[0] = new Portcullis(0x11, 0x12, objectDefs[OBJECT_YELLOWKEY]); // Gold
     ports[1] = new Portcullis(0x0F, 0x1A, objectDefs[OBJECT_WHITEKEY]); // White
     ports[2] = new Portcullis(0x10, 0x1B, objectDefs[OBJECT_BLACKKEY]); // Black
-    ports[3] = new Portcullis(0x1F, 0x20, objectDefs[OBJECT_YELLOWKEY]); // Copper
+    ports[3] = new Portcullis(COPPER_CASTLE, COPPER_FOYER, objectDefs[OBJECT_COPPERKEY]);
+    ports[4] = new Portcullis(0x1F, 0x20, objectDefs[OBJECT_YELLOWKEY]); // Jade
+    
     
     // Setup the structures
-    objectDefs[OBJECT_PORT1] = ports[0];
-    objectDefs[OBJECT_PORT4] = ports[3];
-    objectDefs[OBJECT_PORT2] = ports[1];
-    objectDefs[OBJECT_PORT3] = ports[2];
+    objectDefs[OBJECT_YELLOW_PORT] = ports[0];
+    objectDefs[OBJECT_COPPER_PORT] = ports[3];
+    objectDefs[OBJECT_JADE_PORT] = ports[4];
+    objectDefs[OBJECT_WHITE_PORT] = ports[1];
+    objectDefs[OBJECT_BLACK_PORT] = ports[2];
     objectDefs[OBJECT_NAME] = new OBJECT(objectGfxAuthor, 0, 0, COLOR_FLASH, 0x1E, 0x50, 0x69);
     objectDefs[OBJECT_NUMBER] = new OBJECT(objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, 0x00, 0x50, 0x40);
     objectDefs[OBJECT_REDDRAGON] = dragons[2];
@@ -1211,6 +1255,30 @@ void Adventure_Run()
     AdvanceFlashColor();
 }
 
+void SetupMaze() {
+    if (gameBoard == 0) {
+        // This is the default setup, so don't need to do anything.
+    } else {
+        // Games 2 or 3.
+        // Connect the lower half of the world.
+        roomDefs[MAIN_HALL_LEFT].roomDown = WHITE_CASTLE;
+        roomDefs[MAIN_HALL_CENTER].roomDown = GOLD_CASTLE;
+        roomDefs[MAIN_HALL_RIGHT].roomDown = WHITE_MAZE_HALL_END;
+        roomDefs[SOUTH_EAST_ROOM].roomUp = SOUTH_HALL_RIGHT;
+        
+        // Move the Copper Castle to the White Maze
+        roomDefs[MAIN_HALL_RIGHT].graphicsData = roomGfxLeftOfName;
+        roomDefs[MAIN_HALL_RIGHT].roomUp = BLUE_MAZE_LARGE_ROOM;
+        
+        // Put the Black Maze in the Black Castle
+        roomDefs[BLACK_FOYER].roomUp = BLACK_MAZE_ENTRY;
+        roomDefs[BLACK_FOYER].roomRight = BLACK_MAZE_ENTRY;
+        roomDefs[BLACK_FOYER].roomDown = BLACK_MAZE_ENTRY;
+        roomDefs[BLACK_FOYER].roomLeft = BLACK_MAZE_ENTRY;
+        
+    }
+}
+
 
 void SetupRoomObjects()
 {
@@ -1388,7 +1456,6 @@ void BallMovement(BALL* ball) {
             // Set the new room
             const ROOM* currentRoom = &roomDefs[ball->room];
             ball->room = currentRoom->roomUp;
-            ball->room = AdjustRoomLevel(ball->room);
         }
         else if (ball->y < 0x0D*2)
         {
@@ -1405,7 +1472,6 @@ void BallMovement(BALL* ball) {
 					ball->previousY = ball->y;
 
 					ball->room = port->room;
-					ball->room = AdjustRoomLevel(ball->room);
 					leftCastle = true;
 				}
 			}
@@ -1417,7 +1483,7 @@ void BallMovement(BALL* ball) {
                 int newY = (ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN);
 
                 const ROOM* currentRoom = &roomDefs[ball->room];
-                int roomDown = AdjustRoomLevel(currentRoom->roomDown);
+                int roomDown = currentRoom->roomDown;
 
                 if (CollisionCheckBallWithWalls(roomDown, tempX, newY))
                 {
@@ -1478,7 +1544,6 @@ void BallMovement(BALL* ball) {
                 const ROOM* currentRoom = &roomDefs[ball->room];
                 ball->room = currentRoom->roomRight;
             }
-            ball->room = AdjustRoomLevel(ball->room);
         }
         else if (ball->x < 4)
         {
@@ -1488,7 +1553,6 @@ void BallMovement(BALL* ball) {
             // Set the new room
             const ROOM* currentRoom = &roomDefs[ball->room];
             ball->room = currentRoom->roomLeft;
-            ball->room = AdjustRoomLevel(ball->room);
         }
         // Collision check the ball with the new Y coordinate against walls and objects
         // For collisions with objects, we only care about hitting non-carryable objects at this point
@@ -1632,14 +1696,14 @@ void MoveGroundObject()
         if (object->y > 0x6A)
         {
             object->y = 0x0D;
-            object->room = AdjustRoomLevel(roomDefs[object->room].roomUp);
+            object->room = roomDefs[object->room].roomUp;
         }
 
         // Check and Deal with Left
         if (object->x < 0x03)
         {
             object->x = 0x9A;
-            object->room = AdjustRoomLevel(roomDefs[object->room].roomLeft);
+            object->room = roomDefs[object->room].roomLeft;
         }
 
         // Check and Deal with Down
@@ -1651,7 +1715,7 @@ void MoveGroundObject()
                 if (object->room == ports[ctr]->insideRoom)
                 {
                     object->y = 0x5C;
-                    object->room = AdjustRoomLevel(ports[ctr]->room);
+                    object->room = ports[ctr]->room;
                     // TODO: Do we need to broadcast leaving the castle?  Seems there might be quite a jump.
                     leftCastle = true;
                 }
@@ -1659,7 +1723,7 @@ void MoveGroundObject()
 			if (!leftCastle)
             {
                 object->y = 0x69;
-                object->room = AdjustRoomLevel(roomDefs[object->room].roomDown);
+                object->room = roomDefs[object->room].roomDown;
             }
         }
 
@@ -1667,7 +1731,7 @@ void MoveGroundObject()
         if (object->x > 0x9B)
         {
             object->x = 0x03;
-            object->room = AdjustRoomLevel(roomDefs[object->room].roomRight);
+            object->room = roomDefs[object->room].roomRight;
         }
 
         // If the object has a linked object
@@ -2302,20 +2366,6 @@ void Magnet()
         }
         ++i;
     }
-}
-
-
-int AdjustRoomLevel(int room)
-{
-    // If the the room number is above 0x80 it changes based on the game level
-    if (room & 0x80)
-    {
-        // Remove the 0x80 flag and add the level number to get the offset into the room delta table
-        int newRoomIndex = (room & ~0x80) + gameLevel;
-        room = roomLevelDiffs[newRoomIndex];
-    }
-
-    return room;
 }
 
 void DrawObjects(int room)
