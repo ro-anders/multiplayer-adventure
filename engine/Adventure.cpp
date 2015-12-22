@@ -248,24 +248,34 @@ static const byte roomGfxBlueMazeTop[] =
     0xF0,0x33,0x3F      // XXXX  XX  XXXXXXXX    RRRRRRRR  RR  RRRR                                      
 };
 
-// Blue Maze #1                                                                                                      
+// Blue Maze #1
 static const byte roomGfxBlueMaze1 [] =
 {
-    // Top exit only present with 3 players
-    
-    0xF0,0xFF,0xFF/*0x0F*/,  // XXXXXXXXXXXXXXXX--------RRRRRRRRRRRRRRRR
-    0x00,0x00,0x00,          //                                                                               
-    0xF0,0xFC,0xFF,          // XXXXXXXXXX  XXXXXXXXRRRRRRRR  RRRRRRRRRR                                      
-    0xF0,0x00,0xC0,          // XXXX              XXRR              RRRR                                      
-    0xF0,0x3F,0xCF,          // XXXX  XXXXXXXXXX  XXRR  RRRRRRRRRR  RRRR                                      
-    0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR                                            
-    0xF0,0xF3,0xCC           // XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR                                      
+    0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXX--------RRRRRRRRRRRRRRRR
+    0x00,0x00,0x00,          //
+    0xF0,0xFC,0xFF,          // XXXXXXXXXX  XXXXXXXXRRRRRRRR  RRRRRRRRRR
+    0xF0,0x00,0xC0,          // XXXX              XXRR              RRRR
+    0xF0,0x3F,0xCF,          // XXXX  XXXXXXXXXX  XXRR  RRRRRRRRRR  RRRR
+    0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR
+    0xF0,0xF3,0xCC           // XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR
 };
-                                                                                                                
-// Bottom of Blue Maze                                                                                               
+
+// Blue Maze #1 with entrance to Jade Castle (only used with 3 players)
+static const byte roomGfxBlueMaze1B [] =
+{
+    0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+    0x00,0x00,0x00,          //
+    0xF0,0xFC,0xFF,          // XXXXXXXXXX  XXXXXXXXRRRRRRRR  RRRRRRRRRR
+    0xF0,0x00,0xC0,          // XXXX              XXRR              RRRR
+    0xF0,0x3F,0xCF,          // XXXX  XXXXXXXXXX  XXRR  RRRRRRRRRR  RRRR
+    0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR
+    0xF0,0xF3,0xCC           // XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR
+};
+
+// Bottom of Blue Maze
 static const byte roomGfxBlueMazeBottom [] =
 {
-    0xF0,0xF3,0x0C,          // XXXXXXXX  XX  XX        RR  RR  RRRRRRRR                                      
+    0xF0,0xF3,0x0C,          // XXXXXXXX  XX  XX        RR  RR  RRRRRRRR
     0x00,0x30,0x0C,          //       XX      XX        RR      RR                                           
     0xF0,0x3F,0x0F,          // XXXX  XXXXXXXXXX        RRRRRRRRRR  RRRR                                      
     0xF0,0x00,0x00,          // XXXX                                RRRR                                      
@@ -337,16 +347,40 @@ static const byte roomGfxMazeEntry [] =
 // Castle
 static const byte roomGfxCastle [] =
 {
-    0xF0,0xFE,0x15,      // XXXXXXXXXXX X X X      R R R RRRRRRRRRRR                                      
-    0x30,0x03,0x1F,      // XX        XXXXXXX      RRRRRRR        RR                                      
-    0x30,0x03,0xFF,      // XX        XXXXXXXXXXRRRRRRRRRR        RR                                      
-    0x30,0x00,0xFF,      // XX          XXXXXXXXRRRRRRRR          RR                                      
-    0x30,0x00,0x3F,      // XX          XXXXXX    RRRRRR          RR                                      
-    0x30,0x00,0x00,      // XX                                    RR                                      
-    0xF0,0xFF,0x0F       // XXXXXXXXXXXXXX            RRRRRRRRRRRRRR                                      
+    0xF0,0xFE,0x15,      // XXXXXXXXXXX X X X      R R R RRRRRRRRRRR
+    0x30,0x03,0x1F,      // XX        XXXXXXX      RRRRRRR        RR
+    0x30,0x03,0xFF,      // XX        XXXXXXXXXXRRRRRRRRRR        RR
+    0x30,0x00,0xFF,      // XX          XXXXXXXXRRRRRRRR          RR
+    0x30,0x00,0x3F,      // XX          XXXXXX    RRRRRR          RR
+    0x30,0x00,0x00,      // XX                                    RR
+    0xF0,0xFF,0x0F       // XXXXXXXXXXXXXX            RRRRRRRRRRRRRR
 };
 
-// Red Maze #1                                                                                                       
+// Castle
+static const byte roomGfxCastle2 [] =
+{
+    0xF0,0xFE,0x15,      // XXXXXXXXXXX X X X      R R R RRRRRRRRRRR
+    0x30,0x03,0x1F,      // XX        XXXXXXX      RRRRRRR        RR
+    0x30,0x03,0xF9,      // XX        XXX  XXXXXRRRRR  RRR        RR
+    0x30,0x00,0xFF,      // XX          XXXXXXXXRRRRRRRR          RR
+    0x30,0x00,0x3F,      // XX          XXXXXX    RRRRRR          RR
+    0x30,0x00,0x00,      // XX                                    RR
+    0xF0,0xFF,0x0F       // XXXXXXXXXXXXXX            RRRRRRRRRRRRRR
+};
+
+// Castle
+static const byte roomGfxCastle3 [] =
+{
+    0xF0,0xFE,0x15,      // XXXXXXXXXXX X X X      R R R RRRRRRRRRRR
+    0x30,0x03,0x1F,      // XX        XXXXXXX      RRRRRRR        RR
+    0x30,0x03,0xF5,      // XX        XXX X XXXXRRRR R RRR        RR
+    0x30,0x00,0xFF,      // XX          XXXXXXXXRRRRRRRR          RR
+    0x30,0x00,0x3F,      // XX          XXXXXX    RRRRRR          RR
+    0x30,0x00,0x00,      // XX                                    RR
+    0xF0,0xFF,0x0F       // XXXXXXXXXXXXXX            RRRRRRRRRRRRRR
+};
+
+// Red Maze #1
 static const byte roomGfxRedMaze1 [] =
 {
      0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR                                      
@@ -783,7 +817,7 @@ static ROOM roomDefs [] =
     { roomGfxSideCorridor, ROOMFLAG_RIGHTTHINWALL, COLOR_TAN,                                 // 3 - Main Hall Right
         COPPER_CASTLE, MAIN_HALL_LEFT,SOUTH_EAST_ROOM, MAIN_HALL_CENTER },
     { roomGfxBlueMazeTop, ROOMFLAG_NONE, COLOR_BLUE, 0x10,0x05,0x07,0x06 },       // 4 - Blue Maze next to Black Castle
-    { roomGfxBlueMaze1, ROOMFLAG_NONE, COLOR_BLUE, 0x1F,0x06,0x08,0x04 },       // 5 - Blue Maze next to Jade Castle
+    { roomGfxBlueMaze1, ROOMFLAG_NONE, COLOR_BLUE, 0x1D,0x06,0x08,0x04 },       // 5 - Blue Maze next to Jade Castle
     { roomGfxBlueMazeBottom, ROOMFLAG_NONE, COLOR_BLUE, 0x07,0x04,0x03,0x05 },       // 6 - Large Room at Bottom of Blue Maze
     { roomGfxBlueMazeCenter, ROOMFLAG_NONE, COLOR_BLUE, 0x04,0x08,0x06,0x08 },       // 7 - Blue Maze with all vertical paths
     { roomGfxBlueMazeEntry, ROOMFLAG_NONE, COLOR_BLUE, 0x05,0x07,0x01,0x07 },       // 8 - Blue Maze next to Main Hall
@@ -812,9 +846,9 @@ static ROOM roomDefs [] =
     { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_RED, // 1D - Southeast corner of world (different place in different levels
         MAIN_HALL_RIGHT, MAIN_HALL_LEFT, BLACK_CASTLE, MAIN_HALL_RIGHT },
     { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_PURPLE, 0x06,0x01,0x06,0x03 },        // 1E - Name Room
-	{ roomGfxCastle, ROOMFLAG_NONE, COLOR_DKGREEN, 0x05, 0x06, 0x05, 0x04 },            // 1F - Jade Castle
+    { roomGfxCastle3, ROOMFLAG_NONE, COLOR_DKGREEN, 0x1D, 0x06, 0x05, 0x04 },            // 1F - Jade Castle
 	{ roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_DKGREEN, 0x20, 0x20, 0x20, 0x20 },       // 20 - Copper Castle Entry
-    { roomGfxCastle, ROOMFLAG_NONE, COLOR_COPPER,
+    { roomGfxCastle2, ROOMFLAG_NONE, COLOR_COPPER,
         BLUE_MAZE_LARGE_ROOM, MAIN_HALL_LEFT, MAIN_HALL_RIGHT, GOLD_CASTLE},
     { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_COPPER,                                     // 21 - Copper Foyer
         COPPER_FOYER, COPPER_FOYER, COPPER_FOYER, COPPER_FOYER}
@@ -1256,6 +1290,13 @@ void Adventure_Run()
 }
 
 void SetupMaze() {
+
+    // Add the Jade Castle if 3 players
+    if (/*numPlayers > 2*/true) {
+        roomDefs[BLUE_MAZE_JADE_END].roomUp = JADE_CASTLE;
+        roomDefs[BLUE_MAZE_JADE_END].graphicsData = roomGfxBlueMaze1B;
+    }
+
     if (gameBoard == 0) {
         // This is the default setup, so don't need to do anything.
     } else {
@@ -1282,6 +1323,7 @@ void SetupMaze() {
 
 void SetupRoomObjects()
 {
+    SetupMaze();
     // Init all objects
     for (int i=0; objectDefs[i]->gfxData; i++)
     {
