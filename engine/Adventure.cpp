@@ -361,7 +361,7 @@ static const byte roomGfxCastle2 [] =
 {
     0xF0,0xFE,0x15,      // XXXXXXXXXXX X X X      R R R RRRRRRRRRRR
     0x30,0x03,0x1F,      // XX        XXXXXXX      RRRRRRR        RR
-    0x30,0x03,0xF9,      // XX        XXX  XXXXXRRRRR  RRR        RR
+    0x30,0x03,0xF3,      // XX        XXXX  XXXXRRRRR  RRR        RR
     0x30,0x00,0xFF,      // XX          XXXXXXXXRRRRRRRR          RR
     0x30,0x00,0x3F,      // XX          XXXXXX    RRRRRR          RR
     0x30,0x00,0x00,      // XX                                    RR
@@ -1053,6 +1053,9 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     balls = (BALL**)malloc(numPlayers * sizeof(BALL*));
     balls[0] = new BALL(0, ports[0]);
     balls[1] = new BALL(1, ports[3]);
+    if (numPlayers > 2) {
+        balls[2] = new BALL(2, ports[4]);
+    }
     objectBall = balls[thisPlayer];
 
     // Setup the transport
@@ -1292,7 +1295,7 @@ void Adventure_Run()
 void SetupMaze() {
 
     // Add the Jade Castle if 3 players
-    if (/*numPlayers > 2*/true) {
+    if (numPlayers > 2) {
         roomDefs[BLUE_MAZE_JADE_END].roomUp = JADE_CASTLE;
         roomDefs[BLUE_MAZE_JADE_END].graphicsData = roomGfxBlueMaze1B;
     }

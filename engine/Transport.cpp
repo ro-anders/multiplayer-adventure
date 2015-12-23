@@ -29,7 +29,7 @@ void Transport::parseUrl(char* socketAddr, char** outIp, int* outPort) {
         }
     }
     if (colonIndex > 0) {
-        *outPort = atoi(socketAddr+colonIndex);
+        *outPort = atoi(socketAddr+colonIndex+1);
         socketAddr[colonIndex] = '\0';
     }
 }

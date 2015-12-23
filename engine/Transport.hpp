@@ -20,8 +20,17 @@ public:
     
     virtual void connect() = 0;
     
+    /**
+     * Send a packet to a client.
+     * Returns the number of bytes sent.
+     */
     virtual int sendPacket(const char* packetData) = 0;
     
+    /**
+     * Polls the client for a message.  If found fills the buffer with the message
+     * and returns the number of bytes in the message.  If no message, returns 0 and
+     * leaves the buffer untouched.
+     */
     virtual int getPacket(char* buffer, int bufferLength) = 0;
     
     /**

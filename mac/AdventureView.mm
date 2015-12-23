@@ -20,6 +20,7 @@
 #include "args.h"
 #include "Transport.hpp"
 #include "MacTransport.hpp"
+#include "YTransport.hpp"
 
 bool CreateOffscreen(int aWidth, int aHeight);
 void FreeOffscreen();
@@ -55,7 +56,8 @@ bool gMenuItemSelect = FALSE;
 - (id)initWithFrame:(NSRect)frameRect
 {
 	[super initWithFrame:frameRect];
-    // TODO: Pull other player info off of command line
+    
+    // Expecting args: gameLevel playerNum sockAddress1 sockAddress2
     int argc;
     char** argv;
     Args_GetArgs(&argc, &argv);
@@ -88,6 +90,23 @@ bool gMenuItemSelect = FALSE;
             char* ip1 = NULL;
             Transport::parseUrl(otherPlayer1, &ip1, &port1);
             transport = new MacTransport(ip1, port1);
+        }
+        
+        // Process player 3
+        Transport* transport2 = NULL;
+        if (argc > 4) {
+            char* otherPlayer2 = argv[4];
+            int port2 = (port1 == DEFAULT_PORT ? DEFAULT_PORT : DEFAULT_PORT+1);
+            if (strlen(otherPlayer2) <= 5) {
+                // It is just a port.
+                port2 = atoi(otherPlayer2);
+                transport2 = new MacTransport(port2);
+            } else {
+                char* ip2 = NULL;
+                Transport::parseUrl(otherPlayer2, &ip2, &port2);
+                transport2 = new MacTransport(ip2, port2);
+            }
+            transport = new YTransport(transport, transport2);
         }
         transport->connect();
     }
