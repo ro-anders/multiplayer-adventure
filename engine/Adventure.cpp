@@ -795,7 +795,7 @@ enum
     
     BLACK_FOYER=0x1b,
     BLACK_INNERMOST_ROOM=0x1c,
-    SOUTH_EAST_ROOM=0x1d,
+    SOUTH_EAST_ROOM=0x1d, // Southeast corner of the world.  Level 1 = south of main hall, Level 2 = south of south hall
     
     JADE_CASTLE=0x1f,
     JADE_FOYER=0x20,
@@ -824,7 +824,8 @@ static ROOM roomDefs [] =
     { roomGfxMazeMiddle, ROOMFLAG_NONE, COLOR_LTGRAY, 0x0A,0x0A,0x0B,0x0A },       // 9 - Maze Middle
     { roomGfxMazeEntry, ROOMFLAG_NONE, COLOR_LTGRAY, 0x03,0x09,0x09,0x09 },       // A - Maze Entry
     { roomGfxMazeSide, ROOMFLAG_NONE, COLOR_LTGRAY, 0x09,0x0C,0x1C,0x0D },       // B - Maze Side
-    { roomGfxSideCorridor, ROOMFLAG_RIGHTTHINWALL, COLOR_LTCYAN, 0x1C,0x0D,0x1D,0x0B },       // C - Side Corridor
+    { roomGfxSideCorridor, ROOMFLAG_RIGHTTHINWALL, COLOR_LTCYAN,                            // C - South Hall Right
+        COPPER_CASTLE, MAIN_HALL_LEFT,SOUTH_EAST_ROOM, 0x0B },
     { roomGfxSideCorridor, ROOMFLAG_LEFTTHINWALL, COLOR_DKGREEN, 0x0F,0x0B,0x0E,0x0C },       // D - Side Corridor
     { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_CYAN, 0x0D,0x10,0x0F,0x10 },       // E - Top Entry Room
     { roomGfxCastle, ROOMFLAG_NONE, COLOR_WHITE, 0x0E,0x0F,0x0D,0x0F },       // F - White Castle
@@ -843,7 +844,7 @@ static ROOM roomDefs [] =
         BLACK_INNERMOST_ROOM,  BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM },
     { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE,                               // 1C - Second Room in Black Castle
         SOUTH_EAST_ROOM, BLUE_MAZE_VERT_PATHS, BLACK_FOYER, BLUE_MAZE_HALL_END},    // TODO: Used to be north of se room.
-    { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_RED, // 1D - Southeast corner of world (different place in different levels
+    { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_RED,                                        // 1D - South East Room
         MAIN_HALL_RIGHT, MAIN_HALL_LEFT, BLACK_CASTLE, MAIN_HALL_RIGHT },
     { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_PURPLE, 0x06,0x01,0x06,0x03 },        // 1E - Name Room
     { roomGfxCastle3, ROOMFLAG_NONE, COLOR_DKGREEN, 0x1D, 0x06, 0x05, 0x04 },            // 1F - Jade Castle
@@ -869,7 +870,7 @@ static const byte game1Objects [] =
     OBJECT_SWORD, 0x12, 0x20, 0x20, 0x00, 0x00, 0x00, // Sword
     OBJECT_BRIDGE, 0x04, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
     OBJECT_YELLOWKEY, 0x11, 0x20, 0x41, 0x00, 0x00, 0x00, // Yellow Key
-    OBJECT_COPPERKEY, COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Yellow Key
+    OBJECT_COPPERKEY, COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
     OBJECT_WHITEKEY, 0x0E, 0x20, 0x40, 0x00, 0x00, 0x00, // White Key
     OBJECT_BLACKKEY, 0x10/*0x1D*/, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
     OBJECT_BAT, 0x1A, 0x20, 0x20, 0x00, 0x00, 0x00, // Bat
@@ -893,6 +894,7 @@ static const byte game2Objects [] =
     OBJECT_SWORD, 0x11, 0x20, 0x20, 0x00, 0x00, 0x00, // Sword
     OBJECT_BRIDGE, 0x0B, 0x40, 0x40, 0x00, 0x00, 0x00, // Bridge
     OBJECT_YELLOWKEY, 0x09, 0x20, 0x40, 0x00, 0x00, 0x00, // Yellow Key
+    OBJECT_COPPERKEY, COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
     OBJECT_WHITEKEY, 0x06, 0x20, 0x40, 0x00, 0x00, 0x00, // White Key
     OBJECT_BLACKKEY, 0x19, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
     OBJECT_BAT, 0x02, 0x20, 0x20, 0x00, 0, -3, // Bat
@@ -1313,6 +1315,8 @@ void SetupMaze() {
         // Move the Copper Castle to the White Maze
         roomDefs[MAIN_HALL_RIGHT].graphicsData = roomGfxLeftOfName;
         roomDefs[MAIN_HALL_RIGHT].roomUp = BLUE_MAZE_LARGE_ROOM;
+        roomDefs[COPPER_CASTLE].roomDown = SOUTH_HALL_RIGHT;
+        // TODO: Change up, left, and right of COPPER_CASTLE
         
         // Put the Black Maze in the Black Castle
         roomDefs[BLACK_FOYER].roomUp = BLACK_MAZE_ENTRY;

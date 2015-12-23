@@ -65,7 +65,7 @@ bool gMenuItemSelect = FALSE;
     int thisPlayer;
     Transport* transport;
     
-    int gameLevel = 1;
+    int gameLevel = 2;
     if (argc > 2) {
         gameLevel = atoi(argv[1]);
     }
@@ -113,7 +113,7 @@ bool gMenuItemSelect = FALSE;
     
 	if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
 	{
-        Adventure_Setup(numPlayers, thisPlayer, transport, 1, 0, 0);
+        Adventure_Setup(numPlayers, thisPlayer, transport, gameLevel, 0, 0);
 		timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
 												 target: self
 											   selector: @selector(update:)
