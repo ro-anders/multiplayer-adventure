@@ -200,6 +200,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    // TODO: Pull other player info off the command line
    int numberPlayers = 2;
+   WinTransport::testSockets();
    Transport* transport = new WinTransport();
    transport->connect();
    int thisPlayer = transport->getConnectNumber();
