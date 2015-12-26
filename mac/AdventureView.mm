@@ -14,10 +14,13 @@
 //
 
 
-#import "AdventureView.h"
+#include "adventure_sys.h"
+#include "AdventureView.h"
 #include "Adventure.h"
+#include "args.h"
 #include "Transport.hpp"
 #include "MacTransport.hpp"
+#include "YTransport.hpp"
 
 bool CreateOffscreen(int aWidth, int aHeight);
 void FreeOffscreen();
@@ -53,15 +56,64 @@ bool gMenuItemSelect = FALSE;
 - (id)initWithFrame:(NSRect)frameRect
 {
 	[super initWithFrame:frameRect];
-    // TODO: Pull other player info off of command line
-    int numberPlayers = 2;
-    Transport* transport = new MacTransport();
-    transport->connect();
-    int thisPlayer = transport->getConnectNumber();
+    
+    // Expecting args: gameLevel playerNum sockAddress1 sockAddress2
+    int argc;
+    char** argv;
+    Args_GetArgs(&argc, &argv);
+    int numPlayers;
+    int thisPlayer;
+    Transport* transport;
+    
+    int gameLevel = 2;
+    if (argc > 2) {
+        gameLevel = atoi(argv[1]);
+    }
+    
+    // Read the command line arguments and setup the communication with the other players
+    const int DEFAULT_PORT = 5678;
+    if (argc <= 2) {
+        numPlayers = 2;
+        transport = new MacTransport();
+        transport->connect();
+        thisPlayer = transport->getConnectNumber();
+    } else {
+        numPlayers = argc-2;
+        thisPlayer = atoi(argv[2])-1;
+        char* otherPlayer1 = argv[3];
+        int port1 = DEFAULT_PORT;
+        if (strlen(otherPlayer1) <= 5) {
+            // It is just a port.
+            port1 = atoi(otherPlayer1);
+            transport = new MacTransport(port1);
+        } else {
+            char* ip1 = NULL;
+            Transport::parseUrl(otherPlayer1, &ip1, &port1);
+            transport = new MacTransport(ip1, port1);
+        }
+        
+        // Process player 3
+        Transport* transport2 = NULL;
+        if (argc > 4) {
+            char* otherPlayer2 = argv[4];
+            int port2 = (port1 == DEFAULT_PORT ? DEFAULT_PORT : DEFAULT_PORT+1);
+            if (strlen(otherPlayer2) <= 5) {
+                // It is just a port.
+                port2 = atoi(otherPlayer2);
+                transport2 = new MacTransport(port2);
+            } else {
+                char* ip2 = NULL;
+                Transport::parseUrl(otherPlayer2, &ip2, &port2);
+                transport2 = new MacTransport(ip2, port2);
+            }
+            transport = new YTransport(transport, transport2);
+        }
+        transport->connect();
+    }
+    
 	if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
 	{
-        // TODO: Pull other player in
-        Adventure_Setup(numberPlayers, thisPlayer, transport);
+        Adventure_Setup(numPlayers, thisPlayer, transport, gameLevel, 0, 0);
 		timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
 												 target: self
 											   selector: @selector(update:)

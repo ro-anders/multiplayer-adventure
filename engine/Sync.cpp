@@ -1,100 +1,201 @@
          
 
-#include "Sync.h"
+#ifdef WIN32
+#include "stdafx.h"
+#endif
+
+#include "Sync.hpp"
+
+#include "ActionQueue.hpp"
+#include "RemoteAction.hpp"
 #include "Transport.hpp"
 
 
 // The existing adventure port doesn't do a lot of dynamic memory allocation, but instead 
 // allocates everything up front.  We'll stick to that paradigm as much as possible.
 
-static Transport* transport;
 
-static int thisPlayer = -1;
-
-static int numPlayers;
-static int numOtherPlayers;
-
-static int MAX_MESSAGE_SIZE = 256;
-static char sendBuffer[256];
-static char receiveBuffer[256];
-
-static PlayerMoveAction** playersLastMove;
-
-static int frameNum = 0;
-
-void Sync_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport) {
-    numPlayers = inNumPlayers;
-    numOtherPlayers = numPlayers - 1;
-    thisPlayer = inThisPlayer;
-    transport = inTransport;
-    
+Sync::Sync(int inNumPlayers, int inThisPlayer, Transport* inTransport) :
+    numPlayers(inNumPlayers),
+    thisPlayer(inThisPlayer),
+    gameWon(NULL),
+    transport(inTransport)
+{
     playersLastMove = new PlayerMoveAction*[numPlayers];
-    for(int ctr=0; ctr<numOtherPlayers; ++ctr) {
-        playersLastMove[ctr] = 0x0;
+    for(int ctr=0; ctr<numPlayers; ++ctr) {
+        playersLastMove[ctr] = NULL;
     }
+    
 }
 
-void Sync_StartFrame() {
+void Sync::StartFrame() {
 	++frameNum;
 }
 
-void Sync_BroadcastAction(RemoteAction* action) {
+void Sync::BroadcastAction(RemoteAction* action) {
     action->serialize(sendBuffer, MAX_MESSAGE_SIZE);
     transport->sendPacket(sendBuffer);
 }
 
-void Sync_PullLatestMessages() {
-    int numChars = transport->getPacket(receiveBuffer, MAX_MESSAGE_SIZE);
-    while(numChars > 0) {
-        // TODO: We know it's a Player Move action - that's the only one so far
-        PlayerMoveAction* nextAction = new PlayerMoveAction();
+void Sync::RejectMessage(const char* message, const char* errorMsg) {
+    printf("Cannot process message - %s: %s", errorMsg, message);
+}
+
+void Sync::handlePlayerMoveMessage(const char* message) {
+    PlayerMoveAction* nextAction = new PlayerMoveAction();
+    nextAction->deserialize(receiveBuffer);
+    int messageSender = nextAction->sender;
+    if (playersLastMove[messageSender] != NULL) {
+        delete playersLastMove[messageSender];
+    }
+    playersLastMove[messageSender] = nextAction;
+}
+
+void Sync::handleDragonMoveMessage(const char* message) {
+    DragonMoveAction* nextAction = new DragonMoveAction();
+    nextAction->deserialize(receiveBuffer);
+    dragonMoves.enQ(nextAction);
+}
+
+void Sync::handleDragonStateMessage(const char* message) {
+    DragonStateAction* nextAction = new DragonStateAction();
+    nextAction->deserialize(receiveBuffer);
+    dragonMoves.enQ(nextAction);
+}
+
+void Sync::handlePlayerPickupMessage(const char* message) {
+    PlayerPickupAction* nextAction = new PlayerPickupAction();
+    nextAction->deserialize(receiveBuffer);
+    playerPickups.enQ(nextAction);
+}
+
+void Sync::handlePlayerResetMessage(const char* message) {
+    PlayerResetAction* nextAction = new PlayerResetAction();
+    nextAction->deserialize(receiveBuffer);
+    playerResets.enQ(nextAction);
+}
+
+void Sync::handlePortcullisStateMessage(const char* message) {
+    PortcullisStateAction* nextAction = new PortcullisStateAction();
+    nextAction->deserialize(receiveBuffer);
+    gateStateChanges.enQ(nextAction);
+}
+
+void Sync::handlePlayerWinMessage(const char* message) {
+    // Don't know how we'd get this, but we ignore any win message after we receive the first one.
+    if (gameWon == NULL) {
+        PlayerWinAction* nextAction = new PlayerWinAction();
         nextAction->deserialize(receiveBuffer);
-        int messageSender = nextAction->sender;
-        if (playersLastMove[messageSender-1] != 0x0) {
-            delete playersLastMove[messageSender-1];
+        gameWon = nextAction;
+    }
+}
+
+void Sync::PullLatestMessages() {
+    int numChars = transport->getPacket(receiveBuffer, MAX_MESSAGE_SIZE);
+    while(numChars >= 4) {
+        char type[5] = "XXXX";
+        // First four characters are the type of message
+        for(int ctr=0; ctr<4; ++ctr) {
+            type[ctr] = receiveBuffer[ctr];
         }
-        playersLastMove[messageSender-1] = nextAction;
+        switch (receiveBuffer[0]) {
+            case 'P':
+                switch (receiveBuffer[1]) {
+                    case 'M': {
+                        handlePlayerMoveMessage(receiveBuffer);
+                        break;
+                    }
+                    case 'P': {
+                        handlePlayerPickupMessage(receiveBuffer);
+                        break;
+                    }
+                    case 'R': {
+                        handlePlayerResetMessage(receiveBuffer);
+                        break;
+                    }
+                    case 'W': {
+                        handlePlayerWinMessage(receiveBuffer);
+                        break;
+                    }
+                    default:
+                        printf("Message with unknown message type P%c: %s\n", receiveBuffer[1], receiveBuffer);
+                }
+                break;
+            case 'D':
+                switch (receiveBuffer[1]) {
+                    case 'M': {
+                        handleDragonMoveMessage(receiveBuffer);
+                        break;
+                    }
+                    case 'S': {
+                        handleDragonStateMessage(receiveBuffer);
+                        break;
+                    }
+                    default:
+                        printf("Message with unknown message type D%c: %s\n", receiveBuffer[1], receiveBuffer);
+                }
+                break;
+            case 'G':
+                switch (receiveBuffer[1]) {
+                    case 'S': {
+                        handlePortcullisStateMessage(receiveBuffer);
+                        break;
+                    }
+                    default:
+                        printf("Message with unknown message type C%c: %s\n", receiveBuffer[1], receiveBuffer);
+                }
+                break;
+            default:
+                printf("Message with unknown message type %c*: %s\n", receiveBuffer[0], receiveBuffer);
+        }
         
         numChars = transport->getPacket(receiveBuffer, MAX_MESSAGE_SIZE);
     }
 }
 
-PlayerMoveAction* Sync_GetLatestBallSync(int player) {
-    PlayerMoveAction* rtn = playersLastMove[player-1];
-    playersLastMove[player-1] = 0x0;
+PlayerMoveAction* Sync::GetLatestBallSync(int player) {
+    PlayerMoveAction* rtn = playersLastMove[player];
+    playersLastMove[player] = NULL;
     return rtn;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////
-//
-// RemoteAction
-//
-
-////////////////////////////////////////////////////////////////////////////////////////////
-//
-// PlayerMoveAction
-//
-
-PlayerMoveAction::PlayerMoveAction() {}
-
-PlayerMoveAction::PlayerMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely) {
-    sender = inSender;
-    room = inRoom;
-    posx = inPosx;
-    posy = inPosy;
-    velx = inVelx;
-    vely = inVely;
+PlayerResetAction* Sync::GetNextResetAction() {
+    RemoteAction* next = NULL;
+    if (!playerResets.isEmpty()) {
+        next = playerResets.deQ();
+    }
+    return (PlayerResetAction*)next;
 }
 
-int PlayerMoveAction::serialize(char* buffer, int bufferLength) {
-    // TODO - Right now we are ignoring bufferLength
-    //int numChars = sprintf(buffer, "BALL-sd%d-rm%d-px%d-py%d-vx%d-vy%d", sender, room, posx, posy, velx, vely);
-    int numChars = sprintf(buffer, "BALL %d %d %d %d %d %d", sender, room, posx, posy, velx, vely);
-    printf("Serialized ball state to %d chars: %s", numChars, buffer);
-    return numChars;
+RemoteAction* Sync::GetNextDragonAction() {
+    RemoteAction* next = NULL;
+    if (!dragonMoves.isEmpty()) {
+        next = dragonMoves.deQ();
+    }
+    return next;
 }
 
-void PlayerMoveAction::deserialize(const char *message) {
-    char type[8];
-    sscanf(message, "%s %d %d %d %d %d %d", type, &sender, &room, &posx, &posy, &velx, &vely);
+PortcullisStateAction* Sync::GetNextPortcullisAction() {
+    RemoteAction* next = NULL;
+    if (!gateStateChanges.isEmpty()) {
+        next = gateStateChanges.deQ();
+    }
+    return (PortcullisStateAction*)next;
+}
+
+
+
+PlayerPickupAction* Sync::GetNextPickupAction() {
+    PlayerPickupAction* next = NULL;
+    if (!playerPickups.isEmpty()) {
+        next = (PlayerPickupAction*)playerPickups.deQ();
+    }
+    return next;
+
+}
+
+PlayerWinAction* Sync::GetGameWon() {
+    PlayerWinAction* next = gameWon;
+    gameWon = NULL;
+    return next;
 }

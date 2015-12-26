@@ -2,9 +2,6 @@
 //  MacTransport.cpp
 //  MacAdventure
 //
-//  Created by Robert Antonucci on 11/10/15.
-//
-//
 
 #include "MacTransport.hpp"
 
@@ -20,14 +17,41 @@
 #include <netdb.h>
 // End socket includes
 
+char* MacTransport::UNSPECIFIED = "unspecified";
 
 MacTransport::MacTransport() :
-    PACKET_DELIMETER('\0')
+  PACKET_DELIMETER('\0'),
+  role(ROLE_UNSPECIFIED),
+  port(DEFAULT_PORT),
+  ip(UNSPECIFIED)
 {
+    setup();
+}
+
+MacTransport::MacTransport(int inPort) :
+PACKET_DELIMETER('\0'),
+role(ROLE_SERVER),
+port(inPort == 0 ? DEFAULT_PORT : inPort),
+ip(NULL)
+{
+    setup();
+}
+
+MacTransport::MacTransport(char* inIp, int inPort) :
+PACKET_DELIMETER('\0'),
+role(ROLE_CLIENT),
+port(inPort == 0 ? DEFAULT_PORT : inPort),
+ip(inIp)
+{
+    setup();
+}
+
+void MacTransport::setup() {
     streamBufferSize = 1024;
     streamBuffer = new char[streamBufferSize]; // TODO: Make this more dynamic.
     charsInStreamBuffer = 0;
 }
+
 
 MacTransport::~MacTransport() {
     delete [] streamBuffer;
@@ -41,13 +65,20 @@ MacTransport::~MacTransport() {
 }
 
 void MacTransport::connect() {
-    // Try to bind to a port.  If it's busy, assume the other program has bound and try to connect to it.
-    int port = 5678;
-    int busy = openServerSocket(port);
-    if (busy) {
-        openClientSocket(port);
+    if (ip == UNSPECIFIED) {
+        // Try to bind to a port.  If it's busy, assume the other program has bound and try to connect to it.
+        int busy = openServerSocket();
+        if (busy) {
+            openClientSocket();
+        }
+        connectNumber = (busy ? 1 : 0);
+    } else if (ip == NULL) {
+        openServerSocket();
+        connectNumber = 0;
+    } else {
+        openClientSocket();
+        connectNumber = 1;
     }
-    connectNumber = (busy ? 1 : 0);
 }
 
 int MacTransport::sendPacket(const char* packetData) {
@@ -128,7 +159,7 @@ int MacTransport::getPacket(char* buffer, int bufferLength) {
     return (hitError ? hitError : charsInPacket);
 }
 
-int MacTransport::openServerSocket(int portno) {
+int MacTransport::openServerSocket() {
     printf("Opening server socket\n");
     
     socklen_t clilen;
@@ -139,7 +170,7 @@ int MacTransport::openServerSocket(int portno) {
     bzero((char *) &serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port = htons(portno);
+    serv_addr.sin_port = htons(port);
     if (bind(serverSocketFd, (struct sockaddr *) &serv_addr,
              sizeof(serv_addr)) < 0) {
         // Assume it is because another process is listening and we should instead launch the client
@@ -159,17 +190,17 @@ int MacTransport::openServerSocket(int portno) {
     
 }
 
-void MacTransport::openClientSocket(int portno) {
+void MacTransport::openClientSocket() {
     printf("Opening client socket\n");
     int n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
+    const char* serverAddress = (ip == UNSPECIFIED ? "localhost" : ip);
     
-    char buffer[256];
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFd < 0)
         error("ERROR opening socket");
-    server = gethostbyname("localhost");
+    server = gethostbyname(serverAddress);
     if (server == NULL) {
         fprintf(stderr,"ERROR, no such host\n");
         exit(0);
@@ -179,7 +210,7 @@ void MacTransport::openClientSocket(int portno) {
     bcopy((char *)server->h_addr,
           (char *)&serv_addr.sin_addr.s_addr,
           server->h_length);
-    serv_addr.sin_port = htons(portno);
+    serv_addr.sin_port = htons(port);
     n = ::connect(socketFd,(struct sockaddr *) &serv_addr,sizeof(serv_addr));
     if (n < 0) {
         error("ERROR connecting");

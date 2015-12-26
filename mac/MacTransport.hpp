@@ -2,9 +2,6 @@
 //  MacTransport.hpp
 //  MacAdventure
 //
-//  Created by Robert Antonucci on 11/10/15.
-//
-//
 
 #ifndef MacTransport_hpp
 #define MacTransport_hpp
@@ -16,8 +13,26 @@ class MacTransport: public Transport {
     
 public:
     
+    /**
+     * Create a socket to this machine on the default port.  First try to open
+     * a server socket, but if the port is already busy open up a client socket.
+     * Useful for testing.
+     */
     MacTransport();
-    
+
+    /**
+     * Create a server socket.
+     * port - the port to listen on.  If 0, will listen on the default port.
+     */
+    MacTransport(int port);
+
+    /**
+     * Connect a socket to another machine.
+     * ip - the ip of the machine to connect to
+     * port - the port to connect to.  If 0, will listen on the default port.
+     */
+    MacTransport(char* ip, int port);
+
     ~MacTransport();
     
     void connect();
@@ -29,6 +44,14 @@ public:
     static void testSockets();
 
 private:
+    
+    static char* UNSPECIFIED;
+    
+    char* ip;
+    
+    int port;
+    
+    int role; // Whether to be client or server
     
     const char PACKET_DELIMETER; // Character used to signify end of packet.
     
@@ -42,9 +65,11 @@ private:
     
     int charsInStreamBuffer; // Number of characters read into stream buffer
     
-    int openServerSocket(int port);
+    void setup();
     
-    void openClientSocket(int port);
+    int openServerSocket();
+    
+    void openClientSocket();
     
     void error(const char* message);
 };

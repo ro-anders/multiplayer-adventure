@@ -13,9 +13,24 @@
 // Original game written by Warren Robinett. Warren, you rock.
 //
 
-#include "Sync.h"
-#include "Transport.hpp"
+#ifdef WIN32
+#include <Windows.h>
+#endif
+
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "Adventure.h"
+
+#include "adventure_sys.h"
+#include "color.h"
+#include "Ball.hpp"
+#include "Bat.hpp"
+#include "Dragon.hpp"
+#include "GameObject.hpp"
+#include "Portcullis.hpp"
+#include "Sync.hpp"
+#include "Transport.hpp"
 
 #ifndef max
 #define max(a,b) ((a > b) ? a : b);
@@ -28,46 +43,6 @@
 #define CLOCKS_VSYNC        4
 
 // Types
-typedef struct OBJECT
-{
-    const byte* gfxData;        // graphics data for each state
-    const byte* states;         // array of indicies for each state
-    int state;                  // current state
-    int color;                  // color
-    int room;                   // room
-    int x;                      // x position
-    int y;                      // y position
-    int movementX;              // horizontal movement
-    int movementY;              // vertical movement
-    int size;                   // size (used for bridge and surround)
-    int linkedObject;           // index of linked (carried) object
-    int linkedObjectX;
-    int linkedObjectY;
-    bool displayed;             // flag indicating object was displayed (when more than maxDisplayableObjects for instance)
-}OBJECT;
-
-typedef struct BALL
-{
-    int room;                   // room
-    int x;                      // x position
-    int y;                      // y position
-    int previousX;              // previous x position
-    int previousY;              // previous y position
-	int velx;					// Current horizontal speed (walls notwithstanding).  Positive = right.  Negative = left.
-	int vely;					// Current vertical speed (walls notwithstanding).  Positive = right.  Negative = down.
-	int linkedObject;           // index of linked (carried) object
-    int linkedObjectX;          // X value representing the offset from the ball to the object being carried
-    int linkedObjectY;          // Y value representing the offset from the ball to the object being carried
-    bool hitX;                  // the ball hit something on the X axis
-    bool hitY;                  // the ball hit something on the Y axis
-    int hitObject;              // the object that the ball hit
-	const byte* gfxData;		// graphics data for ball
-}BALL;
-
-typedef struct COLOR
-{
-    int r,g,b;
-}COLOR;
 
 typedef struct ROOM
 {
@@ -87,10 +62,11 @@ typedef struct ROOM
 enum
 {
     OBJECT_NONE=-1,
-    OBJECT_PORT1=0,
-	OBJECT_PORT4,
-    OBJECT_PORT2,
-    OBJECT_PORT3,
+    OBJECT_YELLOW_PORT=0,
+    OBJECT_COPPER_PORT,
+	OBJECT_JADE_PORT,
+    OBJECT_WHITE_PORT,
+    OBJECT_BLACK_PORT,
     OBJECT_NAME,
     OBJECT_NUMBER,
     OBJECT_REDDRAGON,
@@ -99,6 +75,7 @@ enum
     OBJECT_SWORD,
     OBJECT_BRIDGE,
     OBJECT_YELLOWKEY,
+    OBJECT_COPPERKEY,
     OBJECT_WHITEKEY,
     OBJECT_BLACKKEY,
     OBJECT_BAT,
@@ -119,19 +96,17 @@ void ReactToCollision(BALL* ball);
 static void BallMovement(BALL* ball);
 static void ThisBallMovement();
 static void OtherBallMovement();
-static void MoveCarriedObject();
+static void MoveCarriedObjects();
 static void MoveGroundObject();
 static void PrintDisplay();
 static void PickupPutdown();
+static void OthersPickupPutdown();
 static void Surround();
 static void MoveBat();
 static void Portals();
-static void MoveGreenDragon();
-static void MoveYellowDragon();
-static void MoveRedDragon();
-static void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer);
+static void SyncDragons();
+static void MoveDragon(Dragon* dragon, const int* matrix, int speed);
 static void Magnet();
-static int AdjustRoomLevel(int room);
 
 // My helper functions
 static void DrawObjects(int room);
@@ -145,6 +120,12 @@ static bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, 
 void CalcPlayerSpriteExtents(const OBJECT* object, int* cx, int* cy, int* cw, int* ch);
 static bool HitTestRects(int ax, int ay, int awidth, int aheight,
                     int bx, int by, int bwidth, int bheight);
+static int distanceFromBall(BALL* ball, int x, int y);
+static void ResetPlayers();
+static void ResetPlayer(BALL* ball);
+static void WinGame();
+
+
 COLOR GetFlashColor();
 void AdvanceFlashColor();
 
@@ -177,6 +158,8 @@ static int gameState = GAMESTATE_GAMESELECT;            // finite state machine
 static int gameDifficultyLeft = DIFFICULTY_B;           // 2600 left difficulty switch
 static int gameDifficultyRight = DIFFICULTY_B;          // 2600 right difficulty switch
 static int gameLevel = 0;                               // current game level (1,2,3 - zero justified)
+static int gameBoard = 0;                               // The board setup.  Level 1 = 0, Levels 2 & 3 = 1, Gauntlet = 2
+static int gameNum; // Which game is being played.  May be different from game level.
 
 static int displayedRoomIndex = 0;                                   // index of current (displayed) room
 
@@ -186,29 +169,6 @@ static int winFlashTimer=0;
 
 static int flashColorHue=0;
 static int flashColorLum=0;
-
-//
-// Color lookup table (RGB)
-//
-static const COLOR colorTable [] = 
-{
-    { 0x00,0x00,0x00 }, // black (0x0)
-    { 0xcd,0xcd,0xcd }, // light gray (0x08)
-    { 0xff,0xff,0xff }, // white (0x0e)
-    { 0xFF,0xD8,0x4C }, // yellow (0x1a)
-    { 0xff,0x98,0x2c }, // orange (0x28)
-    { 0xfa,0x52,0x55 }, // red (0x36)
-    { 0xA2,0x51,0xD9 }, // purple (0x66)
-    { 0x6b,0x64,0xff }, // blue (0x86)
-    { 0x55,0xb6,0xff }, // light cyan  (0x98)
-    { 0x61,0xd0,0x70 }, // cyan  (0xa8)
-    { 0x21,0xd9,0x1b }, // dark green (0xb8)
-    { 0x86,0xd9,0x22 }, // lime green (0xc8)
-    { 0xa1,0xb0,0x34 }, // olive green (0xd8)
-    { 0xd5,0xb5,0x43 }, // tan  (0xe8)
-    { 0xa8,0xfc,0x41 }  // flash (0xcb)
-};  
-enum { COLOR_BLACK=0, COLOR_LTGRAY, COLOR_WHITE, COLOR_YELLOW, COLOR_ORANGE, COLOR_RED, COLOR_PURPLE, COLOR_BLUE, COLOR_LTCYAN, COLOR_CYAN, COLOR_DKGREEN, COLOR_LIMEGREEN, COLOR_OLIVEGREEN, COLOR_TAN, COLOR_FLASH };
 
 // 
 // Room graphics
@@ -261,7 +221,7 @@ static const byte roomGfxNumberRoom [] =
     0x30,0x00,0x00,     // XX                                    RR                                      
     0x30,0x00,0x00,     // XX                                    RR                                      
     0x30,0x00,0x00,     // XX                                    RR                                      
-    0xF0,0xFF,0x0F      // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR                                      
+    0xF0,0xFF,0x0F      // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR                                      
 };
 
 // `                                                                                                     
@@ -288,22 +248,34 @@ static const byte roomGfxBlueMazeTop[] =
     0xF0,0x33,0x3F      // XXXX  XX  XXXXXXXX    RRRRRRRR  RR  RRRR                                      
 };
 
-// Blue Maze #1                                                                                                      
+// Blue Maze #1
 static const byte roomGfxBlueMaze1 [] =
 {
-    0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR                                      
-    0x00,0x00,0x00,          //                                                                               
-    0xF0,0xFC,0xFF,          // XXXXXXXXXX  XXXXXXXXRRRRRRRR  RRRRRRRRRR                                      
-    0xF0,0x00,0xC0,          // XXXX              XXRR              RRRR                                      
-    0xF0,0x3F,0xCF,          // XXXX  XXXXXXXXXX  XXRR  RRRRRRRRRR  RRRR                                      
-    0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR                                            
-    0xF0,0xF3,0xCC           // XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR                                      
+    0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXX--------RRRRRRRRRRRRRRRR
+    0x00,0x00,0x00,          //
+    0xF0,0xFC,0xFF,          // XXXXXXXXXX  XXXXXXXXRRRRRRRR  RRRRRRRRRR
+    0xF0,0x00,0xC0,          // XXXX              XXRR              RRRR
+    0xF0,0x3F,0xCF,          // XXXX  XXXXXXXXXX  XXRR  RRRRRRRRRR  RRRR
+    0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR
+    0xF0,0xF3,0xCC           // XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR
 };
-                                                                                                                
-// Bottom of Blue Maze                                                                                               
+
+// Blue Maze #1 with entrance to Jade Castle (only used with 3 players)
+static const byte roomGfxBlueMaze1B [] =
+{
+    0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+    0x00,0x00,0x00,          //
+    0xF0,0xFC,0xFF,          // XXXXXXXXXX  XXXXXXXXRRRRRRRR  RRRRRRRRRR
+    0xF0,0x00,0xC0,          // XXXX              XXRR              RRRR
+    0xF0,0x3F,0xCF,          // XXXX  XXXXXXXXXX  XXRR  RRRRRRRRRR  RRRR
+    0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR
+    0xF0,0xF3,0xCC           // XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR
+};
+
+// Bottom of Blue Maze
 static const byte roomGfxBlueMazeBottom [] =
 {
-    0xF0,0xF3,0x0C,          // XXXXXXXX  XX  XX        RR  RR  RRRRRRRR                                      
+    0xF0,0xF3,0x0C,          // XXXXXXXX  XX  XX        RR  RR  RRRRRRRR
     0x00,0x30,0x0C,          //       XX      XX        RR      RR                                           
     0xF0,0x3F,0x0F,          // XXXX  XXXXXXXXXX        RRRRRRRRRR  RRRR                                      
     0xF0,0x00,0x00,          // XXXX                                RRRR                                      
@@ -375,16 +347,40 @@ static const byte roomGfxMazeEntry [] =
 // Castle
 static const byte roomGfxCastle [] =
 {
-    0xF0,0xFE,0x15,      // XXXXXXXXXXX X X X      R R R RRRRRRRRRRR                                      
-    0x30,0x03,0x1F,      // XX        XXXXXXX      RRRRRRR        RR                                      
-    0x30,0x03,0xFF,      // XX        XXXXXXXXXXRRRRRRRRRR        RR                                      
-    0x30,0x00,0xFF,      // XX          XXXXXXXXRRRRRRRR          RR                                      
-    0x30,0x00,0x3F,      // XX          XXXXXX    RRRRRR          RR                                      
-    0x30,0x00,0x00,      // XX                                    RR                                      
-    0xF0,0xFF,0x0F       // XXXXXXXXXXXXXX            RRRRRRRRRRRRRR                                      
+    0xF0,0xFE,0x15,      // XXXXXXXXXXX X X X      R R R RRRRRRRRRRR
+    0x30,0x03,0x1F,      // XX        XXXXXXX      RRRRRRR        RR
+    0x30,0x03,0xFF,      // XX        XXXXXXXXXXRRRRRRRRRR        RR
+    0x30,0x00,0xFF,      // XX          XXXXXXXXRRRRRRRR          RR
+    0x30,0x00,0x3F,      // XX          XXXXXX    RRRRRR          RR
+    0x30,0x00,0x00,      // XX                                    RR
+    0xF0,0xFF,0x0F       // XXXXXXXXXXXXXX            RRRRRRRRRRRRRR
 };
 
-// Red Maze #1                                                                                                       
+// Castle
+static const byte roomGfxCastle2 [] =
+{
+    0xF0,0xFE,0x15,      // XXXXXXXXXXX X X X      R R R RRRRRRRRRRR
+    0x30,0x03,0x1F,      // XX        XXXXXXX      RRRRRRR        RR
+    0x30,0x03,0xF3,      // XX        XXXX  XXXXRRRR  RRRR        RR
+    0x30,0x00,0xFF,      // XX          XXXXXXXXRRRRRRRR          RR
+    0x30,0x00,0x3F,      // XX          XXXXXX    RRRRRR          RR
+    0x30,0x00,0x00,      // XX                                    RR
+    0xF0,0xFF,0x0F       // XXXXXXXXXXXXXX            RRRRRRRRRRRRRR
+};
+
+// Castle
+static const byte roomGfxCastle3 [] =
+{
+    0xF0,0xFE,0x15,      // XXXXXXXXXXX X X X      R R R RRRRRRRRRRR
+    0x30,0x03,0x1F,      // XX        XXXXXXX      RRRRRRR        RR
+    0x30,0x03,0xF5,      // XX        XXX X XXXXRRRR R RRR        RR
+    0x30,0x00,0xFF,      // XX          XXXXXXXXRRRRRRRR          RR
+    0x30,0x00,0x3F,      // XX          XXXXXX    RRRRRR          RR
+    0x30,0x00,0x00,      // XX                                    RR
+    0xF0,0xFF,0x0F       // XXXXXXXXXXXXXX            RRRRRRRRRRRRRR
+};
+
+// Red Maze #1
 static const byte roomGfxRedMaze1 [] =
 {
      0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR                                      
@@ -535,46 +531,6 @@ static const byte numberStates [] =
     0,1,2
 };
 
-static const byte objectGfxPlayer1[] =
-{
-	8,
-	0xFF,				   // XXXXXXXX
-	0xFF,				   // XXXXXXXX
-	0xFF,				   // XXXXXXXX
-	0xFF,				   // XXXXXXXX
-	0xFF,				   // XXXXXXXX
-	0xFF,				   // XXXXXXXX
-	0xFF,				   // XXXXXXXX
-	0xFF 				   // XXXXXXXX
-};
-
-static const byte objectGfxPlayer2[] =
-{
-	8,
-	0xFF,				   // XXXXXXXX
-	0xBD,				   // X XXXX X
-	0xDB,				   // XX XX XX
-	0xE7,				   // XXX  XXX
-	0xE7,				   // XXX  XXX
-	0xDB,				   // XX XX XX
-	0xBD,				   // X XXXX X
-	0xFF 				   // XXXXXXXX
-};
-
-static const byte objectGfxPlayer3[] =
-{
-	8,
-	0xFF,				   // XXXXXXXX
-	0xE7,				   // XXX  XXX
-	0xE7,				   // XXX  XXX
-	0x81,				   // X      X
-	0x81,				   // X      X
-	0xE7,				   // XXX  XXX
-	0xE7,				   // XXX  XXX
-	0xFF 				   // XXXXXXXX
-};
-
-
 // Object #0B : State FF : Graphic
 static const byte objectGfxKey [] =
 {
@@ -623,11 +579,8 @@ static const byte objectGfxSurround [] =
     0xFF                   // XXXXXXXX                                                                  
 };
 
-OBJECT objectSurround = 
-{
-    objectGfxSurround, 0, 0, COLOR_ORANGE, -1, 0, 0, 0, 0, 0x07
-};
-                                                                                                                  
+OBJECT& objectSurround = *new OBJECT(objectGfxSurround, 0, 0, COLOR_ORANGE, -1, 0, 0, 0x07);
+
 // Object #0A : State FF : Graphic                                                                                   
 static const byte objectGfxBridge [] =
 {
@@ -656,121 +609,6 @@ static const byte objectGfxBridge [] =
     0xC3,                  // XX    XX                                                                  
     0xC3,                  // XX    XX                                                                  
     0xC3                   // XX    XX                                                                  
-};
-
-static const byte objectGfxBat [] =
-{
-    // Object #0E : State 03 : Graphic                                                                                   
-    7,
-    0x81,                  // X      X                                                                  
-    0x81,                  // X      X                                                                  
-    0xC3,                  // XX    XX                                                                  
-    0xC3,                  // XX    XX                                                                  
-    0xFF,                  // XXXXXXXX                                                                  
-    0x5A,                  //  X XX X                                                                   
-    0x66,                  //  XX  XX                                                                   
-    // Object #0E : State FF : Graphic                                                                                   
-    11,
-    0x01,                  //        X                                                                  
-    0x80,                  // X                                                                         
-    0x01,                  //        X                                                                  
-    0x80,                  // X                                                                         
-    0x3C,                  //   XXXX                                                                    
-    0x5A,                  //  X XX X                                                                   
-    0x66,                  //  XX  XX                                                                   
-    0xC3,                  // XX    XX                                                                  
-    0x81,                  // X      X                                                                  
-    0x81,                  // X      X                                                                  
-    0x81                   // X      X                                                                  
-};
-
-// Bat states
-static const byte batStates [] = 
-{
-    0,1
-};
-
-static const byte objectGfxDrag [] =
-{
-    // Object #6 : State #00 : Graphic                                                                                   
-    20,
-    0x06,                  //      XX                                                                   
-    0x0F,                  //     XXXX                                                                  
-    0xF3,                  // XXXX  XX                                                                  
-    0xFE,                  // XXXXXXX                                                                   
-    0x0E,                  //     XXX                                                                   
-    0x04,                  //      X                                                                    
-    0x04,                  //      X                                                                    
-    0x1E,                  //    XXXX                                                                   
-    0x3F,                  //   XXXXXX                                                                  
-    0x7F,                  //  XXXXXXX                                                                  
-    0xE3,                  // XXX   XX                                                                  
-    0xC3,                  // XX    XX                                                                  
-    0xC3,                  // XX    XX                                                                  
-    0xC7,                  // XX   XXX                                                                  
-    0xFF,                  // XXXXXXXX                                                                  
-    0x3C,                  //   XXXX                                                                    
-    0x08,                  //     X                                                                     
-    0x8F,                  // X   XXXX                                                                  
-    0xE1,                  // XXX    X                                                                  
-    0x3F,                  //   XXXXXX                                                                  
-    // Object 6 : State 01 : Graphic                                                                                     
-    22,
-    0x80,                  // X                                                                         
-    0x40,                  //  X                                                                        
-    0x26,                  //   X  XX                                                                   
-    0x1F,                  //    XXXXX                                                                  
-    0x0B,                  //     X XX                                                                  
-    0x0E,                  //     XXX                                                                   
-    0x1E,                  //    XXXX                                                                   
-    0x24,                  //   X  X                                                                    
-    0x44,                  //  X   X                                                                    
-    0x8E,                  // X   XXX                                                                   
-    0x1E,                  //    XXXX                                                                  
-    0x3F,                  //   XXXXXX                                                                  
-    0x7F,                  //  XXXXXXX                                                                  
-    0x7F,                  //  XXXXXXX                                                                  
-    0x7F,                  //  XXXXXXX                                                                  
-    0x7F,                  //  XXXXXXX                                                                  
-    0x3E,                  //   XXXXX                                                                   
-    0x1C,                  //    XXX                                                                    
-    0x08,                  //     X                                                                     
-    0xF8,                  // XXXXX                                                                     
-    0x80,                  // X                                                                         
-    0xE0,                   // XXX                                                                       
-    // Object 6 : State 02 : Graphic                                                                                     
-    17,
-    0x0C,                  //     XX                                                                    
-    0x0C,                  //     XX                                                                    
-    0x0C,                  //     XX                                                                    
-    0x0E,                  //     XXX                                                                   
-    0x1B,                  //    XX X                                                                   
-    0x7F,                  //  XXXXXXX                                                                  
-    0xCE,                  // XX  XXX                                                                   
-    0x80,                  // X                                                                         
-    0xFC,                  // XXXXXX                                                                    
-    0xFE,                  // XXXXXXX                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0x7E,                  //  XXXXXX                                                                   
-    0x78,                  //  XXXX                                                                     
-    0x20,                  //   X                                                                       
-    0x6E,                  //  XX XXX                                                                   
-    0x42,                  //  X    X                                                                   
-    0x7E                   //  XXXXXX                                                                   
-};
-
-// Dragon states
-static const byte dragonStates [] = 
-{
-    0,2,0,1
-};
-
-// Dragon Difficulty
-static const byte dragonDiff [] =
-{
-       0xD0, 0xE8,           // Level 1 : Am, Pro
-       0xF0, 0xF6,           // Level 2 : Am, Pro
-       0xF0, 0xF6            // Level 3 : Am, Pro
 };
 
 // Object #9 : State FF : Graphics                                                                                   
@@ -921,211 +759,48 @@ static const byte objectGfxMagnet [] =
     0xC3                   // XX    XX                                                                  
 };
 
-// Object #1 States 940FF (Graphic)                                                                                  
-static const byte objectGfxPort [] = 
-{
-    // state 1
-    4,
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    // state 2
-    6,
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    // state 3
-    8,
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    // state 4
-    10,
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    // state 5
-    12,
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    // state 6
-    14,
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    // state 7
-    16,
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA,                  // X X X X                                                                   
-    0xFE,                  // XXXXXXX                                                                   
-    0xAA                   // X X X X                                                                   
-};
-
-
-
-// Portcullis states
-static const byte portStates [] = 
-{
-    0,0,1,1,2,2,3,3,4,4,5,5,6,6,5,5,4,4,3,3,2,2,1,1
-};
-
-
-static int MAX_PLAYERS = 3;
-static BALL balls[] = {
-    {
-        0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
-        OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/,
-        false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer1/*gfxData*/
-    }, {
-        0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
-        OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/,
-        false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer2/*gfxData*/
-    }, {
-		0/*room*/, 0/*x*/, 0/*y*/, 0/*previousx*/, 0/*previousy*/, 0/*velx*/, 0/*vely*/,
-		OBJECT_NONE/*linkedObject*/, 0/*linkedObjectX*/, 0/*linkedObjectY*/, 
-		false/*hitX*/, false/*hitY*/, OBJECT_NONE/*hitObject*/,	objectGfxPlayer3/*gfxData*/
-	}
-};
+static BALL** balls;
 static BALL* objectBall = 0x0;
 
 //
 // Indexed array of all objects and their properties
 //
+static OBJECT** objectDefs = 0x0;
 
-static OBJECT objectDefs [] =
+enum
 {
-    { objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #1 Portcullis #1
-	{ objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #4 Portcullis #4
-	{ objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #2 Portcullis #2
-    { objectGfxPort, portStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #3 Portcullis #3
-	{ objectGfxAuthor, 0, 0, COLOR_FLASH, 0x1E, 0x50, 0x69, 0, 0, 0, 0, 0, 0, false },   // #4 Name
-    { objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, 0x00, 0x50, 0x40, 0, 0, 0, 0, 0, 0, false },// #5 Number
-    { objectGfxDrag, dragonStates, 0, COLOR_RED, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #6 Dragon #1
-    { objectGfxDrag, dragonStates, 0, COLOR_YELLOW, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },           // #7 Dragon #2
-    { objectGfxDrag, dragonStates, 0, COLOR_LIMEGREEN, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },        // #8 Dragon #3
-    { objectGfxSword, 0, 0, COLOR_YELLOW, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },            // #9 Sword
-    { objectGfxBridge, 0, 0, COLOR_PURPLE, -1, 0, 0, 0, 0, 0x07, 0, 0, 0, false },        // #0A Bridge
-    { objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },              // #0B - Key #1
-    { objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },               // #0C - Key #2
-    { objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },               // #0D - Key #3
-    { objectGfxBat, batStates, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },               // #0E - Bat
-    { objectGfxDot, 0, 0, COLOR_LTGRAY, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },// #0F - Black Dot
-    { objectGfxChallise, 0, 0, COLOR_FLASH, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },          // #10 Challise
-    { objectGfxMagnet, 0, 0, COLOR_BLACK, -1, 0, 0, 0, 0, 0, 0, 0, 0, false },            // #11 Magnet
-    { (const byte*)0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, false}                                  // #12 Null
-};
-
-// Object locations (room and coordinate) for game 01
-//        - object, room, x, y, state, movement(x/y)
-static const byte game1Objects [] =
-{
-	OBJECT_PORT1, 0x11, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 1
-	OBJECT_PORT4, 0x1F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 4
-	OBJECT_PORT2, 0x0F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 2
-    OBJECT_PORT3, 0x10, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 3
-    OBJECT_REDDRAGON, 0x0E, 0x50, 0x20, 0x00, 0x00, 0x00, // Red Dragon
-    OBJECT_YELLOWDRAGON, 0x01, 0x50, 0x20, 0x00, 0x00, 0x00, // Yellow Dragon
-    OBJECT_GREENDRAGON, 0x1D, 0x50, 0x20, 0x00, 0x00, 0x00, // Green Dragon
-    OBJECT_SWORD, 0x12, 0x20, 0x20, 0x00, 0x00, 0x00, // Sword
-    OBJECT_BRIDGE, 0x04, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
-    OBJECT_YELLOWKEY, 0x11, 0x20, 0x40, 0x00, 0x00, 0x00, // Yellow Key
-    OBJECT_WHITEKEY, 0x0E, 0x20, 0x40, 0x00, 0x00, 0x00, // White Key
-    OBJECT_BLACKKEY, 0x1D, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
-    OBJECT_BAT, 0x1A, 0x20, 0x20, 0x00, 0x00, 0x00, // Bat
-    OBJECT_DOT, 0x15, 0x51, 0x12, 0x00, 0x00, 0x00, // Dot
-    OBJECT_CHALISE, 0x1C, 0x30, 0x20, 0x00, 0x00, 0x00, // Challise
-    OBJECT_MAGNET, 0x1B, 0x80, 0x20, 0x00, 0x00, 0x00, // Magnet
-    0xff,0,0,0,0,0,0
-};
-
-// Object locations (room and coordinate) for Games 02 and 03
-//        - object, room, x, y, state, movement(x/y)
-static const byte game2Objects [] =
-{
-    OBJECT_PORT1, 0x11, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 1
-	OBJECT_PORT4, 0x1F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 4
-	OBJECT_PORT2, 0x0F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 2
-    OBJECT_PORT3, 0x10, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 3
-    OBJECT_REDDRAGON, 0x14, 0x50, 0x20, 0x00, 3, 3, // Red Dragon
-    OBJECT_YELLOWDRAGON, 0x19, 0x50, 0x20, 0x00, 3, 3, // Yellow Dragon
-    OBJECT_GREENDRAGON, 0x04, 0x50, 0x20, 0x00, 3, 3, // Green Dragon
-    OBJECT_SWORD, 0x11, 0x20, 0x20, 0x00, 0x00, 0x00, // Sword
-    OBJECT_BRIDGE, 0x0B, 0x40, 0x40, 0x00, 0x00, 0x00, // Bridge
-    OBJECT_YELLOWKEY, 0x09, 0x20, 0x40, 0x00, 0x00, 0x00, // Yellow Key
-    OBJECT_WHITEKEY, 0x06, 0x20, 0x40, 0x00, 0x00, 0x00, // White Key
-    OBJECT_BLACKKEY, 0x19, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
-    OBJECT_BAT, 0x02, 0x20, 0x20, 0x00, 0, -3, // Bat
-    OBJECT_DOT, 0x15, 0x45, 0x12, 0x00, 0x00, 0x00, // Dot
-    OBJECT_CHALISE, 0x14, 0x30, 0x20, 0x00, 0x00, 0x00, // Challise
-    OBJECT_MAGNET, 0x0E, 0x80, 0x20, 0x00, 0x00, 0x00, // Magnet
-    0xff,0,0,0,0,0,0
-};
-
-// Room bounds data for game level 3
-// Ex. the chalise can only exist in rooms 13-1A
-static const int roomBoundsData [] =
-{
-   OBJECT_CHALISE, 0x13, 0x1A,
-   OBJECT_REDDRAGON, 0x01, 0x1D,
-   OBJECT_YELLOWDRAGON, 0x01, 0x1D,
-   OBJECT_GREENDRAGON, 0x01, 0x1D,
-   OBJECT_SWORD, 0x01, 0x1D,
-   OBJECT_BRIDGE, 0x01, 0x1D,
-   OBJECT_YELLOWKEY, 0x01, 0x1D,
-   OBJECT_WHITEKEY, 0x01, 0x16,
-   OBJECT_BLACKKEY, 0x01, 0x12,
-   OBJECT_BAT, 0x01, 0x1D,
-   OBJECT_MAGNET, 0x01, 0x1D,
-   OBJECT_NONE, 0, 0
+    NUMBER_ROOM=0x00,
+    MAIN_HALL_LEFT=0x01,
+    MAIN_HALL_CENTER=0x02,
+    MAIN_HALL_RIGHT=0x03,
+    BLUE_MAZE_BLACK_END=0x04,
+    BLUE_MAZE_JADE_END=0x05,
+    BLUE_MAZE_LARGE_ROOM=0x06,
+    BLUE_MAZE_VERT_PATHS=0x07,
+    BLUE_MAZE_HALL_END=0x08,
+    
+    WHITE_MAZE_HALL_END=0x0a,
+    
+    SOUTH_HALL_RIGHT=0x0c,
+    SOUTH_HALL_LEFT=0x0d,
+    
+    WHITE_CASTLE=0x0f,
+    BLACK_CASTLE=0x10,
+    GOLD_CASTLE=0x11,
+    
+    BLACK_MAZE_1=0x13,
+    BLACK_MAZE_2=0x14,
+    BLACK_MAZE_3=0x15,
+    BLACK_MAZE_ENTRY=0x16,
+    
+    BLACK_FOYER=0x1b,
+    BLACK_INNERMOST_ROOM=0x1c,
+    SOUTH_EAST_ROOM=0x1d, // Southeast corner of the world.  Level 1 = south of main hall, Level 2 = south of south hall
+    
+    JADE_CASTLE=0x1f,
+    JADE_FOYER=0x20,
+    COPPER_CASTLE=0x21,
+    COPPER_FOYER=0x22
 };
 
 //
@@ -1133,19 +808,24 @@ static const int roomBoundsData [] =
 //
 static ROOM roomDefs [] =
 {
-    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE, 0x00,0x00,0x00,0x00 },       // 0 - Number Room
-    { roomGfxBelowYellowCastle, ROOMFLAG_LEFTTHINWALL, COLOR_OLIVEGREEN, 0x08,0x02,0x80,0x03 },       // 1 - Top Access
-    { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_LIMEGREEN, 0x11,0x03,0x83,0x01 },       // 2 - Top Access
-    { roomGfxLeftOfName, ROOMFLAG_RIGHTTHINWALL, COLOR_TAN, 0x06,0x01,0x86,0x02 },       // 3 - Left of Name
-    { roomGfxBlueMazeTop, ROOMFLAG_NONE, COLOR_BLUE, 0x10,0x05,0x07,0x06 },       // 4 - Top of Blue Maze
-    { roomGfxBlueMaze1, ROOMFLAG_NONE, COLOR_BLUE, 0x1F,0x06,0x08,0x04 },       // 5 - Blue Maze #1
-    { roomGfxBlueMazeBottom, ROOMFLAG_NONE, COLOR_BLUE, 0x07,0x04,0x03,0x05 },       // 6 - Bottom of Blue Maze
-    { roomGfxBlueMazeCenter, ROOMFLAG_NONE, COLOR_BLUE, 0x04,0x08,0x06,0x08 },       // 7 - Center of Blue Maze
-    { roomGfxBlueMazeEntry, ROOMFLAG_NONE, COLOR_BLUE, 0x05,0x07,0x01,0x07 },       // 8 - Blue Maze Entry
+    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE,                                       // 0 - Number Room
+        NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM},
+    { roomGfxBelowYellowCastle, ROOMFLAG_LEFTTHINWALL, COLOR_OLIVEGREEN,                    // 1 - Main Hall Left
+        BLUE_MAZE_HALL_END, MAIN_HALL_CENTER,BLACK_CASTLE, MAIN_HALL_RIGHT},
+    { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_LIMEGREEN,                             // 2 - Main Hall Center
+        GOLD_CASTLE, MAIN_HALL_RIGHT, BLUE_MAZE_JADE_END, MAIN_HALL_LEFT },
+    { roomGfxSideCorridor, ROOMFLAG_RIGHTTHINWALL, COLOR_TAN,                                 // 3 - Main Hall Right
+        COPPER_CASTLE, MAIN_HALL_LEFT,SOUTH_EAST_ROOM, MAIN_HALL_CENTER },
+    { roomGfxBlueMazeTop, ROOMFLAG_NONE, COLOR_BLUE, 0x10,0x05,0x07,0x06 },       // 4 - Blue Maze next to Black Castle
+    { roomGfxBlueMaze1, ROOMFLAG_NONE, COLOR_BLUE, 0x1D,0x06,0x08,0x04 },       // 5 - Blue Maze next to Jade Castle
+    { roomGfxBlueMazeBottom, ROOMFLAG_NONE, COLOR_BLUE, 0x07,0x04,0x03,0x05 },       // 6 - Large Room at Bottom of Blue Maze
+    { roomGfxBlueMazeCenter, ROOMFLAG_NONE, COLOR_BLUE, 0x04,0x08,0x06,0x08 },       // 7 - Blue Maze with all vertical paths
+    { roomGfxBlueMazeEntry, ROOMFLAG_NONE, COLOR_BLUE, 0x05,0x07,0x01,0x07 },       // 8 - Blue Maze next to Main Hall
     { roomGfxMazeMiddle, ROOMFLAG_NONE, COLOR_LTGRAY, 0x0A,0x0A,0x0B,0x0A },       // 9 - Maze Middle
     { roomGfxMazeEntry, ROOMFLAG_NONE, COLOR_LTGRAY, 0x03,0x09,0x09,0x09 },       // A - Maze Entry
     { roomGfxMazeSide, ROOMFLAG_NONE, COLOR_LTGRAY, 0x09,0x0C,0x1C,0x0D },       // B - Maze Side
-    { roomGfxSideCorridor, ROOMFLAG_RIGHTTHINWALL, COLOR_LTCYAN, 0x1C,0x0D,0x1D,0x0B },       // C - Side Corridor
+    { roomGfxSideCorridor, ROOMFLAG_RIGHTTHINWALL, COLOR_LTCYAN,                            // C - South Hall Right
+        COPPER_CASTLE, MAIN_HALL_LEFT,SOUTH_EAST_ROOM, 0x0B },
     { roomGfxSideCorridor, ROOMFLAG_LEFTTHINWALL, COLOR_DKGREEN, 0x0F,0x0B,0x0E,0x0C },       // D - Side Corridor
     { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_CYAN, 0x0D,0x10,0x0F,0x10 },       // E - Top Entry Room
     { roomGfxCastle, ROOMFLAG_NONE, COLOR_WHITE, 0x0E,0x0F,0x0D,0x0F },       // F - White Castle
@@ -1160,39 +840,89 @@ static ROOM roomDefs [] =
     { roomGfxRedMazeTop, ROOMFLAG_NONE, COLOR_RED, 0x1A,0x17,0x1A,0x17 },       // 18 - Top of Red Maze
     { roomGfxRedMazeBottom, ROOMFLAG_NONE, COLOR_RED, 0x17,0x1A,0x17,0x1A },       // 19 - Bottom of Red Maze
     { roomGfxWhiteCastleEntry, ROOMFLAG_NONE, COLOR_RED, 0x18,0x19,0x18,0x19 },       // 1A - White Castle Entry
-    { roomGfxTwoExitRoom, ROOMFLAG_NONE, COLOR_RED, 0x89,0x89,0x89,0x89 },       // 1B - Black Castle Entry
-    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE, 0x1D,0x07,0x8C,0x08 },       // 1C - Other Purple Room
-    { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_RED, 0x8F,0x01,0x10,0x03 },       // 1D - Top Entry Room
+    { roomGfxTwoExitRoom, ROOMFLAG_NONE, COLOR_RED,                                       // 1B - Black Castle First Room
+        BLACK_INNERMOST_ROOM,  BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM },
+    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE,                               // 1C - Second Room in Black Castle
+        SOUTH_EAST_ROOM, BLUE_MAZE_VERT_PATHS, BLACK_FOYER, BLUE_MAZE_HALL_END},    // TODO: Used to be north of se room.
+    { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_RED,                                        // 1D - South East Room
+        MAIN_HALL_RIGHT, MAIN_HALL_LEFT, BLACK_CASTLE, MAIN_HALL_RIGHT },
     { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_PURPLE, 0x06,0x01,0x06,0x03 },        // 1E - Name Room
-	{ roomGfxCastle, ROOMFLAG_NONE, COLOR_DKGREEN, 0x05, 0x06, 0x05, 0x04 },            // 1F - Green Castle
-	{ roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_DKGREEN, 0x20, 0x20, 0x20, 0x20 },       // 20 - Yellow Castle Entry
+    { roomGfxCastle3, ROOMFLAG_NONE, COLOR_DKGREEN, 0x1D, 0x06, 0x05, 0x04 },            // 1F - Jade Castle
+	{ roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_DKGREEN, 0x20, 0x20, 0x20, 0x20 },       // 20 - Copper Castle Entry
+    { roomGfxCastle2, ROOMFLAG_NONE, COLOR_COPPER,
+        BLUE_MAZE_LARGE_ROOM, MAIN_HALL_LEFT, MAIN_HALL_RIGHT, GOLD_CASTLE},
+    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_COPPER,                                     // 21 - Copper Foyer
+        COPPER_FOYER, COPPER_FOYER, COPPER_FOYER, COPPER_FOYER}
 };
 
 
-// Room differences for different levels (level 1,2,3)  
-static const byte roomLevelDiffs [] = 
+// Object locations (room and coordinate) for game 01
+//        - object, room, x, y, state, movement(x/y)
+static const byte game1Objects [] =
 {
-    0x10,0x0f,0x0f,            // down from room 01                                                             
-    0x05,0x11,0x11,            // down from room 02                                                             
-    0x1d,0x0a,0x0a,            // down from room 03                                                             
-    0x1c,0x16,0x16,            // u/l/r/d from room 1b (black castle room)                                      
-    0x1b,0x0c,0x0c,            // down from room 1c                                                             
-    0x03,0x0c,0x0c,            // up from room 1d (top entry room)    
+    OBJECT_YELLOW_PORT, 0x11, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 1
+    OBJECT_JADE_PORT, 0x1F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 4
+    OBJECT_WHITE_PORT, 0x0F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 2
+    OBJECT_BLACK_PORT, 0x10, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 3
+    OBJECT_REDDRAGON, 0x0E, 0x50, 0x20, 0x00, 0x00, 0x00, // Red Dragon
+    OBJECT_YELLOWDRAGON, 0x01, 0x50, 0x20, 0x00, 0x00, 0x00, // Yellow Dragon
+    OBJECT_GREENDRAGON, 0x1D, 0x50, 0x20, 0x00, 0x00, 0x00, // Green Dragon
+    OBJECT_SWORD, 0x12, 0x20, 0x20, 0x00, 0x00, 0x00, // Sword
+    OBJECT_BRIDGE, 0x04, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
+    OBJECT_YELLOWKEY, 0x11, 0x20, 0x41, 0x00, 0x00, 0x00, // Yellow Key
+    OBJECT_COPPERKEY, COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
+    OBJECT_WHITEKEY, 0x0E, 0x20, 0x40, 0x00, 0x00, 0x00, // White Key
+    OBJECT_BLACKKEY, 0x10/*0x1D*/, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
+    OBJECT_BAT, 0x1A, 0x20, 0x20, 0x00, 0x00, 0x00, // Bat
+    OBJECT_DOT, 0x15, 0x51, 0x12, 0x00, 0x00, 0x00, // Dot
+    OBJECT_CHALISE, 0x1C, 0x30, 0x20, 0x00, 0x00, 0x00, // Challise
+    OBJECT_MAGNET, 0x1B, 0x80, 0x20, 0x00, 0x00, 0x00, // Magnet
+    0xff,0,0,0,0,0,0
 };
 
-// Castle Entry Rooms (Yellow, White, Black)
-static const byte entryRoomOffsets[] =
+// Object locations (room and coordinate) for Games 02 and 03
+//        - object, room, x, y, state, movement(x/y)
+static const byte game2Objects [] =
 {
-	 0x12,0x20,0x1A,0x1B
+    OBJECT_YELLOW_PORT, 0x11, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 1
+    OBJECT_JADE_PORT, 0x1F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 4
+    OBJECT_WHITE_PORT, 0x0F, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 2
+    OBJECT_BLACK_PORT, 0x10, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 3
+    OBJECT_REDDRAGON, 0x14, 0x50, 0x20, 0x00, 3, 3, // Red Dragon
+    OBJECT_YELLOWDRAGON, 0x19, 0x50, 0x20, 0x00, 3, 3, // Yellow Dragon
+    OBJECT_GREENDRAGON, 0x04, 0x50, 0x20, 0x00, 3, 3, // Green Dragon
+    OBJECT_SWORD, 0x11, 0x20, 0x20, 0x00, 0x00, 0x00, // Sword
+    OBJECT_BRIDGE, 0x0B, 0x40, 0x40, 0x00, 0x00, 0x00, // Bridge
+    OBJECT_YELLOWKEY, 0x09, 0x20, 0x40, 0x00, 0x00, 0x00, // Yellow Key
+    OBJECT_COPPERKEY, COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
+    OBJECT_WHITEKEY, 0x06, 0x20, 0x40, 0x00, 0x00, 0x00, // White Key
+    OBJECT_BLACKKEY, 0x19, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
+    OBJECT_BAT, 0x02, 0x20, 0x20, 0x00, 0, -3, // Bat
+    OBJECT_DOT, 0x15, 0x45, 0x12, 0x00, 0x00, 0x00, // Dot
+    OBJECT_CHALISE, 0x14, 0x30, 0x20, 0x00, 0x00, 0x00, // Challise
+    OBJECT_MAGNET, 0x0E, 0x80, 0x20, 0x00, 0x00, 0x00, // Magnet
+    0xff,0,0,0,0,0,0
 };
 
-// Castle Rooms (Yellow, White, Black)                                                                               
-static const byte castleRoomOffsets[] =
+// Room bounds data for game level 3
+// Ex. the chalise can only exist in rooms 13-1A
+static const int roomBoundsData [] =
 {
-	 0x11,0x1F,0x0F,0x10
+    OBJECT_CHALISE, 0x13, 0x1A,
+    OBJECT_REDDRAGON, 0x01, 0x1D,
+    OBJECT_YELLOWDRAGON, 0x01, 0x1D,
+    OBJECT_GREENDRAGON, 0x01, 0x1D,
+    OBJECT_SWORD, 0x01, 0x1D,
+    OBJECT_BRIDGE, 0x01, 0x1D,
+    OBJECT_YELLOWKEY, 0x01, 0x1D,
+    OBJECT_WHITEKEY, 0x01, 0x16,
+    OBJECT_BLACKKEY, 0x01, 0x12,
+    OBJECT_BAT, 0x01, 0x1D,
+    OBJECT_MAGNET, 0x01, 0x1D,
+    OBJECT_NONE, 0, 0
 };
 
-// Magnet Object Matrix                                                                             
+// Magnet Object Matrix
 static const int magnetMatrix[] =
 {
        OBJECT_YELLOWKEY,    // Yellow Key
@@ -1252,23 +982,127 @@ static const int batMatrix [] =
        0x00                                                                                                   
 };
 
+static Sync* sync;
 static Transport* transport;
 static int numPlayers;
 static int thisPlayer;
 
-void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport) {
+/** We wait a few seconds between when the game comes up connected and when the game actually starts.
+ This is the countdown timer. */
+static int timeToStartGame;
+
+static int numDragons = 3;
+static Dragon** dragons = NULL;
+static Bat* bat = NULL;
+static int numPorts = 4;
+static Portcullis** ports = NULL;
+
+
+void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport, int inGameNum,
+                     int initialLeftDiff, int initialRightDiff) {
     numPlayers = inNumPlayers;
     thisPlayer = inThisPlayer;
+    gameNum = inGameNum;
+    gameLevel = gameNum-1;
+    gameBoard = (gameLevel == 0 ? 0 : 1);
+    timeToStartGame = 60 * 3;
+    
+    dragons = (Dragon**)malloc(numDragons * sizeof(Dragon*));
+    dragons[0]= new Dragon(0, 0, COLOR_YELLOW, -1, 0, 0);
+    dragons[1] = new Dragon(1, 0, COLOR_LIMEGREEN, -1, 0, 0);
+    dragons[2] = new Dragon(2, 0, COLOR_RED, -1, 0, 0);
+    bat = new Bat(COLOR_BLACK, -1, 0, 0);
+    
+    // We need to setup the keys before the portcullises
+    int numObjects = OBJECT_MAGNET+2;
+    objectDefs = (OBJECT**)malloc(numObjects*sizeof(OBJECT*));
+    objectDefs[OBJECT_YELLOWKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0);
+    objectDefs[OBJECT_COPPERKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_COPPER, -1, 0, 0);
+    objectDefs[OBJECT_WHITEKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0);
+    objectDefs[OBJECT_BLACKKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
+    
+    
+    numPorts = numPlayers + 2;
+    ports = (Portcullis**)malloc(5 * sizeof(Portcullis*)); // We always create 5 even though we might only use 4.
+    ports[0] = new Portcullis(0x11, 0x12, objectDefs[OBJECT_YELLOWKEY]); // Gold
+    ports[1] = new Portcullis(0x0F, 0x1A, objectDefs[OBJECT_WHITEKEY]); // White
+    ports[2] = new Portcullis(0x10, 0x1B, objectDefs[OBJECT_BLACKKEY]); // Black
+    ports[3] = new Portcullis(COPPER_CASTLE, COPPER_FOYER, objectDefs[OBJECT_COPPERKEY]);
+    ports[4] = new Portcullis(0x1F, 0x20, objectDefs[OBJECT_YELLOWKEY]); // Jade
+    
+    
+    // Setup the structures
+    objectDefs[OBJECT_YELLOW_PORT] = ports[0];
+    objectDefs[OBJECT_COPPER_PORT] = ports[3];
+    objectDefs[OBJECT_JADE_PORT] = ports[4];
+    objectDefs[OBJECT_WHITE_PORT] = ports[1];
+    objectDefs[OBJECT_BLACK_PORT] = ports[2];
+    objectDefs[OBJECT_NAME] = new OBJECT(objectGfxAuthor, 0, 0, COLOR_FLASH, 0x1E, 0x50, 0x69);
+    objectDefs[OBJECT_NUMBER] = new OBJECT(objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, 0x00, 0x50, 0x40);
+    objectDefs[OBJECT_REDDRAGON] = dragons[2];
+    objectDefs[OBJECT_YELLOWDRAGON] =dragons[0];
+    objectDefs[OBJECT_GREENDRAGON] = dragons[1];
+    objectDefs[OBJECT_SWORD] = new OBJECT(objectGfxSword, 0, 0, COLOR_YELLOW, -1, 0, 0);
+    objectDefs[OBJECT_BRIDGE] = new OBJECT(objectGfxBridge, 0, 0, COLOR_PURPLE, -1, 0, 0, 0x07);
+    // Keys defined above
+    objectDefs[OBJECT_BAT] = bat;
+    objectDefs[OBJECT_DOT] = new OBJECT(objectGfxDot, 0, 0, COLOR_LTGRAY, -1, 0, 0);
+    objectDefs[OBJECT_CHALISE] = new OBJECT(objectGfxChallise, 0, 0, COLOR_FLASH, -1, 0, 0);
+    objectDefs[OBJECT_MAGNET] = new OBJECT(objectGfxMagnet, 0, 0, COLOR_BLACK, -1, 0, 0);
+    objectDefs[numObjects-1] = new OBJECT((const byte*)0, 0, 0, 0, -1, 0, 0);  // #12 Null
+    
+    // Setup the players
+    balls = (BALL**)malloc(numPlayers * sizeof(BALL*));
+    balls[0] = new BALL(0, ports[0]);
+    balls[1] = new BALL(1, ports[3]);
+    if (numPlayers > 2) {
+        balls[2] = new BALL(2, ports[4]);
+    }
+    objectBall = balls[thisPlayer];
+
+    // Setup the transport
     transport = inTransport;
-    Sync_Setup(numPlayers, thisPlayer, transport);
-    objectBall = &balls[thisPlayer];
+    sync = new Sync(numPlayers, thisPlayer, transport);
+    
+    printf("Player %d setup.\n", thisPlayer);
+}
+
+void ResetPlayers() {
+    for(int ctr=0; ctr<numPlayers; ++ctr) {
+        ResetPlayer(balls[ctr]);
+    }
+}
+
+void ResetPlayer(BALL* ball) {
+    ball->room = ball->homeGate->room;                 // Put us at our home castle
+    ball->x = 0x50*2;                  //
+    ball->y = 0x20*2;                  //
+    ball->previousX = objectBall->x;
+    ball->previousY = objectBall->y;
+    ball->linkedObject = OBJECT_NONE;  // Not carrying anything
+    
+    displayedRoomIndex = objectBall->room;
+    
+    // Make the bat want something right away
+    batFedUpTimer = 0xff;
+    
+    // Bring the dragons back to life
+    for(int ctr=0; ctr<numDragons; ++ctr) {
+        Dragon* dragon = dragons[ctr];
+        if (dragon->state == Dragon::DEAD) {
+            dragon->state = Dragon::STALKING;
+        } else if (dragon->eaten == ball) {
+            dragon->state = Dragon::STALKING;
+            dragon->eaten = NULL;
+        }
+    }
 }
 
 
 void Adventure_Run()
 {
-	Sync_StartFrame();
-    Sync_PullLatestMessages();
+	sync->StartFrame();
+    sync->PullLatestMessages();
 
     // read the console switches every frame
     bool select, reset;
@@ -1276,76 +1110,61 @@ void Adventure_Run()
     Platform_ReadDifficultySwitches(&gameDifficultyLeft, &gameDifficultyRight);
 
     // Reset switch
+    // First check for other resets
+    PlayerResetAction* otherReset = sync->GetNextResetAction();
+    while (otherReset != NULL) {
+        ResetPlayer(balls[otherReset->sender]);
+        delete otherReset;
+        otherReset = sync->GetNextResetAction();
+    }
     if ((gameState != GAMESTATE_WIN) && switchReset && !reset)
     {
-        objectBall->room = 0x11;                 // Put us in the yellow castle
-        objectBall->x = 0x50*2;                  //
-        objectBall->y = 0x20*2;                  //
-        objectBall->previousX = objectBall->x;
-        objectBall->previousY = objectBall->y;
-        objectBall->linkedObject = OBJECT_NONE;  // Not carrying anything
-
-		displayedRoomIndex = objectBall->room;
-
-        // Make the bat want something right away
-        batFedUpTimer = 0xff;
-
-        // Set up objects, rooms, and positions
-        if (gameState == GAMESTATE_GAMESELECT)
-        {
-            // If started from the game selection screen, do a full init of level
-            SetupRoomObjects();
+        if (gameState != GAMESTATE_GAMESELECT) {
+            ResetPlayer(objectBall);
+            // Broadcast to everyone else
+            PlayerResetAction* action = new PlayerResetAction(thisPlayer);
+            sync->BroadcastAction(action);
+            
         }
-        else
-        {
-            // Else we just bring the dragons to life
-            objectDefs[OBJECT_YELLOWDRAGON].state = 0x0;
-            objectDefs[OBJECT_GREENDRAGON].state = 0x0;
-            objectDefs[OBJECT_REDDRAGON].state = 0x0;
-
-            objectDefs[OBJECT_YELLOWDRAGON].linkedObject = OBJECT_NONE;
-            objectDefs[OBJECT_GREENDRAGON].linkedObject = OBJECT_NONE;
-            objectDefs[OBJECT_REDDRAGON].linkedObject = OBJECT_NONE;
-        }
-
-        gameState = GAMESTATE_ACTIVE_1;
     }
     else
     {
         // Is the game active?
         if (gameState == GAMESTATE_GAMESELECT)
         {
-            objectDefs[OBJECT_NUMBER].state = gameLevel;
+            --timeToStartGame;
+            if (timeToStartGame <= 0) {
+                SetupRoomObjects();
+                gameState = GAMESTATE_ACTIVE_1;
+                ResetPlayers();
+            } else {
+                int displayNum = timeToStartGame / 60;
+                objectDefs[OBJECT_NUMBER]->state = displayNum;
 
-            // Cycle through the game levels
-            if (switchSelect && !select)
-            {
-                ++gameLevel;
-                if (gameLevel > 2) gameLevel = 0;
+                // Display the room and objects
+                displayedRoomIndex = 0;
+                objectBall->room = 0;
+                objectBall->x = 0;
+                objectBall->y = 0;
+                PrintDisplay();
             }
-
-            // Display the room and objects
-            displayedRoomIndex = 0;
-            objectBall->room = 0;
-            objectBall->x = 0;
-            objectBall->y = 0;
-            PrintDisplay();
         }
         else if (ISGAMEACTIVE())
         {
+            // See if anyone else won the game
+            PlayerWinAction* lost = sync->GetGameWon();
+            if (lost != NULL) {
+                WinGame();
+                delete lost;
+                lost = NULL;
+            }
             // Get the room the chalise is in
-
-            // Is it in the yellow castle?
-            if (objectDefs[OBJECT_CHALISE].room == 0x12)
+            // Is it in the home castle?
+            else if (objectDefs[OBJECT_CHALISE]->room == objectBall->homeGate->insideRoom)
             {
-                // Play end noise
-
-                // Go to won state
-                gameState = GAMESTATE_WIN;
-                winFlashTimer = 0xff;
-
-                // Play the sound
-                Platform_MakeSound(SOUND_WON);
+                WinGame();
+                PlayerWinAction* won = new PlayerWinAction(thisPlayer, objectBall->room);
+                sync->BroadcastAction(won);
             }
             else if (switchSelect && !select)
             {
@@ -1375,7 +1194,7 @@ void Adventure_Run()
 					OtherBallMovement();
 
                     // Move the carried object
-                    MoveCarriedObject();
+                    MoveCarriedObjects();
 
                     // Setup the room and object
                     PrintDisplay();
@@ -1386,6 +1205,7 @@ void Adventure_Run()
                 {
                     // Deal with object pickup and putdown
                     PickupPutdown();
+                    OthersPickupPutdown();
 
                     // Check ball collisions
                     if (!objectBall->hitX && !objectBall->hitY)
@@ -1399,12 +1219,16 @@ void Adventure_Run()
 
                             int diffY = objectBall->y - objectBall->previousY;
                             objectBall->linkedObjectY += diffY/2;
+                            
+                            // Adjusting how we hold an object is broadcast to other players as a pickup action
+                            PlayerPickupAction* action = new PlayerPickupAction(thisPlayer,
+                                hitObject, objectBall->linkedObjectX, objectBall->linkedObjectY, OBJECT_NONE, 0, 0, 0);
+                            sync->BroadcastAction(action);
+                            
                         }
                     }
-					for (int i = 0; i < MAX_PLAYERS; ++i) {
-                        // TODO: Does this work correctly when remote player is not in same room
-                        // as current player?
-                        ReactToCollision(balls + i);
+					for (int i = 0; i < numPlayers; ++i) {
+                        ReactToCollision(balls[i]);
 					}
 
                     // Increment the last object drawn
@@ -1426,14 +1250,17 @@ void Adventure_Run()
                 }
                 else if (gameState == GAMESTATE_ACTIVE_3)
                 {
+                    // Read remote dragon actions
+                    SyncDragons();
+                    
                     // Move and deal with the green dragon
-                    MoveGreenDragon();
+                    MoveDragon((Dragon*)objectDefs[OBJECT_GREENDRAGON], greenDragonMatrix, 2);
 
                     // Move and deal with the yellow dragon
-                    MoveYellowDragon();
+                    MoveDragon((Dragon*)objectDefs[OBJECT_YELLOWDRAGON], yellowDragonMatrix, 2);
 
                     // Move and deal with the red dragon
-                    MoveRedDragon();
+                    MoveDragon((Dragon*)objectDefs[OBJECT_REDDRAGON], redDragonMatrix, 3);
 
                     // Deal with the magnet
                     Magnet();
@@ -1467,17 +1294,55 @@ void Adventure_Run()
     AdvanceFlashColor();
 }
 
+void SetupMaze() {
+
+    // Add the Jade Castle if 3 players
+    if (numPlayers > 2) {
+        roomDefs[BLUE_MAZE_JADE_END].roomUp = JADE_CASTLE;
+        roomDefs[BLUE_MAZE_JADE_END].graphicsData = roomGfxBlueMaze1B;
+    }
+
+    if (gameBoard == 0) {
+        // This is the default setup, so don't need to do anything.
+    } else {
+        // Games 2 or 3.
+        // Connect the lower half of the world.
+        roomDefs[MAIN_HALL_LEFT].roomDown = WHITE_CASTLE;
+        roomDefs[MAIN_HALL_CENTER].roomDown = GOLD_CASTLE;
+        roomDefs[MAIN_HALL_RIGHT].roomDown = WHITE_MAZE_HALL_END;
+        roomDefs[SOUTH_EAST_ROOM].roomUp = SOUTH_HALL_RIGHT;
+        
+        // Move the Copper Castle to the White Maze
+        roomDefs[MAIN_HALL_RIGHT].graphicsData = roomGfxLeftOfName;
+        roomDefs[MAIN_HALL_RIGHT].roomUp = BLUE_MAZE_LARGE_ROOM;
+        roomDefs[COPPER_CASTLE].roomDown = SOUTH_HALL_RIGHT;
+        // TODO: Change up, left, and right of COPPER_CASTLE
+        
+        // Put the Black Maze in the Black Castle
+        roomDefs[BLACK_FOYER].roomUp = BLACK_MAZE_ENTRY;
+        roomDefs[BLACK_FOYER].roomRight = BLACK_MAZE_ENTRY;
+        roomDefs[BLACK_FOYER].roomDown = BLACK_MAZE_ENTRY;
+        roomDefs[BLACK_FOYER].roomLeft = BLACK_MAZE_ENTRY;
+        
+    }
+}
+
 
 void SetupRoomObjects()
 {
+    SetupMaze();
     // Init all objects
-    for (int i=0; objectDefs[i].gfxData; i++)
+    for (int i=0; objectDefs[i]->gfxData; i++)
     {
-        OBJECT* object = &objectDefs[i];
+        OBJECT* object = objectDefs[i];
         object->movementX = 0;
         object->movementY = 0;
-        object->linkedObject = OBJECT_NONE;
     };
+    // Set to no carried objects
+    for(int ctr=0; ctr<numDragons; ++ctr) {
+        dragons[ctr]->eaten = NULL;
+    }
+    bat->linkedObject = OBJECT_NONE;
 
     // Read the object initialization table for the current game level
     const byte* p;
@@ -1496,12 +1361,12 @@ void SetupRoomObjects()
         signed char movementX = *(p++);
         signed char movementY = *(p++);
 
-        objectDefs[object].room = room;
-        objectDefs[object].x = xpos;
-        objectDefs[object].y = ypos;
-        objectDefs[object].state = state;
-        objectDefs[object].movementX = movementX;
-        objectDefs[object].movementY = movementY;
+        objectDefs[object]->room = room;
+        objectDefs[object]->x = xpos;
+        objectDefs[object]->y = ypos;
+        objectDefs[object]->state = state;
+        objectDefs[object]->movementX = movementX;
+        objectDefs[object]->movementY = movementY;
     };
 
     // Put objects in random rooms for level 3
@@ -1521,7 +1386,7 @@ void SetupRoomObjects()
                 int room = Platform_Random() * 0x1f;
                 if (room >= lower && room <= upper)
                 {
-                    objectDefs[object].room = room;
+                    objectDefs[object]->room = room;
                     break;
                 }
             }
@@ -1532,6 +1397,15 @@ void SetupRoomObjects()
         }
         while (object > OBJECT_NONE);
     }
+}
+
+void WinGame() {
+    // Go to won state
+    gameState = GAMESTATE_WIN;
+    winFlashTimer = 0xff;
+    
+    // Play the sound
+    Platform_MakeSound(SOUND_WON);
 }
 
 void ReactToCollision(BALL* ball) {
@@ -1593,7 +1467,7 @@ void ThisBallMovement()
 	if (velocityChanged) {
         // TODO: Do we want to be constantly allocating space?
         PlayerMoveAction* moveAction = new PlayerMoveAction(thisPlayer, objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
-        Sync_BroadcastAction(moveAction);
+        sync->BroadcastAction(moveAction);
 	}
 }
 
@@ -1602,10 +1476,11 @@ void BallMovement(BALL* ball) {
     // store the existing ball location
     int tempX = ball->x;
     int tempY = ball->y;
-
-    bool eaten = ((objectDefs[OBJECT_YELLOWDRAGON].linkedObject == OBJECT_BALL) // TODO: Not right when ball is not this player
-                    || (objectDefs[OBJECT_GREENDRAGON].linkedObject == OBJECT_BALL)
-                    || (objectDefs[OBJECT_REDDRAGON].linkedObject == OBJECT_BALL));
+    
+    bool eaten = false;
+    for(int ctr=0; ctr<numDragons && !eaten; ++ctr) {
+        eaten = (dragons[ctr]->eaten == ball);
+    }
 
     // mark the existing Y location as the previous Y location
     ball->previousY = ball->y;
@@ -1630,13 +1505,14 @@ void BallMovement(BALL* ball) {
             // Set the new room
             const ROOM* currentRoom = &roomDefs[ball->room];
             ball->room = currentRoom->roomUp;
-            ball->room = AdjustRoomLevel(ball->room);
         }
         else if (ball->y < 0x0D*2)
         {
+            // Handle the ball leaving a castle.
 			bool leftCastle = false;
-			for (int portalCtr = OBJECT_PORT1; !leftCastle && (portalCtr <= OBJECT_PORT3); ++portalCtr) {
-				if (ball->room == entryRoomOffsets[portalCtr])
+			for (int portalCtr = 0; !leftCastle && (portalCtr < numPorts); ++portalCtr) {
+                Portcullis* port = ports[portalCtr];
+				if (ball->room == port->insideRoom)
 				{
 					ball->x = 0xA0;
 					ball->y = 0x2C * 2;
@@ -1644,8 +1520,7 @@ void BallMovement(BALL* ball) {
 					ball->previousX = ball->x;
 					ball->previousY = ball->y;
 
-					ball->room = castleRoomOffsets[portalCtr];
-					ball->room = AdjustRoomLevel(ball->room);
+					ball->room = port->room;
 					leftCastle = true;
 				}
 			}
@@ -1657,7 +1532,7 @@ void BallMovement(BALL* ball) {
                 int newY = (ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN);
 
                 const ROOM* currentRoom = &roomDefs[ball->room];
-                int roomDown = AdjustRoomLevel(currentRoom->roomDown);
+                int roomDown = currentRoom->roomDown;
 
                 if (CollisionCheckBallWithWalls(roomDown, tempX, newY))
                 {
@@ -1718,7 +1593,6 @@ void BallMovement(BALL* ball) {
                 const ROOM* currentRoom = &roomDefs[ball->room];
                 ball->room = currentRoom->roomRight;
             }
-            ball->room = AdjustRoomLevel(ball->room);
         }
         else if (ball->x < 4)
         {
@@ -1728,7 +1602,6 @@ void BallMovement(BALL* ball) {
             // Set the new room
             const ROOM* currentRoom = &roomDefs[ball->room];
             ball->room = currentRoom->roomLeft;
-            ball->room = AdjustRoomLevel(ball->room);
         }
         // Collision check the ball with the new Y coordinate against walls and objects
         // For collisions with objects, we only care about hitting non-carryable objects at this point
@@ -1751,29 +1624,86 @@ void BallMovement(BALL* ball) {
 void OtherBallMovement() {
 	for (int i = 0; i < numPlayers; ++i) {
         if (i != thisPlayer) {
-            PlayerMoveAction* movement = Sync_GetLatestBallSync(i);
+            PlayerMoveAction* movement = sync->GetLatestBallSync(i);
             if (movement != 0x0) {
-                balls[i].room = movement->room;
-                balls[i].x = movement->posx;
-                balls[i].y = movement->posy;
-                balls[i].velx = movement->velx;
-                balls[i].vely = movement->vely;
+                balls[i]->room = movement->room;
+                balls[i]->x = movement->posx;
+                balls[i]->y = movement->posy;
+                balls[i]->velx = movement->velx;
+                balls[i]->vely = movement->vely;
             }
             
-            BallMovement(balls+i);
+            BallMovement(balls[i]);
 		}
 	}
 
 }
 
-void MoveCarriedObject()
+void SyncDragons() {
+    RemoteAction* next = sync->GetNextDragonAction();
+    while (next != NULL) {
+        if (next->typeCode == DragonStateAction::CODE) {
+            DragonStateAction* nextState = (DragonStateAction*)next;
+            Dragon* dragon = dragons[nextState->dragonNum];
+            if (nextState->newState == Dragon::EATEN) {
+                // Set the State to 01 (eaten)
+                dragon->eaten = balls[nextState->sender];
+                dragon->state = Dragon::EATEN;
+                // Play the sound
+                Platform_MakeSound(SOUND_EATEN);
+            } else if (nextState->newState == Dragon::DEAD) {
+                // We ignore die actions if the dragon has already eaten somebody.
+                if (dragon->state != Dragon::EATEN) {
+                    dragon->state = Dragon::DEAD;
+                    dragon->movementX = 0;
+                    dragon->movementY = 0;
+                    // Play the sound
+                    Platform_MakeSound(SOUND_DRAGONDIE);
+                }
+            }
+            else if (nextState->newState == Dragon::ROAR) {
+                // We ignore roar actions if we are already in an eaten state or dead state
+                if ((dragon->state != Dragon::EATEN) && (dragon->state != Dragon::DEAD)) {
+                    dragon->roar(nextState->posx, nextState->posy, gameLevel, gameDifficultyLeft==DIFFICULTY_A);
+                    // Play the sound
+                    Platform_MakeSound(SOUND_ROAR);
+                }
+            }
+        } else {
+            // If we are in the same room as the dragon and are closer to it than the reporting player,
+            // then we ignore reports and trust our internal state.
+            // If the dragon is not in stalking state we ignore it.
+            // Otherwise, you use the reported state.
+            DragonMoveAction* nextMove = (DragonMoveAction*)next;
+            Dragon* dragon = dragons[nextMove->dragonNum];
+            if ((dragon->state == Dragon::STALKING) &&
+                ((dragon->room != objectBall->room) ||
+                (distanceFromBall(objectBall, dragon->x, dragon->y) > nextMove->distance))) {
+                
+                dragon->room = nextMove->room;
+                dragon->x = nextMove->posx;
+                dragon->y = nextMove->posy;
+                dragon->movementX = nextMove->velx;
+                dragon->movementY = nextMove->vely;
+                
+            }
+        }
+        delete next;
+        next = sync->GetNextDragonAction();
+    }
+}
+
+void MoveCarriedObjects()
 {
-    if (objectBall->linkedObject >= 0)
-    {
-        OBJECT* object = &objectDefs[objectBall->linkedObject];
-        object->x = (objectBall->x/2) + objectBall->linkedObjectX;
-        object->y = (objectBall->y/2) + objectBall->linkedObjectY;
-        object->room = objectBall->room;
+    for(int ctr=0; ctr<numPlayers; ++ctr) {
+        BALL* nextBall = balls[ctr];
+        if (nextBall->linkedObject != OBJECT_NONE)
+        {
+            OBJECT* object = objectDefs[nextBall->linkedObject];
+            object->x = (nextBall->x/2) + nextBall->linkedObjectX;
+            object->y = (nextBall->y/2) + nextBall->linkedObjectY;
+            object->room = nextBall->room;
+        }
     }
 
     // Seems like a weird place to call this but this matches the original game
@@ -1782,45 +1712,30 @@ void MoveCarriedObject()
 
 void MoveGroundObject()
 {
-    OBJECT* port1 = &objectDefs[OBJECT_PORT1];
-    OBJECT* port2 = &objectDefs[OBJECT_PORT2];
-	OBJECT* port3 = &objectDefs[OBJECT_PORT3];
-	OBJECT* port4 = &objectDefs[OBJECT_PORT4];
-
     // Handle ball going into the castles
-    if (objectBall->room == port1->room && port1->state != 0x0C && CollisionCheckObject(port1, (objectBall->x-4), (objectBall->y-1), 8, 8))
-    {
-        objectBall->room = entryRoomOffsets[OBJECT_PORT1];
-        objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
-        objectBall->previousY = objectBall->y;
-        port1->state = 0; // make sure it stays unlocked in case we are walking in with the key
+    for(int portalCtr=0; portalCtr<numPorts; ++portalCtr) {
+        Portcullis* nextPort = ports[portalCtr];
+        if (objectBall->room == nextPort->room && nextPort->state != 0x0C && CollisionCheckObject(nextPort, (objectBall->x-4), (objectBall->y-1), 8, 8))
+        {
+            objectBall->room = nextPort->insideRoom;
+            objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
+            objectBall->previousY = objectBall->y;
+            nextPort->state = 0; // make sure it stays unlocked in case we are walking in with the key
+            
+            // Report both the ball entering the castle and the castle gate changing state.
+            PlayerMoveAction* moveAction = new PlayerMoveAction(thisPlayer, objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
+            sync->BroadcastAction(moveAction);
+            PortcullisStateAction* gateAction = new PortcullisStateAction(thisPlayer, portalCtr, nextPort->state);
+            sync->BroadcastAction(gateAction);
+            
+            break;
+        }
     }
-    else if (objectBall->room == port2->room && port2->state != 0x0C && CollisionCheckObject(port2, (objectBall->x-4), (objectBall->y-1), 8, 8))
-    {
-        objectBall->room = entryRoomOffsets[OBJECT_PORT2];
-        objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
-        objectBall->previousY = objectBall->y;
-        port2->state = 0; // make sure it stays unlocked in case we are walking in with the key
-    }
-	else if (objectBall->room == port3->room && port3->state != 0x0C && CollisionCheckObject(port3, (objectBall->x - 4), (objectBall->y - 1), 8, 8))
-	{
-		objectBall->room = entryRoomOffsets[OBJECT_PORT3];
-		objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN - 2;
-		objectBall->previousY = objectBall->y;
-		port3->state = 0; // make sure it stays unlocked in case we are walking in with the key
-	}
-	else if (objectBall->room == port4->room && port4->state != 0x0C && CollisionCheckObject(port4, (objectBall->x - 4), (objectBall->y - 1), 8, 8))
-	{
-		objectBall->room = entryRoomOffsets[OBJECT_PORT4];
-		objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN - 2;
-		objectBall->previousY = objectBall->y;
-		port4->state = 0; // make sure it stays unlocked in case we are walking in with the key
-	}
 
     // Move any objects that need moving, and wrap objects from room to room
-    for (int i=OBJECT_REDDRAGON; objectDefs[i].gfxData; i++)
+    for (int i=OBJECT_REDDRAGON; objectDefs[i]->gfxData; i++)
     {
-        OBJECT* object = &objectDefs[i];
+        OBJECT* object = objectDefs[i];
 
         // Apply movement
         object->x += object->movementX;
@@ -1830,44 +1745,34 @@ void MoveGroundObject()
         if (object->y > 0x6A)
         {
             object->y = 0x0D;
-            object->room = AdjustRoomLevel(roomDefs[object->room].roomUp);
+            object->room = roomDefs[object->room].roomUp;
         }
 
         // Check and Deal with Left
         if (object->x < 0x03)
         {
             object->x = 0x9A;
-            object->room = AdjustRoomLevel(roomDefs[object->room].roomLeft);
+            object->room = roomDefs[object->room].roomLeft;
         }
 
         // Check and Deal with Down
         if (object->y < 0x0D)
         {
             // Handle object leaving the castles
-            if (object->room == entryRoomOffsets[OBJECT_PORT1])
-            {            
-                object->y = 0x5C;
-                object->room = AdjustRoomLevel(castleRoomOffsets[OBJECT_PORT1]);
+            bool leftCastle = false;
+            for (int ctr=0; (ctr < numPorts) && (!leftCastle); ++ctr) {
+                if (object->room == ports[ctr]->insideRoom)
+                {
+                    object->y = 0x5C;
+                    object->room = ports[ctr]->room;
+                    // TODO: Do we need to broadcast leaving the castle?  Seems there might be quite a jump.
+                    leftCastle = true;
+                }
             }
-            else if (object->room == entryRoomOffsets[OBJECT_PORT2])
-            {            
-                object->y = 0x5C;
-                object->room = AdjustRoomLevel(castleRoomOffsets[OBJECT_PORT2]);
-            }
-			else if (object->room == entryRoomOffsets[OBJECT_PORT3])
-			{
-				object->y = 0x5C;
-				object->room = AdjustRoomLevel(castleRoomOffsets[OBJECT_PORT3]);
-			}
-			else if (object->room == entryRoomOffsets[OBJECT_PORT4])
-			{
-				object->y = 0x5C;
-				object->room = AdjustRoomLevel(castleRoomOffsets[OBJECT_PORT4]);
-			}
-			else
+			if (!leftCastle)
             {
                 object->y = 0x69;
-                object->room = AdjustRoomLevel(roomDefs[object->room].roomDown);
+                object->room = roomDefs[object->room].roomDown;
             }
         }
 
@@ -1875,16 +1780,28 @@ void MoveGroundObject()
         if (object->x > 0x9B)
         {
             object->x = 0x03;
-            object->room = AdjustRoomLevel(roomDefs[object->room].roomRight);
+            object->room = roomDefs[object->room].roomRight;
         }
 
-        // Move the linked object
-        if (object->linkedObject > OBJECT_NONE)
+        // If the object has a linked object
+        if ((object == bat) && (bat->linkedObject != OBJECT_NONE))
         {
-            OBJECT* linkedObj = &objectDefs[object->linkedObject];
-            linkedObj->x = object->x + object->linkedObjectX;
-            linkedObj->y = object->y + object->linkedObjectY;
+            OBJECT* linkedObj = objectDefs[bat->linkedObject];
+            linkedObj->x = object->x + bat->linkedObjectX;
+            linkedObj->y = object->y + bat->linkedObjectY;
             linkedObj->room = object->room;
+        }
+        // TODO: Seems awfully inefficient and with C++ multiple inheritance not even sure
+        // that pointer equality check will always work.  Think about another way.
+        for (int ctr=0; ctr<numDragons; ++ctr) {
+            if ((object == dragons[ctr]) && (dragons[ctr]->eaten != NULL))
+            {
+                Dragon* dragon = dragons[ctr];
+                BALL* linkedObj = dragon->eaten;
+                linkedObj->x = object->x + dragon->eatenX;
+                linkedObj->y = object->y + dragon->eatenY;
+                linkedObj->room = object->room;
+            }
         }
     }
 }
@@ -1971,8 +1888,8 @@ void PrintDisplay()
     color = colorTable[roomDefs[displayedRoomIndex].color];
 
 	for (int i = 0; i < numPlayers; ++i) {
-		if (objectBall->room == balls[i].room) {
-			DrawBall(&balls[i], color);
+		if (objectBall->room == balls[i]->room) {
+			DrawBall(balls[i], color);
 		}
 	}
 
@@ -1983,12 +1900,58 @@ void PrintDisplay()
 
 }
 
+void OthersPickupPutdown() {
+    PlayerPickupAction* action = sync->GetNextPickupAction();
+    while (action != NULL) {
+        int actorNum = action->sender;
+        BALL* actor = balls[actorNum];
+        if (action->dropObject != OBJECT_NONE) {
+            printf("Received drop action for player %d who is carrying %d\n", actorNum, actor->linkedObject);
+        }
+        if ((action->dropObject != OBJECT_NONE) && (actor->linkedObject == action->dropObject)) {
+            printf("Player %d dropped object %d\n", actorNum, action->dropObject);
+            actor->linkedObject = OBJECT_NONE;
+            OBJECT* dropped = objectDefs[action->dropObject];
+            dropped->room = action->dropRoom;
+            dropped->x = action->dropX;
+            dropped->y = action->dropY;
+        }
+        if (action->pickupObject != OBJECT_NONE) {
+            actor->linkedObject = action->pickupObject;
+            actor->linkedObjectX = action->pickupX;
+            actor->linkedObjectY = action->pickupY;
+            printf("Setting player %d to carrying %d\n", actorNum, actor->linkedObject);
+            // If anybody else was carrying this object, take it away.
+            for(int ctr=0; ctr<numPlayers; ++ctr) {
+                if ((ctr != actorNum) && (balls[ctr]->linkedObject==action->pickupObject)) {
+                    printf("Player %d took object %d from player %d\n", action->sender, actor->linkedObject, thisPlayer);
+                    balls[ctr]->linkedObject = OBJECT_NONE;
+                }
+            }
+            // If they are in the same room as you, play the pickup sound
+            if (actor->room == objectBall->room) {
+                Platform_MakeSound(SOUND_PICKUP);
+            }
+        }
+        delete action;
+        action = sync->GetNextPickupAction();
+    }
+}
+
 void PickupPutdown()
 {
     if (joyFire && (objectBall->linkedObject >= 0))
     {
+        int dropped = objectBall->linkedObject;
+        OBJECT* droppedObject = objectDefs[dropped];
+        
         // Put down the current object!
         objectBall->linkedObject = OBJECT_NONE;
+        
+        // Tell other clients about the drop
+        PlayerPickupAction* action = new PlayerPickupAction(thisPlayer, OBJECT_NONE, 0, 0, dropped, droppedObject->room,
+                                                           droppedObject->x, droppedObject->y);
+        sync->BroadcastAction(action);
 
         // Play the sound
         Platform_MakeSound(SOUND_PUTDOWN);
@@ -2008,13 +1971,34 @@ void PickupPutdown()
 
             if (hitIndex > OBJECT_NONE)
             {
+                // TODO: Handle when we are just repositioning the object we are currently holding
+                
+                // Collect info about whether we are also dropping an object (for when we broadcast the action)
+                PlayerPickupAction* action = new PlayerPickupAction(thisPlayer, OBJECT_NONE, 0, 0, OBJECT_NONE, 0, 0, 0);
+                int dropIndex = objectBall->linkedObject;
+                if (dropIndex > OBJECT_NONE) {
+                    OBJECT* dropped = objectDefs[dropIndex];
+                    action->setDrop(dropIndex, dropped->room, dropped->x, dropped->y);
+                }
+                
                 // Pick up this object!
                 objectBall->linkedObject = hitIndex;
 
                 // calculate the XY offsets from the ball's position
-                objectBall->linkedObjectX = objectDefs[hitIndex].x - (objectBall->x/2);
-                objectBall->linkedObjectY = objectDefs[hitIndex].y - (objectBall->y/2);
+                objectBall->linkedObjectX = objectDefs[hitIndex]->x - (objectBall->x/2);
+                objectBall->linkedObjectY = objectDefs[hitIndex]->y - (objectBall->y/2);
+                
+                // Take it away from anyone else if they were holding it.
+                for(int ctr=0; ctr<numPlayers; ++ctr) {
+                    if ((ctr != thisPlayer) && (balls[ctr]->linkedObject == hitIndex)) {
+                        balls[ctr]->linkedObject = OBJECT_NONE;
+                    }
+                }
 
+                // Broadcast that we picked up an object
+                action->setPickup(hitIndex, objectBall->linkedObjectX, objectBall->linkedObjectY);
+                sync->BroadcastAction(action);
+                
                 // Play the sound
                 Platform_MakeSound(SOUND_PICKUP);
             }
@@ -2041,8 +2025,6 @@ void Surround()
 
 void MoveBat()
 {
-    OBJECT* bat = &objectDefs[OBJECT_BAT];
-
     static int flapTimer = 0;
     if (++flapTimer >= 0x04)
     {
@@ -2071,7 +2053,7 @@ void MoveBat()
         do
         {
             // Get the object it is seeking
-            const OBJECT* seekObject = &objectDefs[*matrixP];
+            const OBJECT* seekObject = objectDefs[*matrixP];
             if ((seekObject->room == bat->room) && (bat->linkedObject != *matrixP))
             {
                 int seekX = seekObject->x;
@@ -2140,126 +2122,74 @@ void MoveBat()
 
 void Portals()
 {
-    OBJECT* port1 = &objectDefs[OBJECT_PORT1];
-    OBJECT* port2 = &objectDefs[OBJECT_PORT2];
-	OBJECT* port3 = &objectDefs[OBJECT_PORT3];
-	OBJECT* port4 = &objectDefs[OBJECT_PORT4];
+    // Handle any remote changes to the portal.
+    PortcullisStateAction* nextAction = sync->GetNextPortcullisAction();
+    while (nextAction != NULL) {
+        ports[nextAction->portNumber]->state = nextAction->newState;
+        
+        delete nextAction;
+        nextAction = sync->GetNextPortcullisAction();
+    }
+    
+    // Handle all the local actions of portals
+    for(int portalCtr=0; portalCtr<numPorts; ++portalCtr) {
+        Portcullis* port = ports[portalCtr];
+        
+        if ((port->key->room == port->room) &&
+            (port->state == Portcullis::OPEN_STATE || port->state == Portcullis::CLOSED_STATE))
+        {
+            // Someone has to be in the room for the key to trigger the gate
+            bool seen = false;
+            for(int ctr=0; !seen && ctr<numPlayers; ++ctr) {
+                seen = (balls[ctr]->room == port->room);
+            }
+            if (seen) {
+                // Toggle the port state
+                if (CollisionCheckObjectObject(port, port->key)) {
+                    port->state++;
+                    // If we are in the same room, broadcast the state change
+                    if (objectBall->room == port->room) {
+                        PortcullisStateAction* gateAction = new PortcullisStateAction(thisPlayer, portalCtr, port->state);
+                        sync->BroadcastAction(gateAction);
+                    }
+                }
 
-    const OBJECT* yellowKey = &objectDefs[OBJECT_YELLOWKEY];
-    const OBJECT* whiteKey = &objectDefs[OBJECT_WHITEKEY];
-    const OBJECT* blackKey = &objectDefs[OBJECT_BLACKKEY];
+            }
+        }
+        if (port->state != Portcullis::OPEN_STATE && port->state != Portcullis::CLOSED_STATE)
+        {
+            // Raise/lower the port
+            port->state++;
+        }
+        if (port->state > 22)
+        {
+            // Port is unlocked
+            port->state = Portcullis::OPEN_STATE;
+            roomDefs[port->insideRoom].roomDown = port->room;
+        }
+        else if (port->state == Portcullis::CLOSED_STATE)
+        {
+            // Port is locked
+            roomDefs[port->insideRoom].roomDown = port->insideRoom;
+        }
+        
 
-    if ((port1->room == objectBall->room) && (yellowKey->room == objectBall->room) && (port1->state == 0 || port1->state == 12))
-    {
-        // Toggle the port state
-        if (CollisionCheckObjectObject(port1, yellowKey))
-            port1->state++;
     }
-    if (port1->state != 0 && port1->state != 12)
-    {
-        // Raise/lower the port
-        port1->state++;
-    }
-    if (port1->state > 22)
-    {
-        // Port 1 is unlocked
-        port1->state = 0;
-        roomDefs[entryRoomOffsets[OBJECT_PORT1]].roomDown = castleRoomOffsets[OBJECT_PORT1];
-    }
-    else if (port1->state == 12)
-    {
-        // Port 1 is locked
-        roomDefs[entryRoomOffsets[OBJECT_PORT1]].roomDown = entryRoomOffsets[OBJECT_PORT1];
-    }
-
-    if ((port2->room == objectBall->room) && (whiteKey->room == objectBall->room) && (port2->state == 0 || port2->state == 12))
-    {
-        // Toggle the port state
-        if (CollisionCheckObjectObject(port2, whiteKey))
-            port2->state++;
-    }
-    if (port2->state != 0 && port2->state != 12)
-    {
-        // Raise/lower the port
-        port2->state++;
-    }
-    if (port2->state > 22)
-    {
-        // Port 2 is unlocked
-        port2->state = 0;
-        roomDefs[entryRoomOffsets[OBJECT_PORT2]].roomDown = castleRoomOffsets[OBJECT_PORT2];
-    }
-    else if (port2->state == 12)
-    {
-        // Port 2 is locked
-        roomDefs[entryRoomOffsets[OBJECT_PORT2]].roomDown = entryRoomOffsets[OBJECT_PORT2];
-    }
-
-    if ((port3->room == objectBall->room) && (blackKey->room == objectBall->room) && (port3->state == 0 || port3->state == 12))
-    {
-        // Toggle the port state
-        if (CollisionCheckObjectObject(port3, blackKey))
-            port3->state++;
-    }
-    if (port3->state != 0 && port3->state != 12)
-    {
-        // Raise/lower the port
-        port3->state++;
-    }
-    if (port3->state > 22)
-    {
-        // Port 3 is unlocked
-        port3->state = 0;
-        roomDefs[entryRoomOffsets[OBJECT_PORT3]].roomDown = castleRoomOffsets[OBJECT_PORT3];
-    }
-    else if (port3->state == 12)
-    {
-        // Port 3 is locked
-        roomDefs[entryRoomOffsets[OBJECT_PORT3]].roomDown = entryRoomOffsets[OBJECT_PORT3];
-    }
-
-	if ((port4->room == objectBall->room) && (yellowKey->room == objectBall->room) && (port4->state == 0 || port4->state == 12))
-	{
-		// Toggle the port state
-		if (CollisionCheckObjectObject(port4, yellowKey))
-			port4->state++;
-	}
-	if (port4->state != 0 && port4->state != 12)
-	{
-		// Raise/lower the port
-		port4->state++;
-	}
-	if (port4->state > 22)
-	{
-		// Port 4 is unlocked
-		port4->state = 0;
-		roomDefs[entryRoomOffsets[OBJECT_PORT4]].roomDown = castleRoomOffsets[OBJECT_PORT4];
-	}
-	else if (port4->state == 12)
-	{
-		// Port 4 is locked
-		roomDefs[entryRoomOffsets[OBJECT_PORT4]].roomDown = entryRoomOffsets[OBJECT_PORT4];
-	}
-
-
+    
 }
 
-void MoveGreenDragon()
-{
-    static int timer = 0;
-    MoveDragon(&objectDefs[OBJECT_GREENDRAGON], greenDragonMatrix, 2, &timer);
-}
-
-void MoveYellowDragon()
-{
-    static int timer = 0;
-    MoveDragon(&objectDefs[OBJECT_YELLOWDRAGON], yellowDragonMatrix, 2, &timer);
-}
-
-void MoveRedDragon()
-{
-    static int timer = 0;
-    MoveDragon(&objectDefs[OBJECT_REDDRAGON], redDragonMatrix, 3, &timer);
+int distanceFromBall(BALL* ball, int x, int y) {
+    // Figure out the distance (which is really the max difference along one axis)
+    int xdist = ball->x/2 - x;
+    if (xdist < 0) {
+        xdist = -xdist;
+    }
+    int ydist = ball->y/2 - y;
+    if (ydist < 0) {
+        ydist = -ydist;
+    }
+    int dist = (xdist > ydist ? xdist : ydist);
+    return dist;
 }
 
 /**
@@ -2269,65 +2199,54 @@ BALL* closestBall(int room, int x, int y) {
     int shortestDistance = 10000; // Some big number greater than the diagnol of the board
     BALL* found = 0x0;
     for(int ctr=0; ctr<numPlayers; ++ctr) {
-        if (balls[ctr].room == room)
+        if (balls[ctr]->room == room)
         {
-            // Figure out the distance (which is really the max difference along one axis)
-            int xdist = balls[ctr].x/2 - x;
-            if (xdist < 0) {
-                xdist = -xdist;
-            }
-            int ydist = balls[ctr].y/2 - y;
-            if (ydist < 0) {
-                ydist = -ydist;
-            }
-            int dist = (xdist > ydist ? xdist : ydist);
-            
+            int dist = distanceFromBall(balls[ctr], x, y);
             if (dist < shortestDistance) {
                 shortestDistance = dist;
-                found = &balls[ctr];
+                found = balls[ctr];
             }
         }
     }
     return found;
 }
 
-void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
+void MoveDragon(Dragon* dragon, const int* matrix, int speed)
 {
-    if (dragon->state == 0)
+    if (dragon->state == Dragon::STALKING)
     {
         // Has the Ball hit the Dragon?
         if ((objectBall->room == dragon->room) && CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-4), 8, 8))
         {
-            // Set the State to 03 (roar)
-            dragon->state = 3;
-
-            // Set the timer based on the game level and difficulty setting
-            *timer = 0xFC - dragonDiff[(gameLevel*2) + ((gameDifficultyLeft==DIFFICULTY_A) ? 1 : 0)];
+            dragon->roar(objectBall->x/2, objectBall->y/2,gameLevel, gameDifficultyLeft==DIFFICULTY_A);
             
-            // Set the dragon's position to the same as the ball
-            dragon->x = (objectBall->x/2);
-            dragon->y = (objectBall->y/2);
-
-            dragon->movementX = 0;
-            dragon->movementY = 0;
+            // Notify others
+            DragonStateAction* action = new DragonStateAction(thisPlayer, dragon->dragonNumber, Dragon::ROAR, dragon->room, dragon->x, dragon->y);
+            
+            sync->BroadcastAction(action);
 
             // Play the sound
             Platform_MakeSound(SOUND_ROAR);
         }
 
         // Has the Sword hit the Dragon?
-        if (CollisionCheckObjectObject(dragon, &objectDefs[OBJECT_SWORD]))
+        if (CollisionCheckObjectObject(dragon, objectDefs[OBJECT_SWORD]))
         {
             // Set the State to 01 (Dead)
-            dragon->state = 1;
+            dragon->state = Dragon::DEAD;
             dragon->movementX = 0;
             dragon->movementY = 0;
-        
+
+            // Notify others
+            DragonStateAction* action = new DragonStateAction(thisPlayer, dragon->dragonNumber, Dragon::DEAD, dragon->room, dragon->x, dragon->y);
+            
+            sync->BroadcastAction(action);
+            
             // Play the sound
             Platform_MakeSound(SOUND_DRAGONDIE);
         }
 
-        if (dragon->state == 0)
+        if (dragon->state == Dragon::STALKING)
         {
             // Go through the dragon's object matrix
             // Difficulty switch determines flee or don't flee from sword
@@ -2341,10 +2260,10 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
                 int seekObject = *(matrixP+1); 
 
                 // Dragon fleeing an object
-                if ((fleeObject > OBJECT_NONE) && &objectDefs[fleeObject] != dragon)
+                if ((fleeObject > OBJECT_NONE) && objectDefs[fleeObject] != dragon)
                 {
                     // get the object it is fleeing
-                    const OBJECT* object = &objectDefs[fleeObject];
+                    const OBJECT* object = objectDefs[fleeObject];
                     if (object->room == dragon->room)
                     {
                         seekDir = -1;
@@ -2372,7 +2291,7 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
                     if ((seekDir == 0) && (seekObject > OBJECT_NONE))
                     {
                         // Get the object it is seeking
-                        const OBJECT* object = &objectDefs[seekObject];
+                        const OBJECT* object = objectDefs[seekObject];
                         if (object->room == dragon->room)
                         {
                             seekDir = 1;
@@ -2385,28 +2304,37 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
                 // Move the dragon
                 if ((seekDir > 0) || (seekDir < 0))
                 {
-                    dragon->movementX = 0;
-                    dragon->movementY = 0;
+                    int newMovementX = 0;
+                    int newMovementY = 0;
 
                     // horizontal axis
                     if (dragon->x < seekX)
                     {
-                        dragon->movementX = seekDir*speed;
+                        newMovementX = seekDir*speed;
                     }
                     else if (dragon->x > seekX)
                     {
-                        dragon->movementX = -(seekDir*speed);
+                        newMovementX = -(seekDir*speed);
                     }
 
                     // vertical axis
                     if (dragon->y < seekY)
                     {
-                        dragon->movementY = seekDir*speed;
+                        newMovementY = seekDir*speed;
                     }
                     else if (dragon->y > seekY)
                     {
-                        dragon->movementY = -(seekDir*speed);
+                        newMovementY = -(seekDir*speed);
                     }
+                    
+                    // Notify others if we've changed our direction
+                    if ((dragon->room == objectBall->room) && ((newMovementX != dragon->movementX) || (newMovementY != dragon->movementY))) {
+                        int distanceToMe = distanceFromBall(balls[thisPlayer], dragon->x, dragon->y);
+                        DragonMoveAction* newAction = new DragonMoveAction(thisPlayer, dragon->room, dragon->x, dragon->y, newMovementX, newMovementY, dragon->dragonNumber, distanceToMe);
+                        sync->BroadcastAction(newAction);
+                    }
+                    dragon->movementX = newMovementX;
+                    dragon->movementY = newMovementY;
 
                     // Found something - we're done
                     return;
@@ -2416,27 +2344,35 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
 
         }
     }
-    else if (dragon->state == 2)
+    else if (dragon->state == Dragon::EATEN)
     {
         // Eaten
-        objectBall->room = dragon->room;
-        objectBall->x = (dragon->x + 3) * 2;
-        objectBall->y = (dragon->y - 10) * 2;
+        dragon->eaten->room = dragon->room;
+        dragon->eaten->x = (dragon->x + 3) * 2;
+        dragon->eaten->y = (dragon->y - 10) * 2;
         dragon->movementX = 0;
         dragon->movementY = 0;
-        displayedRoomIndex = objectBall->room;
+        if (objectBall == dragon->eaten) {
+            displayedRoomIndex = objectBall->room;
+        }
     }
-    else if (dragon->state == 3)
+    else if (dragon->state == Dragon::ROAR)
     {
-        --(*timer);
-        if ((*timer) <= 0)
+        dragon->decrementTimer();
+        if (dragon->timerExpired())
         {
             // Has the Ball hit the Dragon?
             if ((objectBall->room == dragon->room) && CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-1), 8, 8))
             {
                 // Set the State to 01 (eaten)
-                dragon->linkedObject = OBJECT_BALL;
-                dragon->state = 2;
+                dragon->eaten = objectBall;
+                dragon->state = Dragon::EATEN;
+
+                // Notify others
+                DragonStateAction* action = new DragonStateAction(thisPlayer, dragon->dragonNumber, Dragon::EATEN, dragon->room, dragon->x, dragon->y);
+                
+                sync->BroadcastAction(action);
+                
 
                 // Play the sound
                 Platform_MakeSound(SOUND_EATEN);
@@ -2444,7 +2380,7 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
             else
             {
                 // Go back to stalking
-                dragon->state = 0;
+                dragon->state = Dragon::STALKING;
             }
         }
     }
@@ -2453,13 +2389,13 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
 
 void Magnet()
 {
-    const OBJECT* magnet = &objectDefs[OBJECT_MAGNET];
+    const OBJECT* magnet = objectDefs[OBJECT_MAGNET];
     
     int i=0;
     while (magnetMatrix[i])
     {
         // Look for items in the magnet matrix that are in the same room as the magnet
-        OBJECT* object = &objectDefs[magnetMatrix[i]];
+        OBJECT* object = objectDefs[magnetMatrix[i]];
         if ((magnetMatrix[i] != objectBall->linkedObject) && (object->room == magnet->room))
         {
             // horizontal axis
@@ -2481,20 +2417,6 @@ void Magnet()
     }
 }
 
-
-int AdjustRoomLevel(int room)
-{
-    // If the the room number is above 0x80 it changes based on the game level
-    if (room & 0x80)
-    {
-        // Remove the 0x80 flag and add the level number to get the offset into the room delta table
-        int newRoomIndex = (room & ~0x80) + gameLevel;
-        room = roomLevelDiffs[newRoomIndex];
-    }
-
-    return room;
-}
-
 void DrawObjects(int room)
 {
     // Clear out the display list
@@ -2512,17 +2434,17 @@ void DrawObjects(int room)
     int colorFirst = -1;
     int colorLast = -1;
 
-    for (int i=0; objectDefs[i].gfxData; i++)
+    for (int i=0; objectDefs[i]->gfxData; i++)
     {
         // Init it to not displayed
-        objectDefs[i].displayed = false;
-        if (objectDefs[i].room == room)
+        objectDefs[i]->displayed = false;
+        if (objectDefs[i]->room == room)
         {
             // This object is in the current room - add it to the list
             displayList[numAdded++] = i;
 
-            if (colorFirst < 0) colorFirst = objectDefs[i].color;
-            colorLast = objectDefs[i].color;
+            if (colorFirst < 0) colorFirst = objectDefs[i]->color;
+            colorLast = objectDefs[i]->color;
         }
     }
 
@@ -2554,9 +2476,9 @@ void DrawObjects(int room)
         {
             if (displayList[i] > OBJECT_NONE)
             {
-                DrawObject(&objectDefs[displayList[i]]);
-                objectDefs[displayList[i]].displayed = true;
-                colorLast = objectDefs[displayList[i]].color;
+                DrawObject(objectDefs[displayList[i]]);
+                objectDefs[displayList[i]]->displayed = true;
+                colorLast = objectDefs[displayList[i]]->color;
             }
             else if (displayList[i] == OBJECT_SURROUND)
             {
@@ -2580,8 +2502,8 @@ void DrawObjects(int room)
         {
             if (displayList[i] > OBJECT_NONE)
             {
-                objectDefs[displayList[i]].displayed = true;
-                colorLast = objectDefs[displayList[i]].color;
+                objectDefs[displayList[i]]->displayed = true;
+                colorLast = objectDefs[displayList[i]]->color;
             }
             else if (displayList[i] == OBJECT_SURROUND)
             {
@@ -2597,10 +2519,10 @@ void DrawObjects(int room)
         }
 
         // Now just paint everything in this room so we bypass the flicker if desired
-        for (int i=0; objectDefs[i].gfxData; i++)
+        for (int i=0; objectDefs[i]->gfxData; i++)
         {
-            if (objectDefs[i].room == room)
-                DrawObject(&objectDefs[i]);
+            if (objectDefs[i]->room == room)
+                DrawObject(objectDefs[i]);
         }
     }
 
@@ -2726,7 +2648,7 @@ bool CollisionCheckBallWithWalls(int room, int x, int y)
     if ((currentRoom->flags & ROOMFLAG_RIGHTTHINWALL) && ((x+4) > 0x96*2))
     {
         // If the dot is in this room, allow passage through the wall into the Easter Egg room
-        if (objectDefs[OBJECT_DOT].room != room)
+        if (objectDefs[OBJECT_DOT]->room != room)
             hitWall = true;
     }
 
@@ -2786,7 +2708,7 @@ bool CollisionCheckBallWithWalls(int room, int x, int y)
 static bool CrossingBridge(int room, int x, int y, BALL* ball)
 {
     // Check going through the bridge
-    const OBJECT* bridge = &objectDefs[OBJECT_BRIDGE];
+    const OBJECT* bridge = objectDefs[OBJECT_BRIDGE];
     if ((bridge->room == room)
         && (ball->linkedObject != OBJECT_BRIDGE))
     {
@@ -2807,10 +2729,10 @@ static bool CrossingBridge(int room, int x, int y, BALL* ball)
 static int CollisionCheckBallWithObjects(BALL* ball, int startIndex)
 {
     // Go through all the objects
-    for (int i=startIndex; objectDefs[i].gfxData; i++)
+    for (int i=startIndex; objectDefs[i]->gfxData; i++)
     {
         // If this object is in the current room, check it against the ball
-        const OBJECT* object = &objectDefs[i];
+        const OBJECT* object = objectDefs[i];
         if (object->displayed && (ball->room == object->room))
         {
             if (CollisionCheckObject(object, ball->x-4,(ball->y-1), 8, 8))
