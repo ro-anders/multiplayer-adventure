@@ -361,7 +361,7 @@ static const byte roomGfxCastle2 [] =
 {
     0xF0,0xFE,0x15,      // XXXXXXXXXXX X X X      R R R RRRRRRRRRRR
     0x30,0x03,0x1F,      // XX        XXXXXXX      RRRRRRR        RR
-    0x30,0x03,0xF3,      // XX        XXXX  XXXXRRRRR  RRR        RR
+    0x30,0x03,0xF3,      // XX        XXXX  XXXXRRRR  RRRR        RR
     0x30,0x00,0xFF,      // XX          XXXXXXXXRRRRRRRR          RR
     0x30,0x00,0x3F,      // XX          XXXXXX    RRRRRR          RR
     0x30,0x00,0x00,      // XX                                    RR
