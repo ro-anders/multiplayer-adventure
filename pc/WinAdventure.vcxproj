@@ -87,7 +87,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\engine\ActionQueue.cpp" />
     <ClCompile Include="..\engine\Adventure.cpp" />
+    <ClCompile Include="..\engine\Ball.cpp" />
+    <ClCompile Include="..\engine\Bat.cpp" />
+    <ClCompile Include="..\engine\Dragon.cpp" />
+    <ClCompile Include="..\engine\GameObject.cpp" />
+    <ClCompile Include="..\engine\Portcullis.cpp" />
+    <ClCompile Include="..\engine\RemoteAction.cpp" />
     <ClCompile Include="..\engine\Sync.cpp" />
     <ClCompile Include="..\engine\Transport.cpp" />
     <ClCompile Include="stdafx.cpp" />
@@ -95,8 +102,17 @@
     <ClCompile Include="WinTransport.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\engine\ActionQueue.hpp" />
     <ClInclude Include="..\engine\Adventure.h" />
-    <ClInclude Include="..\engine\Sync.h" />
+    <ClInclude Include="..\engine\adventure_sys.h" />
+    <ClInclude Include="..\engine\Ball.hpp" />
+    <ClInclude Include="..\engine\Bat.hpp" />
+    <ClInclude Include="..\engine\color.h" />
+    <ClInclude Include="..\engine\Dragon.hpp" />
+    <ClInclude Include="..\engine\GameObject.hpp" />
+    <ClInclude Include="..\engine\Portcullis.hpp" />
+    <ClInclude Include="..\engine\RemoteAction.hpp" />
+    <ClInclude Include="..\engine\Sync.hpp" />
     <ClInclude Include="..\engine\Transport.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
