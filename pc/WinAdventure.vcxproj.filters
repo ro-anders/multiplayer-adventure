@@ -13,96 +13,108 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx</Extensions>
     </Filter>
+    <Filter Include="Source Files\engine">
+      <UniqueIdentifier>{4d164040-a790-441b-9446-bc3438fa557a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\pc">
+      <UniqueIdentifier>{f560a7a3-07b3-434d-a636-ff1ac84788f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\engine">
+      <UniqueIdentifier>{3d1f78fc-5444-49ea-b721-af225338359f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\pc">
+      <UniqueIdentifier>{00d77920-300f-48f3-b99e-472b6b0cbdae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="WinAdventure.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\engine\Adventure.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\engine\Sync.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\engine\Transport.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WinTransport.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\engine\Ball.cpp">
+      <Filter>Source Files\engine</Filter>
     </ClCompile>
     <ClCompile Include="..\engine\ActionQueue.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\engine\Ball.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\engine\Adventure.cpp">
+      <Filter>Source Files\engine</Filter>
     </ClCompile>
     <ClCompile Include="..\engine\Bat.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\engine</Filter>
     </ClCompile>
     <ClCompile Include="..\engine\Dragon.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\engine</Filter>
     </ClCompile>
     <ClCompile Include="..\engine\GameObject.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\engine</Filter>
     </ClCompile>
     <ClCompile Include="..\engine\Portcullis.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\engine</Filter>
     </ClCompile>
     <ClCompile Include="..\engine\RemoteAction.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\Sync.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\Transport.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files\pc</Filter>
+    </ClCompile>
+    <ClCompile Include="WinAdventure.cpp">
+      <Filter>Source Files\pc</Filter>
+    </ClCompile>
+    <ClCompile Include="WinTransport.cpp">
+      <Filter>Source Files\pc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="WinAdventure.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\engine\Adventure.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\engine\Transport.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WinTransport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\engine\ActionQueue.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\engine\adventure_sys.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\engine</Filter>
     </ClInclude>
     <ClInclude Include="..\engine\Ball.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\engine</Filter>
     </ClInclude>
     <ClInclude Include="..\engine\Bat.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\engine\color.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\engine</Filter>
     </ClInclude>
     <ClInclude Include="..\engine\Dragon.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\engine</Filter>
     </ClInclude>
     <ClInclude Include="..\engine\GameObject.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\engine</Filter>
     </ClInclude>
     <ClInclude Include="..\engine\Portcullis.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\adventure_sys.h">
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\Adventure.h">
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\color.h">
+      <Filter>Header Files\engine</Filter>
     </ClInclude>
     <ClInclude Include="..\engine\RemoteAction.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\engine</Filter>
     </ClInclude>
     <ClInclude Include="..\engine\Sync.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\Transport.hpp">
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files\pc</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files\pc</Filter>
+    </ClInclude>
+    <ClInclude Include="WinAdventure.h">
+      <Filter>Header Files\pc</Filter>
+    </ClInclude>
+    <ClInclude Include="WinTransport.h">
+      <Filter>Header Files\pc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
