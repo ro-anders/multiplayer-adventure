@@ -7,14 +7,11 @@
 #include <string.h>
 
 
-const int Transport::ROLE_CLIENT = 1;
-const int Transport::ROLE_SERVER = 0;
-const int Transport::ROLE_UNSPECIFIED = -1;
 const int Transport::DEFAULT_PORT = 5678;
 
 char* Transport::UNSPECIFIED = "unspecified";
 
-const char Transport::PACKET_DELIMETER = '\0';
+const char* Transport::PACKET_DELIMETER = "\0";
 
 Transport::Transport() :
 port(DEFAULT_PORT),
@@ -67,6 +64,26 @@ void Transport::connect() {
     }
 }
 
+int Transport::sendPacket(const char* packetData) {
+	int n = writeData(packetData, strlen(packetData));
+	if (n < 0) {
+		logError("ERROR writing to socket");
+	}
+	else {
+		int n2 = writeData(PACKET_DELIMETER, 1);
+		if (n2 < 0) {
+			logError("ERROR writing to socket");
+		}
+		else {
+			char errorMessage[1000];
+			sprintf(errorMessage, "Sent \"%s\"\n", packetData);
+			logError(errorMessage);
+		}
+	}
+	return n;
+}
+
+
 int Transport::getPacket(char* buffer, int bufferLength) {
     int hitError = 0;
     int ranOutOfData = 0;
@@ -76,12 +93,12 @@ int Transport::getPacket(char* buffer, int bufferLength) {
         
         // Search through the new data for a delimeter.
         for(int ctr=startOfNewData; (delimeterIndex < 0) && (ctr<charsInStreamBuffer); ++ctr) {
-            delimeterIndex = (streamBuffer[ctr] == PACKET_DELIMETER ? ctr : -1);
+            delimeterIndex = (streamBuffer[ctr] == PACKET_DELIMETER[0] ? ctr : -1);
         }
         
         // Detect if we've run out of buffer.
         if ((delimeterIndex < 0) && (charsInStreamBuffer >= streamBufferSize)) {
-            printf("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
+            logError("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
             streamBuffer[streamBufferSize-1] = '\0';
             delimeterIndex = streamBufferSize-1;
         }
@@ -113,7 +130,7 @@ int Transport::getPacket(char* buffer, int bufferLength) {
         // Copy the data into the passed in buffer.
         charsInPacket = delimeterIndex; // We don't copy the delimeter
         if (delimeterIndex >= bufferLength) {
-            printf("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
+            logError("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
             charsInPacket = bufferLength-1;
         }
         memcpy(buffer, streamBuffer, charsInPacket * sizeof(char));
@@ -122,7 +139,9 @@ int Transport::getPacket(char* buffer, int bufferLength) {
         // Remove the characters from the stream buffer
         memmove(streamBuffer, streamBuffer+delimeterIndex+1, (charsInStreamBuffer-delimeterIndex-1)*sizeof(char));
         charsInStreamBuffer = charsInStreamBuffer-delimeterIndex-1;
-        printf("Received message: \"%s\"\n",buffer);
+		char logMessage[1000];
+        sprintf(logMessage, "Received message: \"%s\"\n",buffer);
+		logError(logMessage);
     }
     
     return (hitError ? hitError : charsInPacket);

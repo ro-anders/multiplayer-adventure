@@ -9,10 +9,6 @@
 class Transport {
 public:
     
-    // Useful constants which are common among some of the derived classes.
-    static const int ROLE_CLIENT;
-    static const int ROLE_SERVER;
-    static const int ROLE_UNSPECIFIED;
     static const int DEFAULT_PORT;
     
     /**
@@ -43,7 +39,7 @@ public:
      * Send a packet to a client.
      * Returns the number of bytes sent.
      */
-    virtual int sendPacket(const char* packetData) = 0;
+    virtual int sendPacket(const char* packetData);
     
     /**
      * Polls the client for a message.  If found fills the buffer with the message
@@ -82,7 +78,7 @@ protected:
     static char* UNSPECIFIED;
     
     /** Character used to signify the end of the packet */
-    static const char PACKET_DELIMETER;
+    static const char* PACKET_DELIMETER;
     
     /** The order in which this socket connected.  0 for first (server socket), 1 for second (client socket) */
     int connectNumber = 0;
@@ -119,25 +115,19 @@ protected:
     /**
      * Send data on the socket.
      */
-    virtual int sendData(const char* data) = 0;
+    virtual int writeData(const char* data, int numBytes) = 0;
     
     /**
      * Pull data off the socket - non-blocking
      */
     virtual int readData(char* buffer, int bufferLength) = 0;
     
-    
 private:
-
-    /**
-     * Setup buffers.  
-     * Code common to all three constructors.
-     */
-    void setup();
-    
-
-    
-
+	/**
+	* Setup buffers.
+	* Code common to all three constructors.
+	*/
+	virtual void setup();
 
 };
 

@@ -22,8 +22,25 @@
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "27015"
 
-WinTransport::WinTransport() {
-	ClientSocket = INVALID_SOCKET;
+WinTransport::WinTransport() :
+	Transport(),
+	ClientSocket(INVALID_SOCKET)
+{
+	winSetup();
+}
+
+WinTransport::WinTransport(int port) :
+	Transport(port),
+	ClientSocket(INVALID_SOCKET)
+{
+	winSetup();
+}
+
+WinTransport::WinTransport(char* ip, int port) :
+	Transport(ip, port),
+	ClientSocket(INVALID_SOCKET)
+{
+	winSetup();
 }
 
 WinTransport::~WinTransport() {
@@ -31,52 +48,29 @@ WinTransport::~WinTransport() {
 		closesocket(ClientSocket);
 		WSACleanup();
 	}
+	free(portStr);
 }
 
-void WinTransport::connect() {
-	// Try to bind to a port.  If it's busy, assume the other program has bound and try to connect to it.
-	int port = 5678;
-	char portStr[10];
+void WinTransport::winSetup() {
+	portStr = (char*)malloc(10 * sizeof(char));
 	sprintf(portStr, "%d", port);
-	const char* ip = "localhost";
-
-	int busy = openServerSocket(portStr);
-	if (busy) {
-		openClientSocket(ip, portStr);
-	}
-	connectNumber = (busy ? 1 : 0);
 }
 
-int WinTransport::sendPacket(const char* packetData) {
-	char errorMessage[2000];
 
-	int iResult = send(ClientSocket, packetData, (int)strlen(packetData), 0);
-	if (iResult == SOCKET_ERROR) {
-		sprintf(errorMessage, "send failed with error: %d\n", WSAGetLastError());
-		msg(errorMessage);
-		closesocket(ClientSocket);
-		WSACleanup();
-		return 1;
-	}
-
-	return 10;
+int WinTransport::writeData(const char* packetData, int numBytes) {
+	int iResult = send(ClientSocket, packetData, numBytes, 0);
+	// TODO: Shouldn't we call WSAGetLastError() and return the real error code?
+	return iResult;
 }
 
-int WinTransport::getPacket(char* buffer, int bufferLength) {
-	char errorMessage[2000];
+int WinTransport::readData(char* buffer, int bufferLength) {
 	int iResult = recv(ClientSocket, buffer, bufferLength, 0);
-	if (iResult > 0)
-		sprintf(errorMessage, "Bytes received: %d\n", iResult);
-	else if (iResult == 0)
-		sprintf(errorMessage, "Connection closed\n");
-	else
-		sprintf(errorMessage, "recv failed with error: %d\n", WSAGetLastError());
-	msg(errorMessage);
-	return (iResult > 0 ? iResult : 0);
+	// TODO: Shouldn't we call WSAGetLastError() and return the real error code?
+	return iResult;
 }
 
-int WinTransport::openServerSocket(const char* portStr) {
-	msg("Opening server socket\n");
+int WinTransport::openServerSocket() {
+	logError("Opening server socket\n");
 	WSADATA wsaData;
 	int iResult;
 	char errorMessage[2000];
@@ -95,7 +89,7 @@ int WinTransport::openServerSocket(const char* portStr) {
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResult != 0) {
 		sprintf(errorMessage, "WSAStartup failed with error: %d\n", iResult);
-		msg(errorMessage);
+		logError(errorMessage);
 		return 1;
 	}
 
@@ -109,7 +103,7 @@ int WinTransport::openServerSocket(const char* portStr) {
 	iResult = getaddrinfo(NULL, portStr, &hints, &result);
 	if (iResult != 0) {
 		sprintf(errorMessage, "getaddrinfo failed with error: %d\n", iResult);
-		msg(errorMessage);
+		logError(errorMessage);
 		WSACleanup();
 		return 1;
 	}
@@ -118,7 +112,7 @@ int WinTransport::openServerSocket(const char* portStr) {
 	ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 	if (ListenSocket == INVALID_SOCKET) {
 		sprintf(errorMessage, "socket failed with error: %ld\n", WSAGetLastError());
-		msg(errorMessage);
+		logError(errorMessage);
 		freeaddrinfo(result);
 		WSACleanup();
 		return 1;
@@ -128,7 +122,7 @@ int WinTransport::openServerSocket(const char* portStr) {
 	iResult = bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
 	if (iResult == SOCKET_ERROR) {
 		sprintf(errorMessage, "bind failed with error: %d\n", WSAGetLastError());
-		msg(errorMessage);
+		logError(errorMessage);
 		freeaddrinfo(result);
 		closesocket(ListenSocket);
 		WSACleanup();
@@ -140,7 +134,7 @@ int WinTransport::openServerSocket(const char* portStr) {
 	iResult = listen(ListenSocket, SOMAXCONN);
 	if (iResult == SOCKET_ERROR) {
 		sprintf(errorMessage, "listen failed with error: %d\n", WSAGetLastError());
-		msg(errorMessage);
+		logError(errorMessage);
 		closesocket(ListenSocket);
 		WSACleanup();
 		return 1;
@@ -150,7 +144,7 @@ int WinTransport::openServerSocket(const char* portStr) {
 	ClientSocket = accept(ListenSocket, NULL, NULL);
 	if (ClientSocket == INVALID_SOCKET) {
 		sprintf(errorMessage, "accept failed with error: %d\n", WSAGetLastError());
-		msg(errorMessage);
+		logError(errorMessage);
 		closesocket(ListenSocket);
 		WSACleanup();
 		return 1;
@@ -160,11 +154,11 @@ int WinTransport::openServerSocket(const char* portStr) {
 	closesocket(ListenSocket);
 
 	sprintf(errorMessage, "Connected.  Listening on port %s\n", portStr);
-	msg(errorMessage);
+	logError(errorMessage);
 }
 
-int WinTransport::openClientSocket(const char* ip, const char* portStr) {
-	msg("Opening client socket\n");
+int WinTransport::openClientSocket() {
+	logError("Opening client socket\n");
 	WSADATA wsaData;
 	ClientSocket = INVALID_SOCKET;
 	
@@ -181,7 +175,7 @@ int WinTransport::openClientSocket(const char* ip, const char* portStr) {
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResult != 0) {
 		sprintf(errorMessage, "WSAStartup failed with error: %d\n", iResult);
-		msg(errorMessage);
+		logError(errorMessage);
 		return 1;
 	}
 
@@ -194,7 +188,7 @@ int WinTransport::openClientSocket(const char* ip, const char* portStr) {
 	iResult = getaddrinfo(ip, portStr, &hints, &result);
 	if (iResult != 0) {
 		sprintf(errorMessage, "getaddrinfo failed with error: %d\n", iResult);
-		msg(errorMessage);
+		logError(errorMessage);
 		WSACleanup();
 		return 1;
 	}
@@ -207,7 +201,7 @@ int WinTransport::openClientSocket(const char* ip, const char* portStr) {
 			ptr->ai_protocol);
 		if (ClientSocket == INVALID_SOCKET) {
 			sprintf(errorMessage, "socket failed with error: %ld\n", WSAGetLastError());
-			msg(errorMessage);
+			logError(errorMessage);
 			WSACleanup();
 			return 1;
 		}
@@ -225,13 +219,13 @@ int WinTransport::openClientSocket(const char* ip, const char* portStr) {
 	freeaddrinfo(result);
 
 	if (ClientSocket == INVALID_SOCKET) {
-		msg("Unable to connect to server!\n");
+		logError("Unable to connect to server!\n");
 		WSACleanup();
 		return 1;
 	}
 
 	sprintf(errorMessage, "Connected to %s on port %s\n", ip, portStr);
-	msg(errorMessage);
+	logError(errorMessage);
 
 }
 
@@ -244,47 +238,47 @@ void WinTransport::testSockets() {
 	if (t->getConnectNumber() == 1) {
 		for (int ctr = 0; ctr<NUM_MESSAGES; ++ctr) {
 			sprintf(logMessage, "Sending message %d\n", (ctr + 1));
-			t->msg(logMessage);
+			t->logError(logMessage);
 			char message[256];
 			sprintf(message, "Message %d\n\0", (ctr + 1));
 			int charsSent = t->sendPacket(message);
 			if (charsSent <= 0) {
-				t->msg("Error sending packet");
+				t->logError("Error sending packet");
 			}
 			if (ctr == (NUM_MESSAGES / 2)) {
-				t->msg("Pausing 5 seconds\n");
+				t->logError("Pausing 5 seconds\n");
 				Sleep(5000);
 			}
 		}
 	}
 	else {
 		// We wait a second for the sender to send some stuff
-		t->msg("Pausing 2 seconds\n");
+		t->logError("Pausing 2 seconds\n");
 		Sleep(2000);
 		for (int ctr = 0; ctr<NUM_MESSAGES; ++ctr) {
 			char buffer[256];
 			int charsReceived = t->getPacket(buffer, 256);
 			if (charsReceived < 0) {
-				t->msg("Error receiving packet");
+				t->logError("Error receiving packet");
 			}
 			else if (charsReceived == 0) {
 				sprintf(logMessage, "Receive %d got no data.\n", (ctr + 1));
-				t->msg(logMessage);
+				t->logError(logMessage);
 			}
 			else {
 				sprintf(logMessage, "Receive %d got: %s\n",(ctr+1), buffer);
-				t->msg(logMessage);
+				t->logError(logMessage);
 			}
 		}
 	}
 	// Pause
-	t->msg("Exiting");
+	t->logError("Exiting");
 	delete t;
 	exit(0);
 
 }
 
-void WinTransport::msg(const char* message) {
+void WinTransport::logError(const char* message) {
 	char buffer[1000];
 	sprintf(buffer, "%d: %s", (connectNumber + 1), message);
 	OutputDebugString(buffer);
