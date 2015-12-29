@@ -846,8 +846,8 @@ static ROOM roomDefs [] =
     { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_RED,                                        // 1D - South East Room
         MAIN_HALL_RIGHT, MAIN_HALL_LEFT, BLACK_CASTLE, MAIN_HALL_RIGHT },
     { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_PURPLE, 0x06,0x01,0x06,0x03 },        // 1E - Name Room
-    { roomGfxCastle3, ROOMFLAG_NONE, COLOR_DKGREEN, 0x1D, 0x06, 0x05, 0x04 },            // 1F - Jade Castle
-	{ roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_DKGREEN, 0x20, 0x20, 0x20, 0x20 },       // 20 - Copper Castle Entry
+    { roomGfxCastle3, ROOMFLAG_NONE, COLOR_JADE, 0x1D, 0x06, 0x05, 0x04 },            // 1F - Jade Castle
+	{ roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_JADE, 0x20, 0x20, 0x20, 0x20 },       // 20 - Copper Castle Entry
     { roomGfxCastle2, ROOMFLAG_NONE, COLOR_COPPER,
         BLUE_MAZE_LARGE_ROOM, MAIN_HALL_LEFT, MAIN_HALL_RIGHT, GOLD_CASTLE},
     { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_COPPER,                                     // 21 - Copper Foyer
