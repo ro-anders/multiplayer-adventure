@@ -1525,6 +1525,13 @@ void BallMovement(BALL* ball) {
 					ball->previousY = ball->y;
 
 					ball->room = port->room;
+                    // If we were locked in the castle, open the portcullis.
+                    if (port->state == Portcullis::CLOSED_STATE) {
+                        port->openFromInside();
+                        PortcullisStateAction* gateAction = new PortcullisStateAction(thisPlayer, portalCtr, port->state, port->isActive);
+                        sync->BroadcastAction(gateAction);
+
+                    }
 					leftCastle = true;
 				}
 			}
@@ -1719,18 +1726,22 @@ void MoveGroundObject()
     // Handle ball going into the castles
     for(int portalCtr=0; portalCtr<numPorts; ++portalCtr) {
         Portcullis* nextPort = ports[portalCtr];
-        if (objectBall->room == nextPort->room && nextPort->state != 0x0C && CollisionCheckObject(nextPort, (objectBall->x-4), (objectBall->y-1), 8, 8))
+        if (objectBall->room == nextPort->room && nextPort->isActive && CollisionCheckObject(nextPort, (objectBall->x-4), (objectBall->y-1), 8, 8))
         {
             objectBall->room = nextPort->insideRoom;
             objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
             objectBall->previousY = objectBall->y;
-            nextPort->state = 0; // make sure it stays unlocked in case we are walking in with the key
+            // make sure it stays unlocked in case we are walking in with the key
+            if (nextPort->state != Portcullis::OPEN_STATE) {
+                nextPort->forceOpen();
+                PortcullisStateAction* gateAction =
+                    new PortcullisStateAction(thisPlayer, portalCtr, nextPort->state, nextPort->isActive);
+                sync->BroadcastAction(gateAction);
+            }
             
-            // Report both the ball entering the castle and the castle gate changing state.
+            // Report the ball entering the castle
             PlayerMoveAction* moveAction = new PlayerMoveAction(thisPlayer, objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
             sync->BroadcastAction(moveAction);
-            PortcullisStateAction* gateAction = new PortcullisStateAction(thisPlayer, portalCtr, nextPort->state);
-            sync->BroadcastAction(gateAction);
             
             break;
         }
@@ -2140,8 +2151,7 @@ void Portals()
     // Handle any remote changes to the portal.
     PortcullisStateAction* nextAction = sync->GetNextPortcullisAction();
     while (nextAction != NULL) {
-        ports[nextAction->portNumber]->state = nextAction->newState;
-        
+        ports[nextAction->portNumber]->setState(nextAction->newState, nextAction->isActive);
         delete nextAction;
         nextAction = sync->GetNextPortcullisAction();
     }
@@ -2161,25 +2171,22 @@ void Portals()
             if (seen) {
                 // Toggle the port state
                 if (CollisionCheckObjectObject(port, port->key)) {
-                    port->state++;
+                    port->keyTouch();
                     // If we are in the same room, broadcast the state change
                     if (objectBall->room == port->room) {
-                        PortcullisStateAction* gateAction = new PortcullisStateAction(thisPlayer, portalCtr, port->state);
+                        PortcullisStateAction* gateAction =
+                            new PortcullisStateAction(thisPlayer, portalCtr, port->state, port->isActive);
                         sync->BroadcastAction(gateAction);
                     }
                 }
 
             }
         }
-        if (port->state != Portcullis::OPEN_STATE && port->state != Portcullis::CLOSED_STATE)
-        {
-            // Raise/lower the port
-            port->state++;
-        }
-        if (port->state > 22)
+        // Raise/lower the port
+        port->updateState();
+        if (port->state == Portcullis::OPEN_STATE)
         {
             // Port is unlocked
-            port->state = Portcullis::OPEN_STATE;
             roomDefs[port->insideRoom].roomDown = port->room;
         }
         else if (port->state == Portcullis::CLOSED_STATE)
@@ -2187,7 +2194,6 @@ void Portals()
             // Port is locked
             roomDefs[port->insideRoom].roomDown = port->insideRoom;
         }
-        
 
     }
     

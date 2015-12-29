@@ -9,6 +9,7 @@
 
 class Portcullis: public OBJECT {
 public:
+    bool isActive;
     int insideRoom;
     OBJECT* key;
     
@@ -19,7 +20,19 @@ public:
     Portcullis(int outsideRoom, int insideRoom, OBJECT* key);
     
     virtual ~Portcullis();
-        
+    
+    void setState(int newState, bool isActive);
+    
+    void updateState();
+    
+    void keyTouch();
+    
+    void openFromInside();
+    
+    /**
+     * Called when a player enters a gate that is not completely open.
+     */
+    void forceOpen();
 };
 
 

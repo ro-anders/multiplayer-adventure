@@ -258,24 +258,25 @@ const char* PortcullisStateAction::CODE = "GS";
 PortcullisStateAction::PortcullisStateAction() :
 RemoteAction(CODE) {}
 
-PortcullisStateAction::PortcullisStateAction(int inSender, int inPortNumber, int inNewSate) :
+PortcullisStateAction::PortcullisStateAction(int inSender, int inPortNumber, int inNewSate, bool inActive) :
 RemoteAction(CODE, inSender),
 portNumber(inPortNumber),
-newState(inNewSate) {}
+newState(inNewSate),
+isActive(inActive) {}
 
 PortcullisStateAction::~PortcullisStateAction() {}
 
 int PortcullisStateAction::serialize(char* buffer, int bufferLength) {
     // TODO - Right now we are ignoring bufferLength
     // TODO - Reuse base class serialize
-    int numChars = sprintf(buffer, "GS %d %d %d",
-                           sender, portNumber, newState);
+    int numChars = sprintf(buffer, "GS %d %d %d %d",
+                           sender, portNumber, newState, (int)isActive);
     return numChars;
 }
 
 void PortcullisStateAction::deserialize(const char *message) {
     char type[8];
-    sscanf(message, "%s %d %d %d", type, &sender, &portNumber, &newState);
+    sscanf(message, "%s %d %d %d %d", type, &sender, &portNumber, &newState, &isActive);
 }
 
 

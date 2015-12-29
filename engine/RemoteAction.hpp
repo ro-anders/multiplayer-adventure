@@ -160,12 +160,13 @@ class PortcullisStateAction: public RemoteAction {
 public:
     int portNumber;
     int newState;
+    int isActive;
     
     static const char* CODE;
     
     PortcullisStateAction();
     
-    PortcullisStateAction(int inSender, int portNumber, int newState);
+    PortcullisStateAction(int inSender, int portNumber, int newState, bool isActive);
     
     ~PortcullisStateAction();
     
