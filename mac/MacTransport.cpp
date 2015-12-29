@@ -17,44 +17,20 @@
 #include <netdb.h>
 // End socket includes
 
-char* MacTransport::UNSPECIFIED = "unspecified";
 
 MacTransport::MacTransport() :
-  PACKET_DELIMETER('\0'),
-  role(ROLE_UNSPECIFIED),
-  port(DEFAULT_PORT),
-  ip(UNSPECIFIED)
-{
-    setup();
-}
+  Transport()
+{}
 
 MacTransport::MacTransport(int inPort) :
-PACKET_DELIMETER('\0'),
-role(ROLE_SERVER),
-port(inPort == 0 ? DEFAULT_PORT : inPort),
-ip(NULL)
-{
-    setup();
-}
+Transport(inPort)
+{}
 
 MacTransport::MacTransport(char* inIp, int inPort) :
-PACKET_DELIMETER('\0'),
-role(ROLE_CLIENT),
-port(inPort == 0 ? DEFAULT_PORT : inPort),
-ip(inIp)
-{
-    setup();
-}
-
-void MacTransport::setup() {
-    streamBufferSize = 1024;
-    streamBuffer = new char[streamBufferSize]; // TODO: Make this more dynamic.
-    charsInStreamBuffer = 0;
-}
-
+Transport(inIp, inPort)
+{}
 
 MacTransport::~MacTransport() {
-    delete [] streamBuffer;
     if (serverSocketFd > 0) {
         close(serverSocketFd);
     }
@@ -64,99 +40,21 @@ MacTransport::~MacTransport() {
     }
 }
 
-void MacTransport::connect() {
-    if (ip == UNSPECIFIED) {
-        // Try to bind to a port.  If it's busy, assume the other program has bound and try to connect to it.
-        int busy = openServerSocket();
-        if (busy) {
-            openClientSocket();
-        }
-        connectNumber = (busy ? 1 : 0);
-    } else if (ip == NULL) {
-        openServerSocket();
-        connectNumber = 0;
-    } else {
-        openClientSocket();
-        connectNumber = 1;
-    }
-}
-
 int MacTransport::sendPacket(const char* packetData) {
     char delimStr[1];
     delimStr[0] = PACKET_DELIMETER;
     int n = write(socketFd,packetData,strlen(packetData));
     if (n < 0) {
-        error("ERROR writing to socket");
+        logError("ERROR writing to socket");
     } else {
         int n2 = write(socketFd, delimStr, 1);
         if (n2 < 0) {
-            error("ERROR writing to socket");
+            logError("ERROR writing to socket");
         } else {
             printf("Sent \"%s\"\n", packetData);
         }
     }
     return n;
-}
-
-int MacTransport::getPacket(char* buffer, int bufferLength) {
-    int hitError = 0;
-    int ranOutOfData = 0;
-    int delimeterIndex = -1;
-    int startOfNewData = 0;
-    while ((delimeterIndex < 0) && !hitError && !ranOutOfData) {
-        
-        // Search through the new data for a delimeter.
-        for(int ctr=startOfNewData; (delimeterIndex < 0) && (ctr<charsInStreamBuffer); ++ctr) {
-            delimeterIndex = (streamBuffer[ctr] == PACKET_DELIMETER ? ctr : -1);
-        }
-        
-        // Detect if we've run out of buffer.
-        if ((delimeterIndex < 0) && (charsInStreamBuffer >= streamBufferSize)) {
-            printf("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
-            streamBuffer[streamBufferSize-1] = '\0';
-            delimeterIndex = streamBufferSize-1;
-        }
-
-        if (delimeterIndex < 0) {
-            // If we don't have delimeter, pull more data off the socket
-            startOfNewData = charsInStreamBuffer;
-            int charsToRead = streamBufferSize-charsInStreamBuffer;
-            int n = read(socketFd, streamBuffer+charsInStreamBuffer, charsToRead);
-            if (n == -1) {
-                // Socket has no more data.  Return no data even if we have some sitting in the stream buffer.
-                ranOutOfData = 1;
-            }
-            else if (n < 0) {
-                hitError = n;
-            } else {
-                charsInStreamBuffer += n;
-            }
-        }
-    }
-    
-    int charsInPacket = 0;
-    if (hitError) {
-        error("ERROR reading from socket");
-    } else if (ranOutOfData) {
-        charsInPacket = 0;
-        buffer[0] = '\0';
-    } else {
-        // Copy the data into the passed in buffer.
-        charsInPacket = delimeterIndex; // We don't copy the delimeter
-        if (delimeterIndex >= bufferLength) {
-            printf("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
-            charsInPacket = bufferLength-1;
-        }
-        memcpy(buffer, streamBuffer, charsInPacket * sizeof(char));
-        buffer[charsInPacket] = '\0';
-
-        // Remove the characters from the stream buffer
-        memmove(streamBuffer, streamBuffer+delimeterIndex+1, (charsInStreamBuffer-delimeterIndex-1)*sizeof(char));
-        charsInStreamBuffer = charsInStreamBuffer-delimeterIndex-1;
-        printf("Received message: \"%s\"\n",buffer);
-    }
-    
-    return (hitError ? hitError : charsInPacket);
 }
 
 int MacTransport::openServerSocket() {
@@ -166,7 +64,7 @@ int MacTransport::openServerSocket() {
     struct sockaddr_in serv_addr, cli_addr;
     serverSocketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocketFd < 0)
-        error("ERROR opening socket");
+        logError("ERROR opening socket");
     bzero((char *) &serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
@@ -182,7 +80,7 @@ int MacTransport::openServerSocket() {
                        (struct sockaddr *) &cli_addr,
                        &clilen);
     if (socketFd < 0)
-        error("ERROR on accept");
+        logError("ERROR on accept");
     fcntl(socketFd, F_SETFL, O_NONBLOCK);
 
     return 0;
@@ -190,7 +88,7 @@ int MacTransport::openServerSocket() {
     
 }
 
-void MacTransport::openClientSocket() {
+int MacTransport::openClientSocket() {
     printf("Opening client socket\n");
     int n;
     struct sockaddr_in serv_addr;
@@ -199,7 +97,7 @@ void MacTransport::openClientSocket() {
     
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFd < 0)
-        error("ERROR opening socket");
+        logError("ERROR opening socket");
     server = gethostbyname(serverAddress);
     if (server == NULL) {
         fprintf(stderr,"ERROR, no such host\n");
@@ -213,16 +111,28 @@ void MacTransport::openClientSocket() {
     serv_addr.sin_port = htons(port);
     n = ::connect(socketFd,(struct sockaddr *) &serv_addr,sizeof(serv_addr));
     if (n < 0) {
-        error("ERROR connecting");
+        logError("ERROR connecting");
     }
     fcntl(socketFd, F_SETFL, O_NONBLOCK);
+    
+    return 0;
+}
+
+int MacTransport::sendData(const char* data)
+{
+    // TODO: Implement
+    return -1;
+}
+
+int MacTransport::readData(char *buffer, int bufferLength) {
+    int n = read(socketFd, buffer, bufferLength);
+    return n;
 }
 
 
-void MacTransport::error(const char *msg)
+void MacTransport::logError(const char *msg)
 {
     perror(msg);
-    exit(1);
 }
 
 void MacTransport::testSockets() {

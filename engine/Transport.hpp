@@ -15,10 +15,29 @@ public:
     static const int ROLE_UNSPECIFIED;
     static const int DEFAULT_PORT;
     
+    /**
+     * Create a socket to this machine on the default port.  First try to open
+     * a server socket, but if the port is already busy open up a client socket.
+     * Useful for testing.
+     */
+    Transport();
+    
+    /**
+     * Create a server socket.
+     * port - the port to listen on.  If 0, will listen on the default port.
+     */
+    Transport(int port);
+    
+    /**
+     * Connect a socket to another machine.
+     * ip - the ip of the machine to connect to
+     * port - the port to connect to.  If 0, will listen on the default port.
+     */
+    Transport(char* ip, int port);
     
     virtual ~Transport() = 0;
     
-    virtual void connect() = 0;
+    virtual void connect();
     
     /**
      * Send a packet to a client.
@@ -31,7 +50,7 @@ public:
      * and returns the number of bytes in the message.  If no message, returns 0 and
      * leaves the buffer untouched.
      */
-    virtual int getPacket(char* buffer, int bufferLength) = 0;
+    virtual int getPacket(char* buffer, int bufferLength);
     
     /**
      * Often when testing we want to quickly launch two ends of a socket and let them
@@ -42,6 +61,12 @@ public:
     int getConnectNumber() {
         return connectNumber;
     }
+    
+    /**
+     * Report an error - different OS's have different behavior
+     */
+    virtual void logError(const char* msg) = 0;
+    
 
     /**
      * Parse an socket address of the form 127.0.0.1:5678 into an ip/address and a port.
@@ -53,8 +78,66 @@ public:
 
     
 protected:
+    /** A constant used for the IP when you don't know if this is going to be a server or client socket. */
+    static char* UNSPECIFIED;
+    
+    /** Character used to signify the end of the packet */
+    static const char PACKET_DELIMETER;
+    
+    /** The order in which this socket connected.  0 for first (server socket), 1 for second (client socket) */
     int connectNumber = 0;
     
+    /**
+     * The IP of the socket address that we are connecting to, or null if this is to be a server socket, or
+     * UNSPECIFIED if this may be a server socket listening on localhost or this may be a client socket connecting to 
+     * localhost and which it is depends on who connects first.
+     */
+    char* ip;
+    
+    /** The port of the socket address. */
+    int port;
+    
+    /** Buffer to store data until end of packet is reached. */
+    char* streamBuffer;
+    
+    /** Size of stream buffer */
+    int streamBufferSize;
+    
+    /** Number of characters read into stream buffer */
+    int charsInStreamBuffer;
+    
+    /**
+     * Open a server socket.
+     */
+    virtual int openServerSocket() = 0;
+    
+    /**
+     * Open a client socket.
+     */
+    virtual int openClientSocket() = 0;
+    
+    /**
+     * Send data on the socket.
+     */
+    virtual int sendData(const char* data) = 0;
+    
+    /**
+     * Pull data off the socket - non-blocking
+     */
+    virtual int readData(char* buffer, int bufferLength) = 0;
+    
+    
+private:
+
+    /**
+     * Setup buffers.  
+     * Code common to all three constructors.
+     */
+    void setup();
+    
+
+    
+
 
 };
 
