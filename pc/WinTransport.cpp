@@ -150,6 +150,18 @@ int WinTransport::openServerSocket() {
 		return 1;
 	}
 
+	// Set the socket to non-blocking
+	u_long nbflag = 1;
+	iResult = ioctlsocket(ClientSocket, FIONBIO, &nbflag);
+	if (iResult != 0) {
+		sprintf(errorMessage, "ioctlsocket failed with error: %d\n", WSAGetLastError());
+		logError(errorMessage);
+		WSACleanup();
+		return 1;
+	}
+
+
+
 	// No longer need server socket
 	closesocket(ListenSocket);
 
@@ -215,6 +227,16 @@ int WinTransport::openClientSocket() {
 			continue;
 		}
 		break;
+	}
+
+	// Set the socket to non-blocking
+	u_long nbflag = 1;
+	iResult = ioctlsocket(ClientSocket, FIONBIO, &nbflag);
+	if (iResult != 0) {
+		sprintf(errorMessage, "ioctlsocket failed with error: %d\n", WSAGetLastError());
+		logError(errorMessage);
+		WSACleanup();
+		return 1;
 	}
 
 	freeaddrinfo(result);
