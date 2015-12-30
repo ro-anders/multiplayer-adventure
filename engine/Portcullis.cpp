@@ -107,8 +107,44 @@ const int Portcullis::CLOSED_STATE=12;
 
 Portcullis::Portcullis(int inOutsideRoom, int inInsideRoom, OBJECT* inKey) :
   OBJECT(objectGfxPort, portStates, 0x0C, COLOR_BLACK, inOutsideRoom, 0x4d, 0x31),
+  isActive(false),
   insideRoom(inInsideRoom),
   key(inKey) {}
 
 Portcullis::~Portcullis() {}
+
+void Portcullis::setState(int newState, bool newActive) {
+    state = newState;
+    isActive = newActive;
+}
+
+void Portcullis::updateState() {
+    if (state == OPEN_STATE) {
+        isActive = true;
+    } else if (state == CLOSED_STATE) {
+        isActive = false;
+    } else {
+        // Raise/lower the gate
+        ++state;
+        if (state > 22)
+        {
+            // Port is unlocked
+            state = OPEN_STATE;
+        }
+    }
+}
+
+void Portcullis::keyTouch() {
+    state++;
+    isActive = true; // Either the gate is now opening and active or now closing but still active
+}
+
+void Portcullis::openFromInside() {
+    ++state;
+}
+
+void Portcullis::forceOpen() {
+    state = OPEN_STATE;
+    isActive = true;
+}
 

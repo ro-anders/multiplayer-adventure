@@ -85,9 +85,9 @@ enum
 };
 
 #define OBJECT_BALL			(-2)
-#define OBJECT_SURROUND		(-3)
-#define OBJECT_LEFTWALL		(-4)
-#define OBJECT_RIGHTWALL	(-5)
+#define OBJECT_LEFTWALL		(-3)
+#define OBJECT_RIGHTWALL	(-4)
+#define OBJECT_SURROUND		(-5) // Actually, up to 3 surrounds with values -5 to -7
 
 
 // Functions from original game
@@ -579,8 +579,6 @@ static const byte objectGfxSurround [] =
     0xFF                   // XXXXXXXX                                                                  
 };
 
-OBJECT& objectSurround = *new OBJECT(objectGfxSurround, 0, 0, COLOR_ORANGE, -1, 0, 0, 0x07);
-
 // Object #0A : State FF : Graphic                                                                                   
 static const byte objectGfxBridge [] =
 {
@@ -762,6 +760,7 @@ static const byte objectGfxMagnet [] =
 static BALL** balls;
 static BALL* objectBall = 0x0;
 
+static OBJECT** surrounds;
 //
 // Indexed array of all objects and their properties
 //
@@ -847,8 +846,8 @@ static ROOM roomDefs [] =
     { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_RED,                                        // 1D - South East Room
         MAIN_HALL_RIGHT, MAIN_HALL_LEFT, BLACK_CASTLE, MAIN_HALL_RIGHT },
     { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_PURPLE, 0x06,0x01,0x06,0x03 },        // 1E - Name Room
-    { roomGfxCastle3, ROOMFLAG_NONE, COLOR_DKGREEN, 0x1D, 0x06, 0x05, 0x04 },            // 1F - Jade Castle
-	{ roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_DKGREEN, 0x20, 0x20, 0x20, 0x20 },       // 20 - Copper Castle Entry
+    { roomGfxCastle3, ROOMFLAG_NONE, COLOR_JADE, 0x1D, 0x06, 0x05, 0x04 },            // 1F - Jade Castle
+	{ roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_JADE, 0x20, 0x20, 0x20, 0x20 },       // 20 - Copper Castle Entry
     { roomGfxCastle2, ROOMFLAG_NONE, COLOR_COPPER,
         BLUE_MAZE_LARGE_ROOM, MAIN_HALL_LEFT, MAIN_HALL_RIGHT, GOLD_CASTLE},
     { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_COPPER,                                     // 21 - Copper Foyer
@@ -1007,6 +1006,11 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     gameBoard = (gameLevel == 0 ? 0 : 1);
     timeToStartGame = 60 * 3;
     
+    surrounds = (OBJECT**)malloc(numPlayers * sizeof(OBJECT*));
+    for(int ctr=0; ctr<numPlayers; ++ctr) {
+        surrounds[ctr] = new OBJECT(objectGfxSurround, 0, 0, COLOR_ORANGE, -1, 0, 0, 0x07);
+    }
+    
     dragons = (Dragon**)malloc(numDragons * sizeof(Dragon*));
     dragons[0]= new Dragon(0, 0, COLOR_YELLOW, -1, 0, 0);
     dragons[1] = new Dragon(1, 0, COLOR_LIMEGREEN, -1, 0, 0);
@@ -1031,7 +1035,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     ports[4] = new Portcullis(0x1F, 0x20, objectDefs[OBJECT_YELLOWKEY]); // Jade
     
     
-    // Setup the structures
+    // Setup the objects
     objectDefs[OBJECT_YELLOW_PORT] = ports[0];
     objectDefs[OBJECT_COPPER_PORT] = ports[3];
     objectDefs[OBJECT_JADE_PORT] = ports[4];
@@ -1521,6 +1525,13 @@ void BallMovement(BALL* ball) {
 					ball->previousY = ball->y;
 
 					ball->room = port->room;
+                    // If we were locked in the castle, open the portcullis.
+                    if (port->state == Portcullis::CLOSED_STATE) {
+                        port->openFromInside();
+                        PortcullisStateAction* gateAction = new PortcullisStateAction(thisPlayer, portalCtr, port->state, port->isActive);
+                        sync->BroadcastAction(gateAction);
+
+                    }
 					leftCastle = true;
 				}
 			}
@@ -1715,18 +1726,22 @@ void MoveGroundObject()
     // Handle ball going into the castles
     for(int portalCtr=0; portalCtr<numPorts; ++portalCtr) {
         Portcullis* nextPort = ports[portalCtr];
-        if (objectBall->room == nextPort->room && nextPort->state != 0x0C && CollisionCheckObject(nextPort, (objectBall->x-4), (objectBall->y-1), 8, 8))
+        if (objectBall->room == nextPort->room && nextPort->isActive && CollisionCheckObject(nextPort, (objectBall->x-4), (objectBall->y-1), 8, 8))
         {
             objectBall->room = nextPort->insideRoom;
             objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
             objectBall->previousY = objectBall->y;
-            nextPort->state = 0; // make sure it stays unlocked in case we are walking in with the key
+            // make sure it stays unlocked in case we are walking in with the key
+            if (nextPort->state != Portcullis::OPEN_STATE) {
+                nextPort->forceOpen();
+                PortcullisStateAction* gateAction =
+                    new PortcullisStateAction(thisPlayer, portalCtr, nextPort->state, nextPort->isActive);
+                sync->BroadcastAction(gateAction);
+            }
             
-            // Report both the ball entering the castle and the castle gate changing state.
+            // Report the ball entering the castle
             PlayerMoveAction* moveAction = new PlayerMoveAction(thisPlayer, objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
             sync->BroadcastAction(moveAction);
-            PortcullisStateAction* gateAction = new PortcullisStateAction(thisPlayer, portalCtr, nextPort->state);
-            sync->BroadcastAction(gateAction);
             
             break;
         }
@@ -1821,9 +1836,11 @@ void PrintDisplay()
     Platform_PaintPixel(colorBackground.r, colorBackground.g, colorBackground.b, 0, 0, ADVENTURE_SCREEN_WIDTH, ADVENTURE_TOTAL_SCREEN_HEIGHT);
 
     // paint the surround under the playfield layer
-    if ((objectSurround.room == objectBall->room) && (objectSurround.state == 0))
-       DrawObject(&objectSurround);
-
+    for(int ctr=0; ctr<numPlayers; ++ctr) {
+        if ((surrounds[ctr]->room == displayedRoom) && (surrounds[ctr]->state == 0)) {
+            DrawObject(surrounds[ctr]);
+        }
+    }
     // get the playfield mirror flag
     bool mirror = currentRoom->flags & ROOMFLAG_MIRROR;
 
@@ -2009,17 +2026,26 @@ void PickupPutdown()
 void Surround()
 {
     // get the playfield data
-    const ROOM* currentRoom = &roomDefs[objectBall->room];
+    int roomNum = objectBall->room;
+    const ROOM* currentRoom = &roomDefs[roomNum];
     if (currentRoom->color == COLOR_LTGRAY)
     {
-        // Put it in the same room as the ball (player) and center it under the ball
-        objectSurround.room = objectBall->room;
-        objectSurround.x = (objectBall->x-0x1E)/2;
-        objectSurround.y = (objectBall->y+0x18)/2;
+        for(int ctr=0; ctr<numPlayers; ++ctr) {
+            if (balls[ctr]->room == roomNum) {
+                // Put it in the same room as the ball (player) and center it under the ball
+                surrounds[ctr]->room = roomNum;
+                surrounds[ctr]->x = (balls[ctr]->x-0x1E)/2;
+                surrounds[ctr]->y = (balls[ctr]->y+0x18)/2;
+            } else {
+                surrounds[ctr]->room = -1;
+            }
+        }
     }
     else
     {
-        objectSurround.room = -1;
+        for(int ctr=0; ctr<numPlayers; ++ctr) {
+            surrounds[ctr]->room = -1;
+        }
     }
 }
 
@@ -2125,8 +2151,7 @@ void Portals()
     // Handle any remote changes to the portal.
     PortcullisStateAction* nextAction = sync->GetNextPortcullisAction();
     while (nextAction != NULL) {
-        ports[nextAction->portNumber]->state = nextAction->newState;
-        
+        ports[nextAction->portNumber]->setState(nextAction->newState, nextAction->isActive);
         delete nextAction;
         nextAction = sync->GetNextPortcullisAction();
     }
@@ -2146,25 +2171,22 @@ void Portals()
             if (seen) {
                 // Toggle the port state
                 if (CollisionCheckObjectObject(port, port->key)) {
-                    port->state++;
+                    port->keyTouch();
                     // If we are in the same room, broadcast the state change
                     if (objectBall->room == port->room) {
-                        PortcullisStateAction* gateAction = new PortcullisStateAction(thisPlayer, portalCtr, port->state);
+                        PortcullisStateAction* gateAction =
+                            new PortcullisStateAction(thisPlayer, portalCtr, port->state, port->isActive);
                         sync->BroadcastAction(gateAction);
                     }
                 }
 
             }
         }
-        if (port->state != Portcullis::OPEN_STATE && port->state != Portcullis::CLOSED_STATE)
-        {
-            // Raise/lower the port
-            port->state++;
-        }
-        if (port->state > 22)
+        // Raise/lower the port
+        port->updateState();
+        if (port->state == Portcullis::OPEN_STATE)
         {
             // Port is unlocked
-            port->state = Portcullis::OPEN_STATE;
             roomDefs[port->insideRoom].roomDown = port->room;
         }
         else if (port->state == Portcullis::CLOSED_STATE)
@@ -2172,7 +2194,6 @@ void Portals()
             // Port is locked
             roomDefs[port->insideRoom].roomDown = port->insideRoom;
         }
-        
 
     }
     
@@ -2428,8 +2449,11 @@ void DrawObjects(int room)
     // Create a list of all the objects that want to be drawn
     int numAdded = 0;
 
-    if (objectSurround.room == room)
-        displayList[numAdded++] = OBJECT_SURROUND;
+    for(int ctr=0; ctr<numPlayers; ++ctr) {
+        if (surrounds[ctr]->room == room) {
+            displayList[numAdded++] = OBJECT_SURROUND-ctr;
+        }
+    }
 
     int colorFirst = -1;
     int colorLast = -1;
@@ -2462,8 +2486,10 @@ void DrawObjects(int room)
             displayListIndex = 0;
     }
 
-    objectSurround.displayed = false;
-
+    for(int ctr=0; ctr<numPlayers; ++ctr) {
+        surrounds[ctr]->displayed = false;
+    }
+    
     int numDisplayed = 0;
     int i = displayListIndex;
     if (showObjectFlicker)
@@ -2480,9 +2506,9 @@ void DrawObjects(int room)
                 objectDefs[displayList[i]]->displayed = true;
                 colorLast = objectDefs[displayList[i]]->color;
             }
-            else if (displayList[i] == OBJECT_SURROUND)
+            else if (displayList[i] <= OBJECT_SURROUND)
             {
-                objectSurround.displayed = true;
+                surrounds[OBJECT_SURROUND - displayList[i]]->displayed = true;
             }
 
             // wrap to the beginning of the list if we've reached the end
@@ -2505,9 +2531,9 @@ void DrawObjects(int room)
                 objectDefs[displayList[i]]->displayed = true;
                 colorLast = objectDefs[displayList[i]]->color;
             }
-            else if (displayList[i] == OBJECT_SURROUND)
+            else if (displayList[i] <= OBJECT_SURROUND)
             {
-                objectSurround.displayed = true;
+                surrounds[OBJECT_SURROUND - displayList[i]]->displayed = true;
             }
 
             // wrap to the beginning of the list if we've reached the end
