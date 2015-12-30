@@ -70,7 +70,7 @@ void PlayerMoveAction::deserialize(const char *message) {
 // PlayerPickupAction
 //
 
-const char* PlayerPickupAction::CODE = "DM";
+const char* PlayerPickupAction::CODE = "PP";
 
 PlayerPickupAction::PlayerPickupAction() :
 RemoteAction(CODE) {}
@@ -279,6 +279,88 @@ void PortcullisStateAction::deserialize(const char *message) {
     sscanf(message, "%s %d %d %d %d", type, &sender, &portNumber, &newState, &isActive);
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////
+//
+// BatMoveAction
+//
+
+const char* BatMoveAction::CODE = "BM";
+
+BatMoveAction::BatMoveAction() :
+MoveAction(CODE) {}
+
+BatMoveAction::BatMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
+MoveAction(CODE, inSender, inRoom, inPosx, inPosy, inVelx, inVely)
+{}
+
+BatMoveAction::~BatMoveAction() {}
+
+int BatMoveAction::serialize(char* buffer, int bufferLength) {
+    // TODO - Right now we are ignoring bufferLength
+    int numChars = sprintf(buffer, "BM %d %d %d %d %d %d", sender, room, posx, posy, velx, vely);
+    return numChars;
+}
+
+void BatMoveAction::deserialize(const char *message) {
+    char type[8];
+    sscanf(message, "%s %d %d %d %d %d %d", type, &sender, &room, &posx, &posy, &velx, &vely);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+//
+// BatPickupAction
+//
+
+const char* BatPickupAction::CODE = "BP";
+
+BatPickupAction::BatPickupAction() :
+RemoteAction(CODE) {}
+
+BatPickupAction::BatPickupAction(int inSender, int inPickupObject, int inPickupX, int inPickupY,
+                                       int inDropObject, int inDropRoom, int inDropX, int inDropY) :
+RemoteAction(CODE, inSender),
+pickupObject(inPickupObject),
+pickupX(inPickupX),
+pickupY(inPickupY),
+dropObject(inDropObject),
+dropRoom(inDropRoom),
+dropX(inDropX),
+dropY(inDropY)
+{}
+
+BatPickupAction::~BatPickupAction() {}
+
+
+void BatPickupAction::setPickup(int inPickupObject, int inPickupX, int inPickupY) {
+    pickupObject = inPickupObject;
+    pickupX = inPickupX;
+    pickupY = inPickupY;
+    
+}
+
+void BatPickupAction::setDrop(int inDropObject, int inDropRoom, int inDropX, int inDropY) {
+    dropObject = inDropObject;
+    dropRoom = inDropRoom;
+    dropX = inDropX;
+    dropY = inDropY;
+}
+
+
+int BatPickupAction::serialize(char* buffer, int bufferLength) {
+    // TODO - Right now we are ignoring bufferLength
+    // TODO - Reuse base class serialize
+    int numChars = sprintf(buffer, "BP %d %d %d %d %d %d %d %d",
+                           sender, pickupObject, pickupX, pickupY, dropObject, dropRoom, dropX, dropY);
+    return numChars;
+}
+
+void BatPickupAction::deserialize(const char *message) {
+    char type[8];
+    sscanf(message, "%s %d %d %d %d %d %d %d %d",
+           type, &sender, &pickupObject, &pickupX, &pickupY, &dropObject, &dropRoom, &dropX, &dropY);
+}
 
 
 
