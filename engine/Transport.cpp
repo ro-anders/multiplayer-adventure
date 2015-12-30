@@ -45,6 +45,7 @@ void Transport::setup() {
     streamBufferSize = 1024;
     streamBuffer = new char[streamBufferSize]; // TODO: Make this more dynamic.
     charsInStreamBuffer = 0;
+	connectNumber = -1;
 }
 
 void Transport::connect() {

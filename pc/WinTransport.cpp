@@ -162,6 +162,7 @@ int WinTransport::openClientSocket() {
 	WSADATA wsaData;
 	ClientSocket = INVALID_SOCKET;
 	
+	const char* host = (ip == UNSPECIFIED ? "localhost" : ip);
 	struct addrinfo *result = NULL,
 		*ptr = NULL,
 		hints;
@@ -185,7 +186,7 @@ int WinTransport::openClientSocket() {
 	hints.ai_protocol = IPPROTO_TCP;
 
 	// Resolve the server address and port
-	iResult = getaddrinfo(ip, portStr, &hints, &result);
+	iResult = getaddrinfo(host, portStr, &hints, &result);
 	if (iResult != 0) {
 		sprintf(errorMessage, "getaddrinfo failed with error: %d\n", iResult);
 		logError(errorMessage);
@@ -224,7 +225,7 @@ int WinTransport::openClientSocket() {
 		return 1;
 	}
 
-	sprintf(errorMessage, "Connected to %s on port %s\n", ip, portStr);
+	sprintf(errorMessage, "Connected to %s on port %s\n", host, portStr);
 	logError(errorMessage);
 
 }

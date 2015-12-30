@@ -81,14 +81,14 @@ protected:
     static const char* PACKET_DELIMETER;
     
     /** The order in which this socket connected.  0 for first (server socket), 1 for second (client socket) */
-    int connectNumber = 0;
+    int connectNumber;
     
     /**
      * The IP of the socket address that we are connecting to, or null if this is to be a server socket, or
      * UNSPECIFIED if this may be a server socket listening on localhost or this may be a client socket connecting to 
      * localhost and which it is depends on who connects first.
      */
-    char* ip;
+    const char* ip;
     
     /** The port of the socket address. */
     int port;
