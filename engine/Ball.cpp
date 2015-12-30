@@ -2,7 +2,7 @@
 #include "Ball.hpp"
 #include "Portcullis.hpp"
 
-static const byte objectGfxPlayer1[] =
+static const byte ballGfxSolid[] =
 {
     8,
     0xFF,				   // XXXXXXXX
@@ -15,7 +15,33 @@ static const byte objectGfxPlayer1[] =
     0xFF 				   // XXXXXXXX
 };
 
-static const byte objectGfxPlayer2[] =
+static const byte ballGfxOne[] =
+{
+    8,
+    0xFF,				   // XXXXXXXX
+    0xC3,				   // XX    XX
+    0xC3,				   // XX    XX
+    0xC3,				   // XX    XX
+    0xC3,				   // XX    XX
+    0xC3,				   // XX    XX
+    0xC3,				   // XX    XX
+    0xFF 				   // XXXXXXXX
+};
+
+static const byte ballGfxTwo[] =
+{
+    8,
+    0xFF,				   // XXXXXXXX
+    0xFF,				   // XXXXXXXX
+    0x18,				   //    XX
+    0x18,				   //    XX
+    0x18,				   //    XX
+    0x18,				   //    XX
+    0xFF,				   // XXXXXXXX
+    0xFF 				   // XXXXXXXX
+};
+
+static const byte ballGfxX[] =
 {
     8,
     0xFF,				   // XXXXXXXX
@@ -28,7 +54,7 @@ static const byte objectGfxPlayer2[] =
     0xFF 				   // XXXXXXXX
 };
 
-static const byte objectGfxPlayer3[] =
+static const byte ballGfxPlus[] =
 {
     8,
     0xFF,				   // XXXXXXXX
@@ -57,5 +83,5 @@ BALL::BALL(int inPlayerNum, Portcullis* inHomeGate) :
     hitX(false),
     hitY(false),
     hitObject(-1), // TODO: This should be OBJECT_NONE
-    gfxData((playerNum == 1 ? objectGfxPlayer1 : (playerNum == 2 ? objectGfxPlayer2 : objectGfxPlayer3))),
+    gfxData((playerNum == 5 ? ballGfxSolid : (playerNum == 1 ? ballGfxOne : ballGfxTwo))),
     homeGate(inHomeGate) {}
