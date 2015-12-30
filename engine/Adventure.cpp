@@ -76,6 +76,7 @@ enum
     OBJECT_BRIDGE,
     OBJECT_YELLOWKEY,
     OBJECT_COPPERKEY,
+    OBJECT_JADEKEY,
     OBJECT_WHITEKEY,
     OBJECT_BLACKKEY,
     OBJECT_BAT,
@@ -870,6 +871,7 @@ static const byte game1Objects [] =
     OBJECT_BRIDGE, 0x04, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
     OBJECT_YELLOWKEY, 0x11, 0x20, 0x41, 0x00, 0x00, 0x00, // Yellow Key
     OBJECT_COPPERKEY, COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
+    OBJECT_JADEKEY, JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
     OBJECT_WHITEKEY, 0x0E, 0x20, 0x40, 0x00, 0x00, 0x00, // White Key
     OBJECT_BLACKKEY, 0x10/*0x1D*/, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
     OBJECT_BAT, 0x1A, 0x20, 0x20, 0x00, 0x00, 0x00, // Bat
@@ -894,6 +896,7 @@ static const byte game2Objects [] =
     OBJECT_BRIDGE, 0x0B, 0x40, 0x40, 0x00, 0x00, 0x00, // Bridge
     OBJECT_YELLOWKEY, 0x09, 0x20, 0x40, 0x00, 0x00, 0x00, // Yellow Key
     OBJECT_COPPERKEY, COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
+    OBJECT_JADEKEY, JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
     OBJECT_WHITEKEY, 0x06, 0x20, 0x40, 0x00, 0x00, 0x00, // White Key
     OBJECT_BLACKKEY, 0x19, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
     OBJECT_BAT, 0x02, 0x20, 0x20, 0x00, 0, -3, // Bat
@@ -914,6 +917,8 @@ static const int roomBoundsData [] =
     OBJECT_SWORD, 0x01, 0x1D,
     OBJECT_BRIDGE, 0x01, 0x1D,
     OBJECT_YELLOWKEY, 0x01, 0x1D,
+    OBJECT_COPPERKEY, 0x01, 0x1D,
+    OBJECT_JADEKEY, 0x01, 0x1D,
     OBJECT_WHITEKEY, 0x01, 0x16,
     OBJECT_BLACKKEY, 0x01, 0x12,
     OBJECT_BAT, 0x01, 0x1D,
@@ -924,61 +929,67 @@ static const int roomBoundsData [] =
 // Magnet Object Matrix
 static const int magnetMatrix[] =
 {
-       OBJECT_YELLOWKEY,    // Yellow Key
-       OBJECT_WHITEKEY,     // White Key
-       OBJECT_BLACKKEY,     // Black Key
-       OBJECT_SWORD,        // Sword
-       OBJECT_BRIDGE,       // Bridge
-       OBJECT_CHALISE,      // Challise
+       OBJECT_YELLOWKEY,
+       OBJECT_JADEKEY,
+       OBJECT_COPPERKEY,
+       OBJECT_WHITEKEY,
+       OBJECT_BLACKKEY,
+       OBJECT_SWORD,
+       OBJECT_BRIDGE,
+       OBJECT_CHALISE,
        0x00
 };
 
 // Green Dragon's Object Matrix                                                                                      
 static const int greenDragonMatrix[] =
 {
-    OBJECT_SWORD, OBJECT_GREENDRAGON,       // Sword, Green Dragon                                                         
-    OBJECT_GREENDRAGON, OBJECT_BALL,        // Green Dragon, Ball                                                          
-    OBJECT_GREENDRAGON, OBJECT_CHALISE,     // Green Dragon, Chalise                                                        
-    OBJECT_GREENDRAGON, OBJECT_BRIDGE,      // Green Dragon, Bridge                                                        
-    OBJECT_GREENDRAGON, OBJECT_MAGNET,      // Green Dragon, Magnet                                                        
-    OBJECT_GREENDRAGON, OBJECT_BLACKKEY,    // Green Dragon, Black Key                                                     
+    OBJECT_SWORD, OBJECT_GREENDRAGON,       // runs fro sword
+    OBJECT_JADEKEY, OBJECT_GREENDRAGON,     // runs from Jade key
+    OBJECT_GREENDRAGON, OBJECT_BALL,        // goes after any Ball
+    OBJECT_GREENDRAGON, OBJECT_CHALISE,     // guards Chalise
+    OBJECT_GREENDRAGON, OBJECT_BRIDGE,      // guards Bridge
+    OBJECT_GREENDRAGON, OBJECT_MAGNET,      // guards Magnet
+    OBJECT_GREENDRAGON, OBJECT_BLACKKEY,    // guards Black Key
     0x00, 0x00
 };
 
 // Yellow Dragon's Object Matrix                                                                                      
 static const int yellowDragonMatrix[] =
 {
-    OBJECT_SWORD, OBJECT_YELLOWDRAGON,      // Sword, Yellow Dragon                                                    
-    OBJECT_YELLOWKEY, OBJECT_YELLOWDRAGON,  // Yellow Key, Yellow Dragon
-    OBJECT_YELLOWDRAGON, OBJECT_BALL,       // Yellow Dragon, Ball
-    OBJECT_YELLOWDRAGON, OBJECT_CHALISE,    // Yellow Dragon, Challise                                                        
+    OBJECT_SWORD, OBJECT_YELLOWDRAGON,      // runs from sword
+    OBJECT_YELLOWKEY, OBJECT_YELLOWDRAGON,  // runs from Yellow Key
+    OBJECT_YELLOWDRAGON, OBJECT_BALL,       // goes after any Ball
+    OBJECT_YELLOWDRAGON, OBJECT_CHALISE,    // guards Challise
     0x00, 0x00
 };
 
 // Red Dragon's Object Matrix                                                                                      
 static const int redDragonMatrix[] =
 {
-    OBJECT_SWORD, OBJECT_REDDRAGON,         // Sword, Red Dragon
-    OBJECT_REDDRAGON, OBJECT_BALL,          // Red Dragon, Ball
-    OBJECT_REDDRAGON, OBJECT_CHALISE,       // Red Dragon, Chalise
-    OBJECT_REDDRAGON, OBJECT_WHITEKEY,      // Red Dragon, White Key
+    OBJECT_SWORD, OBJECT_REDDRAGON,         // runs from sword
+    OBJECT_COPPERKEY, OBJECT_REDDRAGON,     // runs from Copper key
+    OBJECT_REDDRAGON, OBJECT_BALL,          // goes after any Ball
+    OBJECT_REDDRAGON, OBJECT_CHALISE,       // guards Chalise
+    OBJECT_REDDRAGON, OBJECT_WHITEKEY,      // guards White Key
     0x00, 0x00
 };
 
 // Bat Object Matrix
 static const int batMatrix [] =
 {
-       OBJECT_CHALISE,          // Chalise                                                                 
-       OBJECT_SWORD,            // Sword                                                                   
-       OBJECT_BRIDGE,           // Bridge                                                                  
-       OBJECT_YELLOWKEY,        // Yellow Key                                                              
-       OBJECT_WHITEKEY,         // White Key                                                               
-       OBJECT_BLACKKEY,         // Black Key                                                               
-       OBJECT_REDDRAGON,        // Red Dragon                                                              
-       OBJECT_YELLOWDRAGON,     // Yellow Dragon                                                           
-       OBJECT_GREENDRAGON,      // Green Dragon                                                            
-       OBJECT_MAGNET,           // Magnet                                                                  
-       0x00                                                                                                   
+    OBJECT_CHALISE,
+    OBJECT_SWORD,
+    OBJECT_BRIDGE,
+    OBJECT_COPPERKEY,
+    OBJECT_JADEKEY,
+    OBJECT_YELLOWKEY,
+    OBJECT_WHITEKEY,
+    OBJECT_BLACKKEY,
+    OBJECT_REDDRAGON,
+    OBJECT_YELLOWDRAGON,
+    OBJECT_GREENDRAGON,
+    OBJECT_MAGNET,
+    0x00
 };
 
 static Sync* sync;
@@ -1022,6 +1033,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     objectDefs = (OBJECT**)malloc(numObjects*sizeof(OBJECT*));
     objectDefs[OBJECT_YELLOWKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0);
     objectDefs[OBJECT_COPPERKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_COPPER, -1, 0, 0);
+    objectDefs[OBJECT_JADEKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_JADE, -1, 0, 0);
     objectDefs[OBJECT_WHITEKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0);
     objectDefs[OBJECT_BLACKKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
     
@@ -1032,7 +1044,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     ports[1] = new Portcullis(0x0F, 0x1A, objectDefs[OBJECT_WHITEKEY]); // White
     ports[2] = new Portcullis(0x10, 0x1B, objectDefs[OBJECT_BLACKKEY]); // Black
     ports[3] = new Portcullis(COPPER_CASTLE, COPPER_FOYER, objectDefs[OBJECT_COPPERKEY]);
-    ports[4] = new Portcullis(0x1F, 0x20, objectDefs[OBJECT_YELLOWKEY]); // Jade
+    ports[4] = new Portcullis(JADE_CASTLE, JADE_FOYER, objectDefs[OBJECT_JADEKEY]);
     
     
     // Setup the objects
