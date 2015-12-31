@@ -25,6 +25,17 @@ public:
     
     int getPacket(char* buffer, int bufferLength);
     
+protected:
+    
+    void logError(const char* message);
+
+    
+    // None of these methods are used, but to conform to Transport they have to be defined.
+    int openServerSocket();
+    int openClientSocket();
+    int writeData(const char* data, int numBytes);
+    int readData(char* buffer, int bufferLength);
+    
     
 private:
     Transport** xports;

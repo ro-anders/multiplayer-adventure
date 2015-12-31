@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -17,12 +17,12 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -55,7 +55,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
@@ -87,25 +87,39 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Adventure.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="Sync.cpp" />
+    <ClCompile Include="..\engine\ActionQueue.cpp" />
+    <ClCompile Include="..\engine\Adventure.cpp" />
+    <ClCompile Include="..\engine\Ball.cpp" />
+    <ClCompile Include="..\engine\Bat.cpp" />
+    <ClCompile Include="..\engine\Dragon.cpp" />
+    <ClCompile Include="..\engine\GameObject.cpp" />
+    <ClCompile Include="..\engine\Portcullis.cpp" />
+    <ClCompile Include="..\engine\RemoteAction.cpp" />
+    <ClCompile Include="..\engine\Sync.cpp" />
+    <ClCompile Include="..\engine\Transport.cpp" />
+    <ClCompile Include="..\engine\YTransport.cpp" />
+    <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="WinAdventure.cpp" />
+    <ClCompile Include="WinTransport.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Adventure.h" />
-    <ClInclude Include="Resource.h" />
+    <ClInclude Include="..\engine\ActionQueue.hpp" />
+    <ClInclude Include="..\engine\Adventure.h" />
+    <ClInclude Include="..\engine\adventure_sys.h" />
+    <ClInclude Include="..\engine\Ball.hpp" />
+    <ClInclude Include="..\engine\Bat.hpp" />
+    <ClInclude Include="..\engine\color.h" />
+    <ClInclude Include="..\engine\Dragon.hpp" />
+    <ClInclude Include="..\engine\GameObject.hpp" />
+    <ClInclude Include="..\engine\Portcullis.hpp" />
+    <ClInclude Include="..\engine\RemoteAction.hpp" />
+    <ClInclude Include="..\engine\Sync.hpp" />
+    <ClInclude Include="..\engine\Transport.hpp" />
+    <ClInclude Include="..\engine\YTransport.hpp" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="Sync.h" />
     <ClInclude Include="WinAdventure.h" />
+    <ClInclude Include="WinTransport.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico" />

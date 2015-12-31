@@ -1,7 +1,7 @@
          
 
 #ifdef WIN32
-#include "stdafx.h"
+//#include "stdafx.h"
 #endif
 
 #include "Sync.hpp"
