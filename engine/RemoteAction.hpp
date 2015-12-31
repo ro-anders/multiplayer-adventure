@@ -175,6 +175,48 @@ public:
     void deserialize(const char* message);
 };
 
+class BatMoveAction: public MoveAction {
+public:
+    
+    static const char* CODE;
+    
+    BatMoveAction();
+    
+    BatMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
+    
+    ~BatMoveAction();
+    
+    int serialize(char* buffer, int bufferLength);
+    
+    void deserialize(const char* message);
+};
+
+class BatPickupAction: public RemoteAction {
+public:
+    int pickupObject;
+    int pickupX;
+    int pickupY;
+    int dropObject;
+    int dropRoom;
+    int dropX;
+    int dropY;
+    
+    static const char* CODE;
+    
+    BatPickupAction();
+    
+    BatPickupAction(int inSender, int inPickupObject, int inPickupX, int inPickupY, int dropObject, int inRoom, int dropX, int dropY);
+    
+    ~BatPickupAction();
+    
+    void setPickup(int inPickupObject, int inPickupX, int inPickupY);
+    
+    void setDrop(int inDropObject, int inDropRoom, int inDropX, int inDropY);
+    
+    int serialize(char* buffer, int bufferLength);
+    
+    void deserialize(const char* message);
+};
 
 
 #endif /* RemoteAction_hpp */

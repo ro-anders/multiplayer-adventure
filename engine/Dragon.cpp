@@ -122,7 +122,7 @@ void Dragon::roar(int atX, int atY, int gameLevel, int dragonDifficulty) {
     resetTimer(gameLevel, dragonDifficulty);
     
     // Set the dragon's position to the same as the ball
-    x = atX;
+    x = atX+1;
     y = atY;
     
     movementX = 0;

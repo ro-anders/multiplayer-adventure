@@ -40,23 +40,6 @@ MacTransport::~MacTransport() {
     }
 }
 
-int MacTransport::sendPacket(const char* packetData) {
-    char delimStr[1];
-    delimStr[0] = PACKET_DELIMETER;
-    int n = write(socketFd,packetData,strlen(packetData));
-    if (n < 0) {
-        logError("ERROR writing to socket");
-    } else {
-        int n2 = write(socketFd, delimStr, 1);
-        if (n2 < 0) {
-            logError("ERROR writing to socket");
-        } else {
-            printf("Sent \"%s\"\n", packetData);
-        }
-    }
-    return n;
-}
-
 int MacTransport::openServerSocket() {
     printf("Opening server socket\n");
     
@@ -118,10 +101,10 @@ int MacTransport::openClientSocket() {
     return 0;
 }
 
-int MacTransport::sendData(const char* data)
+int MacTransport::writeData(const char* data, int numBytes)
 {
-    // TODO: Implement
-    return -1;
+    int n = write(socketFd,data,numBytes);
+    return n;
 }
 
 int MacTransport::readData(char *buffer, int bufferLength) {

@@ -34,9 +34,7 @@ public:
     MacTransport(char* ip, int port);
 
     ~MacTransport();
-        
-    int sendPacket(const char* packetData);
-        
+                
     static void testSockets();
     
 protected:
@@ -45,7 +43,7 @@ protected:
     
     int openClientSocket();
 
-    int sendData(const char* data);
+    int writeData(const char* data, int numBytes);
     
     int readData(char* buffer, int bufferLength);
 
