@@ -97,6 +97,7 @@
     <ClCompile Include="..\engine\RemoteAction.cpp" />
     <ClCompile Include="..\engine\Sync.cpp" />
     <ClCompile Include="..\engine\Transport.cpp" />
+    <ClCompile Include="..\engine\YTransport.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="WinAdventure.cpp" />
     <ClCompile Include="WinTransport.cpp" />
@@ -114,6 +115,7 @@
     <ClInclude Include="..\engine\RemoteAction.hpp" />
     <ClInclude Include="..\engine\Sync.hpp" />
     <ClInclude Include="..\engine\Transport.hpp" />
+    <ClInclude Include="..\engine\YTransport.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="WinAdventure.h" />

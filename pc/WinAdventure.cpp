@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "WinTransport.h"
+#include "..\engine\YTransport.hpp"
 
 
 #define MAX_LOADSTRING 100
@@ -32,6 +33,10 @@
 HINSTANCE hInst;                                // current instance
 TCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
+
+int argc = 0;
+int maxArgs = 10;
+char* argv[10]; // We ignore more than 10 arguments
 
 HWND gWnd = NULL;
 HDC gDC = NULL;
@@ -67,6 +72,35 @@ DEVMODE previousDisplayMode = {0};
 BOOL gFullscreen = FALSE;
 WINDOWPLACEMENT previousWindowPlacement = {0};
 
+void parseCommandLine(LPTSTR lpCmdLine) {
+	bool inArg = false;
+	int maxCtr = strlen(lpCmdLine);
+	for (int ctr = 0; (ctr < maxCtr) && (argc < maxArgs); ++ctr) {
+		if (lpCmdLine[ctr] == ' ') {
+			if (inArg) {
+				// Reached the end of an argument
+				lpCmdLine[ctr] = '\0';
+				inArg = false;
+			}
+		}
+		else {
+			if (!inArg) {
+				argv[argc] = lpCmdLine + ctr;
+				++argc;
+				inArg = true;
+			}
+		}
+	}
+
+	char logMessage[1000];
+	sprintf(logMessage, "Parsed %d arguments\n", argc);
+	OutputDebugString(logMessage);
+	for (int ctr2 = 0; ctr2 < argc; ++ctr2) {
+		sprintf(logMessage, "Arg %d = %s\n", (ctr2+1), argv[ctr2]);
+		OutputDebugString(logMessage);
+	}
+}
+
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR    lpCmdLine,
@@ -80,6 +114,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadString(hInstance, IDC_WINADVENTURE, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
+	parseCommandLine(lpCmdLine);
 
     // Perform application initialization:
     if (!InitInstance (hInstance, nCmdShow)) 
@@ -199,12 +234,63 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    CreateOffscreen();
 
    // TODO: Pull other player info off the command line
-   int numberPlayers = 2;
+   int numPlayers;
+   int thisPlayer;
+   Transport* transport;
+
+   // Read the command line arguments and setup the communication with the other players
+   // expecting command line args to be <gamenum> <thisPlayerNum> <port|socketaddr> [port2|socketaddr2]
+
    int gameLevel = 1;
-   Transport* transport = new WinTransport();
-   transport->connect();
-   int thisPlayer = transport->getConnectNumber();
-   Adventure_Setup(numberPlayers, thisPlayer, transport, gameLevel, 0, 0);
+   if (argc > 2) {
+	   gameLevel = atoi(argv[0]);
+   }
+
+   const int DEFAULT_PORT = 5678;
+   if (argc <= 2) {
+	   numPlayers = 2;
+	   transport = new WinTransport();
+	   transport->connect();
+	   thisPlayer = transport->getConnectNumber();
+   }
+   else {
+	   numPlayers = argc - 1;
+	   thisPlayer = atoi(argv[1]) - 1;
+	   char* otherPlayer1 = argv[2];
+	   int port1 = DEFAULT_PORT;
+	   if (strlen(otherPlayer1) <= 5) {
+		   // It is just a port.
+		   port1 = atoi(otherPlayer1);
+		   transport = new WinTransport(port1);
+	   }
+	   else {
+		   char* ip1 = NULL;
+		   Transport::parseUrl(otherPlayer1, &ip1, &port1);
+		   transport = new WinTransport(ip1, port1);
+	   }
+
+	   // Process player 3
+	   Transport* transport2 = NULL;
+	   if (argc > 4) {
+		   char* otherPlayer2 = argv[3];
+		   int port2 = (port1 == DEFAULT_PORT ? DEFAULT_PORT : DEFAULT_PORT + 1);
+		   if (strlen(otherPlayer2) <= 5) {
+			   // It is just a port.
+			   port2 = atoi(otherPlayer2);
+			   transport2 = new WinTransport(port2);
+		   }
+		   else {
+			   char* ip2 = NULL;
+			   Transport::parseUrl(otherPlayer2, &ip2, &port2);
+			   transport2 = new WinTransport(ip2, port2);
+		   }
+		   transport = new YTransport(transport, transport2);
+	   }
+	   transport->connect();
+   }
+
+
+   Adventure_Setup(numPlayers, thisPlayer, transport, gameLevel, 0, 0);
 
    //SetFullscreen(TRUE);
 

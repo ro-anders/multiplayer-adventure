@@ -66,6 +66,9 @@
     <ClCompile Include="WinTransport.cpp">
       <Filter>Source Files\pc</Filter>
     </ClCompile>
+    <ClCompile Include="..\engine\YTransport.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\engine\ActionQueue.hpp">
@@ -115,6 +118,9 @@
     </ClInclude>
     <ClInclude Include="WinTransport.h">
       <Filter>Header Files\pc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\YTransport.hpp">
+      <Filter>Header Files\engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

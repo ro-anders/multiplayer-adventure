@@ -55,6 +55,6 @@ void YTransport::logError(const char *msg)
 // None of these methods are used, but to conform to Transport they have to be defined.
 int YTransport::openServerSocket() {return -1;}
 int YTransport::openClientSocket() {return -1;}
-int YTransport::sendData(const char* data) {return -1;}
+int YTransport::writeData(const char* data, int numBytes) {return -1;}
 int YTransport::readData(char* buffer, int bufferLength) {return -1;}
 
