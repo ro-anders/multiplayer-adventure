@@ -558,9 +558,8 @@ void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* 
     if (fire) *fire = (GetAsyncKeyState(VK_SPACE) & 0x8000) || (GetAsyncKeyState(VK_LCONTROL) & 0x8000);
 }
 
-void Platform_ReadConsoleSwitches(bool* select, bool* reset)
+void Platform_ReadConsoleSwitches(bool* reset)
 {
-    if (select) *select = GetAsyncKeyState('1') & 0x8000;
     if (reset) *reset = GetAsyncKeyState('2') & 0x8000;
 }
 

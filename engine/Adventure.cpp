@@ -135,7 +135,7 @@ void AdvanceFlashColor();
 //
 
 static bool joyLeft, joyUp, joyRight, joyDown, joyFire;
-static bool switchSelect, switchReset;
+static bool switchReset;
 
 #define MAX_OBJECTS             16                      // Should be plenty
 static bool showObjectFlicker = true;                   // True if accurate object flicker is desired
@@ -1121,8 +1121,8 @@ void Adventure_Run()
     sync->PullLatestMessages();
 
     // read the console switches every frame
-    bool select, reset;
-    Platform_ReadConsoleSwitches(&select, &reset);
+    bool reset;
+    Platform_ReadConsoleSwitches(&reset);
     Platform_ReadDifficultySwitches(&gameDifficultyLeft, &gameDifficultyRight);
 
     // Reset switch
@@ -1181,21 +1181,6 @@ void Adventure_Run()
                 WinGame();
                 PlayerWinAction* won = new PlayerWinAction(thisPlayer, objectBall->room);
                 sync->BroadcastAction(won);
-            }
-            else if (switchSelect && !select)
-            {
-                // Go to game level selection screen if select switch hit
-                gameState = GAMESTATE_GAMESELECT;
-                objectBall->room = 0;
-                objectBall->x = 0;
-                objectBall->y = 0;
-                objectBall->previousX = objectBall->x;
-                objectBall->previousY = objectBall->y;
-
-                displayedRoomIndex = objectBall->room;
-
-                // Setup the room and object
-                PrintDisplay();
             }
             else
             {
@@ -1297,7 +1282,7 @@ void Adventure_Run()
             PrintDisplay();
 
             // Go to game selection screen on select or reset button
-            if ((switchReset && !reset) || (switchSelect && !select))
+            if (switchReset && !reset)
             {
                 gameState = GAMESTATE_GAMESELECT;
             }
@@ -1305,8 +1290,6 @@ void Adventure_Run()
     }
 
     switchReset = reset;
-    switchSelect = select;
-
     AdvanceFlashColor();
 }
 
