@@ -363,13 +363,11 @@ void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* 
 	if (fire) *fire =  mKeyMap & KEY_FIRE;
 }
 
-void Platform_ReadConsoleSwitches(bool* select, bool* reset)
+void Platform_ReadConsoleSwitches(bool* reset)
 {
-	if (select) *select =  (mKeyMap & KEY_SELECT) | gMenuItemSelect;
 	if (reset) *reset =  (mKeyMap & KEY_RESET) | gMenuItemReset;
 	
 	gMenuItemReset = FALSE;
-	gMenuItemSelect = FALSE;
 }
 
 void Platform_ReadDifficultySwitches(int* left, int* right)

@@ -25,6 +25,7 @@
 #include "adventure_sys.h"
 #include "color.h"
 #include "Ball.hpp"
+#include "Board.hpp"
 #include "Bat.hpp"
 #include "Dragon.hpp"
 #include "GameObject.hpp"
@@ -36,11 +37,6 @@
 #define max(a,b) ((a > b) ? a : b);
 #endif
 
-
-#define PLAYFIELD_HRES      20  // 40 with 2nd half mirrored/repeated
-#define PLAYFIELD_VRES      20
-#define CLOCKS_HSYNC        2
-#define CLOCKS_VSYNC        4
 
 // Types
 
@@ -59,31 +55,6 @@ typedef struct ROOM
 #define ROOMFLAG_LEFTTHINWALL   0x02 // bit 1 - 1 for left thin wall
 #define ROOMFLAG_RIGHTTHINWALL  0x04 // bit 2 - 1 for right thin wall
 
-enum
-{
-    OBJECT_NONE=-1,
-    OBJECT_YELLOW_PORT=0,
-    OBJECT_COPPER_PORT,
-	OBJECT_JADE_PORT,
-    OBJECT_WHITE_PORT,
-    OBJECT_BLACK_PORT,
-    OBJECT_NAME,
-    OBJECT_NUMBER,
-    OBJECT_REDDRAGON,
-    OBJECT_YELLOWDRAGON,
-    OBJECT_GREENDRAGON,
-    OBJECT_SWORD,
-    OBJECT_BRIDGE,
-    OBJECT_YELLOWKEY,
-    OBJECT_COPPERKEY,
-    OBJECT_JADEKEY,
-    OBJECT_WHITEKEY,
-    OBJECT_BLACKKEY,
-    OBJECT_BAT,
-    OBJECT_DOT,
-    OBJECT_CHALISE,
-    OBJECT_MAGNET
-};
 
 #define OBJECT_BALL			(-2)
 #define OBJECT_LEFTWALL		(-3)
@@ -103,7 +74,6 @@ static void PrintDisplay();
 static void PickupPutdown();
 static void OthersPickupPutdown();
 static void Surround();
-static void MoveBat();
 static void Portals();
 static void SyncDragons();
 static void MoveDragon(Dragon* dragon, const int* matrix, int speed);
@@ -118,9 +88,6 @@ static bool CollisionCheckBallWithWalls(int room, int x, int y);
 static int CollisionCheckBallWithObjects(BALL* ball, int startIndex);
 bool CollisionCheckObjectObject(const OBJECT* object1, const OBJECT* object2);
 static bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, int height);
-void CalcPlayerSpriteExtents(const OBJECT* object, int* cx, int* cy, int* cw, int* ch);
-static bool HitTestRects(int ax, int ay, int awidth, int aheight,
-                    int bx, int by, int bwidth, int bheight);
 static int distanceFromBall(BALL* ball, int x, int y);
 static void ResetPlayers();
 static void ResetPlayer(BALL* ball);
@@ -135,7 +102,7 @@ void AdvanceFlashColor();
 //
 
 static bool joyLeft, joyUp, joyRight, joyDown, joyFire;
-static bool switchSelect, switchReset;
+static bool switchReset;
 
 #define MAX_OBJECTS             16                      // Should be plenty
 static bool showObjectFlicker = true;                   // True if accurate object flicker is desired
@@ -159,7 +126,7 @@ static int gameState = GAMESTATE_GAMESELECT;            // finite state machine
 static int gameDifficultyLeft = DIFFICULTY_B;           // 2600 left difficulty switch
 static int gameDifficultyRight = DIFFICULTY_B;          // 2600 right difficulty switch
 static int gameLevel = 0;                               // current game level (1,2,3 - zero justified)
-static int gameBoard = 0;                               // The board setup.  Level 1 = 0, Levels 2 & 3 = 1, Gauntlet = 2
+static int gameMapLayout = 0;                               // The board setup.  Level 1 = 0, Levels 2 & 3 = 1, Gauntlet = 2
 static int gameNum; // Which game is being played.  May be different from game level.
 
 static int displayedRoomIndex = 0;                                   // index of current (displayed) room
@@ -758,7 +725,6 @@ static const byte objectGfxMagnet [] =
     0xC3                   // XX    XX                                                                  
 };
 
-static BALL** balls;
 static BALL* objectBall = 0x0;
 
 static OBJECT** surrounds;
@@ -766,6 +732,7 @@ static OBJECT** surrounds;
 // Indexed array of all objects and their properties
 //
 static OBJECT** objectDefs = 0x0;
+static Board* gameBoard;
 
 enum
 {
@@ -974,24 +941,6 @@ static const int redDragonMatrix[] =
     0x00, 0x00
 };
 
-// Bat Object Matrix
-static const int batMatrix [] =
-{
-    OBJECT_CHALISE,
-    OBJECT_SWORD,
-    OBJECT_BRIDGE,
-    OBJECT_COPPERKEY,
-    OBJECT_JADEKEY,
-    OBJECT_YELLOWKEY,
-    OBJECT_WHITEKEY,
-    OBJECT_BLACKKEY,
-    OBJECT_REDDRAGON,
-    OBJECT_YELLOWDRAGON,
-    OBJECT_GREENDRAGON,
-    OBJECT_MAGNET,
-    0x00
-};
-
 static Sync* sync;
 static Transport* transport;
 static int numPlayers;
@@ -1014,7 +963,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     thisPlayer = inThisPlayer;
     gameNum = inGameNum;
     gameLevel = gameNum-1;
-    gameBoard = (gameLevel == 0 ? 0 : 1);
+    gameMapLayout = (gameLevel == 0 ? 0 : 1);
     timeToStartGame = 60 * 3;
     
     surrounds = (OBJECT**)malloc(numPlayers * sizeof(OBJECT*));
@@ -1027,54 +976,58 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     dragons[1] = new Dragon(1, 0, COLOR_LIMEGREEN, -1, 0, 0);
     dragons[2] = new Dragon(2, 0, COLOR_RED, -1, 0, 0);
     bat = new Bat(COLOR_BLACK, -1, 0, 0);
-    
+
+    OBJECT* yellowKey = new OBJECT(objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0);
+    OBJECT* copperKey = new OBJECT(objectGfxKey, 0, 0, COLOR_COPPER, -1, 0, 0);
+    OBJECT* jadeKey = new OBJECT(objectGfxKey, 0, 0, COLOR_JADE, -1, 0, 0);
+    OBJECT* whiteKey = new OBJECT(objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0);
+    OBJECT* blackKey = new OBJECT(objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
+
     // We need to setup the keys before the portcullises
-    int numObjects = OBJECT_MAGNET+2;
-    objectDefs = (OBJECT**)malloc(numObjects*sizeof(OBJECT*));
-    objectDefs[OBJECT_YELLOWKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0);
-    objectDefs[OBJECT_COPPERKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_COPPER, -1, 0, 0);
-    objectDefs[OBJECT_JADEKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_JADE, -1, 0, 0);
-    objectDefs[OBJECT_WHITEKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0);
-    objectDefs[OBJECT_BLACKKEY] = new OBJECT(objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
+    gameBoard = new Board();
+    objectDefs = gameBoard->objects;
     
     
     numPorts = numPlayers + 2;
     ports = (Portcullis**)malloc(5 * sizeof(Portcullis*)); // We always create 5 even though we might only use 4.
-    ports[0] = new Portcullis(0x11, 0x12, objectDefs[OBJECT_YELLOWKEY]); // Gold
-    ports[1] = new Portcullis(0x0F, 0x1A, objectDefs[OBJECT_WHITEKEY]); // White
-    ports[2] = new Portcullis(0x10, 0x1B, objectDefs[OBJECT_BLACKKEY]); // Black
-    ports[3] = new Portcullis(COPPER_CASTLE, COPPER_FOYER, objectDefs[OBJECT_COPPERKEY]);
-    ports[4] = new Portcullis(JADE_CASTLE, JADE_FOYER, objectDefs[OBJECT_JADEKEY]);
+    ports[0] = new Portcullis(0x11, 0x12, yellowKey); // Gold
+    ports[1] = new Portcullis(0x0F, 0x1A, whiteKey); // White
+    ports[2] = new Portcullis(0x10, 0x1B, blackKey); // Black
+    ports[3] = new Portcullis(COPPER_CASTLE, COPPER_FOYER, copperKey);
+    ports[4] = new Portcullis(JADE_CASTLE, JADE_FOYER, jadeKey);
     
     
     // Setup the objects
-    objectDefs[OBJECT_YELLOW_PORT] = ports[0];
-    objectDefs[OBJECT_COPPER_PORT] = ports[3];
-    objectDefs[OBJECT_JADE_PORT] = ports[4];
-    objectDefs[OBJECT_WHITE_PORT] = ports[1];
-    objectDefs[OBJECT_BLACK_PORT] = ports[2];
-    objectDefs[OBJECT_NAME] = new OBJECT(objectGfxAuthor, 0, 0, COLOR_FLASH, 0x1E, 0x50, 0x69);
-    objectDefs[OBJECT_NUMBER] = new OBJECT(objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, 0x00, 0x50, 0x40);
-    objectDefs[OBJECT_REDDRAGON] = dragons[2];
-    objectDefs[OBJECT_YELLOWDRAGON] =dragons[0];
-    objectDefs[OBJECT_GREENDRAGON] = dragons[1];
-    objectDefs[OBJECT_SWORD] = new OBJECT(objectGfxSword, 0, 0, COLOR_YELLOW, -1, 0, 0);
-    objectDefs[OBJECT_BRIDGE] = new OBJECT(objectGfxBridge, 0, 0, COLOR_PURPLE, -1, 0, 0, 0x07);
-    // Keys defined above
-    objectDefs[OBJECT_BAT] = bat;
-    objectDefs[OBJECT_DOT] = new OBJECT(objectGfxDot, 0, 0, COLOR_LTGRAY, -1, 0, 0);
-    objectDefs[OBJECT_CHALISE] = new OBJECT(objectGfxChallise, 0, 0, COLOR_FLASH, -1, 0, 0);
-    objectDefs[OBJECT_MAGNET] = new OBJECT(objectGfxMagnet, 0, 0, COLOR_BLACK, -1, 0, 0);
-    objectDefs[numObjects-1] = new OBJECT((const byte*)0, 0, 0, 0, -1, 0, 0);  // #12 Null
+    gameBoard->addObject(OBJECT_YELLOW_PORT, ports[0]);
+    gameBoard->addObject(OBJECT_COPPER_PORT, ports[3]);
+    gameBoard->addObject(OBJECT_JADE_PORT, ports[4]);
+    gameBoard->addObject(OBJECT_WHITE_PORT, ports[1]);
+    gameBoard->addObject(OBJECT_BLACK_PORT, ports[2]);
+    gameBoard->addObject(OBJECT_NAME, new OBJECT(objectGfxAuthor, 0, 0, COLOR_FLASH, 0x1E, 0x50, 0x69));
+    gameBoard->addObject(OBJECT_NUMBER, new OBJECT(objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, 0x00, 0x50, 0x40));
+    gameBoard->addObject(OBJECT_REDDRAGON, dragons[2]);
+    gameBoard->addObject(OBJECT_YELLOWDRAGON,dragons[0]);
+    gameBoard->addObject(OBJECT_GREENDRAGON, dragons[1]);
+    gameBoard->addObject(OBJECT_SWORD, new OBJECT(objectGfxSword, 0, 0, COLOR_YELLOW, -1, 0, 0));
+    gameBoard->addObject(OBJECT_BRIDGE, new OBJECT(objectGfxBridge, 0, 0, COLOR_PURPLE, -1, 0, 0, 0x07));
+    gameBoard->addObject(OBJECT_YELLOWKEY, yellowKey);
+    gameBoard->addObject(OBJECT_COPPERKEY, copperKey);
+    gameBoard->addObject(OBJECT_JADEKEY, jadeKey);
+    gameBoard->addObject(OBJECT_WHITEKEY, whiteKey);
+    gameBoard->addObject(OBJECT_BLACKKEY, blackKey);
+    gameBoard->addObject(OBJECT_BAT, bat);
+    gameBoard->addObject(OBJECT_DOT, new OBJECT(objectGfxDot, 0, 0, COLOR_LTGRAY, -1, 0, 0));
+    gameBoard->addObject(OBJECT_CHALISE, new OBJECT(objectGfxChallise, 0, 0, COLOR_FLASH, -1, 0, 0));
+    gameBoard->addObject(OBJECT_MAGNET, new OBJECT(objectGfxMagnet, 0, 0, COLOR_BLACK, -1, 0, 0));
     
     // Setup the players
-    balls = (BALL**)malloc(numPlayers * sizeof(BALL*));
-    balls[0] = new BALL(0, ports[0]);
-    balls[1] = new BALL(1, ports[3]);
+    
+    gameBoard->addPlayer(new BALL(0, ports[0]));
+    gameBoard->addPlayer(new BALL(1, ports[3]));
     if (numPlayers > 2) {
-        balls[2] = new BALL(2, ports[4]);
+        gameBoard->addPlayer(new BALL(2, ports[4]));
     }
-    objectBall = balls[thisPlayer];
+    objectBall = gameBoard->getPlayer(thisPlayer);
 
     // Setup the transport
     transport = inTransport;
@@ -1084,8 +1037,8 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
 }
 
 void ResetPlayers() {
-    for(int ctr=0; ctr<numPlayers; ++ctr) {
-        ResetPlayer(balls[ctr]);
+    for(int ctr=0; ctr<gameBoard->getNumPlayers(); ++ctr) {
+        ResetPlayer(gameBoard->getPlayer(ctr));
     }
 }
 
@@ -1121,15 +1074,15 @@ void Adventure_Run()
     sync->PullLatestMessages();
 
     // read the console switches every frame
-    bool select, reset;
-    Platform_ReadConsoleSwitches(&select, &reset);
+    bool reset;
+    Platform_ReadConsoleSwitches(&reset);
     Platform_ReadDifficultySwitches(&gameDifficultyLeft, &gameDifficultyRight);
 
     // Reset switch
     // First check for other resets
     PlayerResetAction* otherReset = sync->GetNextResetAction();
     while (otherReset != NULL) {
-        ResetPlayer(balls[otherReset->sender]);
+        ResetPlayer(gameBoard->getPlayer(otherReset->sender));
         delete otherReset;
         otherReset = sync->GetNextResetAction();
     }
@@ -1182,21 +1135,6 @@ void Adventure_Run()
                 PlayerWinAction* won = new PlayerWinAction(thisPlayer, objectBall->room);
                 sync->BroadcastAction(won);
             }
-            else if (switchSelect && !select)
-            {
-                // Go to game level selection screen if select switch hit
-                gameState = GAMESTATE_GAMESELECT;
-                objectBall->room = 0;
-                objectBall->x = 0;
-                objectBall->y = 0;
-                objectBall->previousX = objectBall->x;
-                objectBall->previousY = objectBall->y;
-
-                displayedRoomIndex = objectBall->room;
-
-                // Setup the room and object
-                PrintDisplay();
-            }
             else
             {
                 // Read joystick
@@ -1244,7 +1182,7 @@ void Adventure_Run()
                         }
                     }
 					for (int i = 0; i < numPlayers; ++i) {
-                        ReactToCollision(balls[i]);
+                        ReactToCollision(gameBoard->getPlayer(i));
 					}
 
                     // Increment the last object drawn
@@ -1254,7 +1192,7 @@ void Adventure_Run()
                     Surround();
 
                     // Move and deal with bat
-                    MoveBat();
+                    bat->moveOneTurn(sync);
 
                     // Move and deal with portcullises
                     Portals();
@@ -1297,7 +1235,7 @@ void Adventure_Run()
             PrintDisplay();
 
             // Go to game selection screen on select or reset button
-            if ((switchReset && !reset) || (switchSelect && !select))
+            if (switchReset && !reset)
             {
                 gameState = GAMESTATE_GAMESELECT;
             }
@@ -1305,8 +1243,6 @@ void Adventure_Run()
     }
 
     switchReset = reset;
-    switchSelect = select;
-
     AdvanceFlashColor();
 }
 
@@ -1318,7 +1254,7 @@ void SetupMaze() {
         roomDefs[BLUE_MAZE_JADE_END].graphicsData = roomGfxBlueMaze1B;
     }
 
-    if (gameBoard == 0) {
+    if (gameMapLayout == 0) {
         // This is the default setup, so don't need to do anything.
     } else {
         // Games 2 or 3.
@@ -1647,16 +1583,17 @@ void BallMovement(BALL* ball) {
 void OtherBallMovement() {
 	for (int i = 0; i < numPlayers; ++i) {
         if (i != thisPlayer) {
+            BALL* nextPayer = gameBoard->getPlayer(i);
             PlayerMoveAction* movement = sync->GetLatestBallSync(i);
             if (movement != 0x0) {
-                balls[i]->room = movement->room;
-                balls[i]->x = movement->posx;
-                balls[i]->y = movement->posy;
-                balls[i]->velx = movement->velx;
-                balls[i]->vely = movement->vely;
+                nextPayer->room = movement->room;
+                nextPayer->x = movement->posx;
+                nextPayer->y = movement->posy;
+                nextPayer->velx = movement->velx;
+                nextPayer->vely = movement->vely;
             }
             
-            BallMovement(balls[i]);
+            BallMovement(nextPayer);
 		}
 	}
 
@@ -1670,7 +1607,7 @@ void SyncDragons() {
             Dragon* dragon = dragons[nextState->dragonNum];
             if (nextState->newState == Dragon::EATEN) {
                 // Set the State to 01 (eaten)
-                dragon->eaten = balls[nextState->sender];
+                dragon->eaten = gameBoard->getPlayer(nextState->sender);
                 dragon->state = Dragon::EATEN;
                 // Play the sound
                 Platform_MakeSound(SOUND_EATEN);
@@ -1719,7 +1656,7 @@ void SyncDragons() {
 void MoveCarriedObjects()
 {
     for(int ctr=0; ctr<numPlayers; ++ctr) {
-        BALL* nextBall = balls[ctr];
+        BALL* nextBall = gameBoard->getPlayer(ctr);
         if (nextBall->linkedObject != OBJECT_NONE)
         {
             OBJECT* object = objectDefs[nextBall->linkedObject];
@@ -1917,8 +1854,8 @@ void PrintDisplay()
     color = colorTable[roomDefs[displayedRoomIndex].color];
 
 	for (int i = 0; i < numPlayers; ++i) {
-		if (objectBall->room == balls[i]->room) {
-			DrawBall(balls[i], color);
+		if (objectBall->room == gameBoard->getPlayer(i)->room) {
+			DrawBall(gameBoard->getPlayer(i), color);
 		}
 	}
 
@@ -1933,7 +1870,7 @@ void OthersPickupPutdown() {
     PlayerPickupAction* action = sync->GetNextPickupAction();
     while (action != NULL) {
         int actorNum = action->sender;
-        BALL* actor = balls[actorNum];
+        BALL* actor = gameBoard->getPlayer(actorNum);
         if (action->dropObject != OBJECT_NONE) {
             printf("Received drop action for player %d who is carrying %d\n", actorNum, actor->linkedObject);
         }
@@ -1952,9 +1889,9 @@ void OthersPickupPutdown() {
             printf("Setting player %d to carrying %d\n", actorNum, actor->linkedObject);
             // If anybody else was carrying this object, take it away.
             for(int ctr=0; ctr<numPlayers; ++ctr) {
-                if ((ctr != actorNum) && (balls[ctr]->linkedObject==action->pickupObject)) {
+                if ((ctr != actorNum) && (gameBoard->getPlayer(ctr)->linkedObject==action->pickupObject)) {
                     printf("Player %d took object %d from player %d\n", action->sender, actor->linkedObject, thisPlayer);
-                    balls[ctr]->linkedObject = OBJECT_NONE;
+                    gameBoard->getPlayer(ctr)->linkedObject = OBJECT_NONE;
                 }
             }
             // If they are in the same room as you, play the pickup sound
@@ -2019,8 +1956,8 @@ void PickupPutdown()
                 
                 // Take it away from anyone else if they were holding it.
                 for(int ctr=0; ctr<numPlayers; ++ctr) {
-                    if ((ctr != thisPlayer) && (balls[ctr]->linkedObject == hitIndex)) {
-                        balls[ctr]->linkedObject = OBJECT_NONE;
+                    if ((ctr != thisPlayer) && (gameBoard->getPlayer(ctr)->linkedObject == hitIndex)) {
+                        gameBoard->getPlayer(ctr)->linkedObject = OBJECT_NONE;
                     }
                 }
 
@@ -2043,11 +1980,12 @@ void Surround()
     if (currentRoom->color == COLOR_LTGRAY)
     {
         for(int ctr=0; ctr<numPlayers; ++ctr) {
-            if (balls[ctr]->room == roomNum) {
+            BALL* nextBall = gameBoard->getPlayer(ctr);
+            if (nextBall->room == roomNum) {
                 // Put it in the same room as the ball (player) and center it under the ball
                 surrounds[ctr]->room = roomNum;
-                surrounds[ctr]->x = (balls[ctr]->x-0x1E)/2;
-                surrounds[ctr]->y = (balls[ctr]->y+0x18)/2;
+                surrounds[ctr]->x = (nextBall->x-0x1E)/2;
+                surrounds[ctr]->y = (nextBall->y+0x18)/2;
             } else {
                 surrounds[ctr]->room = -1;
             }
@@ -2058,103 +1996,6 @@ void Surround()
         for(int ctr=0; ctr<numPlayers; ++ctr) {
             surrounds[ctr]->room = -1;
         }
-    }
-}
-
-void MoveBat()
-{
-    static int flapTimer = 0;
-    if (++flapTimer >= 0x04)
-    {
-        bat->state = (bat->state == 0) ? 1 : 0;
-        flapTimer = 0;
-    }
-
-    if ((bat->linkedObject != OBJECT_NONE) && (batFedUpTimer < 0xff))
-        ++batFedUpTimer;
-
-    if (batFedUpTimer >= 0xff)
-    {
-        // Get the bat's current extents
-        int batX, batY, batW, batH;
-        CalcPlayerSpriteExtents(bat, &batX, &batY, &batW, &batH);
-        
-        // Enlarge the bat extent by 7 pixels for the proximity checks below
-        // (doing the bat once is faster than doing each object and the results are the same)
-        batX-=7;
-        batY-=7;
-        batW+=7*2;
-        batH+=7*2;
-        
-        // Go through the bat's object matrix
-        const int* matrixP = batMatrix;
-        do
-        {
-            // Get the object it is seeking
-            const OBJECT* seekObject = objectDefs[*matrixP];
-            if ((seekObject->room == bat->room) && (bat->linkedObject != *matrixP))
-            {
-                int seekX = seekObject->x;
-                int seekY = seekObject->y;
-
-                // Set the movement
-
-                // horizontal axis
-                if (bat->x < seekX)
-                {
-                    bat->movementX = 3;
-                }
-                else if (bat->x > seekX)
-                {
-                    bat->movementX = -3;
-                }
-                else bat->movementX = 0;
-
-                // vertical axis
-                if (bat->y < seekY)
-                {
-                    bat->movementY = 3;
-                }
-                else if (bat->y > seekY)
-                {
-                    bat->movementY = -3;
-                }
-                else bat->movementY = 0;
-
-                // If the bat is within 7 pixels of the seek object it can pick the object up
-                // The bat extents have already been expanded by 7 pixels above, so a simple
-                // rectangle intersection test is good enought here
-
-                int objX, objY, objW, objH;
-                CalcPlayerSpriteExtents(seekObject, &objX, &objY, &objW, &objH);
-
-                if (HitTestRects(batX, batY, batW, batH, objX, objY, objW, objH))
-                {
-                    // Hit something we want
-
-                    // If the bat grabs something that the ball is carrying, the bat gets it
-                    // This allows the bat to take something we are carrying
-                    if (*matrixP == objectBall->linkedObject)
-                    {
-                        // Now we have nothing
-                        objectBall->linkedObject = OBJECT_NONE;
-                    }
-
-                    // Pick it up
-                    bat->linkedObject = *matrixP;
-                    bat->linkedObjectX = 8;
-                    bat->linkedObjectY = 0;
-
-                    // Reset the timer
-                    batFedUpTimer = 0;
-                }
-
-                // break since we found something
-                break;
-            }
-        }
-        while (*(++matrixP));
-
     }
 }
 
@@ -2178,7 +2019,7 @@ void Portals()
             // Someone has to be in the room for the key to trigger the gate
             bool seen = false;
             for(int ctr=0; !seen && ctr<numPlayers; ++ctr) {
-                seen = (balls[ctr]->room == port->room);
+                seen = (gameBoard->getPlayer(ctr)->room == port->room);
             }
             if (seen) {
                 // Toggle the port state
@@ -2232,12 +2073,13 @@ BALL* closestBall(int room, int x, int y) {
     int shortestDistance = 10000; // Some big number greater than the diagnol of the board
     BALL* found = 0x0;
     for(int ctr=0; ctr<numPlayers; ++ctr) {
-        if (balls[ctr]->room == room)
+        BALL* nextBall = gameBoard->getPlayer(ctr);
+        if (nextBall->room == room)
         {
-            int dist = distanceFromBall(balls[ctr], x, y);
+            int dist = distanceFromBall(nextBall, x, y);
             if (dist < shortestDistance) {
                 shortestDistance = dist;
-                found = balls[ctr];
+                found = nextBall;
             }
         }
     }
@@ -2362,7 +2204,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
                     
                     // Notify others if we've changed our direction
                     if ((dragon->room == objectBall->room) && ((newMovementX != dragon->movementX) || (newMovementY != dragon->movementY))) {
-                        int distanceToMe = distanceFromBall(balls[thisPlayer], dragon->x, dragon->y);
+                        int distanceToMe = distanceFromBall(gameBoard->getPlayer(thisPlayer), dragon->x, dragon->y);
                         DragonMoveAction* newAction = new DragonMoveAction(thisPlayer, dragon->room, dragon->x, dragon->y, newMovementX, newMovementY, dragon->dragonNumber, distanceToMe);
                         sync->BroadcastAction(newAction);
                     }
@@ -2712,7 +2554,7 @@ bool CollisionCheckBallWithWalls(int room, int x, int y)
 
             if (bit)
             {
-                if (HitTestRects(x-4,(y-4),8,8,cx*cell_width,(ypos*cell_height), cell_width, cell_height))
+                if (Board::HitTestRects(x-4,(y-4),8,8,cx*cell_width,(ypos*cell_height), cell_width, cell_height))
                 {
                     hitWall = true;
                     break;
@@ -2720,7 +2562,7 @@ bool CollisionCheckBallWithWalls(int room, int x, int y)
 
                 if (mirror)
                 {
-                    if (HitTestRects(x-4,(y-4),8,8,(cx+20)*cell_width,(ypos*cell_height), cell_width, cell_height))
+                    if (Board::HitTestRects(x-4,(y-4),8,8,(cx+20)*cell_width,(ypos*cell_height), cell_width, cell_height))
                     {
                         hitWall = true;
                         break;
@@ -2728,7 +2570,7 @@ bool CollisionCheckBallWithWalls(int room, int x, int y)
                 }
                 else
                 {
-                    if (HitTestRects(x-4,(y-4),8,8,((40-(cx+1))*cell_width),(ypos*cell_height), cell_width, cell_height))
+                    if (Board::HitTestRects(x-4,(y-4),8,8,((40-(cx+1))*cell_width),(ypos*cell_height), cell_width, cell_height))
                     {
                         hitWall = true;
                         break;
@@ -2784,38 +2626,6 @@ static int CollisionCheckBallWithObjects(BALL* ball, int startIndex)
     return OBJECT_NONE;
 }
 
-void CalcPlayerSpriteExtents(const OBJECT* object, int* cx, int* cy, int* cw, int* ch)
-{
-    // Calculate the object's size and position
-    *cx = object->x * 2;
-    *cy = object->y * 2;
-
-    int size = (object->size/2) + 1;
-    *cw = (8 * 2) * size;
-
-    // Look up the index to the current state for this object
-    int stateIndex = object->states ? object->states[object->state] : 0;
-
-    // Get the height, then the data
-    // (the first byte of the data is the height)
-    const byte* dataP = object->gfxData;
-    *ch = *dataP;
-    ++dataP;
-
-    // Index into the proper state
-    for (int x=0; x < stateIndex; x++)
-    {
-        dataP += *ch; // skip over the data
-        *ch = *dataP;
-        ++dataP;
-    }
-
-    *ch *= 2;
-
-    // Adjust for proper position
-    *cx -= CLOCKS_HSYNC;
-}
-
 // Collision check two objects
 // On the 2600 this is done in hardware by the Player/Missile collision registers
 bool CollisionCheckObjectObject(const OBJECT* object1, const OBJECT* object2)
@@ -2828,9 +2638,9 @@ bool CollisionCheckObjectObject(const OBJECT* object1, const OBJECT* object2)
 
     int cx1, cy1, cw1, ch1;
     int cx2, cy2, cw2, ch2;
-    CalcPlayerSpriteExtents(object1, &cx1, &cy1, &cw1, &ch1);
-    CalcPlayerSpriteExtents(object2, &cx2, &cy2, &cw2, &ch2);
-    if (!HitTestRects(cx1, cy1, cw1, ch1, cx2, cy2, cw2, ch2))
+    object1->CalcSpriteExtents(&cx1, &cy1, &cw1, &ch1);
+    object2->CalcSpriteExtents(&cx2, &cy2, &cw2, &ch2);
+    if (!Board::HitTestRects(cx1, cy1, cw1, ch1, cx2, cy2, cw2, ch2))
         return false;
 
     // Object extents overlap go pixel by pixel
@@ -2905,7 +2715,7 @@ bool CollisionCheckObjectObject(const OBJECT* object1, const OBJECT* object2)
                             if (wrappedX2 >= ADVENTURE_SCREEN_WIDTH)
                                 wrappedX2-=ADVENTURE_SCREEN_WIDTH;
 
-                            if (HitTestRects(wrappedX1, objectY1, 2*objectSize1, 2, wrappedX2, objectY2, 2*objectSize2, 2))
+                            if (Board::HitTestRects(wrappedX1, objectY1, 2*objectSize1, 2, wrappedX2, objectY2, 2*objectSize2, 2))
                                 // The objects are touching
                                 return true;
                         }
@@ -2970,7 +2780,7 @@ bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, int hei
                 if (wrappedX >= ADVENTURE_SCREEN_WIDTH)
                     wrappedX-=ADVENTURE_SCREEN_WIDTH;
                 
-                if (HitTestRects(x, y, width, height, wrappedX, objectY, 2*objectSize, 2))
+                if (Board::HitTestRects(x, y, width, height, wrappedX, objectY, 2*objectSize, 2))
                     return true;
             }
         }
@@ -2981,21 +2791,6 @@ bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, int hei
     }
 
     return false;
-}
-
-bool HitTestRects(int ax, int ay, int awidth, int aheight,
-                int bx, int by, int bwidth, int bheight)
-{
-    bool intersects = true;
-
-    if ( ((ay-aheight) >= by) || (ay <= (by-bheight)) || ((ax+awidth) <= bx) || (ax >= (bx+bwidth)) )
-    {
-        // Does not intersect
-        intersects = false;
-    }
-    // else must intersect
-
-    return intersects;
 }
 
 COLOR GetFlashColor()
