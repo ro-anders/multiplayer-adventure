@@ -18,8 +18,9 @@
 #include "AdventureView.h"
 #include "Adventure.h"
 #include "args.h"
-#include "Transport.hpp"
+#include "MacLogger.hpp"
 #include "MacTransport.hpp"
+#include "Transport.hpp"
 #include "YTransport.hpp"
 
 bool CreateOffscreen(int aWidth, int aHeight);
@@ -69,6 +70,9 @@ bool gMenuItemSelect = FALSE;
     if (argc > 2) {
         gameLevel = atoi(argv[1]);
     }
+    
+    // Setup the platform specific logger
+    Transport::setLogger(new MacLogger());
     
     // Read the command line arguments and setup the communication with the other players
     const int DEFAULT_PORT = 5678;

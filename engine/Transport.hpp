@@ -6,6 +6,8 @@
 
 #include <stdio.h>
 
+class Logger;
+
 class Transport {
 public:
     
@@ -59,19 +61,14 @@ public:
     }
     
     /**
-     * Report an error - different OS's have different behavior
-     */
-    virtual void logError(const char* msg) = 0;
-    
-
-    /**
      * Parse an socket address of the form 127.0.0.1:5678 into an ip/address and a port.
      * TODO: This does weird things with the input string.  It modifies it and requires is not
      * be deleted.
      */
     static void parseUrl(char* socketAddress, char** outIp, int* outPort);
     
-
+    static void setLogger(Logger* logger);
+    
     
 protected:
     /** A constant used for the IP when you don't know if this is going to be a server or client socket. */
@@ -101,6 +98,8 @@ protected:
     
     /** Number of characters read into stream buffer */
     int charsInStreamBuffer;
+    
+    static Logger* logger;
     
     /**
      * Open a server socket.

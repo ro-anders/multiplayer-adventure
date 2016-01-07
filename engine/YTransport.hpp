@@ -27,9 +27,6 @@ public:
     
 protected:
     
-    void logError(const char* message);
-
-    
     // None of these methods are used, but to conform to Transport they have to be defined.
     int openServerSocket();
     int openClientSocket();

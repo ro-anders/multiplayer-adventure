@@ -46,12 +46,6 @@ int YTransport::getPacket(char* buffer, int bufferLength) {
     return bytesRead;
 }
 
-void YTransport::logError(const char *msg)
-{
-    xports[0]->logError(msg);
-}
-
-
 // None of these methods are used, but to conform to Transport they have to be defined.
 int YTransport::openServerSocket() {return -1;}
 int YTransport::openClientSocket() {return -1;}
