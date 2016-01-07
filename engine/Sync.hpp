@@ -70,6 +70,13 @@ public:
     PortcullisStateAction* GetNextPortcullisAction();
     
     /**
+     * Get the next bat action.  Caller must delete this object.
+     * Caller must delete this action.
+     * If no actions have been received, this will return null.
+     */
+    RemoteAction* GetNextBatAction();
+    
+    /**
      * Broadcast an event to the other players
      * @param action an action to broadcast.  The Sync now owns this action and is responsible
      * for deleting it.
@@ -87,6 +94,7 @@ private:
     char sendBuffer[256];
     char receiveBuffer[256];
     
+    ActionQueue batMoves;
     ActionQueue dragonMoves;
     ActionQueue playerPickups;
     ActionQueue playerResets;
@@ -99,6 +107,10 @@ private:
     int frameNum = 0;
     
     void RejectMessage(const char* message, const char* errorMsg);
+    
+    void handleBatMoveMessage(const char* message);
+    
+    void handleBatPickupMessage(const char* message);
     
     void handlePlayerMoveMessage(const char* message);
 

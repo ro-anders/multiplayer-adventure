@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include "GameObject.hpp"
 
+class RemoteAction;
+class Sync;
+
 class Bat: public OBJECT {
 public:
     int linkedObject;           // index of linked (carried) object
@@ -15,6 +18,15 @@ public:
     
     virtual ~Bat();
     
+    /**
+     * A bat can process BatMoveActions and BatPickupActions and update its internal state accordingly.
+     */
+    OBJECT* handleAction(RemoteAction* action);
+    
+    void moveOneTurn(Sync* sync);
+    
+private:
+    int batFedUpTimer;
 };
 
 #endif /* Bat_hpp */

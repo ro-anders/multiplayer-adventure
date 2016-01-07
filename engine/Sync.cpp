@@ -41,6 +41,20 @@ void Sync::RejectMessage(const char* message, const char* errorMsg) {
     printf("Cannot process message - %s: %s", errorMsg, message);
 }
 
+void Sync::handleBatMoveMessage(const char* message) {
+    BatMoveAction* nextAction = new BatMoveAction();
+    nextAction->deserialize(receiveBuffer);
+    batMoves.enQ(nextAction);
+}
+
+void Sync::handleBatPickupMessage(const char* message) {
+    BatPickupAction* nextAction = new BatPickupAction();
+    nextAction->deserialize(receiveBuffer);
+    batMoves.enQ(nextAction);
+}
+
+
+
 void Sync::handlePlayerMoveMessage(const char* message) {
     PlayerMoveAction* nextAction = new PlayerMoveAction();
     nextAction->deserialize(receiveBuffer);
@@ -121,6 +135,20 @@ void Sync::PullLatestMessages() {
                         printf("Message with unknown message type P%c: %s\n", receiveBuffer[1], receiveBuffer);
                 }
                 break;
+            case 'B':
+                switch (receiveBuffer[1]) {
+                    case 'M': {
+                        handleBatMoveMessage(receiveBuffer);
+                        break;
+                    }
+                    case 'P': {
+                        handleBatPickupMessage(receiveBuffer);
+                        break;
+                    }
+                    default:
+                        printf("Message with unknown message type B%c: %s\n", receiveBuffer[1], receiveBuffer);
+                }
+                break;
             case 'D':
                 switch (receiveBuffer[1]) {
                     case 'M': {
@@ -183,7 +211,13 @@ PortcullisStateAction* Sync::GetNextPortcullisAction() {
     return (PortcullisStateAction*)next;
 }
 
-
+RemoteAction* Sync::GetNextBatAction() {
+    RemoteAction* next = NULL;
+    if (!batMoves.isEmpty()) {
+        next = batMoves.deQ();
+    }
+    return next;
+}
 
 PlayerPickupAction* Sync::GetNextPickupAction() {
     PlayerPickupAction* next = NULL;

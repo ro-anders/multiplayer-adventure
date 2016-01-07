@@ -85,3 +85,5 @@ BALL::BALL(int inPlayerNum, Portcullis* inHomeGate) :
     hitObject(-1), // TODO: This should be OBJECT_NONE
     gfxData((playerNum == 0 ? ballGfxSolid : (playerNum == 1 ? ballGfxOne : ballGfxTwo))),
     homeGate(inHomeGate) {}
+
+BALL::~BALL() {}
