@@ -91,8 +91,8 @@ static const byte objectGfxDrag [] =
 
 
 
-Dragon::Dragon(int inNumber, int inState, int inColor, int inRoom, int inX, int inY):
-    OBJECT(objectGfxDrag, dragonStates, inState, inColor, inRoom, inX, inY, 0),
+Dragon::Dragon(const char* label, int inNumber, int inState, int inColor, int inRoom, int inX, int inY):
+    OBJECT(label, objectGfxDrag, dragonStates, inState, inColor, inRoom, inX, inY, 0),
     dragonNumber(inNumber),
     timer(0),
     eaten(NULL),

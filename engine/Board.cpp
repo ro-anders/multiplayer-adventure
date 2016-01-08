@@ -7,7 +7,7 @@
 Board::Board() {
     numObjects = OBJECT_MAGNET+2;
     objects = (OBJECT**)malloc(numObjects*sizeof(OBJECT*));
-    objects[numObjects-1] = new OBJECT((const byte*)0, 0, 0, 0, -1, 0, 0);  // #12 Null
+    objects[numObjects-1] = new OBJECT("", (const byte*)0, 0, 0, 0, -1, 0, 0);  // #12 Null
     
     int MAX_PLAYERS = 3;
     players = (BALL**)malloc(MAX_PLAYERS * sizeof(BALL*));

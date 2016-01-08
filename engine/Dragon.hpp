@@ -20,7 +20,7 @@ public:
     int eatenY;
 
     
-    Dragon(int number, int inState, int inColor, int inRoom, int inX, int inY);
+    Dragon(const char* label, int number, int inState, int inColor, int inRoom, int inX, int inY);
     
     ~Dragon();
     

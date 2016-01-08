@@ -17,7 +17,7 @@ public:
     
     static const int CLOSED_STATE;
     
-    Portcullis(int outsideRoom, int insideRoom, OBJECT* key);
+    Portcullis(const char* label, int outsideRoom, int insideRoom, OBJECT* key);
     
     virtual ~Portcullis();
     

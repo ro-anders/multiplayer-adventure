@@ -23,9 +23,10 @@ public:
     int movementY;              // vertical movement
     int size;                   // size (used for bridge and surround)
     bool displayed;             // flag indicating object was displayed (when more than maxDisplayableObjects for instance)
+    char* label;                // a short, unique name for the object
 
     
-    OBJECT(const byte* inGfxData, const byte* inStates, int inState, int inColor, int inRoom, int inX, int inY,
+    OBJECT(const char* inLabel, const byte* inGfxData, const byte* inStates, int inState, int inColor, int inRoom, int inX, int inY,
                int size=0);
     
     virtual ~OBJECT();
@@ -33,7 +34,6 @@ public:
     void setBoard(Board* newBoard, int newPKey);
     
     void CalcSpriteExtents(int* cx, int* cy, int* cw, int* ch) const;
-
     
 protected:
 

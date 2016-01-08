@@ -55,10 +55,10 @@ static const int batMatrix [] =
 };
 
 
-
+int Bat::MAX_FEDUP = 0xff;
 
 Bat::Bat(int inColor, int inRoom, int inX, int inY) :
-  OBJECT(objectGfxBat, batStates, 0, inColor, inRoom, inX, inY),
+  OBJECT("bat", objectGfxBat, batStates, 0, inColor, inRoom, inX, inY),
   linkedObject(0),
   linkedObjectX(0),
   linkedObjectY(0) {}
@@ -74,7 +74,7 @@ void Bat::moveOneTurn(Sync* sync)
         flapTimer = 0;
     }
     
-    if ((linkedObject != OBJECT_NONE) && (batFedUpTimer < 0xff))
+    if ((linkedObject != OBJECT_NONE) && (batFedUpTimer < MAX_FEDUP))
         ++batFedUpTimer;
     
     RemoteAction* batAction = sync->GetNextBatAction();
@@ -138,7 +138,10 @@ void Bat::moveOneTurn(Sync* sync)
                 
                 int objX, objY, objW, objH;
                 seekObject->CalcSpriteExtents(&objX, &objY, &objW, &objH);
-                
+
+                printf("Targeting %s at (%d,%d)-(%d,%d) from (%d,%d)-(%d,%d)\n", seekObject->label,
+                       objX, objY-objH, objX+objW, objY, batX, batY-batH, batX+batW, batY);
+
                 if (Board::HitTestRects(batX, batY, batW, batH, objX, objY, objW, objH))
                 {
                     // Hit something we want
@@ -170,4 +173,8 @@ void Bat::moveOneTurn(Sync* sync)
         while (*(++matrixP));
         
     }
+}
+
+void Bat::lookForNewObject() {
+    batFedUpTimer = MAX_FEDUP;
 }

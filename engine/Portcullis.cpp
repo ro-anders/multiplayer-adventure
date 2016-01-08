@@ -105,8 +105,8 @@ const int Portcullis::CLOSED_STATE=12;
 
 
 
-Portcullis::Portcullis(int inOutsideRoom, int inInsideRoom, OBJECT* inKey) :
-  OBJECT(objectGfxPort, portStates, 0x0C, COLOR_BLACK, inOutsideRoom, 0x4d, 0x31),
+Portcullis::Portcullis(const char* inLabel, int inOutsideRoom, int inInsideRoom, OBJECT* inKey) :
+  OBJECT(inLabel, objectGfxPort, portStates, 0x0C, COLOR_BLACK, inOutsideRoom, 0x4d, 0x31),
   isActive(false),
   insideRoom(inInsideRoom),
   key(inKey) {}

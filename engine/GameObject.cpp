@@ -1,9 +1,11 @@
 
 #include "GameObject.hpp"
 
+#include <strings.h>
+
 #include "Board.hpp"
 
-OBJECT::OBJECT(const byte* inGfxData, const byte* inStates, int inState, int inColor, int inRoom, int inX, int inY,
+OBJECT::OBJECT(const char* inLabel, const byte* inGfxData, const byte* inStates, int inState, int inColor, int inRoom, int inX, int inY,
                        int inSize):
     gfxData(inGfxData),
     states(inStates),
@@ -16,10 +18,13 @@ OBJECT::OBJECT(const byte* inGfxData, const byte* inStates, int inState, int inC
     y(inY),
     size(inSize)
 {
-    
+    label = (char*)malloc((strlen(inLabel)+1)*sizeof(char));
+    strcpy(label, inLabel);
 }
 
-OBJECT::~OBJECT() {}
+OBJECT::~OBJECT() {
+    delete label;
+}
 
 void OBJECT::setBoard(Board* newBoard, int newPKey) {
     board = newBoard;
@@ -36,8 +41,8 @@ void OBJECT::CalcSpriteExtents(int* cx, int* cy, int* cw, int* ch) const
     *cx = x * 2;
     *cy = y * 2;
     
-    int size = (size/2) + 1;
-    *cw = (8 * 2) * size;
+    int adjSize = (size/2) + 1;
+    *cw = (8 * 2) * adjSize;
     
     // Look up the index to the current state for this object
     int stateIndex = states ? states[state] : 0;

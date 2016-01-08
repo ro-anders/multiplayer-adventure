@@ -131,8 +131,6 @@ static int gameNum; // Which game is being played.  May be different from game l
 
 static int displayedRoomIndex = 0;                                   // index of current (displayed) room
 
-static int batFedUpTimer = 0xff;
-
 static int winFlashTimer=0;
 
 static int flashColorHue=0;
@@ -967,21 +965,23 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     timeToStartGame = 60 * 3;
     
     surrounds = (OBJECT**)malloc(numPlayers * sizeof(OBJECT*));
+    char surroundName[16];
     for(int ctr=0; ctr<numPlayers; ++ctr) {
-        surrounds[ctr] = new OBJECT(objectGfxSurround, 0, 0, COLOR_ORANGE, -1, 0, 0, 0x07);
+        sprintf(surroundName, "surround%d", ctr);
+        surrounds[ctr] = new OBJECT(surroundName, objectGfxSurround, 0, 0, COLOR_ORANGE, -1, 0, 0, 0x07);
     }
     
     dragons = (Dragon**)malloc(numDragons * sizeof(Dragon*));
-    dragons[0]= new Dragon(0, 0, COLOR_YELLOW, -1, 0, 0);
-    dragons[1] = new Dragon(1, 0, COLOR_LIMEGREEN, -1, 0, 0);
-    dragons[2] = new Dragon(2, 0, COLOR_RED, -1, 0, 0);
+    dragons[0]= new Dragon("yorgle", 0, 0, COLOR_YELLOW, -1, 0, 0);
+    dragons[1] = new Dragon("grindle", 1, 0, COLOR_LIMEGREEN, -1, 0, 0);
+    dragons[2] = new Dragon("rhindle", 2, 0, COLOR_RED, -1, 0, 0);
     bat = new Bat(COLOR_BLACK, -1, 0, 0);
 
-    OBJECT* yellowKey = new OBJECT(objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0);
-    OBJECT* copperKey = new OBJECT(objectGfxKey, 0, 0, COLOR_COPPER, -1, 0, 0);
-    OBJECT* jadeKey = new OBJECT(objectGfxKey, 0, 0, COLOR_JADE, -1, 0, 0);
-    OBJECT* whiteKey = new OBJECT(objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0);
-    OBJECT* blackKey = new OBJECT(objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
+    OBJECT* goldKey = new OBJECT("gold key", objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0);
+    OBJECT* copperKey = new OBJECT("coppey key", objectGfxKey, 0, 0, COLOR_COPPER, -1, 0, 0);
+    OBJECT* jadeKey = new OBJECT("jade key", objectGfxKey, 0, 0, COLOR_JADE, -1, 0, 0);
+    OBJECT* whiteKey = new OBJECT("white key", objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0);
+    OBJECT* blackKey = new OBJECT("black key", objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
 
     // We need to setup the keys before the portcullises
     gameBoard = new Board();
@@ -990,11 +990,11 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     
     numPorts = numPlayers + 2;
     ports = (Portcullis**)malloc(5 * sizeof(Portcullis*)); // We always create 5 even though we might only use 4.
-    ports[0] = new Portcullis(0x11, 0x12, yellowKey); // Gold
-    ports[1] = new Portcullis(0x0F, 0x1A, whiteKey); // White
-    ports[2] = new Portcullis(0x10, 0x1B, blackKey); // Black
-    ports[3] = new Portcullis(COPPER_CASTLE, COPPER_FOYER, copperKey);
-    ports[4] = new Portcullis(JADE_CASTLE, JADE_FOYER, jadeKey);
+    ports[0] = new Portcullis("gold gate", 0x11, 0x12, goldKey); // Gold
+    ports[1] = new Portcullis("white gate", 0x0F, 0x1A, whiteKey); // White
+    ports[2] = new Portcullis("black gate", 0x10, 0x1B, blackKey); // Black
+    ports[3] = new Portcullis("copper gate", COPPER_CASTLE, COPPER_FOYER, copperKey);
+    ports[4] = new Portcullis("jade gate", JADE_CASTLE, JADE_FOYER, jadeKey);
     
     
     // Setup the objects
@@ -1003,22 +1003,22 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     gameBoard->addObject(OBJECT_JADE_PORT, ports[4]);
     gameBoard->addObject(OBJECT_WHITE_PORT, ports[1]);
     gameBoard->addObject(OBJECT_BLACK_PORT, ports[2]);
-    gameBoard->addObject(OBJECT_NAME, new OBJECT(objectGfxAuthor, 0, 0, COLOR_FLASH, 0x1E, 0x50, 0x69));
-    gameBoard->addObject(OBJECT_NUMBER, new OBJECT(objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, 0x00, 0x50, 0x40));
+    gameBoard->addObject(OBJECT_NAME, new OBJECT("easter egg message", objectGfxAuthor, 0, 0, COLOR_FLASH, 0x1E, 0x50, 0x69));
+    gameBoard->addObject(OBJECT_NUMBER, new OBJECT("number", objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, 0x00, 0x50, 0x40));
     gameBoard->addObject(OBJECT_REDDRAGON, dragons[2]);
     gameBoard->addObject(OBJECT_YELLOWDRAGON,dragons[0]);
     gameBoard->addObject(OBJECT_GREENDRAGON, dragons[1]);
-    gameBoard->addObject(OBJECT_SWORD, new OBJECT(objectGfxSword, 0, 0, COLOR_YELLOW, -1, 0, 0));
-    gameBoard->addObject(OBJECT_BRIDGE, new OBJECT(objectGfxBridge, 0, 0, COLOR_PURPLE, -1, 0, 0, 0x07));
-    gameBoard->addObject(OBJECT_YELLOWKEY, yellowKey);
+    gameBoard->addObject(OBJECT_SWORD, new OBJECT("sword", objectGfxSword, 0, 0, COLOR_YELLOW, -1, 0, 0));
+    gameBoard->addObject(OBJECT_BRIDGE, new OBJECT("bridge", objectGfxBridge, 0, 0, COLOR_PURPLE, -1, 0, 0, 0x07));
+    gameBoard->addObject(OBJECT_YELLOWKEY, goldKey);
     gameBoard->addObject(OBJECT_COPPERKEY, copperKey);
     gameBoard->addObject(OBJECT_JADEKEY, jadeKey);
     gameBoard->addObject(OBJECT_WHITEKEY, whiteKey);
     gameBoard->addObject(OBJECT_BLACKKEY, blackKey);
     gameBoard->addObject(OBJECT_BAT, bat);
-    gameBoard->addObject(OBJECT_DOT, new OBJECT(objectGfxDot, 0, 0, COLOR_LTGRAY, -1, 0, 0));
-    gameBoard->addObject(OBJECT_CHALISE, new OBJECT(objectGfxChallise, 0, 0, COLOR_FLASH, -1, 0, 0));
-    gameBoard->addObject(OBJECT_MAGNET, new OBJECT(objectGfxMagnet, 0, 0, COLOR_BLACK, -1, 0, 0));
+    gameBoard->addObject(OBJECT_DOT, new OBJECT("dot", objectGfxDot, 0, 0, COLOR_LTGRAY, -1, 0, 0));
+    gameBoard->addObject(OBJECT_CHALISE, new OBJECT("chalise", objectGfxChallise, 0, 0, COLOR_FLASH, -1, 0, 0));
+    gameBoard->addObject(OBJECT_MAGNET, new OBJECT("magnet", objectGfxMagnet, 0, 0, COLOR_BLACK, -1, 0, 0));
     
     // Setup the players
     
@@ -1053,7 +1053,7 @@ void ResetPlayer(BALL* ball) {
     displayedRoomIndex = objectBall->room;
     
     // Make the bat want something right away
-    batFedUpTimer = 0xff;
+    bat->lookForNewObject();
     
     // Bring the dragons back to life
     for(int ctr=0; ctr<numDragons; ++ctr) {

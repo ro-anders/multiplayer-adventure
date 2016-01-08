@@ -25,8 +25,14 @@ public:
     
     void moveOneTurn(Sync* sync);
     
+    void lookForNewObject();
+    
 private:
+
     int batFedUpTimer;
+    
+    static int MAX_FEDUP;
+    
 };
 
 #endif /* Bat_hpp */

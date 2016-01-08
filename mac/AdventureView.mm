@@ -66,7 +66,7 @@ bool gMenuItemSelect = FALSE;
     int thisPlayer;
     Transport* transport;
     
-    int gameLevel = 1;
+    int gameLevel = 2;
     if (argc > 2) {
         gameLevel = atoi(argv[1]);
     }
