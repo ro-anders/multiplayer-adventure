@@ -36,6 +36,8 @@ static const byte batStates [] =
     0,1
 };
 
+static int BAT_SPEED = 3;
+
 // Bat Object Matrix
 static const int batMatrix [] =
 {
@@ -53,7 +55,6 @@ static const int batMatrix [] =
     OBJECT_MAGNET,
     0x00
 };
-
 
 int Bat::MAX_FEDUP = 0xff;
 
@@ -93,7 +94,7 @@ void Bat::moveOneTurn(Sync* sync)
         // Enlarge the bat extent by 7 pixels for the proximity checks below
         // (doing the bat once is faster than doing each object and the results are the same)
         batX-=7;
-        batY-=7;
+        batY+=7;
         batW+=7*2;
         batH+=7*2;
         
@@ -109,28 +110,35 @@ void Bat::moveOneTurn(Sync* sync)
                 int seekY = seekObject->y;
                 
                 // Set the movement
+                int newMoveX = 0;
+                int newMoveY = 0;
                 
                 // horizontal axis
                 if (x < seekX)
                 {
-                    movementX = 3;
+                    newMoveX = BAT_SPEED;
                 }
                 else if (x > seekX)
                 {
-                    movementX = -3;
+                    newMoveX = -BAT_SPEED;
                 }
-                else movementX = 0;
                 
                 // vertical axis
                 if (y < seekY)
                 {
-                    movementY = 3;
+                    newMoveY = BAT_SPEED;
                 }
                 else if (y > seekY)
                 {
-                    movementY = -3;
+                    newMoveY = -BAT_SPEED;
                 }
-                else movementY = 0;
+                
+                bool sendMessage = ((newMoveX != movementX) || (newMoveY != movementY));
+                movementX = newMoveX;
+                movementY = newMoveY;
+                if (sendMessage) {
+                    broadcastMoveAction(sync);
+                }
                 
                 // If the bat is within 7 pixels of the seek object it can pick the object up
                 // The bat extents have already been expanded by 7 pixels above, so a simple
@@ -139,28 +147,10 @@ void Bat::moveOneTurn(Sync* sync)
                 int objX, objY, objW, objH;
                 seekObject->CalcSpriteExtents(&objX, &objY, &objW, &objH);
 
-                printf("Targeting %s at (%d,%d)-(%d,%d) from (%d,%d)-(%d,%d)\n", seekObject->label,
-                       objX, objY-objH, objX+objW, objY, batX, batY-batH, batX+batW, batY);
-
                 if (Board::HitTestRects(batX, batY, batW, batH, objX, objY, objW, objH))
                 {
                     // Hit something we want
-                    
-                    // If the bat grabs something that a player is carrying, the bat gets it
-                    // This allows the bat to take something being carried
-                    for (int ctr=0; ctr<board->getNumPlayers(); ++ctr) {
-                        BALL* nextBall = board->getPlayer(ctr);
-                        if (*matrixP == nextBall->linkedObject)
-                        {
-                            // Now player has nothing
-                            nextBall->linkedObject = OBJECT_NONE;
-                        }
-                    }
-                    
-                    // Pick it up
-                    linkedObject = *matrixP;
-                    linkedObjectX = 8;
-                    linkedObjectY = 0;
+                    pickupObject(*matrixP, sync);
                     
                     // Reset the timer
                     batFedUpTimer = 0;
@@ -173,6 +163,39 @@ void Bat::moveOneTurn(Sync* sync)
         while (*(++matrixP));
         
     }
+}
+
+void Bat::pickupObject(int newObject, Sync* sync) {
+    // If the bat grabs something that a player is carrying, the bat gets it
+    // This allows the bat to take something being carried
+    for (int ctr=0; ctr<board->getNumPlayers(); ++ctr) {
+        BALL* nextBall = board->getPlayer(ctr);
+        if (newObject == nextBall->linkedObject)
+        {
+            // Now player has nothing
+            nextBall->linkedObject = OBJECT_NONE;
+        }
+    }
+    
+    if (linkedObject == OBJECT_NONE) {
+        BatPickupAction* action = new BatPickupAction(newObject, 8, 0, OBJECT_NONE, 0, 0, 0);
+        sync->BroadcastAction(action);
+    } else {
+        OBJECT* dropObject = lookupObject(linkedObject);
+        BatPickupAction* action = new BatPickupAction(newObject, 8, 0, linkedObject, dropObject->room, dropObject->x, dropObject->y);
+        sync->BroadcastAction(action);
+    }
+    
+    // Pick it up
+    linkedObject = newObject;
+    linkedObjectX = 8;
+    linkedObjectY = 0;
+
+}
+
+void Bat::broadcastMoveAction(Sync *sync) {
+    BatMoveAction* action = new BatMoveAction(room, x, y, movementX, movementY);
+    sync->BroadcastAction(action);
 }
 
 void Bat::lookForNewObject() {

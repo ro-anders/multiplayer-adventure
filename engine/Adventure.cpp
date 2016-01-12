@@ -1091,7 +1091,7 @@ void Adventure_Run()
         if (gameState != GAMESTATE_GAMESELECT) {
             ResetPlayer(objectBall);
             // Broadcast to everyone else
-            PlayerResetAction* action = new PlayerResetAction(thisPlayer);
+            PlayerResetAction* action = new PlayerResetAction();
             sync->BroadcastAction(action);
             
         }
@@ -1132,7 +1132,7 @@ void Adventure_Run()
             else if (objectDefs[OBJECT_CHALISE]->room == objectBall->homeGate->insideRoom)
             {
                 WinGame();
-                PlayerWinAction* won = new PlayerWinAction(thisPlayer, objectBall->room);
+                PlayerWinAction* won = new PlayerWinAction(objectBall->room);
                 sync->BroadcastAction(won);
             }
             else
@@ -1175,8 +1175,8 @@ void Adventure_Run()
                             objectBall->linkedObjectY += diffY/2;
                             
                             // Adjusting how we hold an object is broadcast to other players as a pickup action
-                            PlayerPickupAction* action = new PlayerPickupAction(thisPlayer,
-                                hitObject, objectBall->linkedObjectX, objectBall->linkedObjectY, OBJECT_NONE, 0, 0, 0);
+                            PlayerPickupAction* action = new PlayerPickupAction(hitObject,
+                                objectBall->linkedObjectX, objectBall->linkedObjectY, OBJECT_NONE, 0, 0, 0);
                             sync->BroadcastAction(action);
                             
                         }
@@ -1418,7 +1418,7 @@ void ThisBallMovement()
 
 	if (velocityChanged) {
         // TODO: Do we want to be constantly allocating space?
-        PlayerMoveAction* moveAction = new PlayerMoveAction(thisPlayer, objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
+        PlayerMoveAction* moveAction = new PlayerMoveAction(objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
         sync->BroadcastAction(moveAction);
 	}
 }
@@ -1476,7 +1476,7 @@ void BallMovement(BALL* ball) {
                     // If we were locked in the castle, open the portcullis.
                     if (port->state == Portcullis::CLOSED_STATE) {
                         port->openFromInside();
-                        PortcullisStateAction* gateAction = new PortcullisStateAction(thisPlayer, portalCtr, port->state, port->isActive);
+                        PortcullisStateAction* gateAction = new PortcullisStateAction(portalCtr, port->state, port->isActive);
                         sync->BroadcastAction(gateAction);
 
                     }
@@ -1684,12 +1684,12 @@ void MoveGroundObject()
             if (nextPort->state != Portcullis::OPEN_STATE) {
                 nextPort->forceOpen();
                 PortcullisStateAction* gateAction =
-                    new PortcullisStateAction(thisPlayer, portalCtr, nextPort->state, nextPort->isActive);
+                    new PortcullisStateAction(portalCtr, nextPort->state, nextPort->isActive);
                 sync->BroadcastAction(gateAction);
             }
             
             // Report the ball entering the castle
-            PlayerMoveAction* moveAction = new PlayerMoveAction(thisPlayer, objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
+            PlayerMoveAction* moveAction = new PlayerMoveAction(objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
             sync->BroadcastAction(moveAction);
             
             break;
@@ -1915,7 +1915,7 @@ void PickupPutdown()
         objectBall->linkedObject = OBJECT_NONE;
         
         // Tell other clients about the drop
-        PlayerPickupAction* action = new PlayerPickupAction(thisPlayer, OBJECT_NONE, 0, 0, dropped, droppedObject->room,
+        PlayerPickupAction* action = new PlayerPickupAction(OBJECT_NONE, 0, 0, dropped, droppedObject->room,
                                                            droppedObject->x, droppedObject->y);
         sync->BroadcastAction(action);
 
@@ -1940,7 +1940,7 @@ void PickupPutdown()
                 // TODO: Handle when we are just repositioning the object we are currently holding
                 
                 // Collect info about whether we are also dropping an object (for when we broadcast the action)
-                PlayerPickupAction* action = new PlayerPickupAction(thisPlayer, OBJECT_NONE, 0, 0, OBJECT_NONE, 0, 0, 0);
+                PlayerPickupAction* action = new PlayerPickupAction(OBJECT_NONE, 0, 0, OBJECT_NONE, 0, 0, 0);
                 int dropIndex = objectBall->linkedObject;
                 if (dropIndex > OBJECT_NONE) {
                     OBJECT* dropped = objectDefs[dropIndex];
@@ -2028,7 +2028,7 @@ void Portals()
                     // If we are in the same room, broadcast the state change
                     if (objectBall->room == port->room) {
                         PortcullisStateAction* gateAction =
-                            new PortcullisStateAction(thisPlayer, portalCtr, port->state, port->isActive);
+                            new PortcullisStateAction(portalCtr, port->state, port->isActive);
                         sync->BroadcastAction(gateAction);
                     }
                 }
@@ -2096,7 +2096,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
             dragon->roar(objectBall->x/2, objectBall->y/2,gameLevel, gameDifficultyLeft==DIFFICULTY_A);
             
             // Notify others
-            DragonStateAction* action = new DragonStateAction(thisPlayer, dragon->dragonNumber, Dragon::ROAR, dragon->room, dragon->x, dragon->y);
+            DragonStateAction* action = new DragonStateAction(dragon->dragonNumber, Dragon::ROAR, dragon->room, dragon->x, dragon->y);
             
             sync->BroadcastAction(action);
 
@@ -2113,7 +2113,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
             dragon->movementY = 0;
 
             // Notify others
-            DragonStateAction* action = new DragonStateAction(thisPlayer, dragon->dragonNumber, Dragon::DEAD, dragon->room, dragon->x, dragon->y);
+            DragonStateAction* action = new DragonStateAction(dragon->dragonNumber, Dragon::DEAD, dragon->room, dragon->x, dragon->y);
             
             sync->BroadcastAction(action);
             
@@ -2205,7 +2205,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
                     // Notify others if we've changed our direction
                     if ((dragon->room == objectBall->room) && ((newMovementX != dragon->movementX) || (newMovementY != dragon->movementY))) {
                         int distanceToMe = distanceFromBall(gameBoard->getPlayer(thisPlayer), dragon->x, dragon->y);
-                        DragonMoveAction* newAction = new DragonMoveAction(thisPlayer, dragon->room, dragon->x, dragon->y, newMovementX, newMovementY, dragon->dragonNumber, distanceToMe);
+                        DragonMoveAction* newAction = new DragonMoveAction(dragon->room, dragon->x, dragon->y, newMovementX, newMovementY, dragon->dragonNumber, distanceToMe);
                         sync->BroadcastAction(newAction);
                     }
                     dragon->movementX = newMovementX;
@@ -2244,7 +2244,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
                 dragon->state = Dragon::EATEN;
 
                 // Notify others
-                DragonStateAction* action = new DragonStateAction(thisPlayer, dragon->dragonNumber, Dragon::EATEN, dragon->room, dragon->x, dragon->y);
+                DragonStateAction* action = new DragonStateAction(dragon->dragonNumber, Dragon::EATEN, dragon->room, dragon->x, dragon->y);
                 
                 sync->BroadcastAction(action);
                 

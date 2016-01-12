@@ -33,8 +33,10 @@ void Sync::StartFrame() {
 }
 
 void Sync::BroadcastAction(RemoteAction* action) {
+    action->setSender(thisPlayer);
     action->serialize(sendBuffer, MAX_MESSAGE_SIZE);
     transport->sendPacket(sendBuffer);
+    delete action;
 }
 
 void Sync::RejectMessage(const char* message, const char* errorMsg) {

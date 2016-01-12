@@ -11,11 +11,11 @@
 RemoteAction::RemoteAction(const char* inCode) :
 typeCode(inCode) {}
 
-RemoteAction::RemoteAction(const char* inCode, int inSender) :
-typeCode(inCode),
-sender(inSender) {}
-
 RemoteAction::~RemoteAction() {}
+
+void RemoteAction::setSender(int inSender) {
+    sender = inSender;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -28,8 +28,8 @@ RemoteAction(inCode) {}
 
 MoveAction::~MoveAction() {}
 
-MoveAction::MoveAction(const char* inCode, int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
-RemoteAction(inCode, inSender)
+MoveAction::MoveAction(const char* inCode, int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
+RemoteAction(inCode)
 {
     room = inRoom;
     posx = inPosx;
@@ -48,8 +48,8 @@ const char* PlayerMoveAction::CODE = "PM";
 PlayerMoveAction::PlayerMoveAction() :
 MoveAction(CODE) {}
 
-PlayerMoveAction::PlayerMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
-MoveAction(CODE, inSender, inRoom, inPosx, inPosy, inVelx, inVely)
+PlayerMoveAction::PlayerMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
+MoveAction(CODE, inRoom, inPosx, inPosy, inVelx, inVely)
 {}
 
 PlayerMoveAction::~PlayerMoveAction() {}
@@ -75,9 +75,9 @@ const char* PlayerPickupAction::CODE = "PP";
 PlayerPickupAction::PlayerPickupAction() :
 RemoteAction(CODE) {}
 
-PlayerPickupAction::PlayerPickupAction(int inSender, int inPickupObject, int inPickupX, int inPickupY,
+PlayerPickupAction::PlayerPickupAction(int inPickupObject, int inPickupX, int inPickupY,
                                        int inDropObject, int inDropRoom, int inDropX, int inDropY) :
-RemoteAction(CODE, inSender),
+RemoteAction(CODE),
 pickupObject(inPickupObject),
 pickupX(inPickupX),
 pickupY(inPickupY),
@@ -130,9 +130,6 @@ const char* PlayerResetAction::CODE = "PR";
 PlayerResetAction::PlayerResetAction() :
 RemoteAction(CODE) {}
 
-PlayerResetAction::PlayerResetAction(int inSender) :
-RemoteAction(CODE, inSender) {}
-
 PlayerResetAction::~PlayerResetAction() {}
 
 
@@ -159,8 +156,8 @@ const char* PlayerWinAction::CODE = "PW";
 PlayerWinAction::PlayerWinAction() :
 RemoteAction(CODE) {}
 
-PlayerWinAction::PlayerWinAction(int inSender, int inWinInRoom) :
-RemoteAction(CODE, inSender),
+PlayerWinAction::PlayerWinAction(int inWinInRoom) :
+RemoteAction(CODE),
 winInRoom(inWinInRoom){}
 
 PlayerWinAction::~PlayerWinAction() {}
@@ -189,9 +186,9 @@ const char* DragonMoveAction::CODE = "DM";
 DragonMoveAction::DragonMoveAction() :
 MoveAction(CODE) {}
 
-DragonMoveAction::DragonMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely,
+DragonMoveAction::DragonMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely,
                                    int inDragonNum, int inDistance) :
-MoveAction(CODE, inSender, inRoom, inPosx, inPosy, inVelx, inVely),
+MoveAction(CODE, inRoom, inPosx, inPosy, inVelx, inVely),
 dragonNum(inDragonNum),
 distance(inDistance)
 {}
@@ -223,8 +220,8 @@ const char* DragonStateAction::CODE = "DS";
 DragonStateAction::DragonStateAction() :
 RemoteAction(CODE) {}
 
-DragonStateAction::DragonStateAction(int inSender, int inDragonNum, int inState, int inRoom, int inPosx, int inPosy) :
-RemoteAction(CODE, inSender),
+DragonStateAction::DragonStateAction(int inDragonNum, int inState, int inRoom, int inPosx, int inPosy) :
+RemoteAction(CODE),
 dragonNum(inDragonNum),
 newState(inState),
 room(inRoom),
@@ -258,8 +255,8 @@ const char* PortcullisStateAction::CODE = "GS";
 PortcullisStateAction::PortcullisStateAction() :
 RemoteAction(CODE) {}
 
-PortcullisStateAction::PortcullisStateAction(int inSender, int inPortNumber, int inNewSate, bool inActive) :
-RemoteAction(CODE, inSender),
+PortcullisStateAction::PortcullisStateAction(int inPortNumber, int inNewSate, bool inActive) :
+RemoteAction(CODE),
 portNumber(inPortNumber),
 newState(inNewSate),
 isActive(inActive) {}
@@ -290,8 +287,8 @@ const char* BatMoveAction::CODE = "BM";
 BatMoveAction::BatMoveAction() :
 MoveAction(CODE) {}
 
-BatMoveAction::BatMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
-MoveAction(CODE, inSender, inRoom, inPosx, inPosy, inVelx, inVely)
+BatMoveAction::BatMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
+MoveAction(CODE, inRoom, inPosx, inPosy, inVelx, inVely)
 {}
 
 BatMoveAction::~BatMoveAction() {}
@@ -318,9 +315,9 @@ const char* BatPickupAction::CODE = "BP";
 BatPickupAction::BatPickupAction() :
 RemoteAction(CODE) {}
 
-BatPickupAction::BatPickupAction(int inSender, int inPickupObject, int inPickupX, int inPickupY,
-                                       int inDropObject, int inDropRoom, int inDropX, int inDropY) :
-RemoteAction(CODE, inSender),
+BatPickupAction::BatPickupAction(int inPickupObject, int inPickupX, int inPickupY,
+                                 int inDropObject, int inDropRoom, int inDropX, int inDropY) :
+RemoteAction(CODE),
 pickupObject(inPickupObject),
 pickupX(inPickupX),
 pickupY(inPickupY),
@@ -331,21 +328,6 @@ dropY(inDropY)
 {}
 
 BatPickupAction::~BatPickupAction() {}
-
-
-void BatPickupAction::setPickup(int inPickupObject, int inPickupX, int inPickupY) {
-    pickupObject = inPickupObject;
-    pickupX = inPickupX;
-    pickupY = inPickupY;
-    
-}
-
-void BatPickupAction::setDrop(int inDropObject, int inDropRoom, int inDropX, int inDropY) {
-    dropObject = inDropObject;
-    dropRoom = inDropRoom;
-    dropX = inDropX;
-    dropY = inDropY;
-}
 
 
 int BatPickupAction::serialize(char* buffer, int bufferLength) {

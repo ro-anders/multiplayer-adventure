@@ -28,6 +28,10 @@ public:
     void lookForNewObject();
     
 private:
+    
+    void pickupObject(int object, Sync* sync);
+    
+    void broadcastMoveAction(Sync* sync);
 
     int batFedUpTimer;
     

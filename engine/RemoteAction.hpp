@@ -10,9 +10,10 @@ public:
     int sender;				// The number of the player sending this action (1-3)
     const char* typeCode;
     RemoteAction(const char* inCode);
-    RemoteAction(const char* inCode, int inSender);
 
     virtual ~RemoteAction();
+    
+    void setSender(int inSender);
     
     virtual int serialize(char* buffer, int bufferLength) = 0;
     virtual void deserialize(const char* message) = 0;
@@ -28,7 +29,7 @@ public:
     
     MoveAction(const char* inCode);
     
-    MoveAction(const char* inCode, int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
+    MoveAction(const char* inCode, int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
     
     virtual ~MoveAction();
     
@@ -44,7 +45,7 @@ public:
 
     PlayerMoveAction();
     
-    PlayerMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
+    PlayerMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
     
     ~PlayerMoveAction();
     
@@ -67,7 +68,7 @@ public:
 
     PlayerPickupAction();
     
-    PlayerPickupAction(int inSender, int inPickupObject, int inPickupX, int inPickupY, int dropObject, int inRoom, int dropX, int dropY);
+    PlayerPickupAction(int inPickupObject, int inPickupX, int inPickupY, int dropObject, int inRoom, int dropX, int dropY);
     
     ~PlayerPickupAction();
     
@@ -87,8 +88,6 @@ public:
     
     PlayerResetAction();
     
-    PlayerResetAction(int inSender);
-    
     ~PlayerResetAction();
     
     int serialize(char* buffer, int bufferLength);
@@ -104,7 +103,7 @@ public:
     
     PlayerWinAction();
     
-    PlayerWinAction(int sender, int winInRoom);
+    PlayerWinAction(int winInRoom);
     
     ~PlayerWinAction();
     
@@ -123,7 +122,7 @@ public:
     
     DragonMoveAction();
     
-    DragonMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely,
+    DragonMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely,
                      int inDragonNum, int inDistance);
     
     ~DragonMoveAction();
@@ -146,7 +145,7 @@ public:
     
     DragonStateAction();
     
-    DragonStateAction(int inSender, int inDragonNum, int inState, int inRoom, int inPosx, int inPosy);
+    DragonStateAction(int inDragonNum, int inState, int inRoom, int inPosx, int inPosy);
     
     ~DragonStateAction();
     
@@ -166,7 +165,7 @@ public:
     
     PortcullisStateAction();
     
-    PortcullisStateAction(int inSender, int portNumber, int newState, bool isActive);
+    PortcullisStateAction(int portNumber, int newState, bool isActive);
     
     ~PortcullisStateAction();
     
@@ -182,7 +181,7 @@ public:
     
     BatMoveAction();
     
-    BatMoveAction(int inSender, int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
+    BatMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
     
     ~BatMoveAction();
     
@@ -205,13 +204,9 @@ public:
     
     BatPickupAction();
     
-    BatPickupAction(int inSender, int inPickupObject, int inPickupX, int inPickupY, int dropObject, int inRoom, int dropX, int dropY);
-    
+    BatPickupAction(int inPickupObject, int inPickupX, int inPickupY, int dropObject, int inRoom, int dropX, int dropY);
+
     ~BatPickupAction();
-    
-    void setPickup(int inPickupObject, int inPickupX, int inPickupY);
-    
-    void setDrop(int inDropObject, int inDropRoom, int inDropX, int inDropY);
     
     int serialize(char* buffer, int bufferLength);
     
