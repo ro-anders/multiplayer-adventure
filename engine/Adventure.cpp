@@ -1936,8 +1936,6 @@ void PickupPutdown()
 
             if (hitIndex > OBJECT_NONE)
             {
-                // TODO: Handle when we are just repositioning the object we are currently holding
-                
                 // Collect info about whether we are also dropping an object (for when we broadcast the action)
                 PlayerPickupAction* action = new PlayerPickupAction(OBJECT_NONE, 0, 0, OBJECT_NONE, 0, 0, 0);
                 int dropIndex = objectBall->linkedObject;
