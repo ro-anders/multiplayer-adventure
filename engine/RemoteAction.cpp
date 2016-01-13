@@ -287,21 +287,22 @@ const char* BatMoveAction::CODE = "BM";
 BatMoveAction::BatMoveAction() :
 MoveAction(CODE) {}
 
-BatMoveAction::BatMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
-MoveAction(CODE, inRoom, inPosx, inPosy, inVelx, inVely)
+BatMoveAction::BatMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely, int inDistance) :
+MoveAction(CODE, inRoom, inPosx, inPosy, inVelx, inVely),
+distance(inDistance)
 {}
 
 BatMoveAction::~BatMoveAction() {}
 
 int BatMoveAction::serialize(char* buffer, int bufferLength) {
     // TODO - Right now we are ignoring bufferLength
-    int numChars = sprintf(buffer, "BM %d %d %d %d %d %d", sender, room, posx, posy, velx, vely);
+    int numChars = sprintf(buffer, "BM %d %d %d %d %d %d %d", sender, room, posx, posy, velx, vely, distance);
     return numChars;
 }
 
 void BatMoveAction::deserialize(const char *message) {
     char type[8];
-    sscanf(message, "%s %d %d %d %d %d %d", type, &sender, &room, &posx, &posy, &velx, &vely);
+    sscanf(message, "%s %d %d %d %d %d %d %d", type, &sender, &room, &posx, &posy, &velx, &vely, &distance);
 }
 
 

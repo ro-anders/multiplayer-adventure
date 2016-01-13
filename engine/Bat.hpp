@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "GameObject.hpp"
 
+class BALL;
 class RemoteAction;
 class Sync;
 
@@ -18,25 +19,24 @@ public:
     
     virtual ~Bat();
     
-    /**
-     * A bat can process BatMoveActions and BatPickupActions and update its internal state accordingly.
-     */
-    OBJECT* handleAction(RemoteAction* action);
-    
-    void moveOneTurn(Sync* sync);
+    void moveOneTurn(Sync* sync, BALL* thisPlayer);
     
     void lookForNewObject();
     
 private:
     
-    void pickupObject(int object, Sync* sync);
-    
-    void broadcastMoveAction(Sync* sync);
-
-    int batFedUpTimer;
-    
     static int MAX_FEDUP;
     
+    int batFedUpTimer;
+    
+    void pickupObject(int object, Sync* sync);
+    
+    void broadcastMoveAction(Sync* sync, BALL* thisPlayer);
+
+    /**
+     * A bat can process BatMoveActions and BatPickupActions and update its internal state accordingly.
+     */
+    void handleAction(RemoteAction* action, BALL* objectBall);
 };
 
 #endif /* Bat_hpp */

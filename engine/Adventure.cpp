@@ -88,7 +88,6 @@ static bool CollisionCheckBallWithWalls(int room, int x, int y);
 static int CollisionCheckBallWithObjects(BALL* ball, int startIndex);
 bool CollisionCheckObjectObject(const OBJECT* object1, const OBJECT* object2);
 static bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, int height);
-static int distanceFromBall(BALL* ball, int x, int y);
 static void ResetPlayers();
 static void ResetPlayer(BALL* ball);
 static void WinGame();
@@ -1192,7 +1191,7 @@ void Adventure_Run()
                     Surround();
 
                     // Move and deal with bat
-                    bat->moveOneTurn(sync);
+                    bat->moveOneTurn(sync, objectBall);
 
                     // Move and deal with portcullises
                     Portals();
@@ -1638,7 +1637,7 @@ void SyncDragons() {
             Dragon* dragon = dragons[nextMove->dragonNum];
             if ((dragon->state == Dragon::STALKING) &&
                 ((dragon->room != objectBall->room) ||
-                (distanceFromBall(objectBall, dragon->x, dragon->y) > nextMove->distance))) {
+                (objectBall->distanceTo(dragon->x, dragon->y) > nextMove->distance))) {
                 
                 dragon->room = nextMove->room;
                 dragon->x = nextMove->posx;
@@ -2052,20 +2051,6 @@ void Portals()
     
 }
 
-int distanceFromBall(BALL* ball, int x, int y) {
-    // Figure out the distance (which is really the max difference along one axis)
-    int xdist = ball->x/2 - x;
-    if (xdist < 0) {
-        xdist = -xdist;
-    }
-    int ydist = ball->y/2 - y;
-    if (ydist < 0) {
-        ydist = -ydist;
-    }
-    int dist = (xdist > ydist ? xdist : ydist);
-    return dist;
-}
-
 /**
  * Returns the ball closest to the point in the adventure.
  */
@@ -2076,7 +2061,7 @@ BALL* closestBall(int room, int x, int y) {
         BALL* nextBall = gameBoard->getPlayer(ctr);
         if (nextBall->room == room)
         {
-            int dist = distanceFromBall(nextBall, x, y);
+            int dist = nextBall->distanceTo(x, y);
             if (dist < shortestDistance) {
                 shortestDistance = dist;
                 found = nextBall;
@@ -2204,7 +2189,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
                     
                     // Notify others if we've changed our direction
                     if ((dragon->room == objectBall->room) && ((newMovementX != dragon->movementX) || (newMovementY != dragon->movementY))) {
-                        int distanceToMe = distanceFromBall(gameBoard->getPlayer(thisPlayer), dragon->x, dragon->y);
+                        int distanceToMe = gameBoard->getPlayer(thisPlayer)->distanceTo(dragon->x, dragon->y);
                         DragonMoveAction* newAction = new DragonMoveAction(dragon->room, dragon->x, dragon->y, newMovementX, newMovementY, dragon->dragonNumber, distanceToMe);
                         sync->BroadcastAction(newAction);
                     }

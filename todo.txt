@@ -1,0 +1,12 @@
+To Do
+-----
+- Should not win unless you are holding the chalice.
+- If, when dragon bites it touches another player, should bite the other player
+- Sending PlayerPickup message when you touch what bat is holding, even though you don't pick it up
+
+To Check
+--------
+- Bridge placement looked slightly off to other player
+- Looked like I plucked the chalice from the bat
+- Looked like other player wasn't carrying an object when he was
+

@@ -30,6 +30,11 @@ public:
     BALL(int numPlayer, Portcullis* homeGate);
     
     ~BALL();
+    
+    /**
+     * The distance from ball to a point.  Takes into account Ball is on a 2x resolution than everything else.
+     */
+    int distanceTo(int x, int y);
 };
 
 #endif /* Ball_hpp */

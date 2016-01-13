@@ -66,7 +66,7 @@ Bat::Bat(int inColor, int inRoom, int inX, int inY) :
 
 Bat::~Bat() {}
 
-void Bat::moveOneTurn(Sync* sync)
+void Bat::moveOneTurn(Sync* sync, BALL* objectBall)
 {
     static int flapTimer = 0;
     if (++flapTimer >= 0x04)
@@ -80,7 +80,7 @@ void Bat::moveOneTurn(Sync* sync)
     
     RemoteAction* batAction = sync->GetNextBatAction();
     while (batAction != NULL) {
-        //bat->handleAction();
+        handleAction(batAction, objectBall);
         delete batAction;
         batAction = sync->GetNextBatAction();
     }
@@ -137,7 +137,7 @@ void Bat::moveOneTurn(Sync* sync)
                 movementX = newMoveX;
                 movementY = newMoveY;
                 if (sendMessage) {
-                    broadcastMoveAction(sync);
+                    broadcastMoveAction(sync, objectBall);
                 }
                 
                 // If the bat is within 7 pixels of the seek object it can pick the object up
@@ -151,9 +151,6 @@ void Bat::moveOneTurn(Sync* sync)
                 {
                     // Hit something we want
                     pickupObject(*matrixP, sync);
-                    
-                    // Reset the timer
-                    batFedUpTimer = 0;
                 }
                 
                 // break since we found something
@@ -162,6 +159,34 @@ void Bat::moveOneTurn(Sync* sync)
         }
         while (*(++matrixP));
         
+    }
+}
+
+void Bat::handleAction(RemoteAction *action, BALL* objectBall) {
+    if (action->typeCode == BatMoveAction::CODE) {
+        
+        // If we are in the same room as the bat and are closer to it than the reporting player,
+        // then we ignore reports and trust our internal state.
+        // Otherwise, use the reported state.
+        BatMoveAction* nextMove = (BatMoveAction*)action;
+        if ((room != objectBall->room) ||
+             (objectBall->distanceTo(x, y) > nextMove->distance)) {
+                
+                room = nextMove->room;
+                x = nextMove->posx;
+                y = nextMove->posy;
+                movementX = nextMove->velx;
+                movementY = nextMove->vely;
+                
+            }
+    } else if (action->typeCode == BatPickupAction::CODE) {
+        BatPickupAction* nextPickup = (BatPickupAction*)action;
+        if (nextPickup->dropObject != OBJECT_NONE) {
+            OBJECT* droppedObject = lookupObject(nextPickup->dropObject);
+            droppedObject->x = nextPickup->dropX;
+            droppedObject->y = nextPickup->dropY;
+        }
+        pickupObject(nextPickup->pickupObject, NULL);
     }
 }
 
@@ -177,24 +202,30 @@ void Bat::pickupObject(int newObject, Sync* sync) {
         }
     }
     
-    if (linkedObject == OBJECT_NONE) {
-        BatPickupAction* action = new BatPickupAction(newObject, 8, 0, OBJECT_NONE, 0, 0, 0);
-        sync->BroadcastAction(action);
-    } else {
-        OBJECT* dropObject = lookupObject(linkedObject);
-        BatPickupAction* action = new BatPickupAction(newObject, 8, 0, linkedObject, dropObject->room, dropObject->x, dropObject->y);
-        sync->BroadcastAction(action);
+    // A NULL sync indicates this was initiated by a sync message and does not need to be rebroadcast
+    if (sync != NULL) {
+        if (linkedObject == OBJECT_NONE) {
+            BatPickupAction* action = new BatPickupAction(newObject, 8, 0, OBJECT_NONE, 0, 0, 0);
+            sync->BroadcastAction(action);
+        } else {
+            OBJECT* dropObject = lookupObject(linkedObject);
+            BatPickupAction* action = new BatPickupAction(newObject, 8, 0, linkedObject, dropObject->room, dropObject->x, dropObject->y);
+            sync->BroadcastAction(action);
+        }
     }
     
     // Pick it up
     linkedObject = newObject;
     linkedObjectX = 8;
     linkedObjectY = 0;
-
+    
+    // Reset the timer
+    batFedUpTimer = 0;
 }
 
-void Bat::broadcastMoveAction(Sync *sync) {
-    BatMoveAction* action = new BatMoveAction(room, x, y, movementX, movementY);
+void Bat::broadcastMoveAction(Sync *sync, BALL* objectBall) {
+    int distance = objectBall->distanceTo(x, y);
+    BatMoveAction* action = new BatMoveAction(room, x, y, movementX, movementY, distance);
     sync->BroadcastAction(action);
 }
 

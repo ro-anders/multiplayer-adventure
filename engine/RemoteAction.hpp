@@ -177,11 +177,13 @@ public:
 class BatMoveAction: public MoveAction {
 public:
     
+    int distance;           // Distance from player reporting position
+
     static const char* CODE;
-    
+
     BatMoveAction();
     
-    BatMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
+    BatMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely, int inDistance);
     
     ~BatMoveAction();
     

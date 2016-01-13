@@ -87,3 +87,17 @@ BALL::BALL(int inPlayerNum, Portcullis* inHomeGate) :
     homeGate(inHomeGate) {}
 
 BALL::~BALL() {}
+
+int BALL::distanceTo(int otherX, int otherY) {
+    // Figure out the distance (which is really the max difference along one axis)
+    int xdist = this->x/2 - otherX;
+    if (xdist < 0) {
+        xdist = -xdist;
+    }
+    int ydist = this->y/2 - otherY;
+    if (ydist < 0) {
+        ydist = -ydist;
+    }
+    int dist = (xdist > ydist ? xdist : ydist);
+    return dist;
+}
