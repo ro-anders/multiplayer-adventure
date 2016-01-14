@@ -1944,23 +1944,42 @@ void PickupPutdown()
                     action->setDrop(dropIndex, dropped->room, dropped->x, dropped->y);
                 }
                 
-                // Pick up this object!
-                objectBall->linkedObject = hitIndex;
-
-                // calculate the XY offsets from the ball's position
-                objectBall->linkedObjectX = objectDefs[hitIndex]->x - (objectBall->x/2);
-                objectBall->linkedObjectY = objectDefs[hitIndex]->y - (objectBall->y/2);
-                
-                // Take it away from anyone else if they were holding it.
-                for(int ctr=0; ctr<numPlayers; ++ctr) {
-                    if ((ctr != thisPlayer) && (gameBoard->getPlayer(ctr)->linkedObject == hitIndex)) {
-                        gameBoard->getPlayer(ctr)->linkedObject = OBJECT_NONE;
+                // If the bat is holding the object we do some of the pickup things but not all.
+                // We drop our current object and play the pickup sound, but we don't actually
+                // pick up the object.
+                // NOTE: Discrepancy here between C++ port behavior and original Atari behavior so
+                // not totally sure what should be done.  As a guess, we just set linkedObject to none and
+                // play the sound.
+                if (bat->linkedObject == hitIndex) {
+                    if (dropIndex > OBJECT_NONE) {
+                        // Drop our current object and broadcast it
+                        objectBall->linkedObject = OBJECT_NONE;
+                        sync->BroadcastAction(action);
+                    } else {
+                        // Don't need the action.
+                        delete action;
                     }
-                }
+                } else {
+                
+                    // Pick up this object!
+                    objectBall->linkedObject = hitIndex;
+                    
+                    // calculate the XY offsets from the ball's position
+                    objectBall->linkedObjectX = objectDefs[hitIndex]->x - (objectBall->x/2);
+                    objectBall->linkedObjectY = objectDefs[hitIndex]->y - (objectBall->y/2);
+                    
+                    // Take it away from anyone else if they were holding it.
+                    for(int ctr=0; ctr<numPlayers; ++ctr) {
+                        if ((ctr != thisPlayer) && (gameBoard->getPlayer(ctr)->linkedObject == hitIndex)) {
+                            gameBoard->getPlayer(ctr)->linkedObject = OBJECT_NONE;
+                        }
+                    }
+                    
+                    // Broadcast that we picked up an object
+                    action->setPickup(hitIndex, objectBall->linkedObjectX, objectBall->linkedObjectY);
+                    sync->BroadcastAction(action);
 
-                // Broadcast that we picked up an object
-                action->setPickup(hitIndex, objectBall->linkedObjectX, objectBall->linkedObjectY);
-                sync->BroadcastAction(action);
+                }
                 
                 // Play the sound
                 Platform_MakeSound(SOUND_PICKUP);
