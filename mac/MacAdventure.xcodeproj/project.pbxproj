@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		403175301C49C5CC0051B60C /* putdown.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4031752F1C49C5CC0051B60C /* putdown.wav */; };
+		403175361C49C6010051B60C /* dragondie.wav in Resources */ = {isa = PBXBuildFile; fileRef = 403175311C49C6010051B60C /* dragondie.wav */; };
+		403175371C49C6010051B60C /* eaten.wav in Resources */ = {isa = PBXBuildFile; fileRef = 403175321C49C6010051B60C /* eaten.wav */; };
+		403175381C49C6010051B60C /* pickup.wav in Resources */ = {isa = PBXBuildFile; fileRef = 403175331C49C6010051B60C /* pickup.wav */; };
+		403175391C49C6010051B60C /* roar.wav in Resources */ = {isa = PBXBuildFile; fileRef = 403175341C49C6010051B60C /* roar.wav */; };
+		4031753A1C49C6010051B60C /* won.wav in Resources */ = {isa = PBXBuildFile; fileRef = 403175351C49C6010051B60C /* won.wav */; };
 		403DA0921C20C722002FF18B /* Ball.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 403DA0901C20C722002FF18B /* Ball.cpp */; };
 		40509AAA1C05E9750008BACF /* ActionQueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40509AA41C05E9750008BACF /* ActionQueue.cpp */; };
 		40509AAB1C05E9750008BACF /* GameObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40509AA61C05E9750008BACF /* GameObject.cpp */; };
@@ -42,6 +48,12 @@
 		29B97319FDCFA39411CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* MacAdventure_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MacAdventure_Prefix.pch; sourceTree = "<group>"; };
+		4031752F1C49C5CC0051B60C /* putdown.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = putdown.wav; path = ../sounds/putdown.wav; sourceTree = "<group>"; };
+		403175311C49C6010051B60C /* dragondie.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = dragondie.wav; path = ../sounds/dragondie.wav; sourceTree = "<group>"; };
+		403175321C49C6010051B60C /* eaten.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = eaten.wav; path = ../sounds/eaten.wav; sourceTree = "<group>"; };
+		403175331C49C6010051B60C /* pickup.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = pickup.wav; path = ../sounds/pickup.wav; sourceTree = "<group>"; };
+		403175341C49C6010051B60C /* roar.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = roar.wav; path = ../sounds/roar.wav; sourceTree = "<group>"; };
+		403175351C49C6010051B60C /* won.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = won.wav; path = ../sounds/won.wav; sourceTree = "<group>"; };
 		403DA0901C20C722002FF18B /* Ball.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Ball.cpp; path = ../engine/Ball.cpp; sourceTree = "<group>"; };
 		403DA0911C20C722002FF18B /* Ball.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Ball.hpp; path = ../engine/Ball.hpp; sourceTree = "<group>"; };
 		40509AA41C05E9750008BACF /* ActionQueue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ActionQueue.cpp; path = ../engine/ActionQueue.cpp; sourceTree = "<group>"; };
@@ -160,6 +172,12 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				403175311C49C6010051B60C /* dragondie.wav */,
+				403175321C49C6010051B60C /* eaten.wav */,
+				403175331C49C6010051B60C /* pickup.wav */,
+				403175341C49C6010051B60C /* roar.wav */,
+				403175351C49C6010051B60C /* won.wav */,
+				4031752F1C49C5CC0051B60C /* putdown.wav */,
 				D009FDD10BCA0A64007C5A37 /* MacAdventureIcon.icns */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
@@ -278,7 +296,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				403175391C49C6010051B60C /* roar.wav in Resources */,
+				403175301C49C5CC0051B60C /* putdown.wav in Resources */,
 				8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */,
+				403175381C49C6010051B60C /* pickup.wav in Resources */,
+				403175371C49C6010051B60C /* eaten.wav in Resources */,
+				403175361C49C6010051B60C /* dragondie.wav in Resources */,
+				4031753A1C49C6010051B60C /* won.wav in Resources */,
 				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
 				D009FDD20BCA0A64007C5A37 /* MacAdventureIcon.icns in Resources */,
 			);
