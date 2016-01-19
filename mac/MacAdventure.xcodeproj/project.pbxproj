@@ -25,6 +25,7 @@
 		4084EC8F1BF22AEE00E8F375 /* Adventure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4084EC8B1BF22AEE00E8F375 /* Adventure.cpp */; };
 		4084EC901BF22AEE00E8F375 /* Sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4084EC8D1BF22AEE00E8F375 /* Sync.cpp */; };
 		408E43D11C3C6D8C00E0715B /* Board.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 408E43CF1C3C6D8C00E0715B /* Board.cpp */; };
+		4092E1E21C4E731900B2AEBB /* Map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4092E1E01C4E731900B2AEBB /* Map.cpp */; };
 		40B345F91C25A2B4001EE63C /* args.m in Sources */ = {isa = PBXBuildFile; fileRef = 40B345F81C25A2B4001EE63C /* args.m */; };
 		40B733E81C3F1AF300FB72B3 /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40B733E61C3F1AF300FB72B3 /* Logger.cpp */; };
 		40B733EB1C3F1B9100FB72B3 /* MacLogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40B733E91C3F1B9100FB72B3 /* MacLogger.cpp */; };
@@ -77,6 +78,8 @@
 		4084EC8D1BF22AEE00E8F375 /* Sync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Sync.cpp; path = ../engine/Sync.cpp; sourceTree = "<group>"; };
 		408E43CF1C3C6D8C00E0715B /* Board.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Board.cpp; path = ../engine/Board.cpp; sourceTree = "<group>"; };
 		408E43D01C3C6D8C00E0715B /* Board.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Board.hpp; path = ../engine/Board.hpp; sourceTree = "<group>"; };
+		4092E1E01C4E731900B2AEBB /* Map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Map.cpp; path = ../engine/Map.cpp; sourceTree = "<group>"; };
+		4092E1E11C4E731900B2AEBB /* Map.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Map.hpp; path = ../engine/Map.hpp; sourceTree = "<group>"; };
 		40B345F81C25A2B4001EE63C /* args.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = args.m; sourceTree = "<group>"; };
 		40B733E61C3F1AF300FB72B3 /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Logger.cpp; path = ../engine/Logger.cpp; sourceTree = "<group>"; };
 		40B733E71C3F1AF300FB72B3 /* Logger.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Logger.hpp; path = ../engine/Logger.hpp; sourceTree = "<group>"; };
@@ -243,6 +246,8 @@
 				40D0F81D1C356A360096980F /* YTransport.hpp */,
 				40B733E61C3F1AF300FB72B3 /* Logger.cpp */,
 				40B733E71C3F1AF300FB72B3 /* Logger.hpp */,
+				4092E1E01C4E731900B2AEBB /* Map.cpp */,
+				4092E1E11C4E731900B2AEBB /* Map.hpp */,
 			);
 			name = engine;
 			sourceTree = "<group>";
@@ -327,6 +332,7 @@
 				4084EC901BF22AEE00E8F375 /* Sync.cpp in Sources */,
 				403DA0921C20C722002FF18B /* Ball.cpp in Sources */,
 				40B733EB1C3F1B9100FB72B3 /* MacLogger.cpp in Sources */,
+				4092E1E21C4E731900B2AEBB /* Map.cpp in Sources */,
 				40E47FB21BF22BA20052B84E /* Controller.mm in Sources */,
 				406CD1541C0C7C17002477BB /* Dragon.cpp in Sources */,
 				40509AAB1C05E9750008BACF /* GameObject.cpp in Sources */,
