@@ -2,6 +2,10 @@
 
 #include "Map.hpp"
 
+#include <stdlib.h>
+#include "Portcullis.hpp"
+#include "Room.hpp"
+
 //
 // Room graphics
 //
@@ -321,65 +325,97 @@ static const byte roomGfxBlackMazeEntry [] =
     0xF0,0xFF,0x0F           // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
 };
 
+int Map::LONG_WAY = 5;
+
 Map::Map(int numPlayers, int gameMapLayout) {
+    roomDefs = (ROOM**)malloc(numRooms * sizeof(ROOM*));
+    defaultRooms();
     ConfigureMaze(numPlayers, gameMapLayout);
+    ComputeDistances(0 , NULL);
 }
 
-ROOM Map::roomDefs[] =
-{
-    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE,                                       // 0 - Number Room
-        NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM},
-    { roomGfxBelowYellowCastle, ROOMFLAG_LEFTTHINWALL, COLOR_OLIVEGREEN,                    // 1 - Main Hall Left
-        BLUE_MAZE_HALL_END, MAIN_HALL_CENTER,BLACK_CASTLE, MAIN_HALL_RIGHT},
-    { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_LIMEGREEN,                             // 2 - Main Hall Center
-        GOLD_CASTLE, MAIN_HALL_RIGHT, BLUE_MAZE_JADE_END, MAIN_HALL_LEFT },
-    { roomGfxSideCorridor, ROOMFLAG_RIGHTTHINWALL, COLOR_TAN,                                 // 3 - Main Hall Right
-        COPPER_CASTLE, MAIN_HALL_LEFT,SOUTH_EAST_ROOM, MAIN_HALL_CENTER },
-    { roomGfxBlueMazeTop, ROOMFLAG_NONE, COLOR_BLUE, 0x10,0x05,0x07,0x06 },       // 4 - Blue Maze next to Black Castle
-    { roomGfxBlueMaze1, ROOMFLAG_NONE, COLOR_BLUE, 0x1D,0x06,0x08,0x04 },       // 5 - Blue Maze next to Jade Castle
-    { roomGfxBlueMazeBottom, ROOMFLAG_NONE, COLOR_BLUE, 0x07,0x04,0x03,0x05 },       // 6 - Large Room at Bottom of Blue Maze
-    { roomGfxBlueMazeCenter, ROOMFLAG_NONE, COLOR_BLUE, 0x04,0x08,0x06,0x08 },       // 7 - Blue Maze with all vertical paths
-    { roomGfxBlueMazeEntry, ROOMFLAG_NONE, COLOR_BLUE, 0x05,0x07,0x01,0x07 },       // 8 - Blue Maze next to Main Hall
-    { roomGfxMazeMiddle, ROOMFLAG_NONE, COLOR_LTGRAY, 0x0A,0x0A,0x0B,0x0A },       // 9 - Maze Middle
-    { roomGfxMazeEntry, ROOMFLAG_NONE, COLOR_LTGRAY, 0x03,0x09,0x09,0x09 },       // A - Maze Entry
-    { roomGfxMazeSide, ROOMFLAG_NONE, COLOR_LTGRAY, 0x09,0x0C,0x1C,0x0D },       // B - Maze Side
-    { roomGfxSideCorridor, ROOMFLAG_RIGHTTHINWALL, COLOR_LTCYAN,                            // C - South Hall Right
-        COPPER_CASTLE, MAIN_HALL_LEFT,SOUTH_EAST_ROOM, 0x0B },
-    { roomGfxSideCorridor, ROOMFLAG_LEFTTHINWALL, COLOR_DKGREEN, 0x0F,0x0B,0x0E,0x0C },       // D - Side Corridor
-    { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_CYAN, 0x0D,0x10,0x0F,0x10 },       // E - Top Entry Room
-    { roomGfxCastle, ROOMFLAG_NONE, COLOR_WHITE, 0x0E,0x0F,0x0D,0x0F },       // F - White Castle
-    { roomGfxCastle, ROOMFLAG_NONE, COLOR_BLACK, 0x01,0x1C,0x04,0x1C },       // 10 - Black Castle
-    { roomGfxCastle, ROOMFLAG_NONE, COLOR_YELLOW, 0x06,0x03,0x02,0x01 },            // 11 - Yellow Castle
-    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_YELLOW, 0x12,0x12,0x12,0x12 },       // 12 - Yellow Castle Entry
-    { roomGfxBlackMaze1, ROOMFLAG_NONE, COLOR_LTGRAY, 0x15,0x14,0x15,0x16 },       // 13 - Black Maze #1
-    { roomGfxBlackMaze2, ROOMFLAG_MIRROR, COLOR_LTGRAY, 0x16,0x15,0x16,0x13 },       // 14 - Black Maze #2
-    { roomGfxBlackMaze3, ROOMFLAG_MIRROR, COLOR_LTGRAY, 0x13,0x16,0x13,0x14 },       // 15 - Black Maze #3
-    { roomGfxBlackMazeEntry, ROOMFLAG_NONE, COLOR_LTGRAY, 0x14,0x13,0x1B,0x15 },       // 16 - Black Maze Entry
-    { roomGfxRedMaze1, ROOMFLAG_NONE, COLOR_RED, 0x19,0x18,0x19,0x18 },       // 17 - Red Maze #1
-    { roomGfxRedMazeTop, ROOMFLAG_NONE, COLOR_RED, 0x1A,0x17,0x1A,0x17 },       // 18 - Top of Red Maze
-    { roomGfxRedMazeBottom, ROOMFLAG_NONE, COLOR_RED, 0x17,0x1A,0x17,0x1A },       // 19 - Bottom of Red Maze
-    { roomGfxWhiteCastleEntry, ROOMFLAG_NONE, COLOR_RED, 0x18,0x19,0x18,0x19 },       // 1A - White Castle Entry
-    { roomGfxTwoExitRoom, ROOMFLAG_NONE, COLOR_RED,                                       // 1B - Black Castle First Room
-        BLACK_INNERMOST_ROOM,  BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM },
-    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE,                               // 1C - Second Room in Black Castle
-        SOUTH_EAST_ROOM, BLUE_MAZE_VERT_PATHS, BLACK_FOYER, BLUE_MAZE_HALL_END},    // TODO: Used to be north of se room.
-    { roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_RED,                                        // 1D - South East Room
-        MAIN_HALL_RIGHT, MAIN_HALL_LEFT, BLACK_CASTLE, MAIN_HALL_RIGHT },
-    { roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_PURPLE, 0x06,0x01,0x06,0x03 },        // 1E - Name Room
-    { roomGfxCastle3, ROOMFLAG_NONE, COLOR_JADE, 0x1D, 0x06, 0x05, 0x04 },            // 1F - Jade Castle
-    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_JADE, 0x20, 0x20, 0x20, 0x20 },       // 20 - Copper Castle Entry
-    { roomGfxCastle2, ROOMFLAG_NONE, COLOR_COPPER,
-        BLUE_MAZE_LARGE_ROOM, MAIN_HALL_LEFT, MAIN_HALL_RIGHT, GOLD_CASTLE},
-    { roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_COPPER,                                     // 21 - Copper Foyer
-        COPPER_FOYER, COPPER_FOYER, COPPER_FOYER, COPPER_FOYER}
-};
+int Map::numRooms = COPPER_FOYER + 1;
+
+void Map::defaultRooms() {
+    
+    addRoom(NUMBER_ROOM, new ROOM(roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE,                       // 0x00
+                                  NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM, "Number Room"));
+    addRoom(MAIN_HALL_LEFT, new ROOM(roomGfxBelowYellowCastle, ROOMFLAG_LEFTTHINWALL, COLOR_OLIVEGREEN, // 0x01
+                                     BLUE_MAZE_1, MAIN_HALL_CENTER,BLACK_CASTLE, MAIN_HALL_RIGHT, "Main Hall Left"));
+    addRoom(MAIN_HALL_CENTER, new ROOM(roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_LIMEGREEN,        // 0x02
+                                       GOLD_CASTLE, MAIN_HALL_RIGHT, BLUE_MAZE_2, MAIN_HALL_LEFT, "Main Hall Center"));
+    addRoom(MAIN_HALL_RIGHT , new ROOM(roomGfxSideCorridor, ROOMFLAG_RIGHTTHINWALL, COLOR_TAN,          // 0x03
+                                    COPPER_CASTLE, MAIN_HALL_LEFT,SOUTHEAST_ROOM, MAIN_HALL_CENTER, "Main Hall Right"));
+    addRoom(BLUE_MAZE_5, new ROOM(roomGfxBlueMazeTop, ROOMFLAG_NONE, COLOR_BLUE,                        // 0x04
+                                  0x10,0x05,0x07,0x06, "Blue Maze 5"));
+    addRoom(BLUE_MAZE_2, new ROOM(roomGfxBlueMaze1, ROOMFLAG_NONE, COLOR_BLUE,                          // 0x05
+                                  0x1D,0x06,0x08,0x04, "Blue Maze 2"));
+    addRoom(BLUE_MAZE_3, new ROOM(roomGfxBlueMazeBottom, ROOMFLAG_NONE, COLOR_BLUE,                     // 0x06
+                                  0x07,0x04,0x03,0x05, "Blue Maze 3"));
+    addRoom(BLUE_MAZE_4, new ROOM(roomGfxBlueMazeCenter, ROOMFLAG_NONE, COLOR_BLUE,                     // 0x07
+                                  0x04,0x08,0x06,0x08, "Blue Maze 4"));
+    addRoom(BLUE_MAZE_1, new ROOM(roomGfxBlueMazeEntry, ROOMFLAG_NONE, COLOR_BLUE,                      // 0x08
+                                  0x05,0x07,0x01,0x07, "Blue Maze 1"));
+    addRoom(WHITE_MAZE_2, new ROOM(roomGfxMazeMiddle, ROOMFLAG_NONE, COLOR_LTGRAY,                      // 0x09
+                                   0x0A,0x0A,0x0B,0x0A, "White Maze 1"));
+    addRoom(WHITE_MAZE_1, new ROOM(roomGfxMazeEntry, ROOMFLAG_NONE, COLOR_LTGRAY,                       // 0x0A
+                                   0x03,0x09,0x09,0x09, "White Maze 2"));
+    addRoom(WHITE_MAZE_3, new ROOM(roomGfxMazeSide, ROOMFLAG_NONE, COLOR_LTGRAY,                        // 0x0B
+                                   0x09,0x0C,0x1C,0x0D, "White Maze 3"));
+    addRoom(SOUTH_HALL_RIGHT, new ROOM(roomGfxSideCorridor, ROOMFLAG_RIGHTTHINWALL, COLOR_LTCYAN,       // 0x0C
+                                       COPPER_CASTLE, MAIN_HALL_LEFT,SOUTHEAST_ROOM, WHITE_MAZE_3, "South Hall RIGHT"));
+    addRoom(SOUTH_HALL_LEFT, new ROOM(roomGfxSideCorridor, ROOMFLAG_LEFTTHINWALL, COLOR_DKGREEN,        // 0x0D
+                                      0x0F,0x0B,0x0E,0x0C, "South Hall Left"));                         // 0x0E
+    addRoom(SOUTHWEST_ROOM, new ROOM(roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_CYAN,
+                                     0x0D,0x10,0x0F,0x10, "Southwest Room"));
+    addRoom(WHITE_CASTLE, new ROOM(roomGfxCastle, ROOMFLAG_NONE, COLOR_WHITE,                           // 0x0F
+                                   0x0E,0x0F,0x0D,0x0F, "White Castle"));
+    addRoom(BLACK_CASTLE, new ROOM(roomGfxCastle, ROOMFLAG_NONE, COLOR_BLACK,                           // 0x10
+                                   0x01,0x1C,0x04,0x1C, "Black Castle"));
+    addRoom(GOLD_CASTLE, new ROOM(roomGfxCastle, ROOMFLAG_NONE, COLOR_YELLOW,                           // 0x11
+                                  0x06,0x03,0x02,0x01, "Gold Castle"));
+    addRoom(GOLD_FOYER, new ROOM(roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_YELLOW,                        // 0x12
+                                 GOLD_FOYER,GOLD_FOYER,GOLD_FOYER,GOLD_FOYER, "Gold Foyer"));
+    addRoom(BLACK_MAZE_1, new ROOM(roomGfxBlackMaze1, ROOMFLAG_NONE, COLOR_LTGRAY,                      // 0x13
+                                   0x15,0x14,0x15,0x16, "Black Maze 1"));
+    addRoom(BLACK_MAZE_2, new ROOM(roomGfxBlackMaze2, ROOMFLAG_MIRROR, COLOR_LTGRAY,                    // 0x14
+                                   0x16,0x15,0x16,0x13, "Black Maze 2"));
+    addRoom(BLACK_MAZE_3, new ROOM(roomGfxBlackMaze3, ROOMFLAG_MIRROR, COLOR_LTGRAY,                    // 0x15
+                                   0x13,0x16,0x13,0x14, "Black Maze 3"));
+    addRoom(BLACK_MAZE_ENTRY, new ROOM(roomGfxBlackMazeEntry, ROOMFLAG_NONE, COLOR_LTGRAY,              // 0x16
+                                       0x14,0x13,0x1B,0x15, "Black Maze Entry"));
+    addRoom(RED_MAZE_3, new ROOM(roomGfxRedMaze1, ROOMFLAG_NONE, COLOR_RED,                             // 0x17
+                                 0x19,0x18,0x19,0x18, "Red Maze 3"));
+    addRoom(RED_MAZE_2, new ROOM(roomGfxRedMazeTop, ROOMFLAG_NONE, COLOR_RED,                           // 0x18
+                                 0x1A,0x17,0x1A,0x17, "Red Maze 2"));
+    addRoom(RED_MAZE_4, new ROOM(roomGfxRedMazeBottom, ROOMFLAG_NONE, COLOR_RED,                        // 0x19
+                                 0x17,0x1A,0x17,0x1A, "Red Maze4 "));
+    addRoom(RED_MAZE_1, new ROOM(roomGfxWhiteCastleEntry, ROOMFLAG_NONE, COLOR_RED,                     // 0x1A
+                                 0x18,0x19,0x18,0x19, "Red Maze 1"));
+    addRoom(BLACK_FOYER, new ROOM(roomGfxTwoExitRoom, ROOMFLAG_NONE, COLOR_RED,                         // 0x1B
+                        BLACK_INNERMOST_ROOM,  BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, "Black Foyer"));
+    addRoom(BLACK_INNERMOST_ROOM, new ROOM(roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE,              // 0x1C
+        SOUTHEAST_ROOM, BLUE_MAZE_4, BLACK_FOYER, BLUE_MAZE_1, "Black Innermost Room"));    // TODO: Used to be north of se room.
+    addRoom(SOUTHEAST_ROOM, new ROOM(roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_RED,                     // 0x1D
+                                     MAIN_HALL_RIGHT, MAIN_HALL_LEFT, BLACK_CASTLE, MAIN_HALL_RIGHT, "Southeast Room"));
+    addRoom(ROBINETT_ROOM, new ROOM(roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_PURPLE,              // 0x1E
+                                    0x06,0x01,0x06,0x03, "Robinett Room"));
+    addRoom(JADE_CASTLE, new ROOM(roomGfxCastle3, ROOMFLAG_NONE, COLOR_JADE,                            // 0x1F
+                                  SOUTHEAST_ROOM, BLUE_MAZE_3, BLUE_MAZE_2, BLUE_MAZE_5, "Jade Castle"));
+    addRoom(JADE_FOYER, new ROOM(roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_JADE,                          // 0x20
+                                 JADE_FOYER, JADE_FOYER, JADE_FOYER, JADE_FOYER, "Jade Foyer"));
+    addRoom(COPPER_CASTLE, new ROOM(roomGfxCastle2, ROOMFLAG_NONE, COLOR_COPPER,                        // 0x21
+                                    BLUE_MAZE_3, MAIN_HALL_LEFT, MAIN_HALL_RIGHT, GOLD_CASTLE, "Copper Castle"));
+    addRoom(COPPER_FOYER, new ROOM(roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_COPPER,                      // 0x22
+                                   COPPER_FOYER, COPPER_FOYER, COPPER_FOYER, COPPER_FOYER, "Copper Foyer"));
+}
 
 void Map::ConfigureMaze(int numPlayers, int gameMapLayout) {
     
     // Add the Jade Castle if 3 players
     if (numPlayers > 2) {
-        roomDefs[BLUE_MAZE_JADE_END].roomUp = JADE_CASTLE;
-        roomDefs[BLUE_MAZE_JADE_END].graphicsData = roomGfxBlueMaze1B;
+        roomDefs[BLUE_MAZE_2]->roomUp = JADE_CASTLE;
+        roomDefs[BLUE_MAZE_2]->graphicsData = roomGfxBlueMaze1B;
     }
     
     if (gameMapLayout == 0) {
@@ -387,24 +423,118 @@ void Map::ConfigureMaze(int numPlayers, int gameMapLayout) {
     } else {
         // Games 2 or 3.
         // Connect the lower half of the world.
-        roomDefs[MAIN_HALL_LEFT].roomDown = WHITE_CASTLE;
-        roomDefs[MAIN_HALL_CENTER].roomDown = GOLD_CASTLE;
-        roomDefs[MAIN_HALL_RIGHT].roomDown = WHITE_MAZE_HALL_END;
-        roomDefs[SOUTH_EAST_ROOM].roomUp = SOUTH_HALL_RIGHT;
+        roomDefs[MAIN_HALL_LEFT]->roomDown = WHITE_CASTLE;
+        roomDefs[MAIN_HALL_CENTER]->roomDown = GOLD_CASTLE;
+        roomDefs[MAIN_HALL_RIGHT]->roomDown = WHITE_MAZE_1;
+        roomDefs[SOUTHEAST_ROOM]->roomUp = SOUTH_HALL_RIGHT;
         
         // Move the Copper Castle to the White Maze
-        roomDefs[MAIN_HALL_RIGHT].graphicsData = roomGfxLeftOfName;
-        roomDefs[MAIN_HALL_RIGHT].roomUp = BLUE_MAZE_LARGE_ROOM;
-        roomDefs[COPPER_CASTLE].roomDown = SOUTH_HALL_RIGHT;
+        roomDefs[MAIN_HALL_RIGHT]->graphicsData = roomGfxLeftOfName;
+        roomDefs[MAIN_HALL_RIGHT]->roomUp = BLUE_MAZE_3;
+        roomDefs[COPPER_CASTLE]->roomDown = SOUTH_HALL_RIGHT;
         // TODO: Change up, left, and right of COPPER_CASTLE
         
         // Put the Black Maze in the Black Castle
-        roomDefs[BLACK_FOYER].roomUp = BLACK_MAZE_ENTRY;
-        roomDefs[BLACK_FOYER].roomRight = BLACK_MAZE_ENTRY;
-        roomDefs[BLACK_FOYER].roomDown = BLACK_MAZE_ENTRY;
-        roomDefs[BLACK_FOYER].roomLeft = BLACK_MAZE_ENTRY;
+        roomDefs[BLACK_FOYER]->roomUp = BLACK_MAZE_ENTRY;
+        roomDefs[BLACK_FOYER]->roomRight = BLACK_MAZE_ENTRY;
+        roomDefs[BLACK_FOYER]->roomDown = BLACK_MAZE_ENTRY;
+        roomDefs[BLACK_FOYER]->roomLeft = BLACK_MAZE_ENTRY;
         
     }
+}
+
+void Map::ComputeDistances(int numPorts, Portcullis** ports) {
+    distances = (int**)malloc(numRooms*sizeof(int*));
+    for(int ctr1=0; ctr1<numRooms; ++ctr1) {
+        distances[ctr1] = (int*)malloc(numRooms*sizeof(int));
+        for(int ctr2=0; ctr2<numRooms; ++ctr2) {
+            if (ctr1 == ctr2) {
+                distances[ctr1][ctr2] = 0;
+            } else if (isNextTo(ctr1, ctr2)) {
+                distances[ctr1][ctr2] = 1;
+            } else  {
+                distances[ctr1][ctr2] = LONG_WAY;
+            }
+        }
+    }
+    
+    // Adjust for castles
+    if (numPorts > 0) {
+        for(int ctr=0; ctr<numPorts; ++ctr) {
+            Portcullis* nextPort = ports[ctr];
+            distances[nextPort->room][nextPort->insideRoom] = 1;
+            distances[nextPort->insideRoom][nextPort->room] = 1;
+        }
+    }
+    
+    // Adjust for Robinett room
+    distances[ROBINETT_ROOM][MAIN_HALL_LEFT] = 1;
+    distances[MAIN_HALL_LEFT][ROBINETT_ROOM] = 1;
+    distances[ROBINETT_ROOM][MAIN_HALL_RIGHT] = 1;
+    distances[MAIN_HALL_RIGHT][ROBINETT_ROOM] = 1;
+    
+    // Remove paths that aren't really paths because full length walls block them.
+    distances[MAIN_HALL_RIGHT][BLUE_MAZE_3] = LONG_WAY;
+    distances[BLUE_MAZE_3][MAIN_HALL_RIGHT] = LONG_WAY;
+    distances[MAIN_HALL_LEFT][MAIN_HALL_RIGHT] = LONG_WAY;
+    distances[MAIN_HALL_RIGHT][MAIN_HALL_LEFT] = LONG_WAY;
+    distances[MAIN_HALL_LEFT][BLACK_CASTLE] = LONG_WAY;
+    distances[BLACK_CASTLE][MAIN_HALL_LEFT] = LONG_WAY;
+    distances[WHITE_CASTLE][SOUTHWEST_ROOM] = LONG_WAY;
+    distances[SOUTHWEST_ROOM][WHITE_CASTLE] = LONG_WAY;
+    distances[SOUTH_HALL_LEFT][SOUTH_HALL_RIGHT] = LONG_WAY;
+    distances[SOUTH_HALL_RIGHT][SOUTH_HALL_LEFT] = LONG_WAY;
+
+    int tracker = LONG_WAY;
+    // Now compute the distances using isNextTo()
+    for(int step = 2; step < LONG_WAY; ++step) {
+        for(int ctr1=0; ctr1<numRooms; ++ctr1) {
+            printf("Computing rooms %d steps from %s\n", step, roomDefs[ctr1]->label);
+            for(int ctr2=0; ctr2<numRooms; ++ctr2) {
+                if (distances[ctr1][ctr2] == LONG_WAY) {
+                    printf("  checking from %s to %s\n", roomDefs[ctr1]->label, roomDefs[ctr2]->label);
+                    for(int ctr3=0; ctr3<numRooms; ++ctr3) {
+                        if ((distances[ctr3][ctr2] < step) && (distances[ctr1][ctr3] == 1)) {
+                            printf("    %s is next to %s\n", roomDefs[ctr1]->label, roomDefs[ctr3]->label);
+                            distances[ctr1][ctr2] = distances[ctr3][ctr2] + 1;
+                            printf("    distance from %s to %s = %d\n", roomDefs[ctr1]->label, roomDefs[ctr2]->label,
+                                   distances[ctr1][ctr2]);
+
+                            break;
+                        }
+                    }
+                }
+                if (distances[MAIN_HALL_RIGHT][MAIN_HALL_CENTER] != tracker) {
+                    tracker = distances[MAIN_HALL_RIGHT][MAIN_HALL_CENTER];
+                }
+            }
+        }
+    }
+    
+}
+
+void Map::addRoom(int key, ROOM* newRoom) {
+    roomDefs[key] = newRoom;
+    newRoom->setIndex(key);
+}
+
+
+int Map::distance(int fromRoom, int toRoom) {
+    return distances[fromRoom][toRoom];
+}
+
+bool Map::isNextTo(int room1, int room2) {
+    ROOM* robj1 = roomDefs[room1];
+    ROOM* robj2 = roomDefs[room2];
+    return (((robj1->roomUp == room2) && (robj2->roomDown == room1)) ||
+            ((robj1->roomRight == room2) && (robj2->roomLeft == room1)) ||
+            ((robj1->roomDown == room2) && (robj2->roomUp == room1)) ||
+            ((robj1->roomLeft == room2) && (robj2->roomRight == room1)));
+    
+}
+
+void Map::addCastles(int numPorts, Portcullis** ports) {
+    ComputeDistances(numPorts, ports);
 }
 
 

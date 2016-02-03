@@ -8,22 +8,8 @@
 #include "color.h"
 
 
-typedef struct ROOM
-{
-    const byte* graphicsData;   // pointer to room graphics data
-    byte flags;                 // room flags - see below
-    int color;                  // foreground color
-    int roomUp;                 // index of room UP
-    int roomRight;              // index of room RIGHT
-    int roomDown;               // index of room DOWN
-    int roomLeft;               // index of room LEFT
-}ROOM;
-#define ROOMFLAG_NONE           0x00
-#define ROOMFLAG_MIRROR         0x01 // bit 0 - 1 if graphics are mirrored, 0 for reversed
-#define ROOMFLAG_LEFTTHINWALL   0x02 // bit 1 - 1 for left thin wall
-#define ROOMFLAG_RIGHTTHINWALL  0x04 // bit 2 - 1 for right thin wall
-
-
+class Portcullis;
+class ROOM;
 
 enum
 {
@@ -31,52 +17,95 @@ enum
     MAIN_HALL_LEFT=0x01,
     MAIN_HALL_CENTER=0x02,
     MAIN_HALL_RIGHT=0x03,
-    BLUE_MAZE_BLACK_END=0x04,
-    BLUE_MAZE_JADE_END=0x05,
-    BLUE_MAZE_LARGE_ROOM=0x06,
-    BLUE_MAZE_VERT_PATHS=0x07,
-    BLUE_MAZE_HALL_END=0x08,
-    
-    WHITE_MAZE_HALL_END=0x0a,
-    
-    SOUTH_HALL_RIGHT=0x0c,
-    SOUTH_HALL_LEFT=0x0d,
-    
-    WHITE_CASTLE=0x0f,
+    BLUE_MAZE_5=0x04, // Down from the black castle
+    BLUE_MAZE_2=0x05, // Down from the jade castle
+    BLUE_MAZE_3=0x06, // The big center room (where Art3mis waited)
+    BLUE_MAZE_4=0x07, // 2 down from the black castle
+    BLUE_MAZE_1=0x08, // Up from the main hall
+    WHITE_MAZE_2=0x09, // Catacombs to white castle, second one on way to castle
+    WHITE_MAZE_1=0x0A, // Catacombs to white castle, down from main hall
+    WHITE_MAZE_3=0x0B, // Catacombs to white castle, right of south hall left
+    SOUTH_HALL_RIGHT=0x0C,
+    SOUTH_HALL_LEFT=0x0D,
+    SOUTHWEST_ROOM=0x0E, // Two down from white castle
+    WHITE_CASTLE=0x0F,
     BLACK_CASTLE=0x10,
     GOLD_CASTLE=0x11,
-    
+    GOLD_FOYER=0x12,
     BLACK_MAZE_1=0x13,
     BLACK_MAZE_2=0x14,
     BLACK_MAZE_3=0x15,
     BLACK_MAZE_ENTRY=0x16,
-    
-    BLACK_FOYER=0x1b,
-    BLACK_INNERMOST_ROOM=0x1c,
-    SOUTH_EAST_ROOM=0x1d, // Southeast corner of the world.  Level 1 = south of main hall, Level 2 = south of south hall
-    
-    JADE_CASTLE=0x1f,
+    RED_MAZE_3=0x17,
+    RED_MAZE_2=0x18,
+    RED_MAZE_4=0x19,
+    RED_MAZE_1=0x1A,
+    BLACK_FOYER=0x1B,
+    BLACK_INNERMOST_ROOM=0x1C,
+    SOUTHEAST_ROOM=0x1D, // Two down from copper castle (moves with castle in different levels)
+    ROBINETT_ROOM=0x1E,
+    JADE_CASTLE=0x1F,
     JADE_FOYER=0x20,
     COPPER_CASTLE=0x21,
     COPPER_FOYER=0x22
 };
 
-
 class Map {
 public:
-    static ROOM roomDefs[]; // TODO: Migrate to being private with accessors.
+    ROOM** roomDefs; // TODO: Migrate to being private with accessors.
+    
+    static int LONG_WAY;
     
     Map(int numPlayers, int gameMapLayout);
     
     ~Map();
     
+    /**
+     * Adds a room to the map.
+     */
+    void addRoom(int key, ROOM* room);
+    
+    /**
+     * Return the number of rooms in the map.
+     */
+    int getNumRooms();
+    
+    /**
+     * Lookup a room in the map
+     */
+    ROOM* getRoom(int key);
+    
+    /**
+     * Gives the distance from one room to the other, meaning how many rooms
+     * you have to pass through to get from one room to the other.
+     * Rooms right next to each other will have a distance of 1.  Rooms separated by a
+     * single, third room will have a distance of 2.  Rooms a long distance away will
+     * simply be reported as having LONG_WAY as a distance.
+     */
+    int distance(int fromRoom, int toRoom); // TODO: This should be a method on ROOM
+    
+    /**
+     * Map needs to know about portcullises in order to compute distances between inside a castle and outside.
+     */
+    void addCastles(int numPorts, Portcullis** ports);
+    
 private:
+    
+    static int numRooms;
+    
+    int** distances;
+    
+    void defaultRooms();
     
     /**
      * Map is initially setup for game 1 with 2 players.  This adjusts the map for the actual game
      * about to be played.
      */
     void ConfigureMaze(int numPlayers, int gameMapLayout);
+    
+    void ComputeDistances(int numPorts, Portcullis** ports);
+    
+    bool isNextTo(int room1, int room2);
 
     
 };

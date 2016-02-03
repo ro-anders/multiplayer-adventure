@@ -31,6 +31,7 @@
 #include "GameObject.hpp"
 #include "Map.hpp"
 #include "Portcullis.hpp"
+#include "Room.hpp"
 #include "Sync.hpp"
 #include "Transport.hpp"
 
@@ -400,7 +401,7 @@ static Board* gameBoard;
 //
 // Indexed array of all rooms and their properties
 //
-static ROOM* roomDefs = NULL;
+static ROOM** roomDefs = NULL;
 static Map* gameMap = NULL;
 
 // Object locations (room and coordinate) for game 01
@@ -575,11 +576,12 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     
     numPorts = numPlayers + 2;
     ports = (Portcullis**)malloc(5 * sizeof(Portcullis*)); // We always create 5 even though we might only use 4.
-    ports[0] = new Portcullis("gold gate", 0x11, 0x12, goldKey); // Gold
-    ports[1] = new Portcullis("white gate", 0x0F, 0x1A, whiteKey); // White
-    ports[2] = new Portcullis("black gate", 0x10, 0x1B, blackKey); // Black
+    ports[0] = new Portcullis("gold gate", GOLD_CASTLE, GOLD_FOYER, goldKey); // Gold
+    ports[1] = new Portcullis("white gate", WHITE_CASTLE, 0x1A, whiteKey); // White
+    ports[2] = new Portcullis("black gate", BLACK_CASTLE, BLACK_FOYER, blackKey); // Black
     ports[3] = new Portcullis("copper gate", COPPER_CASTLE, COPPER_FOYER, copperKey);
     ports[4] = new Portcullis("jade gate", JADE_CASTLE, JADE_FOYER, jadeKey);
+    gameMap->addCastles(numPorts, ports);
     
     
     // Setup the objects
@@ -655,6 +657,8 @@ void ResetPlayer(BALL* ball) {
 
 void Adventure_Run()
 {
+    printf("Distance from %s to %s = %d\n", roomDefs[objectBall->room]->label, roomDefs[gameBoard->getPlayer(1-thisPlayer)->room]->label,
+           gameMap->distance(objectBall->room, gameBoard->getPlayer(1-thisPlayer)->room));
 	sync->StartFrame();
     sync->PullLatestMessages();
 
@@ -1005,7 +1009,7 @@ void BallMovement(BALL* ball) {
             ball->previousY = ball->y;
 
             // Set the new room
-            const ROOM* currentRoom = &roomDefs[ball->room];
+            const ROOM* currentRoom = roomDefs[ball->room];
             ball->room = currentRoom->roomUp;
         }
         else if (ball->y < 0x0D*2)
@@ -1040,7 +1044,7 @@ void BallMovement(BALL* ball) {
                 // Wrap the ball to the top of the screen
                 int newY = (ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN);
 
-                const ROOM* currentRoom = &roomDefs[ball->room];
+                const ROOM* currentRoom = roomDefs[ball->room];
                 int roomDown = currentRoom->roomDown;
 
                 if (CollisionCheckBallWithWalls(roomDown, tempX, newY))
@@ -1099,7 +1103,7 @@ void BallMovement(BALL* ball) {
             else
             {
                 // Set the new room
-                const ROOM* currentRoom = &roomDefs[ball->room];
+                const ROOM* currentRoom = roomDefs[ball->room];
                 ball->room = currentRoom->roomRight;
             }
         }
@@ -1109,7 +1113,7 @@ void BallMovement(BALL* ball) {
             ball->x = ADVENTURE_SCREEN_WIDTH-5;
 
             // Set the new room
-            const ROOM* currentRoom = &roomDefs[ball->room];
+            const ROOM* currentRoom = roomDefs[ball->room];
             ball->room = currentRoom->roomLeft;
         }
         // Collision check the ball with the new Y coordinate against walls and objects
@@ -1259,14 +1263,14 @@ void MoveGroundObject()
         if (object->y > 0x6A)
         {
             object->y = 0x0D;
-            object->room = roomDefs[object->room].roomUp;
+            object->room = roomDefs[object->room]->roomUp;
         }
 
         // Check and Deal with Left
         if (object->x < 0x03)
         {
             object->x = 0x9A;
-            object->room = roomDefs[object->room].roomLeft;
+            object->room = roomDefs[object->room]->roomLeft;
         }
 
         // Check and Deal with Down
@@ -1286,7 +1290,7 @@ void MoveGroundObject()
 			if (!leftCastle)
             {
                 object->y = 0x69;
-                object->room = roomDefs[object->room].roomDown;
+                object->room = roomDefs[object->room]->roomDown;
             }
         }
 
@@ -1294,7 +1298,7 @@ void MoveGroundObject()
         if (object->x > 0x9B)
         {
             object->x = 0x03;
-            object->room = roomDefs[object->room].roomRight;
+            object->room = roomDefs[object->room]->roomRight;
         }
 
         // If the object has a linked object
@@ -1324,7 +1328,7 @@ void PrintDisplay()
 {
     // get the playfield data
     int displayedRoom = displayedRoomIndex;
-    const ROOM* currentRoom = &roomDefs[displayedRoom];
+    const ROOM* currentRoom = roomDefs[displayedRoom];
     const byte* roomData = currentRoom->graphicsData;
 
     // get the playfield color
@@ -1401,7 +1405,7 @@ void PrintDisplay()
     //
     // Draw the balls
     //
-    color = colorTable[roomDefs[displayedRoomIndex].color];
+    color = colorTable[roomDefs[displayedRoomIndex]->color];
 
 	for (int i = 0; i < numPlayers; ++i) {
 		if (objectBall->room == gameBoard->getPlayer(i)->room) {
@@ -1543,7 +1547,7 @@ void Surround()
 {
     // get the playfield data
     int roomNum = objectBall->room;
-    const ROOM* currentRoom = &roomDefs[roomNum];
+    const ROOM* currentRoom = roomDefs[roomNum];
     if (currentRoom->color == COLOR_LTGRAY)
     {
         for(int ctr=0; ctr<numPlayers; ++ctr) {
@@ -1607,12 +1611,12 @@ void Portals()
         if (port->state == Portcullis::OPEN_STATE)
         {
             // Port is unlocked
-            roomDefs[port->insideRoom].roomDown = port->room;
+            roomDefs[port->insideRoom]->roomDown = port->room;
         }
         else if (port->state == Portcullis::CLOSED_STATE)
         {
             // Port is locked
-            roomDefs[port->insideRoom].roomDown = port->insideRoom;
+            roomDefs[port->insideRoom]->roomDown = port->insideRoom;
         }
 
     }
@@ -1959,13 +1963,13 @@ void DrawObjects(int room)
         }
     }
 
-    if (roomDefs[room].flags & ROOMFLAG_LEFTTHINWALL)
+    if (roomDefs[room]->flags & ROOMFLAG_LEFTTHINWALL)
     {
         // Position missile 00 to 0D,00 - left thin wall
         COLOR color = colorTable[(colorFirst > 0) ? colorFirst : COLOR_BLACK];
         Platform_PaintPixel(color.r,color.g,color.b, 0x0D*2, 0x00*2, 4, ADVENTURE_TOTAL_SCREEN_HEIGHT);
     }
-    if (roomDefs[room].flags & ROOMFLAG_RIGHTTHINWALL)
+    if (roomDefs[room]->flags & ROOMFLAG_RIGHTTHINWALL)
     {
         // Position missile 01 to 96,00 - right thin wall
         COLOR color = colorTable[(colorFirst > 0) ? colorLast : COLOR_BLACK];
@@ -2056,7 +2060,7 @@ bool CollisionCheckBallWithWalls(int room, int x, int y)
     y-=30;
 
     // get the playfield data
-    const ROOM* currentRoom = &roomDefs[room];
+    const ROOM* currentRoom = roomDefs[room];
     const byte* roomData = currentRoom->graphicsData;
 
     // get the playfield mirror flag

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4013C0A11C503FAA00C99342 /* Room.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4013C09F1C503FAA00C99342 /* Room.cpp */; };
 		403175301C49C5CC0051B60C /* putdown.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4031752F1C49C5CC0051B60C /* putdown.wav */; };
 		403175361C49C6010051B60C /* dragondie.wav in Resources */ = {isa = PBXBuildFile; fileRef = 403175311C49C6010051B60C /* dragondie.wav */; };
 		403175371C49C6010051B60C /* eaten.wav in Resources */ = {isa = PBXBuildFile; fileRef = 403175321C49C6010051B60C /* eaten.wav */; };
@@ -49,6 +50,8 @@
 		29B97319FDCFA39411CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* MacAdventure_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MacAdventure_Prefix.pch; sourceTree = "<group>"; };
+		4013C09F1C503FAA00C99342 /* Room.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Room.cpp; path = ../engine/Room.cpp; sourceTree = "<group>"; };
+		4013C0A01C503FAA00C99342 /* Room.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Room.hpp; path = ../engine/Room.hpp; sourceTree = "<group>"; };
 		4031752F1C49C5CC0051B60C /* putdown.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = putdown.wav; path = ../sounds/putdown.wav; sourceTree = "<group>"; };
 		403175311C49C6010051B60C /* dragondie.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = dragondie.wav; path = ../sounds/dragondie.wav; sourceTree = "<group>"; };
 		403175321C49C6010051B60C /* eaten.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = eaten.wav; path = ../sounds/eaten.wav; sourceTree = "<group>"; };
@@ -248,6 +251,8 @@
 				40B733E71C3F1AF300FB72B3 /* Logger.hpp */,
 				4092E1E01C4E731900B2AEBB /* Map.cpp */,
 				4092E1E11C4E731900B2AEBB /* Map.hpp */,
+				4013C09F1C503FAA00C99342 /* Room.cpp */,
+				4013C0A01C503FAA00C99342 /* Room.hpp */,
 			);
 			name = engine;
 			sourceTree = "<group>";
@@ -324,6 +329,7 @@
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
 				40D0F81E1C356A360096980F /* YTransport.cpp in Sources */,
 				407773D31BF2AC9C00454AC5 /* Transport.cpp in Sources */,
+				4013C0A11C503FAA00C99342 /* Room.cpp in Sources */,
 				407773D61BF2AF6000454AC5 /* MacTransport.cpp in Sources */,
 				40740BAE1C1859730018AE6D /* Bat.cpp in Sources */,
 				4084EC8F1BF22AEE00E8F375 /* Adventure.cpp in Sources */,
