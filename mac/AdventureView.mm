@@ -65,6 +65,7 @@ bool gMenuItemSelect = FALSE;
     int numPlayers;
     int thisPlayer;
     Transport* transport;
+    bool mute = false;
     
     int gameLevel = 2;
     if (argc > 2) {
@@ -81,6 +82,7 @@ bool gMenuItemSelect = FALSE;
         transport = new MacTransport();
         transport->connect();
         thisPlayer = transport->getConnectNumber();
+        mute = (thisPlayer == 1);
     } else {
         numPlayers = argc-2;
         thisPlayer = atoi(argv[2])-1;
@@ -117,7 +119,7 @@ bool gMenuItemSelect = FALSE;
     
 	if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
 	{
-        Adventure_Setup(numPlayers, thisPlayer, transport, gameLevel, 0, 0);
+        Adventure_Setup(numPlayers, thisPlayer, transport, gameLevel, 0, 0, mute);
 		timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
 												 target: self
 											   selector: @selector(update:)
@@ -382,34 +384,42 @@ void Platform_ReadDifficultySwitches(int* left, int* right)
 
 void Platform_MakeSound(int nSound)
 {
+    Platform_MakeSound(nSound, MAX_VOLUME);
+}
+
+void Platform_MakeSound(int nSound, float volume)
+{
 	NSSound* sound = NULL;
 
-    switch (nSound)
-    {
-        case SOUND_PICKUP:
-			sound = [NSSound soundNamed:@"pickup"];
-            break;
-        case SOUND_PUTDOWN:
-			sound = [NSSound soundNamed:@"putdown"];
-            break;
-        case SOUND_WON:
-			sound = [NSSound soundNamed:@"won"];
-            break;
-        case SOUND_ROAR:
-			sound = [NSSound soundNamed:@"roar"];
-            break;
-        case SOUND_EATEN:
-			sound = [NSSound soundNamed:@"eaten"];
-            break;
-        case SOUND_DRAGONDIE:
-			sound = [NSSound soundNamed:@"dragondie"];
-            break;
-    }	
-	
-	if (sound)
-	{
-		[sound play];
-	}
+    if (volume > 0) {
+        switch (nSound)
+        {
+            case SOUND_PICKUP:
+                sound = [NSSound soundNamed:@"pickup"];
+                break;
+            case SOUND_PUTDOWN:
+                sound = [NSSound soundNamed:@"putdown"];
+                break;
+            case SOUND_WON:
+                sound = [NSSound soundNamed:@"won"];
+                break;
+            case SOUND_ROAR:
+                sound = [NSSound soundNamed:@"roar"];
+                break;
+            case SOUND_EATEN:
+                sound = [NSSound soundNamed:@"eaten"];
+                break;
+            case SOUND_DRAGONDIE:
+                sound = [NSSound soundNamed:@"dragondie"];
+                break;
+        }	
+        
+        if (sound)
+        {
+            [sound setVolume:volume/MAX_VOLUME];
+            [sound play];
+        }
+    }
 }
 
 float Platform_Random()

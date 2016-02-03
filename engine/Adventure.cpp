@@ -524,6 +524,7 @@ static const int redDragonMatrix[] =
 
 static Sync* sync;
 static Transport* transport;
+static bool mute;
 static int numPlayers;
 static int thisPlayer;
 
@@ -539,13 +540,14 @@ static Portcullis** ports = NULL;
 
 
 void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport, int inGameNum,
-                     int initialLeftDiff, int initialRightDiff) {
+                     int initialLeftDiff, int initialRightDiff, bool inMute) {
     numPlayers = inNumPlayers;
     thisPlayer = inThisPlayer;
     gameNum = inGameNum;
     gameLevel = gameNum-1;
     gameMapLayout = (gameLevel == 0 ? 0 : 1);
     timeToStartGame = 60 * 3;
+    mute = inMute;
     
     gameMap = new Map(numPlayers, gameMapLayout);
     roomDefs = gameMap->roomDefs;
@@ -657,8 +659,6 @@ void ResetPlayer(BALL* ball) {
 
 void Adventure_Run()
 {
-    printf("Distance from %s to %s = %d\n", roomDefs[objectBall->room]->label, roomDefs[gameBoard->getPlayer(1-thisPlayer)->room]->label,
-           gameMap->distance(objectBall->room, gameBoard->getPlayer(1-thisPlayer)->room));
 	sync->StartFrame();
     sync->PullLatestMessages();
 
@@ -903,6 +903,27 @@ void SetupRoomObjects()
         }
         while (object > OBJECT_NONE);
     }
+}
+
+float volumeForDistance(int distance) {
+    float volume = 0.0;
+    if (!mute) {
+        switch (distance) {
+            case 0:
+                volume = MAX_VOLUME;
+                break;
+            case 1:
+                volume = MAX_VOLUME/3;
+                break;
+            case 2:
+                volume = MAX_VOLUME/9;
+                break;
+            default:
+                volume = 0;
+                break;
+        }
+    }
+    return volume;
 }
 
 void WinGame() {
@@ -1435,6 +1456,12 @@ void OthersPickupPutdown() {
             dropped->room = action->dropRoom;
             dropped->x = action->dropX;
             dropped->y = action->dropY;
+            // Only play a sound if the drop isn't caused by picking up a different object.
+            if (action->pickupObject == OBJECT_NONE) {
+                int distance = gameMap->distance(actor->room, objectBall->room);
+                float volume = volumeForDistance(distance);
+                Platform_MakeSound(SOUND_PUTDOWN, volume);
+            }
         }
         if (action->pickupObject != OBJECT_NONE) {
             actor->linkedObject = action->pickupObject;
@@ -1448,10 +1475,11 @@ void OthersPickupPutdown() {
                     gameBoard->getPlayer(ctr)->linkedObject = OBJECT_NONE;
                 }
             }
-            // If they are in the same room as you, play the pickup sound
-            if (actor->room == objectBall->room) {
-                Platform_MakeSound(SOUND_PICKUP);
-            }
+            
+            // If they are within hearing distance play the pickup sound
+            int distance = gameMap->distance(actor->room, objectBall->room);
+            float volume = volumeForDistance(distance);
+            Platform_MakeSound(SOUND_PICKUP, volume);
         }
         delete action;
         action = sync->GetNextPickupAction();
@@ -1474,7 +1502,7 @@ void PickupPutdown()
         sync->BroadcastAction(action);
 
         // Play the sound
-        Platform_MakeSound(SOUND_PUTDOWN);
+        Platform_MakeSound(SOUND_PUTDOWN, volumeForDistance(0));
     }
     else
     {
@@ -1537,7 +1565,7 @@ void PickupPutdown()
                 }
                 
                 // Play the sound
-                Platform_MakeSound(SOUND_PICKUP);
+                Platform_MakeSound(SOUND_PICKUP, volumeForDistance(0));
             }
         }
     }

@@ -489,17 +489,11 @@ void Map::ComputeDistances(int numPorts, Portcullis** ports) {
     // Now compute the distances using isNextTo()
     for(int step = 2; step < LONG_WAY; ++step) {
         for(int ctr1=0; ctr1<numRooms; ++ctr1) {
-            printf("Computing rooms %d steps from %s\n", step, roomDefs[ctr1]->label);
             for(int ctr2=0; ctr2<numRooms; ++ctr2) {
                 if (distances[ctr1][ctr2] == LONG_WAY) {
-                    printf("  checking from %s to %s\n", roomDefs[ctr1]->label, roomDefs[ctr2]->label);
                     for(int ctr3=0; ctr3<numRooms; ++ctr3) {
                         if ((distances[ctr3][ctr2] < step) && (distances[ctr1][ctr3] == 1)) {
-                            printf("    %s is next to %s\n", roomDefs[ctr1]->label, roomDefs[ctr3]->label);
                             distances[ctr1][ctr2] = distances[ctr3][ctr2] + 1;
-                            printf("    distance from %s to %s = %d\n", roomDefs[ctr1]->label, roomDefs[ctr2]->label,
-                                   distances[ctr1][ctr2]);
-
                             break;
                         }
                     }
