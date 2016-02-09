@@ -524,7 +524,6 @@ static const int redDragonMatrix[] =
 
 static Sync* sync;
 static Transport* transport;
-static bool mute;
 static int numPlayers;
 static int thisPlayer;
 
@@ -540,14 +539,13 @@ static Portcullis** ports = NULL;
 
 
 void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport, int inGameNum,
-                     int initialLeftDiff, int initialRightDiff, bool inMute) {
+                     int initialLeftDiff, int initialRightDiff) {
     numPlayers = inNumPlayers;
     thisPlayer = inThisPlayer;
     gameNum = inGameNum;
     gameLevel = gameNum-1;
     gameMapLayout = (gameLevel == 0 ? 0 : 1);
     timeToStartGame = 60 * 3;
-    mute = inMute;
     
     gameMap = new Map(numPlayers, gameMapLayout);
     roomDefs = gameMap->roomDefs;
@@ -905,23 +903,26 @@ void SetupRoomObjects()
     }
 }
 
-float volumeForDistance(int distance) {
+float volumeAtDistance(int room) {
+    int NEAR_VOLUME = MAX_VOLUME/3;
+    int FAR_VOLUME = MAX_VOLUME/9;
+    
+    int distance = gameMap->distance(room, objectBall->room);
+
     float volume = 0.0;
-    if (!mute) {
-        switch (distance) {
-            case 0:
-                volume = MAX_VOLUME;
-                break;
-            case 1:
-                volume = MAX_VOLUME/3;
-                break;
-            case 2:
-                volume = MAX_VOLUME/9;
-                break;
-            default:
-                volume = 0;
-                break;
-        }
+    switch (distance) {
+        case 0:
+            volume = MAX_VOLUME;
+            break;
+        case 1:
+            volume = NEAR_VOLUME;
+            break;
+        case 2:
+            volume = FAR_VOLUME;
+            break;
+        default:
+            volume = 0;
+            break;
     }
     return volume;
 }
@@ -932,7 +933,7 @@ void WinGame() {
     winFlashTimer = 0xff;
     
     // Play the sound
-    Platform_MakeSound(SOUND_WON);
+    Platform_MakeSound(SOUND_WON, MAX_VOLUME);
 }
 
 void ReactToCollision(BALL* ball) {
@@ -1185,7 +1186,7 @@ void SyncDragons() {
                 dragon->eaten = gameBoard->getPlayer(nextState->sender);
                 dragon->state = Dragon::EATEN;
                 // Play the sound
-                Platform_MakeSound(SOUND_EATEN);
+                Platform_MakeSound(SOUND_EATEN, volumeAtDistance(dragon->room));
             } else if (nextState->newState == Dragon::DEAD) {
                 // We ignore die actions if the dragon has already eaten somebody.
                 if (dragon->state != Dragon::EATEN) {
@@ -1193,7 +1194,7 @@ void SyncDragons() {
                     dragon->movementX = 0;
                     dragon->movementY = 0;
                     // Play the sound
-                    Platform_MakeSound(SOUND_DRAGONDIE);
+                    Platform_MakeSound(SOUND_DRAGONDIE, volumeAtDistance(dragon->room));
                 }
             }
             else if (nextState->newState == Dragon::ROAR) {
@@ -1201,7 +1202,7 @@ void SyncDragons() {
                 if ((dragon->state != Dragon::EATEN) && (dragon->state != Dragon::DEAD)) {
                     dragon->roar(nextState->posx, nextState->posy, gameLevel, gameDifficultyLeft==DIFFICULTY_A);
                     // Play the sound
-                    Platform_MakeSound(SOUND_ROAR);
+                    Platform_MakeSound(SOUND_ROAR, volumeAtDistance(dragon->room));
                 }
             }
         } else {
@@ -1458,9 +1459,7 @@ void OthersPickupPutdown() {
             dropped->y = action->dropY;
             // Only play a sound if the drop isn't caused by picking up a different object.
             if (action->pickupObject == OBJECT_NONE) {
-                int distance = gameMap->distance(actor->room, objectBall->room);
-                float volume = volumeForDistance(distance);
-                Platform_MakeSound(SOUND_PUTDOWN, volume);
+                Platform_MakeSound(SOUND_PUTDOWN, volumeAtDistance(actor->room));
             }
         }
         if (action->pickupObject != OBJECT_NONE) {
@@ -1477,9 +1476,7 @@ void OthersPickupPutdown() {
             }
             
             // If they are within hearing distance play the pickup sound
-            int distance = gameMap->distance(actor->room, objectBall->room);
-            float volume = volumeForDistance(distance);
-            Platform_MakeSound(SOUND_PICKUP, volume);
+            Platform_MakeSound(SOUND_PICKUP, volumeAtDistance(actor->room));
         }
         delete action;
         action = sync->GetNextPickupAction();
@@ -1502,7 +1499,7 @@ void PickupPutdown()
         sync->BroadcastAction(action);
 
         // Play the sound
-        Platform_MakeSound(SOUND_PUTDOWN, volumeForDistance(0));
+        Platform_MakeSound(SOUND_PUTDOWN, MAX_VOLUME);
     }
     else
     {
@@ -1565,7 +1562,7 @@ void PickupPutdown()
                 }
                 
                 // Play the sound
-                Platform_MakeSound(SOUND_PICKUP, volumeForDistance(0));
+                Platform_MakeSound(SOUND_PICKUP, MAX_VOLUME);
             }
         }
     }
@@ -1686,7 +1683,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
             sync->BroadcastAction(action);
 
             // Play the sound
-            Platform_MakeSound(SOUND_ROAR);
+            Platform_MakeSound(SOUND_ROAR, MAX_VOLUME);
         }
 
         // Has the Sword hit the Dragon?
@@ -1703,7 +1700,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
             sync->BroadcastAction(action);
             
             // Play the sound
-            Platform_MakeSound(SOUND_DRAGONDIE);
+            Platform_MakeSound(SOUND_DRAGONDIE, MAX_VOLUME);
         }
 
         if (dragon->state == Dragon::STALKING)
@@ -1835,7 +1832,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
                 
 
                 // Play the sound
-                Platform_MakeSound(SOUND_EATEN);
+                Platform_MakeSound(SOUND_EATEN, MAX_VOLUME);
             }
             else
             {

@@ -21,7 +21,7 @@
 
 // Game funtions
 class Transport;
-void Adventure_Setup(int numPlayers, int thisPlayer, Transport* transport, int gameNum, int initialLeftDiff, int initialRightDiff, bool mute);
+void Adventure_Setup(int numPlayers, int thisPlayer, Transport* transport, int gameNum, int initialLeftDiff, int initialRightDiff);
 void Adventure_Run();
 
 // Platform-dependant functions
@@ -29,7 +29,7 @@ void Platform_PaintPixel(int r, int g, int b, int x, int y, int width=1, int hei
 void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire);
 void Platform_ReadConsoleSwitches(bool* reset);
 void Platform_ReadDifficultySwitches(int* left, int* right);
-void Platform_MakeSound(int sound);
+void Platform_MuteSound(bool mute);
 void Platform_MakeSound(int sound, float volume);
 #define MAX_VOLUME              11.0
 float Platform_Random();

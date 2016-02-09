@@ -47,6 +47,8 @@ bool gRightDifficulty = TRUE;	// true = dragons run from the sword
 bool gMenuItemReset = FALSE;
 bool gMenuItemSelect = FALSE;
 
+bool gMute = FALSE;
+
 
 // *******************************************************************************************
 // Our NSView interface
@@ -65,9 +67,8 @@ bool gMenuItemSelect = FALSE;
     int numPlayers;
     int thisPlayer;
     Transport* transport;
-    bool mute = false;
     
-    int gameLevel = 2;
+    int gameLevel = 1;
     if (argc > 2) {
         gameLevel = atoi(argv[1]);
     }
@@ -82,7 +83,7 @@ bool gMenuItemSelect = FALSE;
         transport = new MacTransport();
         transport->connect();
         thisPlayer = transport->getConnectNumber();
-        mute = (thisPlayer == 1);
+        Platform_MuteSound(thisPlayer == 1);
     } else {
         numPlayers = argc-2;
         thisPlayer = atoi(argv[2])-1;
@@ -119,7 +120,7 @@ bool gMenuItemSelect = FALSE;
     
 	if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
 	{
-        Adventure_Setup(numPlayers, thisPlayer, transport, gameLevel, 0, 0, mute);
+        Adventure_Setup(numPlayers, thisPlayer, transport, gameLevel, 0, 0);
 		timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
 												 target: self
 											   selector: @selector(update:)
@@ -382,16 +383,16 @@ void Platform_ReadDifficultySwitches(int* left, int* right)
 	if (right) *right = gRightDifficulty;  // true = dragons do not run from the sword
 }
 
-void Platform_MakeSound(int nSound)
+void Platform_MuteSound(bool nMute)
 {
-    Platform_MakeSound(nSound, MAX_VOLUME);
+    gMute = nMute;
 }
 
 void Platform_MakeSound(int nSound, float volume)
 {
 	NSSound* sound = NULL;
 
-    if (volume > 0) {
+    if (!gMute && volume > 0) {
         switch (nSound)
         {
             case SOUND_PICKUP:
