@@ -14,3 +14,9 @@ xcschememanagement.plist
 mac/MacAdventure.xcodeproj/xcuserdata/rantonucci.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
 
 mac/MacAdventure.xcodeproj/xcuserdata/rantonucci.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
+
+javascript/adventure.html
+
+javascript/adventure.js
+
+*.o
