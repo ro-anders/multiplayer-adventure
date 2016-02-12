@@ -2,7 +2,7 @@
 #include "Room.hpp"
 
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 
 ROOM::ROOM(const byte* inGraphicsData, byte inFlags, int inColor,
            int inRoomUp, int inRoomRight, int inRoomDown, int inRoomLeft, const char* inLabel) :
