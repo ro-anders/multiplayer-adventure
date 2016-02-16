@@ -84,13 +84,14 @@ public:
     void BroadcastAction(RemoteAction* action);
     
 private:
+    static int MAX_MESSAGE_SIZE;
+
     Transport* transport;
     
-    int thisPlayer = -1;
+    int thisPlayer;
     
     int numPlayers;
     
-    int MAX_MESSAGE_SIZE = 256;
     char sendBuffer[256];
     char receiveBuffer[256];
     
@@ -104,7 +105,7 @@ private:
     
     PlayerWinAction* gameWon;
     
-    int frameNum = 0;
+    int frameNum;
     
     void RejectMessage(const char* message, const char* errorMsg);
     
