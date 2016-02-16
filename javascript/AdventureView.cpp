@@ -5,7 +5,6 @@
 #include <emscripten.h>
 #endif
 
-
 #include "../engine/Adventure.h"
 #include "JSTransport.hpp"
 
@@ -17,6 +16,7 @@ static bool downPressed = false;
 static bool leftPressed = false;
 static bool rightPressed = false;
 static bool firePressed = false;
+static Uint32* buffer = NULL;
 
 static Transport* transport;
 
@@ -74,9 +74,19 @@ void checkKeyboard() {
     }
 }
 
+void copyBuffer() {
+  if (SDL_MUSTLOCK(screen)) SDL_LockSurface(screen);
+  for (int i = ADVENTURE_SCREEN_HEIGHT; i >= 0; i--) {
+    for (int j = 0; j <= ADVENTURE_SCREEN_WIDTH; j++) {
+      *((Uint32*)screen->pixels + i *ADVENTURE_SCREEN_WIDTH + j) = buffer[i*ADVENTURE_SCREEN_WIDTH + j];
+    }
+  }
+  if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);  
+}
 
 void one_iter() {
   Adventure_Run();
+  copyBuffer();
   printf(".\n");
 }
 
@@ -84,8 +94,9 @@ extern "C" int main(int argc, char** argv) {
 
   printf("hello, world!\n");
 
+  buffer = new Uint32[ADVENTURE_SCREEN_WIDTH * ADVENTURE_SCREEN_HEIGHT];
   SDL_Init(SDL_INIT_VIDEO);
-  screen = SDL_SetVideoMode(ADVENTURE_SCREEN_WIDTH, ADVENTURE_TOTAL_SCREEN_HEIGHT, 32, SDL_SWSURFACE);
+  screen = SDL_SetVideoMode(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT, 32, SDL_SWSURFACE);
 
   transport = new JSTransport();
   Adventure_Setup(2, 0, transport, 1, 0, 0);
@@ -93,7 +104,7 @@ extern "C" int main(int argc, char** argv) {
   SDL_Flip(screen); 
 
   printf("Game Setup.\n");
-  emscripten_set_main_loop(one_iter, 0, 1);
+  emscripten_set_main_loop(one_iter, 60, 1);
 
   SDL_Quit();
 
@@ -101,15 +112,20 @@ extern "C" int main(int argc, char** argv) {
 }
 
 void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int height/*=1*/) {
-  if (SDL_MUSTLOCK(screen)) SDL_LockSurface(screen);
   // PaintPixel is expecting a bottom up screen buffer, so flip the image
-  int flipY = ADVENTURE_SCREEN_HEIGHT - y + ADVENTURE_OVERSCAN;
-  for (int i = flipY; i > flipY-height; i--) {
-    for (int j = x; j < x+width; j++) {
-      *((Uint32*)screen->pixels + i *ADVENTURE_SCREEN_WIDTH + j) = SDL_MapRGBA(screen->format, r, g, b, 255);
+  int minX = x;
+  minX = (minX < 0 ? 0 : minX);
+  int maxX = x+width-1;
+  maxX = (maxX >= ADVENTURE_SCREEN_WIDTH ? ADVENTURE_SCREEN_WIDTH-1 : maxX);
+  int maxY = ADVENTURE_SCREEN_HEIGHT - y + ADVENTURE_OVERSCAN;
+  maxY = (maxY > ADVENTURE_SCREEN_HEIGHT ? ADVENTURE_SCREEN_HEIGHT-1 : maxY);
+  int minY = maxY - height + 1;
+  minY = (minY < 0 ? 0 : minY);
+  for (int i = maxY; i >= minY; i--) {
+    for (int j = minX; j <= maxX; j++) {
+      buffer[i *ADVENTURE_SCREEN_WIDTH + j] = SDL_MapRGBA(screen->format, r, g, b, 255);
     }
   }
-  if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
 }
 
 void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire) {
