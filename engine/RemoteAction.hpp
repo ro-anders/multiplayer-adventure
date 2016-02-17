@@ -215,5 +215,31 @@ public:
     void deserialize(const char* message);
 };
 
+/**
+ * This is used in level 3.  One client randomly assigns the objects and then communicates the positions to the
+ * other clients.
+ */
+class MazeSetupObjectAction: public RemoteAction {
+public:
+    int object;
+    int room;
+    int x;
+    int y;
+    
+    static const char* CODE;
+    
+    MazeSetupObjectAction();
+    
+    MazeSetupObjectAction(int inObject, int inRoom, int x, int y);
+    
+    ~MazeSetupObjectAction();
+    
+    int serialize(char* buffer, int bufferLength);
+    
+    void deserialize(const char* message);
+};
+
+
+
 
 #endif /* RemoteAction_hpp */

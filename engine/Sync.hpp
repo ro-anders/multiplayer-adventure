@@ -77,6 +77,13 @@ public:
     RemoteAction* GetNextBatAction();
     
     /**
+     * Get the next maze setup action.
+     * Caller must delete this action.
+     * If no actions have been received, this will return null.
+     */
+    MazeSetupObjectAction* GetNextSetupAction();
+    
+    /**
      * Broadcast an event to the other players
      * @param action an action to broadcast.  The Sync now owns this action and is responsible
      * for deleting it.
@@ -99,6 +106,7 @@ private:
     ActionQueue playerPickups;
     ActionQueue playerResets;
     ActionQueue gateStateChanges;
+    ActionQueue mazeSetupActions;
     
     PlayerMoveAction** playersLastMove;
     
@@ -126,6 +134,7 @@ private:
 
     void handlePortcullisStateMessage(const char* message);
 
+    void handleMazeSetupObjectMessage(const char* message);
 
 
 };

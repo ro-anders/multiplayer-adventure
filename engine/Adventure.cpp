@@ -75,6 +75,7 @@ static bool CollisionCheckBallWithWalls(int room, int x, int y);
 static int CollisionCheckBallWithObjects(BALL* ball, int startIndex);
 bool CollisionCheckObjectObject(const OBJECT* object1, const OBJECT* object2);
 static bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, int height);
+void handleSetupMessages();
 static void ResetPlayers();
 static void ResetPlayer(BALL* ball);
 static void WinGame();
@@ -419,7 +420,7 @@ static const byte game1Objects [] =
     OBJECT_BRIDGE, 0x04, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
     OBJECT_YELLOWKEY, 0x11, 0x20, 0x41, 0x00, 0x00, 0x00, // Yellow Key
     OBJECT_COPPERKEY, COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
-    OBJECT_JADEKEY, JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
+    OBJECT_JADEKEY, JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Jade Key
     OBJECT_WHITEKEY, 0x0E, 0x20, 0x40, 0x00, 0x00, 0x00, // White Key
     OBJECT_BLACKKEY, 0x10/*0x1D*/, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
     OBJECT_BAT, 0x1A, 0x20, 0x20, 0x00, 0x00, 0x00, // Bat
@@ -659,6 +660,9 @@ void Adventure_Run()
 {
 	sync->StartFrame();
     sync->PullLatestMessages();
+    
+    // Check for any setup messages first.
+    handleSetupMessages();
 
     // read the console switches every frame
     bool reset;
@@ -900,6 +904,20 @@ void SetupRoomObjects()
             upper = *(boundsData++);
         }
         while (object > OBJECT_NONE);
+    }
+}
+
+/**
+ * If this was a randomized game, look for another game to define where the objects are placed. 
+ */
+void handleSetupMessages() {
+    MazeSetupObjectAction* nextMsg = sync->GetNextSetupAction();
+    while (nextMsg != NULL) {
+        OBJECT* toSetup = objectDefs[nextMsg->object];
+        toSetup->room = nextMsg->room;
+        toSetup->x = nextMsg->x;
+        toSetup->y = nextMsg->y;
+        nextMsg = sync->GetNextSetupAction();
     }
 }
 

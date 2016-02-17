@@ -106,6 +106,14 @@ void Sync::handlePlayerWinMessage(const char* message) {
     }
 }
 
+void Sync::handleMazeSetupObjectMessage(const char* message) {
+    MazeSetupObjectAction* nextAction = new MazeSetupObjectAction();
+    nextAction->deserialize(receiveBuffer);
+    mazeSetupActions.enQ(nextAction);
+}
+
+
+
 void Sync::PullLatestMessages() {
     int numChars = transport->getPacket(receiveBuffer, MAX_MESSAGE_SIZE);
     while(numChars >= 4) {
@@ -175,6 +183,16 @@ void Sync::PullLatestMessages() {
                         printf("Message with unknown message type C%c: %s\n", receiveBuffer[1], receiveBuffer);
                 }
                 break;
+            case 'M':
+                switch (receiveBuffer[1]) {
+                    case 'O': {
+                        handleMazeSetupObjectMessage(receiveBuffer);
+                        break;
+                    }
+                    default:
+                        printf("Message with unknown message type C%c: %s\n", receiveBuffer[1], receiveBuffer);
+                }
+                break;
             default:
                 printf("Message with unknown message type %c*: %s\n", receiveBuffer[0], receiveBuffer);
         }
@@ -235,3 +253,14 @@ PlayerWinAction* Sync::GetGameWon() {
     gameWon = NULL;
     return next;
 }
+
+MazeSetupObjectAction* Sync::GetNextSetupAction() {
+    MazeSetupObjectAction* next = NULL;
+    if (!mazeSetupActions.isEmpty()) {
+        next = (MazeSetupObjectAction*)mazeSetupActions.deQ();
+    }
+    return next;
+    
+}
+
+
