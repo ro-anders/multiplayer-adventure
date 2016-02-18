@@ -347,15 +347,15 @@ void BatPickupAction::deserialize(const char *message) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //
-// MazeSetupObjectAction
+// MapSetupObjectAction
 //
 
-const char* MazeSetupObjectAction::CODE = "MO";
+const char* MapSetupObjectAction::CODE = "MO";
 
-MazeSetupObjectAction::MazeSetupObjectAction() :
+MapSetupObjectAction::MapSetupObjectAction() :
 RemoteAction(CODE) {}
 
-MazeSetupObjectAction::MazeSetupObjectAction(int inObject, int inRoom, int inX, int inY) :
+MapSetupObjectAction::MapSetupObjectAction(int inObject, int inRoom, int inX, int inY) :
 RemoteAction(CODE),
 object(inObject),
 room(inRoom),
@@ -363,17 +363,17 @@ x(inX),
 y(inY)
 {}
 
-MazeSetupObjectAction::~MazeSetupObjectAction() {}
+MapSetupObjectAction::~MapSetupObjectAction() {}
 
 
-int MazeSetupObjectAction::serialize(char* buffer, int bufferLength) {
+int MapSetupObjectAction::serialize(char* buffer, int bufferLength) {
     // TODO - Right now we are ignoring bufferLength
     // TODO - Reuse base class serialize
     int numChars = sprintf(buffer, "MO %d %d %d %d %d", sender, object, room, x, y);
     return numChars;
 }
 
-void MazeSetupObjectAction::deserialize(const char *message) {
+void MapSetupObjectAction::deserialize(const char *message) {
     char type[8];
     sscanf(message, "%s %d %d %d %d %d", type, &sender, &object, &room, &x, &y);
 }

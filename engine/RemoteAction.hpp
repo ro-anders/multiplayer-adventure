@@ -219,7 +219,7 @@ public:
  * This is used in level 3.  One client randomly assigns the objects and then communicates the positions to the
  * other clients.
  */
-class MazeSetupObjectAction: public RemoteAction {
+class MapSetupObjectAction: public RemoteAction {
 public:
     int object;
     int room;
@@ -228,11 +228,11 @@ public:
     
     static const char* CODE;
     
-    MazeSetupObjectAction();
+    MapSetupObjectAction();
     
-    MazeSetupObjectAction(int inObject, int inRoom, int x, int y);
+    MapSetupObjectAction(int inObject, int inRoom, int x, int y);
     
-    ~MazeSetupObjectAction();
+    ~MapSetupObjectAction();
     
     int serialize(char* buffer, int bufferLength);
     

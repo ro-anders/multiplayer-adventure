@@ -903,7 +903,7 @@ void randomizeRoomObjects() {
             if (room >= lower && room <= upper)
             {
                 objPtr->room = room;
-                MazeSetupObjectAction* action = new MazeSetupObjectAction(object, room, objPtr->x, objPtr->y);
+                MapSetupObjectAction* action = new MapSetupObjectAction(object, room, objPtr->x, objPtr->y);
                 sync->BroadcastAction(action);
                 break;
             }
@@ -921,7 +921,7 @@ void randomizeRoomObjects() {
  * If this was a randomized game, look for another game to define where the objects are placed.
  */
 void handleSetupMessages() {
-    MazeSetupObjectAction* nextMsg = sync->GetNextSetupAction();
+    MapSetupObjectAction* nextMsg = sync->GetNextSetupAction();
     while (nextMsg != NULL) {
         OBJECT* toSetup = objectDefs[nextMsg->object];
         toSetup->room = nextMsg->room;

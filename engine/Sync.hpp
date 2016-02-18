@@ -81,7 +81,7 @@ public:
      * Caller must delete this action.
      * If no actions have been received, this will return null.
      */
-    MazeSetupObjectAction* GetNextSetupAction();
+    MapSetupObjectAction* GetNextSetupAction();
     
     /**
      * Broadcast an event to the other players
