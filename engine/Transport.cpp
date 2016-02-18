@@ -10,7 +10,7 @@
 
 const int Transport::DEFAULT_PORT = 5678;
 
-const char* Transport::UNSPECIFIED = "unspecified";
+char* Transport::UNSPECIFIED = "unspecified";
 
 const char* Transport::PACKET_DELIMETER = "\0";
 

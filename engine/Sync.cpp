@@ -14,15 +14,12 @@
 // The existing adventure port doesn't do a lot of dynamic memory allocation, but instead 
 // allocates everything up front.  We'll stick to that paradigm as much as possible.
 
-int Sync::MAX_MESSAGE_SIZE = 256;
-
 
 Sync::Sync(int inNumPlayers, int inThisPlayer, Transport* inTransport) :
     numPlayers(inNumPlayers),
     thisPlayer(inThisPlayer),
     gameWon(NULL),
-    transport(inTransport),
-    frameNum(0)
+    transport(inTransport)
 {
     playersLastMove = new PlayerMoveAction*[numPlayers];
     for(int ctr=0; ctr<numPlayers; ++ctr) {

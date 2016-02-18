@@ -72,7 +72,7 @@ public:
     
 protected:
     /** A constant used for the IP when you don't know if this is going to be a server or client socket. */
-    static const char* UNSPECIFIED;
+    static char* UNSPECIFIED;
     
     /** Character used to signify the end of the packet */
     static const char* PACKET_DELIMETER;
