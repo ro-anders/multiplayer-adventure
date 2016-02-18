@@ -13,6 +13,7 @@
 // Original game written by Warren Robinett. Warren, you rock.
 //
 
+#include <sys/time.h>
 
 #include "adventure_sys.h"
 #include "AdventureView.h"
@@ -59,6 +60,12 @@ bool gMute = FALSE;
 - (id)initWithFrame:(NSRect)frameRect
 {
 	[super initWithFrame:frameRect];
+    
+    // Randomize the random number generator
+    timeval time;
+    gettimeofday(&time, NULL);
+    long millis = (time.tv_sec * 1000) + (time.tv_usec / 1000);
+    srandom(millis);
     
     // Expecting args: gameLevel playerNum sockAddress1 sockAddress2
     int argc;
