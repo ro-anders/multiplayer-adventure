@@ -76,6 +76,7 @@ static int CollisionCheckBallWithObjects(BALL* ball, int startIndex);
 bool CollisionCheckObjectObject(const OBJECT* object1, const OBJECT* object2);
 static bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, int height);
 void handleSetupMessages();
+void randomizeRoomObjects();
 static void ResetPlayers();
 static void ResetPlayer(BALL* ball);
 static void WinGame();
@@ -877,38 +878,47 @@ void SetupRoomObjects()
         objectDefs[object]->movementY = movementY;
     };
 
-    // Put objects in random rooms for level 3
-    if (gameLevel == 2)
+    // Put objects in random rooms for level 3.
+    // Only first player does this and then broadcasts to other players.
+    if ((gameLevel == 2) && (thisPlayer == 0))
     {
-        const int* boundsData = roomBoundsData;
-        
-        int object = *(boundsData++);
-        int lower = *(boundsData++);
-        int upper = *(boundsData++);
-
-        do
-        {
-            // pick a room between upper and lower bounds (inclusive)
-            while (1)
-            {
-                int room = Platform_Random() * 0x1f;
-                if (room >= lower && room <= upper)
-                {
-                    objectDefs[object]->room = room;
-                    break;
-                }
-            }
-
-            object = *(boundsData++);
-            lower = *(boundsData++);
-            upper = *(boundsData++);
-        }
-        while (object > OBJECT_NONE);
+        randomizeRoomObjects();
     }
 }
 
+void randomizeRoomObjects() {
+    const int* boundsData = roomBoundsData;
+    
+    int object = *(boundsData++);
+    int lower = *(boundsData++);
+    int upper = *(boundsData++);
+    
+    do
+    {
+        // pick a room between upper and lower bounds (inclusive)
+        OBJECT* objPtr = objectDefs[object];
+        while (1)
+        {
+            int room = Platform_Random() * 0x1f;
+            if (room >= lower && room <= upper)
+            {
+                objPtr->room = room;
+                MazeSetupObjectAction* action = new MazeSetupObjectAction(object, room, objPtr->x, objPtr->y);
+                sync->BroadcastAction(action);
+                break;
+            }
+        }
+        
+        object = *(boundsData++);
+        lower = *(boundsData++);
+        upper = *(boundsData++);
+    }
+    while (object > OBJECT_NONE);
+
+}
+
 /**
- * If this was a randomized game, look for another game to define where the objects are placed. 
+ * If this was a randomized game, look for another game to define where the objects are placed.
  */
 void handleSetupMessages() {
     MazeSetupObjectAction* nextMsg = sync->GetNextSetupAction();
