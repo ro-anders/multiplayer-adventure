@@ -540,7 +540,6 @@ static Portcullis** ports = NULL;
 
 void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport, int inGameNum,
                      int initialLeftDiff, int initialRightDiff) {
-    printf("Entering setup.\n");
     numPlayers = inNumPlayers;
     thisPlayer = inThisPlayer;
     gameNum = inGameNum;
@@ -658,7 +657,6 @@ void ResetPlayer(BALL* ball) {
 
 void Adventure_Run()
 {
-    printf("Starting frame %d.\n", gameState);
 	sync->StartFrame();
     sync->PullLatestMessages();
 
@@ -677,7 +675,6 @@ void Adventure_Run()
     }
     if ((gameState != GAMESTATE_WIN) && switchReset && !reset)
     {
-        printf("Resetting game.\n");
         if (gameState != GAMESTATE_GAMESELECT) {
             ResetPlayer(objectBall);
             // Broadcast to everyone else
@@ -691,7 +688,6 @@ void Adventure_Run()
         // Is the game active?
         if (gameState == GAMESTATE_GAMESELECT)
         {
-            printf("Starting game in %d clicks.\n", timeToStartGame);
             --timeToStartGame;
             if (timeToStartGame <= 0) {
                 SetupRoomObjects();

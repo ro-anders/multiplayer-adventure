@@ -16,7 +16,7 @@ int JSTransport::sendPacket(const char* packetData) {
 }
 
 int JSTransport::getPacket(char* buffer, int bufferLength) {
-    return 0;
+    return -1;
 }
 
 int JSTransport::openServerSocket() {return -1;}
