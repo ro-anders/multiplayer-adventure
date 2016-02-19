@@ -77,6 +77,11 @@ protected:
     /** Character used to signify the end of the packet */
     static const char* PACKET_DELIMETER;
     
+    /** Return codes from connection methods */
+    static const int ERROR = -1;
+    static const int OK = 0;
+    static const int BUSY = 1;
+    
     /** The order in which this socket connected.  0 for first (server socket), 1 for second (client socket) */
     int connectNumber;
     

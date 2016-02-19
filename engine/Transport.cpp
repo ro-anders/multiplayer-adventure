@@ -62,7 +62,7 @@ void Transport::connect() {
     if (ip == UNSPECIFIED) {
         // Try to bind to a port.  If it's busy, assume the other program has bound and try to connect to it.
         int busy = openServerSocket();
-        if (busy) {
+        if (busy == BUSY) {
             openClientSocket();
         }
         connectNumber = (busy ? 1 : 0);

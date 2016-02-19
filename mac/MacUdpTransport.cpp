@@ -1,9 +1,9 @@
 //
-//  MacTransport.cpp
+//  MacUdpTransport.cpp
 //  MacAdventure
 //
 
-#include "MacTransport.hpp"
+#include "MacUdpTransport.hpp"
 
 // Socket includes
 #include <fcntl.h>
@@ -18,19 +18,19 @@
 // End socket includes
 
 
-MacTransport::MacTransport() :
+MacUdpTransport::MacUdpTransport() :
   Transport()
 {}
 
-MacTransport::MacTransport(int inPort) :
+MacUdpTransport::MacUdpTransport(int inPort) :
 Transport(inPort)
 {}
 
-MacTransport::MacTransport(char* inIp, int inPort) :
+MacUdpTransport::MacUdpTransport(char* inIp, int inPort) :
 Transport(inIp, inPort)
 {}
 
-MacTransport::~MacTransport() {
+MacUdpTransport::~MacUdpTransport() {
     if (serverSocketFd > 0) {
         close(serverSocketFd);
     }
@@ -40,52 +40,49 @@ MacTransport::~MacTransport() {
     }
 }
 
-int MacTransport::openServerSocket() {
+int MacUdpTransport::openServerSocket() {
     printf("Opening server socket\n");
     
-    serverSocketFd = socket(AF_INET, SOCK_STREAM, 0);
+    serverSocketFd = socket(AF_INET, SOCK_DGRAM, 0);
     if (serverSocketFd < 0) {
         logError("ERROR opening socket");
         return ERROR;
     }
-
     struct sockaddr_in serv_addr;
     memset((char *) &serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     serv_addr.sin_port = htons(port);
-    if (bind(serverSocketFd, (struct sockaddr *) &serv_addr,
-             sizeof(serv_addr)) < 0) {
+    if (bind(serverSocketFd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
         // Assume it is because another process is listening and we should instead launch the client
         return BUSY;
     }
     
-    listen(serverSocketFd,5);
-    
-    struct sockaddr_in cli_addr;
-    socklen_t clilen = sizeof(cli_addr);
-    socketFd = accept(serverSocketFd,
-                       (struct sockaddr *) &cli_addr,
-                       &clilen);
-    if (socketFd < 0) {
-        logError("ERROR on accept");
+    // Since this is UDP, we need to receive a message from the client before we can send a message back,
+    // so the client will send us a handshake message.
+    struct sockaddr_in remaddr;
+    socklen_t addrlen = sizeof(remaddr);            /* length of addresses */
+    int BUFSIZE = 128;
+    char buffer[BUFSIZE];
+    int recvlen = recvfrom(serverSocketFd, buffer, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
+    if (recvlen < 0) {
+        logError("ERROR finalizing socket");
         return ERROR;
     }
-    fcntl(socketFd, F_SETFL, O_NONBLOCK);
-
-    return OK;
-
     
+    // TODO: Set to non-blocking receive (if we can do that in a UDP socket)
+    
+    return OK;
 }
 
-int MacTransport::openClientSocket() {
+int MacUdpTransport::openClientSocket() {
     printf("Opening client socket\n");
     int n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
     const char* serverAddress = (ip == UNSPECIFIED ? "localhost" : ip);
     
-    socketFd = socket(AF_INET, SOCK_STREAM, 0);
+    socketFd = socket(AF_INET, SOCK_DGRAM, 0);
     if (socketFd < 0) {
         logError("ERROR opening socket");
         return ERROR;
@@ -95,42 +92,42 @@ int MacTransport::openClientSocket() {
         logError("ERROR, no such host\n");
         return ERROR;
     }
-    bzero((char *) &serv_addr, sizeof(serv_addr));
+    memset((char *) &serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
-    bcopy((char *)server->h_addr,
-          (char *)&serv_addr.sin_addr.s_addr,
-          server->h_length);
     serv_addr.sin_port = htons(port);
-    n = ::connect(socketFd,(struct sockaddr *) &serv_addr,sizeof(serv_addr));
-    if (n < 0) {
-        logError("ERROR connecting");
+    memcpy((void *)&serv_addr.sin_addr, server->h_addr_list[0], server->h_length);
+    
+    // Being UDP we need to send a sample message to the serverbefore the server can respond.
+    const char* initializer = "AOKOKOK";
+    if (sendto(socketFd, initializer, strlen(initializer), 0, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+        logError("ERROR finalizing socket");
         return ERROR;
     }
-    fcntl(socketFd, F_SETFL, O_NONBLOCK);
     
+    // Still need to set non-blocking receive
     return OK;
 }
 
-int MacTransport::writeData(const char* data, int numBytes)
+int MacUdpTransport::writeData(const char* data, int numBytes)
 {
-    int n = write(socketFd,data,numBytes);
+    int n = sendto(socketFd, data, numBytes, 0, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
     return n;
 }
 
-int MacTransport::readData(char *buffer, int bufferLength) {
-    int n = read(socketFd, buffer, bufferLength);
+int MacUdpTransport::readData(char *buffer, int bufferLength) {
+    int n = recvfrom(serverSocketFd, buffer, bufferLength, 0, (struct sockaddr *)&remaddr, &addrlen);
     return n;
 }
 
 
-void MacTransport::logError(const char *msg)
+void MacUdpTransport::logError(const char *msg)
 {
     perror(msg);
 }
 
-void MacTransport::testSockets() {
+void MacUdpTransport::testSockets() {
     int NUM_MESSAGES = 10;
-    Transport* t = new MacTransport();
+    Transport* t = new MacUdpTransport();
     t->connect();
     if (t->getConnectNumber() == 1) {
         for(int ctr=0; ctr<NUM_MESSAGES; ++ctr) {
