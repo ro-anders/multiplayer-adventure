@@ -1,7 +1,7 @@
 
 #include "GameObject.hpp"
 
-#include <strings.h>
+#include <string.h>
 
 #include "Board.hpp"
 

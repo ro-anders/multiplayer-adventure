@@ -5,6 +5,8 @@
 #include <emscripten.h>
 #endif
 
+#include "JsTransport.hpp"
+
 static int SCREEN_HEIGHT = 256;
 static int SCREEN_WIDTH = 256;
 static int ctr = 0;
@@ -16,6 +18,7 @@ static int yvel = 0;
 static SDL_Surface *screen;
 static   SDL_Event event;
 static Uint32* buffer = new Uint32[SCREEN_WIDTH*SCREEN_HEIGHT];
+static Transport* xport;
 
 extern "C" void checkKeyboard() {
 
@@ -109,6 +112,12 @@ void finishDraw2() {
 
 extern "C" void one_iter() {
 
+  // Excercise the transport.
+  xport->sendPacket("Hello");
+
+  char buffer[1000];
+  //xport->getPacket(buffer, 1000);
+
   drawPixels2(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 128, 128, 128);
   
   // Want to loop 0-7 but not in straight incremental order
@@ -145,6 +154,8 @@ extern "C" void one_iter() {
 
 extern "C" int main(int argc, char** argv) {
   printf("hello, world!\n");
+
+  xport = new JsTransport();
 
   SDL_Init(SDL_INIT_VIDEO);
   screen = SDL_SetVideoMode(256, 256, 32, SDL_SWSURFACE);
