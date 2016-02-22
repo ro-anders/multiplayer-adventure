@@ -89,8 +89,12 @@ void finishDraw1() {
 
 void drawPixels2(int x1, int y1, int x2, int y2, int r, int g, int b) {
   int alpha = 255;
-  for (int xctr = x1; xctr <= x2; xctr++) {
-    for (int yctr = y1; yctr <= y2; yctr++) {
+  int minX = (x1 < 0 ? 0 : x1);
+  int maxX = (x2 >= SCREEN_WIDTH ? SCREEN_WIDTH-1 : x2);
+  int minY = (y1 < 0 ? 0 : y1);
+  int maxY = (y2 >= SCREEN_HEIGHT ? SCREEN_HEIGHT-1 : y2);
+  for (int xctr = minX; xctr <= maxX; xctr++) {
+    for (int yctr = minY; yctr <= maxY; yctr++) {
       buffer[yctr*SCREEN_WIDTH + xctr] = SDL_MapRGBA(screen->format, r, g, b, alpha);
     }
   }
@@ -118,7 +122,7 @@ extern "C" void one_iter() {
   char buffer[1000];
   //xport->getPacket(buffer, 1000);
 
-  drawPixels2(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 128, 128, 128);
+  drawPixels2(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 128, 128, 128); // Intentionally one pixel to big to test range checking
   
   // Want to loop 0-7 but not in straight incremental order
   int MULT = 9;
