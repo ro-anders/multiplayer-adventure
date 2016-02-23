@@ -21,6 +21,16 @@ Transport(inIp, inPort)
 JsTransport::~JsTransport() {
 }
 
+int JsTransport::sendPacket(const char* packetData) {
+	return 0;
+}
+
+int JsTransport::getPacket(char* buffer, int bufferLength) {
+	return 0;
+}
+
+
+
 int JsTransport::openServerSocket() {
     return 0;
 }

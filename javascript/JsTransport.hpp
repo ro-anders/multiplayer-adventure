@@ -33,6 +33,11 @@ public:
      */
     JsTransport(char* ip, int port);
 
+    int sendPacket(const char* packetData);
+    
+    int getPacket(char* buffer, int bufferLength);
+
+
     ~JsTransport();
                     
 protected:

@@ -6,6 +6,7 @@
 #endif
 
 #include "JsTransport.hpp"
+#include "../engine/Adventure.h"
 
 static int SCREEN_HEIGHT = 256;
 static int SCREEN_WIDTH = 256;
@@ -120,7 +121,7 @@ extern "C" void one_iter() {
   xport->sendPacket("Hello");
 
   char buffer[1000];
-  //xport->getPacket(buffer, 1000);
+  xport->getPacket(buffer, 1000);
 
   drawPixels2(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 128, 128, 128); // Intentionally one pixel to big to test range checking
   
@@ -186,12 +187,23 @@ extern "C" int main(int argc, char** argv) {
   if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
   SDL_Flip(screen); 
 
+  Adventure_Setup(2, 0, xport, 1, 0, 0);
+
   emscripten_set_main_loop(one_iter, 60, 1);
 
   SDL_Quit();
 
   return 0;
 }
+
+void Platform_PaintPixel(int r, int g, int b, int x, int y, int width, int height) {}
+void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire) {}
+void Platform_ReadConsoleSwitches(bool* reset) {}
+void Platform_ReadDifficultySwitches(int* left, int* right) {}
+void Platform_MuteSound(bool mute) {}
+void Platform_MakeSound(int sound, float volume) {}
+float Platform_Random() {return 0;}
+
 
 
 
