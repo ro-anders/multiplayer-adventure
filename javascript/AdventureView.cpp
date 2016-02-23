@@ -8,8 +8,8 @@
 #include "JsTransport.hpp"
 #include "../engine/Adventure.h"
 
-static int SCREEN_HEIGHT = 256;
-static int SCREEN_WIDTH = 256;
+static int SCREEN_HEIGHT = ADVENTURE_SCREEN_HEIGHT;
+static int SCREEN_WIDTH = ADVENTURE_SCREEN_WIDTH;
 static int ctr = 0;
 static int radius = 20;
 static int x = SCREEN_WIDTH/2;;
@@ -104,8 +104,8 @@ void drawPixels2(int x1, int y1, int x2, int y2, int r, int g, int b) {
 void finishDraw2() {
 
   if (SDL_MUSTLOCK(screen)) SDL_LockSurface(screen);
-  for (int i = 0; i < 256; i++) {
-    for (int j = 0; j < 256; j++) {
+  for (int i = 0; i < ADVENTURE_SCREEN_HEIGHT; i++) {
+    for (int j = 0; j < ADVENTURE_SCREEN_WIDTH; j++) {
       *((Uint32*)screen->pixels + i * SCREEN_WIDTH + j) = buffer[i * SCREEN_WIDTH + j];
     }
   }
@@ -122,6 +122,8 @@ extern "C" void one_iter() {
 
   char buffer[1000];
   xport->getPacket(buffer, 1000);
+
+  Adventure_Run();
 
   drawPixels2(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 128, 128, 128); // Intentionally one pixel to big to test range checking
   
@@ -163,15 +165,15 @@ extern "C" int main(int argc, char** argv) {
   xport = new JsTransport();
 
   SDL_Init(SDL_INIT_VIDEO);
-  screen = SDL_SetVideoMode(256, 256, 32, SDL_SWSURFACE);
+  screen = SDL_SetVideoMode(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT, 32, SDL_SWSURFACE);
 
 #ifdef TEST_SDL_LOCK_OPTS
   EM_ASM("SDL.defaults.copyOnLock = false; SDL.defaults.discardOnLock = true; SDL.defaults.opaqueFrontBuffer = false;");
 #endif
 
   if (SDL_MUSTLOCK(screen)) SDL_LockSurface(screen);
-  for (int i = 0; i < 256; i++) {
-    for (int j = 0; j < 256; j++) {
+  for (int i = 0; i < ADVENTURE_SCREEN_HEIGHT; i++) {
+    for (int j = 0; j < ADVENTURE_SCREEN_WIDTH; j++) {
 #ifdef TEST_SDL_LOCK_OPTS
       // Alpha behaves like in the browser, so write proper opaque pixels.
       int alpha = 255;
