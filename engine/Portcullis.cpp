@@ -2,6 +2,7 @@
 #include "Portcullis.hpp"
 
 #include "color.h"
+#include "Map.hpp"
 
 // Object #1 States 940FF (Graphic)
 static const byte objectGfxPort [] =
@@ -109,9 +110,14 @@ Portcullis::Portcullis(const char* inLabel, int inOutsideRoom, int inInsideRoom,
   OBJECT(inLabel, objectGfxPort, portStates, 0x0C, COLOR_BLACK, inOutsideRoom, 0x4d, 0x31),
   isActive(false),
   insideRoom(inInsideRoom),
-  key(inKey) {}
+  key(inKey),
+  allInsideRooms(NULL) {}
 
-Portcullis::~Portcullis() {}
+Portcullis::~Portcullis() {
+    if (allInsideRooms != NULL) {
+        delete[] allInsideRooms;
+    }
+}
 
 void Portcullis::setState(int newState, bool newActive) {
     state = newState;
@@ -146,5 +152,32 @@ void Portcullis::openFromInside() {
 void Portcullis::forceOpen() {
     state = OPEN_STATE;
     isActive = true;
+}
+
+void Portcullis::addRoom(int firstRoom, int lastRoom) {
+    if (allInsideRooms == NULL) {
+        int arraySize = Map::getNumRooms(); // Overkill, but easier than authoring a List<int> class.
+        allInsideRooms = new int[arraySize];
+        allInsideRooms[0] = insideRoom;
+        numInsideRooms = 1;
+    }
+    int numNewRooms = (lastRoom <= firstRoom ? 1 : lastRoom - firstRoom + 1);
+    for(int ctr=0; ctr<=numNewRooms; ++ctr) {
+        allInsideRooms[numInsideRooms+ctr] = firstRoom+ctr;
+    }
+    numInsideRooms += numNewRooms;
+}
+
+
+bool Portcullis::isRoomInCastle(int room) {
+    bool found = false;
+    if (allInsideRooms == NULL) {
+        found = (room == insideRoom);
+    } else {
+        for (int ctr=0; !found && (ctr<numInsideRooms); ++ctr) {
+            found = found || (allInsideRooms[ctr] == room);
+        }
+    }
+    return found;
 }
 

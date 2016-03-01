@@ -32,10 +32,12 @@ enum
     BLACK_CASTLE=0x10,
     GOLD_CASTLE=0x11,
     GOLD_FOYER=0x12,
+    // The following Black Maze values are a group and shouldn't be broken up
     BLACK_MAZE_1=0x13,
     BLACK_MAZE_2=0x14,
     BLACK_MAZE_3=0x15,
     BLACK_MAZE_ENTRY=0x16,
+    // The following Red Maze values are a group and shouldn't be broken up
     RED_MAZE_3=0x17,
     RED_MAZE_2=0x18,
     RED_MAZE_4=0x19,
@@ -66,9 +68,9 @@ public:
     void addRoom(int key, ROOM* room);
     
     /**
-     * Return the number of rooms in the map.
+     * Return the number of rooms in the map (includes rooms that may not be reachable on current game).
      */
-    int getNumRooms();
+    static int getNumRooms();
     
     /**
      * Lookup a room in the map

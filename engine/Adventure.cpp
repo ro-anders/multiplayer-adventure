@@ -460,19 +460,19 @@ static const byte game2Objects [] =
 // Ex. the chalise can only exist in rooms 13-1A
 static const int roomBoundsData [] =
 {
-    OBJECT_CHALISE, 0x13, 0x1A,
-    OBJECT_REDDRAGON, 0x01, 0x1D,
-    OBJECT_YELLOWDRAGON, 0x01, 0x1D,
-    OBJECT_GREENDRAGON, 0x01, 0x1D,
-    OBJECT_SWORD, 0x01, 0x1D,
-    OBJECT_BRIDGE, 0x01, 0x1D,
-    OBJECT_YELLOWKEY, 0x01, 0x1D,
-    OBJECT_COPPERKEY, 0x01, 0x1D,
-    OBJECT_JADEKEY, 0x01, 0x1D,
-    OBJECT_WHITEKEY, 0x01, 0x16,
-    OBJECT_BLACKKEY, 0x01, 0x12,
-    OBJECT_BAT, 0x01, 0x1D,
-    OBJECT_MAGNET, 0x01, 0x1D,
+    OBJECT_CHALISE, BLACK_MAZE_1, RED_MAZE_1,
+    OBJECT_REDDRAGON, MAIN_HALL_LEFT, SOUTHEAST_ROOM,
+    OBJECT_YELLOWDRAGON, MAIN_HALL_LEFT, SOUTHEAST_ROOM,
+    OBJECT_GREENDRAGON, MAIN_HALL_LEFT, SOUTHEAST_ROOM,
+    OBJECT_SWORD, MAIN_HALL_LEFT, SOUTHEAST_ROOM,
+    OBJECT_BRIDGE, MAIN_HALL_LEFT, SOUTHEAST_ROOM,
+    OBJECT_YELLOWKEY, MAIN_HALL_LEFT, SOUTHEAST_ROOM,
+    OBJECT_COPPERKEY, MAIN_HALL_LEFT, SOUTHEAST_ROOM,
+    OBJECT_JADEKEY, MAIN_HALL_LEFT, SOUTHEAST_ROOM,
+    OBJECT_WHITEKEY, MAIN_HALL_LEFT, BLACK_MAZE_ENTRY,
+    OBJECT_BLACKKEY, MAIN_HALL_LEFT, RED_MAZE_1,
+    OBJECT_BAT, MAIN_HALL_LEFT, SOUTHEAST_ROOM,
+    OBJECT_MAGNET, MAIN_HALL_LEFT, SOUTHEAST_ROOM,
     OBJECT_NONE, 0, 0
 };
 
@@ -579,8 +579,12 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     numPorts = numPlayers + 2;
     ports = (Portcullis**)malloc(5 * sizeof(Portcullis*)); // We always create 5 even though we might only use 4.
     ports[0] = new Portcullis("gold gate", GOLD_CASTLE, GOLD_FOYER, goldKey); // Gold
-    ports[1] = new Portcullis("white gate", WHITE_CASTLE, 0x1A, whiteKey); // White
+    ports[1] = new Portcullis("white gate", WHITE_CASTLE, RED_MAZE_1, whiteKey); // White
+    ports[1]->addRoom(RED_MAZE_3, RED_MAZE_1);
     ports[2] = new Portcullis("black gate", BLACK_CASTLE, BLACK_FOYER, blackKey); // Black
+    ports[2]->addRoom(BLACK_MAZE_1, BLACK_MAZE_ENTRY);
+    ports[2]->addRoom(BLACK_FOYER);
+    ports[2]->addRoom(BLACK_INNERMOST_ROOM);
     ports[3] = new Portcullis("copper gate", COPPER_CASTLE, COPPER_FOYER, copperKey);
     ports[4] = new Portcullis("jade gate", JADE_CASTLE, JADE_FOYER, jadeKey);
     gameMap->addCastles(numPorts, ports);

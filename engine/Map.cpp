@@ -336,6 +336,10 @@ Map::Map(int numPlayers, int gameMapLayout) {
 
 int Map::numRooms = COPPER_FOYER + 1;
 
+int Map::getNumRooms() {
+    return numRooms;
+}
+
 void Map::defaultRooms() {
     
     addRoom(NUMBER_ROOM, new ROOM(roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE,                       // 0x00
