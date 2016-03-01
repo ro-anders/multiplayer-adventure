@@ -63,8 +63,8 @@ bool gMute = FALSE;
 	[super initWithFrame:frameRect];
     
     // Test UDP Sockets
-    MacUdpTransport::testSockets();
-    exit(0);
+    //MacUdpTransport::testSockets();
+    //exit(0);
     
     // Randomize the random number generator
     timeval time;

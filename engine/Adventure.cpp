@@ -552,14 +552,14 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     gameMap = new Map(numPlayers, gameMapLayout);
     roomDefs = gameMap->roomDefs;
     
-    surrounds = (OBJECT**)malloc(numPlayers * sizeof(OBJECT*));
+    surrounds = new OBJECT*[numPlayers];
     char surroundName[16];
     for(int ctr=0; ctr<numPlayers; ++ctr) {
         sprintf(surroundName, "surround%d", ctr);
         surrounds[ctr] = new OBJECT(surroundName, objectGfxSurround, 0, 0, COLOR_ORANGE, -1, 0, 0, 0x07);
     }
     
-    dragons = (Dragon**)malloc(numDragons * sizeof(Dragon*));
+    dragons = new Dragon*[numDragons];
     dragons[0]= new Dragon("yorgle", 0, 0, COLOR_YELLOW, -1, 0, 0);
     dragons[1] = new Dragon("grindle", 1, 0, COLOR_LIMEGREEN, -1, 0, 0);
     dragons[2] = new Dragon("rhindle", 2, 0, COLOR_RED, -1, 0, 0);
@@ -577,7 +577,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     
     
     numPorts = numPlayers + 2;
-    ports = (Portcullis**)malloc(5 * sizeof(Portcullis*)); // We always create 5 even though we might only use 4.
+    ports = new Portcullis*[5]; // We always create 5 even though we might only use 4.
     ports[0] = new Portcullis("gold gate", GOLD_CASTLE, GOLD_FOYER, goldKey); // Gold
     ports[1] = new Portcullis("white gate", WHITE_CASTLE, RED_MAZE_1, whiteKey); // White
     ports[1]->addRoom(RED_MAZE_3, RED_MAZE_1);

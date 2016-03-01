@@ -18,12 +18,12 @@ OBJECT::OBJECT(const char* inLabel, const byte* inGfxData, const byte* inStates,
     y(inY),
     size(inSize)
 {
-    label = (char*)malloc((strlen(inLabel)+1)*sizeof(char));
+    label = new char[strlen(inLabel)+1];
     strcpy(label, inLabel);
 }
 
 OBJECT::~OBJECT() {
-    delete label;
+    delete[] label;
 }
 
 void OBJECT::setBoard(Board* newBoard, int newPKey) {

@@ -6,11 +6,11 @@
 
 Board::Board() {
     numObjects = OBJECT_MAGNET+2;
-    objects = (OBJECT**)malloc(numObjects*sizeof(OBJECT*));
+    objects = new OBJECT*[numObjects];
     objects[numObjects-1] = new OBJECT("", (const byte*)0, 0, 0, 0, -1, 0, 0);  // #12 Null
     
     int MAX_PLAYERS = 3;
-    players = (BALL**)malloc(MAX_PLAYERS * sizeof(BALL*));
+    players = new BALL*[MAX_PLAYERS];
     numPlayers = 0;
 }
 
@@ -18,12 +18,12 @@ Board::~Board() {
     for(int ctr=0; ctr<numObjects; ++ctr) {
         delete objects[ctr];
     }
-    delete objects;
+    delete[] objects;
     
     for(int ctr=0; ctr<numPlayers; ++ctr) {
         delete players[ctr];
     }
-    delete players;
+    delete[] players;
     
 }
 

@@ -14,12 +14,12 @@ roomRight(inRoomRight),
 roomDown(inRoomDown),
 roomLeft(inRoomLeft) {
 
-    label = (char*)malloc((strlen(inLabel)+1)*sizeof(char));
+    label = new char[strlen(inLabel)+1];
     strcpy(label, inLabel);
 }
 
 ROOM::~ROOM() {
-    free(label);
+    delete[] label;
 }
 
 void ROOM::setIndex(int inIndex) {
