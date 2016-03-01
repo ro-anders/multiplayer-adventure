@@ -6,6 +6,7 @@
 #ifndef MacUdpTransport_hpp
 #define MacUdpTransport_hpp
 
+#include <netinet/in.h>
 #include <stdio.h>
 #include "Transport.hpp"
 
@@ -51,9 +52,12 @@ protected:
 
 private:
     
-    int serverSocketFd; // Only used if this is the server-side of the socket
+    int socketFd; // UDP Socket to send and receive
     
-    int socketFd; // Used both if this is the client-side or the server-side of the socket
+    struct sockaddr_in remaddr;
+    
+    // Code common to all consturctors.
+    void setup();
     
 };
 

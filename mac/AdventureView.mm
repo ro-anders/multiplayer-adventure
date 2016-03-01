@@ -21,6 +21,7 @@
 #include "args.h"
 #include "MacLogger.hpp"
 #include "MacTransport.hpp"
+#include "MacUdpTransport.hpp"
 #include "Transport.hpp"
 #include "YTransport.hpp"
 
@@ -60,6 +61,10 @@ bool gMute = FALSE;
 - (id)initWithFrame:(NSRect)frameRect
 {
 	[super initWithFrame:frameRect];
+    
+    // Test UDP Sockets
+    MacUdpTransport::testSockets();
+    exit(0);
     
     // Randomize the random number generator
     timeval time;

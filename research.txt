@@ -1,0 +1,48 @@
+--------------------------------------------------------------------------------------------------------------------------------
+libjingle - C++ toolkit by Google for peer-to-peer applications.  Seems to do everything.
+  Requires third party server to setup communication via XMPP but also takes ~8% of traffic.
+  Lots of good example applications.
+  See https://developers.google.com/talk/libjingle/important_concepts
+
+--------------------------------------------------------------------------------------------------------------------------------
+STUN - Not sure if it is a protocol or library, but deals with finding out information about your
+  context in a peer-to-peer application (e.g what you public ip and port is)
+  I think I could use STUN to get ips & ports and then clients could start sending UDP to them and
+  eventually the NATs would start delivering them without an intermediary.
+  Here's a video: https://www.youtube.com/watch?v=9MWYw0fltr0&eurl=http%3A%2F%2Fwww.voip-news.com%2Ffeature%2Ftop-voip-videos-051707%2F
+JSTUN is a java implementation and a simple download from here http://jstun.javawi.de was able to give me my public IP but not my port.
+
+--------------------------------------------------------------------------------------------------------------------------------
+libnice - C++ toolkit for peer-to-peer applications.  Seems to do everything, but
+  haven't figured out exactly how and it doesn't have nice tutorials like libjingle.
+  Uses STUN I think.
+  Here's an example of a simple libnice negotiated UDP exchange:
+  https://git.collabora.com/cgit/user/kakaroto/libnice.git/plain/examples/simple-example.c
+
+--------------------------------------------------------------------------------------------------------------------------------
+WebRTC - A peer-to-peer communication toolkit for javascript, but supposedly works well with emscripten.
+  Here's a "tutorial" of how a 3D c++ engine used it but I can't totally follow it so far.
+  https://hacks.mozilla.org/2013/03/webrtc-data-channels-for-great-multiplayer/
+
+--------------------------------------------------------------------------------------------------------------------------------
+UDP - alternate to TCP protocol that transmits packets without a session.  Because it doesn't
+  use a session, it is often easier to get through a NAT with UDP, but Amazon EC2 won't allow 
+  UDP communication.
+  Here's a great tutorial: https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
+
+--------------------------------------------------------------------------------------------------------------------------------
+Port Restricted Cone NAT
+  Kind of NAT Verizon uses.  All requests from an IP, ip1, and a port p1 get mapped to the same external IP, ipx1, and port, portx1.
+  Any external host at ipx2 can send a UDP packet from source port portx2 only if the destination host has already sent an outgoing
+  message to ipx2:portx2.
+
+  If one machine 2 is external, then machine 1 can determine what it's ipx1 and portx1 are using STUN (I think it can get port if it
+  specifies a source port which will be port1).  It then somehow get that to machine2.  Then machine 1 can send UDP to ipx2:portx2 using
+  source port port1 and machine 2 can send UDP to ipx1:portx1 using source port portx2 and it will get there.
+
+  If two machines are internal, then machine1 determines ipx1 and portx1 using source port port1.  Machine2 determines ipx2 and portx2
+  using source port port2.  Then the somehow exchange those.  Then machine1 sends to ipx2:portx2 using source port port1 and those will
+  at first get blocked.  Machine2 sends to ipx1:portx1 using source port port2 and those should go through and the ones from
+  machine1 should start going through.
+
+  If both machines are internal, machine1 needs to
