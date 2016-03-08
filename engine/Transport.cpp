@@ -12,6 +12,11 @@ const int Transport::DEFAULT_PORT = 5678;
 
 const char* Transport::UNSPECIFIED = "unspecified";
 
+const int Transport::TPT_ERROR = -1;
+const int Transport::TPT_OK = 0;
+const int Transport::TPT_BUSY = 1;
+
+
 Logger* Transport::logger = new Logger();
 
 Transport::Transport() :
@@ -60,7 +65,7 @@ void Transport::connect() {
     if (ip == UNSPECIFIED) {
         // Try to bind to a port.  If it's busy, assume the other program has bound and try to connect to it.
         int busy = openServerSocket();
-        if (busy == BUSY) {
+        if (busy == TPT_BUSY) {
             openClientSocket();
         }
         connectNumber = (busy ? 1 : 0);

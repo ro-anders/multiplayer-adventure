@@ -75,9 +75,9 @@ protected:
     static const char* UNSPECIFIED;
     
     /** Return codes from connection methods */
-    static const int ERROR = -1;
-    static const int OK = 0;
-    static const int BUSY = 1;
+    static const int TPT_ERROR;
+    static const int TPT_OK;
+    static const int TPT_BUSY;
     
     /** The order in which this socket connected.  0 for first (server socket), 1 for second (client socket) */
     int connectNumber;

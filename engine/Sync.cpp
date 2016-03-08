@@ -115,7 +115,7 @@ void Sync::handleMazeSetupObjectMessage(const char* message) {
 
 
 void Sync::PullLatestMessages() {
-    int TYPE_LENGTH = 2;
+    const int TYPE_LENGTH = 2;
     int numChars = transport->getPacket(receiveBuffer, MAX_MESSAGE_SIZE);
     while(numChars >= TYPE_LENGTH+1) {
         char type[TYPE_LENGTH+1];

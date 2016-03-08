@@ -17,8 +17,6 @@ public:
     
     virtual void info(const char* msg);
 
-    void info(const char* msg, int num);
-
     virtual void error(const char* msg);
     
 };
