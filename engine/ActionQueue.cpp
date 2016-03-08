@@ -8,11 +8,11 @@ ActionQueue::ActionQueue() {
     first = 0;
     last = -1;
     arrayLength = 4;
-    array = (RemoteAction**)malloc(arrayLength*sizeof(RemoteAction*));
+    array = new RemoteAction*[arrayLength];
 }
 
 ActionQueue::~ActionQueue() {
-    delete array;
+    delete[] array;
 }
 
 void ActionQueue::resizeQ(int newSize) {
@@ -21,7 +21,7 @@ void ActionQueue::resizeQ(int newSize) {
         newSize = arrayLength + 1;
     }
     
-    RemoteAction** newArray = (RemoteAction**)malloc(newSize*sizeof(RemoteAction*));
+    RemoteAction** newArray = new RemoteAction*[newSize];
     // May need to copy data as two segments
     if (last == -1) {
         // The list is empty.  Don't need to do anything.
@@ -40,7 +40,7 @@ void ActionQueue::resizeQ(int newSize) {
         last = arrayLength-first+last+1;
         first = 0;
     }
-    delete array;
+    delete[] array;
     array = newArray;
     arrayLength = newSize;
 }

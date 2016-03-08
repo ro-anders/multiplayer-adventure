@@ -21,6 +21,7 @@
 #include "args.h"
 #include "MacLogger.hpp"
 #include "MacTransport.hpp"
+#include "MacUdpTransport.hpp"
 #include "Transport.hpp"
 #include "YTransport.hpp"
 
@@ -60,7 +61,6 @@ bool gMute = FALSE;
 - (id)initWithFrame:(NSRect)frameRect
 {
 	[super initWithFrame:frameRect];
-    
     // Randomize the random number generator
     timeval time;
     gettimeofday(&time, NULL);
@@ -71,6 +71,20 @@ bool gMute = FALSE;
     int argc;
     char** argv;
     Args_GetArgs(&argc, &argv);
+    
+    
+    // Test UDP Sockets
+    if ((argc > 2) && (strcmp(argv[1], "test")==0)) {
+        char* ip1;
+        int port1;
+        char* ip2;
+        int port2;
+        Transport::parseUrl(argv[2], &ip1, &port1);
+        Transport::parseUrl(argv[3], &ip2, &port2);
+        MacUdpTransport::testSockets(ip1, port1, ip2, port2);
+        exit(0);
+    }
+
     int numPlayers;
     int thisPlayer;
     Transport* transport;
@@ -87,7 +101,7 @@ bool gMute = FALSE;
     const int DEFAULT_PORT = 5678;
     if (argc <= 2) {
         numPlayers = 2;
-        transport = new MacTransport();
+        transport = new MacUdpTransport();
         transport->connect();
         thisPlayer = transport->getConnectNumber();
         Platform_MuteSound(thisPlayer == 1);

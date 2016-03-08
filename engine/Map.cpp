@@ -3,6 +3,7 @@
 #include "Map.hpp"
 
 #include <stdlib.h>
+#include <string.h>
 #include "Portcullis.hpp"
 #include "Room.hpp"
 
@@ -325,16 +326,34 @@ static const byte roomGfxBlackMazeEntry [] =
     0xF0,0xFF,0x0F           // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
 };
 
+int Map::numRooms = COPPER_FOYER + 1;
+
 int Map::LONG_WAY = 5;
 
 Map::Map(int numPlayers, int gameMapLayout) {
-    roomDefs = (ROOM**)malloc(numRooms * sizeof(ROOM*));
+    roomDefs = new ROOM*[numRooms];
+    memset(roomDefs, 0, numRooms*sizeof(ROOM*));
+    
     defaultRooms();
     ConfigureMaze(numPlayers, gameMapLayout);
     ComputeDistances(0 , NULL);
 }
 
-int Map::numRooms = COPPER_FOYER + 1;
+Map::~Map() {
+    // Delete all the rooms and the whole distance table
+    for(int ctr=0; ctr<numRooms; ++ctr) {
+        if (roomDefs[ctr] != NULL) {
+            delete roomDefs[ctr];
+        }
+        delete[] distances[ctr];
+    }
+    delete[] roomDefs;
+    delete[] distances;
+}
+
+int Map::getNumRooms() {
+    return numRooms;
+}
 
 void Map::defaultRooms() {
     
@@ -444,9 +463,9 @@ void Map::ConfigureMaze(int numPlayers, int gameMapLayout) {
 }
 
 void Map::ComputeDistances(int numPorts, Portcullis** ports) {
-    distances = (int**)malloc(numRooms*sizeof(int*));
+    distances = new int*[numRooms];
     for(int ctr1=0; ctr1<numRooms; ++ctr1) {
-        distances[ctr1] = (int*)malloc(numRooms*sizeof(int));
+        distances[ctr1] = new int[numRooms];
         for(int ctr2=0; ctr2<numRooms; ++ctr2) {
             if (ctr1 == ctr2) {
                 distances[ctr1][ctr2] = 0;

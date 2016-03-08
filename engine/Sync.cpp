@@ -115,11 +115,12 @@ void Sync::handleMazeSetupObjectMessage(const char* message) {
 
 
 void Sync::PullLatestMessages() {
+    int TYPE_LENGTH = 2;
     int numChars = transport->getPacket(receiveBuffer, MAX_MESSAGE_SIZE);
-    while(numChars >= 4) {
-        char type[5] = "XXXX";
-        // First four characters are the type of message
-        for(int ctr=0; ctr<4; ++ctr) {
+    while(numChars >= TYPE_LENGTH+1) {
+        char type[TYPE_LENGTH+1];
+        // First two characters are the type of message
+        for(int ctr=0; ctr<TYPE_LENGTH; ++ctr) {
             type[ctr] = receiveBuffer[ctr];
         }
         switch (receiveBuffer[0]) {
