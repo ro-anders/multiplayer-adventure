@@ -10,9 +10,7 @@
 
 const int Transport::DEFAULT_PORT = 5678;
 
-char* Transport::UNSPECIFIED = "unspecified";
-
-const char* Transport::PACKET_DELIMETER = "\0";
+const char* Transport::UNSPECIFIED = "unspecified";
 
 Logger* Transport::logger = new Logger();
 
@@ -30,7 +28,7 @@ ip(NULL)
     setup();
 }
 
-Transport::Transport(char* inIp, int inPort) :
+Transport::Transport(const char* inIp, int inPort) :
 port(inPort == 0 ? DEFAULT_PORT : inPort),
 ip(inIp)
 {
@@ -76,20 +74,14 @@ void Transport::connect() {
 }
 
 int Transport::sendPacket(const char* packetData) {
-	int n = writeData(packetData, strlen(packetData));
+	int n = writeData(packetData, strlen(packetData)+1); // +1 to include the \0
 	if (n < 0) {
 		logger->error("ERROR writing to socket");
 	}
 	else {
-		int n2 = writeData(PACKET_DELIMETER, 1);
-		if (n2 < 0) {
-			logger->error("ERROR writing to socket");
-		}
-		else {
-			char message[1000];
-			sprintf(message, "Sent \"%s\"", packetData);
-			logger->info(message);
-		}
+        char message[1000];
+        sprintf(message, "Sent \"%s\"", packetData);
+        logger->info(message);
 	}
 	return n;
 }
@@ -104,7 +96,7 @@ int Transport::getPacket(char* buffer, int bufferLength) {
         
         // Search through the new data for a delimeter.
         for(int ctr=startOfNewData; (delimeterIndex < 0) && (ctr<charsInStreamBuffer); ++ctr) {
-            delimeterIndex = (streamBuffer[ctr] == PACKET_DELIMETER[0] ? ctr : -1);
+            delimeterIndex = (streamBuffer[ctr] == '\0' ? ctr : -1);
         }
         
         // Detect if we've run out of buffer.

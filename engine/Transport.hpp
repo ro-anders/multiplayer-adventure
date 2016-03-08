@@ -31,14 +31,14 @@ public:
      * ip - the ip of the machine to connect to
      * port - the port to connect to.  If 0, will listen on the default port.
      */
-    Transport(char* ip, int port);
+    Transport(const char* ip, int port);
     
     virtual ~Transport() = 0;
     
     virtual void connect();
     
     /**
-     * Send a packet to a client.
+     * Send a packet to a client.  Assumes the packet is \0 terminated.
      * Returns the number of bytes sent.
      */
     virtual int sendPacket(const char* packetData);
@@ -72,10 +72,7 @@ public:
     
 protected:
     /** A constant used for the IP when you don't know if this is going to be a server or client socket. */
-    static char* UNSPECIFIED;
-    
-    /** Character used to signify the end of the packet */
-    static const char* PACKET_DELIMETER;
+    static const char* UNSPECIFIED;
     
     /** Return codes from connection methods */
     static const int ERROR = -1;
@@ -87,12 +84,11 @@ protected:
     
     /**
      * The IP of the socket address that we are connecting to, or null if this is to be a server socket, or
-     * UNSPECIFIED if this may be a server socket listening on localhost or this may be a client socket connecting to 
-     * localhost and which it is depends on who connects first.
+     * UNSPECIFIED in the testing case that two games are run on the same machiine.
      */
     const char* ip;
     
-    /** The port of the socket address. */
+    /** The port that we are connecting to (or, if this is a server socket, the port to listen on) */
     int port;
     
     /** Buffer to store data until end of packet is reached. */

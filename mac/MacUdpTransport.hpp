@@ -15,28 +15,25 @@ class MacUdpTransport: public Transport {
 public:
     
     /**
-     * Create a socket to this machine on the default port.  First try to open
-     * a server socket, but if the port is already busy open up a client socket.
-     * Useful for testing.
+     * Used only for in testing when running two games on one machine.  Attempts to listen first on the
+     * default port and, if that is taken by the other game, on the default port + 1.
      */
     MacUdpTransport();
 
     /**
-     * Create a server socket.
-     * port - the port to listen on.  If 0, will listen on the default port.
+     * Connect to another game using UDP.
+     * myExternalIp - the IP address my packets appear as
+     * myExternaPort - the port my packets appear to come from
+     * theirIp - the ip of the machine to connect to
+     * theirPort - the port to connect to
      */
-    MacUdpTransport(int port);
-
-    /**
-     * Connect a socket to another machine.
-     * ip - the ip of the machine to connect to
-     * port - the port to connect to.  If 0, will listen on the default port.
-     */
-    MacUdpTransport(char* ip, int port);
+    MacUdpTransport(const char* myExternalIp, int myExternalPort, const char* ip, int port);
 
     ~MacUdpTransport();
-                
-    static void testSockets();
+    
+    void connect();
+    
+    static void testSockets(const char* myExternalIp, int myExternalPort, const char* theirExternalIp, int theirExternalPort);
     
 protected:
 
@@ -48,9 +45,13 @@ protected:
     
     int readData(char* buffer, int bufferLength);
 
-    void logError(const char* message);
-
 private:
+    
+    const char* myExternalIp;
+    
+    int myExternalPort;
+    
+    int myInternalPort;
     
     int socketFd; // UDP Socket to send and receive
     
@@ -59,6 +60,16 @@ private:
     // Code common to all consturctors.
     void setup();
     
+    /**
+     * We don't have a client/server relationship, so there is just openSocket().
+     */
+    int openSocket();
+    
+    void punchHole();
+    
+    void compareNumbers(int myRandomNumber, char* theirMessage);
+
+
 };
 
 #endif /* MacUdpTransport_hpp */

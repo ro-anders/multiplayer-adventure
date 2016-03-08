@@ -47,8 +47,6 @@ protected:
     
     int readData(char* buffer, int bufferLength);
 
-    void logError(const char* message);
-
 private:
     
     int serverSocketFd; // Only used if this is the server-side of the socket

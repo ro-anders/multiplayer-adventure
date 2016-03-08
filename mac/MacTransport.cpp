@@ -17,6 +17,7 @@
 #include <netdb.h>
 // End socket includes
 
+#include "Logger.hpp"
 
 MacTransport::MacTransport() :
   Transport()
@@ -45,7 +46,7 @@ int MacTransport::openServerSocket() {
     
     serverSocketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocketFd < 0) {
-        logError("ERROR opening socket");
+        logger->error("ERROR opening socket");
         return ERROR;
     }
 
@@ -68,7 +69,7 @@ int MacTransport::openServerSocket() {
                        (struct sockaddr *) &cli_addr,
                        &clilen);
     if (socketFd < 0) {
-        logError("ERROR on accept");
+        logger->error("ERROR on accept");
         return ERROR;
     }
     fcntl(socketFd, F_SETFL, O_NONBLOCK);
@@ -87,12 +88,12 @@ int MacTransport::openClientSocket() {
     
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFd < 0) {
-        logError("ERROR opening socket");
+        logger->error("ERROR opening socket");
         return ERROR;
     }
     server = gethostbyname(serverAddress);
     if (server == NULL) {
-        logError("ERROR, no such host\n");
+        logger->error("ERROR, no such host\n");
         return ERROR;
     }
     bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -103,7 +104,7 @@ int MacTransport::openClientSocket() {
     serv_addr.sin_port = htons(port);
     n = ::connect(socketFd,(struct sockaddr *) &serv_addr,sizeof(serv_addr));
     if (n < 0) {
-        logError("ERROR connecting");
+        logger->error("ERROR connecting");
         return ERROR;
     }
     fcntl(socketFd, F_SETFL, O_NONBLOCK);
@@ -122,11 +123,6 @@ int MacTransport::readData(char *buffer, int bufferLength) {
     return n;
 }
 
-
-void MacTransport::logError(const char *msg)
-{
-    perror(msg);
-}
 
 void MacTransport::testSockets() {
     int NUM_MESSAGES = 10;
