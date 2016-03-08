@@ -590,8 +590,9 @@ void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int
     }
 }
 
-void Platform_MakeSound(int sound)
+void Platform_MakeSound(int sound, float volume)
 {
+	// TODO: Handle volume
     char szModule[MAX_PATH];
     char szDrive[MAX_PATH];
     char szDir[MAX_PATH];
