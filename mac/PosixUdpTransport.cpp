@@ -45,6 +45,7 @@ void PosixUdpTransport::setup() {
     memset((char *) &remaddr, 0, sizeof(remaddr));
     printf("Uninitialized = %s:%d.\n", inet_ntoa(remaddr.sin_addr), ntohs(remaddr.sin_port));
     
+    // TODO: Fix this
     // ip is an ip, not a hostname, but don't know how to convert a
     // string ip to a server address format, so calling gethost - ugh
     hostent* hp = gethostbyname(theirIp);
@@ -88,9 +89,8 @@ int PosixUdpTransport::writeData(const char* data, int numBytes)
 }
 
 int PosixUdpTransport::readData(char *buffer, int bufferLength) {
-    socklen_t addrlen = sizeof(remaddr);
     printf("Checking message from %s:%d\n", inet_ntoa(remaddr.sin_addr), ntohs(remaddr.sin_port));
-    int n = recvfrom(socketFd, buffer, bufferLength, 0, (struct sockaddr *)&remaddr, &addrlen);
+    int n = recvfrom(socketFd, buffer, bufferLength, 0, NULL, NULL);
     if (n > 0) {
         printf("Received message: %s.\n", buffer);
     }
