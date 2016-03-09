@@ -1,15 +1,15 @@
 //
-//  MacTransport.hpp
+//  PosixTcpTransport.hpp
 //  MacAdventure
 //
 
-#ifndef MacTransport_hpp
-#define MacTransport_hpp
+#ifndef PosixTcpTransport_hpp
+#define PosixTcpTransport_hpp
 
 #include <stdio.h>
-#include "Transport.hpp"
+#include "TcpTransport.hpp"
 
-class MacTransport: public Transport {
+class PosixTcpTransport: public TcpTransport {
     
 public:
     
@@ -18,22 +18,22 @@ public:
      * a server socket, but if the port is already busy open up a client socket.
      * Useful for testing.
      */
-    MacTransport();
+    PosixTcpTransport();
 
     /**
      * Create a server socket.
      * port - the port to listen on.  If 0, will listen on the default port.
      */
-    MacTransport(int port);
+    PosixTcpTransport(int port);
 
     /**
      * Connect a socket to another machine.
      * ip - the ip of the machine to connect to
      * port - the port to connect to.  If 0, will listen on the default port.
      */
-    MacTransport(char* ip, int port);
+    PosixTcpTransport(char* ip, int port);
 
-    ~MacTransport();
+    ~PosixTcpTransport();
                 
     static void testSockets();
     
@@ -55,4 +55,4 @@ private:
     
 };
 
-#endif /* MacTransport_hpp */
+#endif /* PosixTcpTransport_hpp */

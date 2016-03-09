@@ -1,9 +1,9 @@
 //
-//  MacTransport.cpp
+//  PosixTcpTransport.cpp
 //  MacAdventure
 //
 
-#include "MacTransport.hpp"
+#include "PosixTcpTransport.hpp"
 
 // Socket includes
 #include <fcntl.h>
@@ -18,20 +18,21 @@
 // End socket includes
 
 #include "Logger.hpp"
+#include "MacSleep.hpp"
 
-MacTransport::MacTransport() :
-  Transport()
+PosixTcpTransport::PosixTcpTransport() :
+  TcpTransport()
 {}
 
-MacTransport::MacTransport(int inPort) :
-Transport(inPort)
+PosixTcpTransport::PosixTcpTransport(int inPort) :
+TcpTransport(inPort)
 {}
 
-MacTransport::MacTransport(char* inIp, int inPort) :
-Transport(inIp, inPort)
+PosixTcpTransport::PosixTcpTransport(char* inIp, int inPort) :
+TcpTransport(inIp, inPort)
 {}
 
-MacTransport::~MacTransport() {
+PosixTcpTransport::~PosixTcpTransport() {
     if (serverSocketFd > 0) {
         close(serverSocketFd);
     }
@@ -41,13 +42,13 @@ MacTransport::~MacTransport() {
     }
 }
 
-int MacTransport::openServerSocket() {
+int PosixTcpTransport::openServerSocket() {
     printf("Opening server socket\n");
     
     serverSocketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocketFd < 0) {
         logger->error("ERROR opening socket");
-        return ERROR;
+        return Transport::TPT_ERROR;
     }
 
     struct sockaddr_in serv_addr;
@@ -58,7 +59,7 @@ int MacTransport::openServerSocket() {
     if (bind(serverSocketFd, (struct sockaddr *) &serv_addr,
              sizeof(serv_addr)) < 0) {
         // Assume it is because another process is listening and we should instead launch the client
-        return BUSY;
+        return Transport::TPT_BUSY;
     }
     
     listen(serverSocketFd,5);
@@ -70,31 +71,30 @@ int MacTransport::openServerSocket() {
                        &clilen);
     if (socketFd < 0) {
         logger->error("ERROR on accept");
-        return ERROR;
+        return Transport::TPT_ERROR;
     }
     fcntl(socketFd, F_SETFL, O_NONBLOCK);
 
-    return OK;
+    return Transport::TPT_OK;
 
     
 }
 
-int MacTransport::openClientSocket() {
+int PosixTcpTransport::openClientSocket() {
     printf("Opening client socket\n");
     int n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
-    const char* serverAddress = (ip == UNSPECIFIED ? "localhost" : ip);
     
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFd < 0) {
         logger->error("ERROR opening socket");
-        return ERROR;
+        return Transport::TPT_ERROR;
     }
-    server = gethostbyname(serverAddress);
+    server = gethostbyname(ip);
     if (server == NULL) {
         logger->error("ERROR, no such host\n");
-        return ERROR;
+        return Transport::TPT_ERROR;
     }
     bzero((char *) &serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
@@ -105,62 +105,28 @@ int MacTransport::openClientSocket() {
     n = ::connect(socketFd,(struct sockaddr *) &serv_addr,sizeof(serv_addr));
     if (n < 0) {
         logger->error("ERROR connecting");
-        return ERROR;
+        return Transport::TPT_ERROR;
     }
     fcntl(socketFd, F_SETFL, O_NONBLOCK);
     
-    return OK;
+    return Transport::TPT_OK;
 }
 
-int MacTransport::writeData(const char* data, int numBytes)
+int PosixTcpTransport::writeData(const char* data, int numBytes)
 {
     int n = write(socketFd,data,numBytes);
     return n;
 }
 
-int MacTransport::readData(char *buffer, int bufferLength) {
+int PosixTcpTransport::readData(char *buffer, int bufferLength) {
     int n = read(socketFd, buffer, bufferLength);
     return n;
 }
 
 
-void MacTransport::testSockets() {
-    int NUM_MESSAGES = 10;
-    Transport* t = new MacTransport();
-    t->connect();
-    if (t->getConnectNumber() == 1) {
-        for(int ctr=0; ctr<NUM_MESSAGES; ++ctr) {
-            char message[256];
-            sprintf(message, "Message %d\n\0", (ctr+1));
-            int charsSent = t->sendPacket(message);
-            if (charsSent <= 0) {
-                perror("Error sending packet");
-            }
-            if (ctr == (NUM_MESSAGES/2)) {
-                printf("Pausing\n");
-                sleep(5);
-            }
-        }
-    } else {
-        // We wait a second for the sender to send some stuff
-        sleep(2);
-        for(int ctr=0;ctr<NUM_MESSAGES;++ctr) {
-            char buffer[256];
-            int charsReceived = t->getPacket(buffer, 256);
-            if (charsReceived < 0) {
-                perror("Error receiving packet");
-            } else if (charsReceived == 0) {
-                printf("Received no data.\n");
-            }
-        }
-    }
-    // Pause
-    printf("Hit Return to exit");
-    char tmpBuffer[256];
-    fgets(tmpBuffer,255,stdin);
-    printf("Exiting");
-    delete t;
-    exit(0);
-    
+void PosixTcpTransport::testSockets() {
+    PosixTcpTransport t;
+    MacSleep sleep;
+    Transport::testTransport(t, sleep);
 }
 

@@ -27,9 +27,7 @@ public:
     
 protected:
     
-    // None of these methods are used, but to conform to Transport they have to be defined.
-    int openServerSocket();
-    int openClientSocket();
+    // Neither of these methods are used, but to conform to Transport they have to be defined.
     int writeData(const char* data, int numBytes);
     int readData(char* buffer, int bufferLength);
     

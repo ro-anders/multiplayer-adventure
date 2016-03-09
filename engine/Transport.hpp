@@ -7,35 +7,25 @@
 #include <stdio.h>
 
 class Logger;
+class Sleep;
 
 class Transport {
 public:
     
     static const int DEFAULT_PORT;
     
-    /**
-     * Create a socket to this machine on the default port.  First try to open
-     * a server socket, but if the port is already busy open up a client socket.
-     * Useful for testing.
-     */
-    Transport();
+    static const int NOT_A_TEST;
     
     /**
-     * Create a server socket.
-     * port - the port to listen on.  If 0, will listen on the default port.
+     * Create a transport. 
+     * @param inATest whether this is a test scenario and transport should figure out
+     * who is player 1 and player 2.
      */
-    Transport(int port);
+    Transport(bool inATest);
     
-    /**
-     * Connect a socket to another machine.
-     * ip - the ip of the machine to connect to
-     * port - the port to connect to.  If 0, will listen on the default port.
-     */
-    Transport(const char* ip, int port);
+    virtual ~Transport();
     
-    virtual ~Transport() = 0;
-    
-    virtual void connect();
+    virtual void connect() = 0;
     
     /**
      * Send a packet to a client.  Assumes the packet is \0 terminated.
@@ -52,13 +42,11 @@ public:
     
     /**
      * Often when testing we want to quickly launch two ends of a socket and let them
-     * figure out which should be the server and which the client.  In that case this 
-     * can let you know how it worked out.  The first one to connect
-     * will return 0.  The second one will return 1.
+     * figure out which one will use which ports and who should be player one vs player two.
+     * The will return 0 for player 1 and will return 1 for player 2.  Does not work with three players.
+     * If this transport has not been setup for a quick test, will return NOT_A_TEST.
      */
-    int getConnectNumber() {
-        return connectNumber;
-    }
+    int getTestSetupNumber();
     
     /**
      * Parse an socket address of the form 127.0.0.1:5678 into an ip/address and a port.
@@ -69,48 +57,26 @@ public:
     
     static void setLogger(Logger* logger);
     
+    /**
+     * This runs a test - assuming another transport has been setup to talk with. 
+     */
+    static void testTransport(Transport& tpt, Sleep& sleep);
+    
     
 protected:
-    /** A constant used for the IP when you don't know if this is going to be a server or client socket. */
-    static const char* UNSPECIFIED;
+    
+    void setTestSetupNumber(int num);
+
+    static const int NOT_YET_DETERMINED;
     
     /** Return codes from connection methods */
     static const int TPT_ERROR;
     static const int TPT_OK;
     static const int TPT_BUSY;
     
-    /** The order in which this socket connected.  0 for first (server socket), 1 for second (client socket) */
-    int connectNumber;
-    
-    /**
-     * The IP of the socket address that we are connecting to, or null if this is to be a server socket, or
-     * UNSPECIFIED in the testing case that two games are run on the same machiine.
-     */
-    const char* ip;
-    
-    /** The port that we are connecting to (or, if this is a server socket, the port to listen on) */
-    int port;
-    
-    /** Buffer to store data until end of packet is reached. */
-    char* streamBuffer;
-    
-    /** Size of stream buffer */
-    int streamBufferSize;
-    
-    /** Number of characters read into stream buffer */
-    int charsInStreamBuffer;
+    static const char* LOCALHOST_IP;
     
     static Logger* logger;
-    
-    /**
-     * Open a server socket.
-     */
-    virtual int openServerSocket() = 0;
-    
-    /**
-     * Open a client socket.
-     */
-    virtual int openClientSocket() = 0;
     
     /**
      * Send data on the socket.
@@ -123,12 +89,20 @@ protected:
     virtual int readData(char* buffer, int bufferLength) = 0;
     
 private:
-	/**
-	* Setup buffers.
-	* Code common to all three constructors.
-	*/
-	virtual void setup();
-
+    
+    /** In a test setup, 0 = player 1, 1 = player 2.  Until a 0 or 1 is chosen will be NOT_YET_DETERMINED.
+     * Will be NOT_A_TEST in a non-test setup. */
+    int testSetupNumber;
+    
+    /** Buffer to store data until end of packet is reached. */
+    char* streamBuffer;
+    
+    /** Size of stream buffer */
+    int streamBufferSize;
+    
+    /** Number of characters read into stream buffer */
+    int charsInStreamBuffer;
+    
 };
 
 #endif /* Transport_hpp */

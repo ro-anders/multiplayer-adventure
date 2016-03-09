@@ -20,8 +20,9 @@
 #include "Adventure.h"
 #include "args.h"
 #include "MacLogger.hpp"
-#include "MacTransport.hpp"
-#include "MacUdpTransport.hpp"
+#include "MacSleep.hpp"
+#include "PosixTcpTransport.hpp"
+#include "PosixUdpTransport.hpp"
 #include "Transport.hpp"
 #include "YTransport.hpp"
 
@@ -74,15 +75,21 @@ bool gMute = FALSE;
     
     
     // Test UDP Sockets
+    MacSleep* sleep = new MacSleep();
     if ((argc > 2) && (strcmp(argv[1], "test")==0)) {
-        char* ip1;
-        int port1;
-        char* ip2;
-        int port2;
-        Transport::parseUrl(argv[2], &ip1, &port1);
-        Transport::parseUrl(argv[3], &ip2, &port2);
-        MacUdpTransport::testSockets(ip1, port1, ip2, port2);
-        exit(0);
+        Transport* toTest = NULL;
+        if (argc == 2) {
+            toTest = new PosixUdpTransport(sleep);
+        } else {
+            char* ip1;
+            int port1;
+            char* ip2;
+            int port2;
+            Transport::parseUrl(argv[2], &ip1, &port1);
+            Transport::parseUrl(argv[3], &ip2, &port2);
+            toTest = new PosixUdpTransport(ip1, port1, ip2, port2, sleep);
+        }
+        Transport::testTransport(*toTest, *sleep);
     }
 
     int numPlayers;
@@ -101,9 +108,9 @@ bool gMute = FALSE;
     const int DEFAULT_PORT = 5678;
     if (argc <= 2) {
         numPlayers = 2;
-        transport = new MacUdpTransport();
+        transport = new PosixUdpTransport(sleep);
         transport->connect();
-        thisPlayer = transport->getConnectNumber();
+        thisPlayer = transport->getTestSetupNumber();
         Platform_MuteSound(thisPlayer == 1);
     } else {
         numPlayers = argc-2;
@@ -113,11 +120,11 @@ bool gMute = FALSE;
         if (strlen(otherPlayer1) <= 5) {
             // It is just a port.
             port1 = atoi(otherPlayer1);
-            transport = new MacTransport(port1);
+            transport = new PosixTcpTransport(port1);
         } else {
             char* ip1 = NULL;
             Transport::parseUrl(otherPlayer1, &ip1, &port1);
-            transport = new MacTransport(ip1, port1);
+            transport = new PosixTcpTransport(ip1, port1);
         }
         
         // Process player 3
@@ -128,11 +135,11 @@ bool gMute = FALSE;
             if (strlen(otherPlayer2) <= 5) {
                 // It is just a port.
                 port2 = atoi(otherPlayer2);
-                transport2 = new MacTransport(port2);
+                transport2 = new PosixTcpTransport(port2);
             } else {
                 char* ip2 = NULL;
                 Transport::parseUrl(otherPlayer2, &ip2, &port2);
-                transport2 = new MacTransport(ip2, port2);
+                transport2 = new PosixTcpTransport(ip2, port2);
             }
             transport = new YTransport(transport, transport2);
         }

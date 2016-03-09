@@ -7,51 +7,33 @@
 #include <string.h>
 
 #include "Logger.hpp"
+#include "Sleep.hpp"
 
 const int Transport::DEFAULT_PORT = 5678;
-
-const char* Transport::UNSPECIFIED = "unspecified";
 
 const int Transport::TPT_ERROR = -1;
 const int Transport::TPT_OK = 0;
 const int Transport::TPT_BUSY = 1;
 
+const int Transport::NOT_A_TEST = -1;
+const int Transport::NOT_YET_DETERMINED = -2;
+
+const char* Transport::LOCALHOST_IP = "127.0.0.1";
+
 
 Logger* Transport::logger = new Logger();
 
-Transport::Transport() :
-port(DEFAULT_PORT),
-ip(UNSPECIFIED)
+Transport::Transport(bool inATest)
 {
-    setup();
+    streamBufferSize = 1024;
+    streamBuffer = new char[streamBufferSize]; // TODO: Make this more dynamic.
+    charsInStreamBuffer = 0;
+    testSetupNumber = (inATest ? NOT_YET_DETERMINED : NOT_A_TEST);
 }
-
-Transport::Transport(int inPort) :
-port(inPort == 0 ? DEFAULT_PORT : inPort),
-ip(NULL)
-{
-    setup();
-}
-
-Transport::Transport(const char* inIp, int inPort) :
-port(inPort == 0 ? DEFAULT_PORT : inPort),
-ip(inIp)
-{
-    setup();
-}
-
-
 
 Transport::~Transport()
 {
     delete [] streamBuffer;
-}
-
-void Transport::setup() {
-    streamBufferSize = 1024;
-    streamBuffer = new char[streamBufferSize]; // TODO: Make this more dynamic.
-    charsInStreamBuffer = 0;
-	connectNumber = -1;
 }
 
 void Transport::setLogger(Logger* newLogger) {
@@ -61,22 +43,13 @@ void Transport::setLogger(Logger* newLogger) {
     }
 }
 
-void Transport::connect() {
-    if (ip == UNSPECIFIED) {
-        // Try to bind to a port.  If it's busy, assume the other program has bound and try to connect to it.
-        int busy = openServerSocket();
-        if (busy == TPT_BUSY) {
-            openClientSocket();
-        }
-        connectNumber = (busy ? 1 : 0);
-    } else if (ip == NULL) {
-        openServerSocket();
-        connectNumber = 0;
-    } else {
-        openClientSocket();
-        connectNumber = 1;
-    }
+int Transport::getTestSetupNumber() {
+    return testSetupNumber;
 }
+void Transport::setTestSetupNumber(int newNum) {
+    testSetupNumber = newNum;
+}
+
 
 int Transport::sendPacket(const char* packetData) {
 	int n = writeData(packetData, strlen(packetData)+1); // +1 to include the \0
@@ -153,6 +126,54 @@ int Transport::getPacket(char* buffer, int bufferLength) {
     }
     
     return (hitError ? hitError : charsInPacket);
+}
+
+void Transport::testTransport(Transport& t, Sleep& sleep) {
+    int NUM_MESSAGES = 10;
+    // If this is a test, make sure test roles are negotiated.
+    t.testSetupNumber = NOT_YET_DETERMINED;
+    t.connect();
+    if (t.getTestSetupNumber() == 1) {
+        int numSent = 0;
+        for(int ctr=0; ctr<NUM_MESSAGES; ++ctr) {
+            char message[256];
+            sprintf(message, "Message %d\n\0", (ctr+1));
+            int charsSent = t.sendPacket(message);
+            if (charsSent <= 0) {
+                perror("Error sending packet");
+            } else {
+                ++numSent;
+            }
+            if (ctr == (NUM_MESSAGES/2)) {
+                printf("Pausing\n");
+                sleep.sleep(5);
+            }
+        }
+        printf("Sent %d messages.  %s.\n", numSent, (numSent == 10 ? "PASS" : "FAIL"));
+    } else {
+        int numReceived = 0;
+        // We wait a second for the sender to send some stuff
+        sleep.sleep(2);
+        for(int ctr=0;ctr<NUM_MESSAGES;++ctr) {
+            char buffer[256];
+            int charsReceived = t.getPacket(buffer, 256);
+            if (charsReceived < 0) {
+                perror("Error receiving packet");
+            } else if (charsReceived == 0) {
+                printf("Received no data.\n");
+            } else {
+                ++numReceived;
+            }
+        }
+        printf("Received %d messages.  %s.\n", numReceived, (numReceived == 6 ? "PASS" : "FAIL"));
+    }
+    // Pause
+    printf("Hit Return to exit");
+    char tmpBuffer[256];
+    fgets(tmpBuffer,255,stdin);
+    printf("Exiting");
+    exit(0);
+
 }
 
 

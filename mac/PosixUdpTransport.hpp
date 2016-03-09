@@ -1,24 +1,27 @@
 //
-//  MacUdpTransport.hpp
+//  PosixUdpTransport.hpp
 //  MacAdventure
 //
 
-#ifndef MacUdpTransport_hpp
-#define MacUdpTransport_hpp
+#ifndef PosixUdpTransport_hpp
+#define PosixUdpTransport_hpp
 
 #include <netinet/in.h>
 #include <stdio.h>
-#include "Transport.hpp"
+#include "UdpTransport.hpp"
 
-class MacUdpTransport: public Transport {
+class Sleep;
+
+class PosixUdpTransport: public UdpTransport {
     
 public:
     
     /**
      * Used only for in testing when running two games on one machine.  Attempts to listen first on the
      * default port and, if that is taken by the other game, on the default port + 1.
+     * sleep - something to call sleep in a platform specific way
      */
-    MacUdpTransport();
+    PosixUdpTransport(Sleep* sleep);
 
     /**
      * Connect to another game using UDP.
@@ -26,44 +29,31 @@ public:
      * myExternaPort - the port my packets appear to come from
      * theirIp - the ip of the machine to connect to
      * theirPort - the port to connect to
+     * sleep - something to call sleep in a platform specific way
      */
-    MacUdpTransport(const char* myExternalIp, int myExternalPort, const char* ip, int port);
+    PosixUdpTransport(const char* myExternalIp, int myExternalPort,
+                      const char* theirIp, int theirPort, Sleep* sleep);
 
-    ~MacUdpTransport();
-    
-    void connect();
+    ~PosixUdpTransport();
     
     static void testSockets(const char* myExternalIp, int myExternalPort, const char* theirExternalIp, int theirExternalPort);
     
 protected:
 
-    int openServerSocket();
+    int openSocket();
     
-    int openClientSocket();
-
     int writeData(const char* data, int numBytes);
     
     int readData(char* buffer, int bufferLength);
 
 private:
-    
-    const char* myExternalIp;
-    
-    int myExternalPort;
-    
-    int myInternalPort;
-    
+        
     int socketFd; // UDP Socket to send and receive
     
-    struct sockaddr_in remaddr;
+    struct sockaddr_in remaddr; // Destination we are sending to
     
     // Code common to all consturctors.
     void setup();
-    
-    /**
-     * We don't have a client/server relationship, so there is just openSocket().
-     */
-    int openSocket();
     
     void punchHole();
     
@@ -72,4 +62,4 @@ private:
 
 };
 
-#endif /* MacUdpTransport_hpp */
+#endif /* PosixUdpTransport_hpp */
