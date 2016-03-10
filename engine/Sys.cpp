@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #ifdef WIN32
 #include <windows.h>
-#endif
+#else
 #include <unistd.h>
-
+#endif
 // Use static initialization to make sure the random number generator is randomized.
 bool Sys::randomized = Sys::seedRandom();
 
