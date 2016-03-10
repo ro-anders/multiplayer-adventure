@@ -19,8 +19,6 @@
 #include "AdventureView.h"
 #include "Adventure.h"
 #include "args.h"
-#include "MacLogger.hpp"
-#include "MacSleep.hpp"
 #include "PosixTcpTransport.hpp"
 #include "PosixUdpTransport.hpp"
 #include "Transport.hpp"
@@ -75,11 +73,10 @@ bool gMute = FALSE;
     
     
     // Test UDP Sockets
-    MacSleep* sleep = new MacSleep();
     if ((argc > 2) && (strcmp(argv[1], "test")==0)) {
         Transport* toTest = NULL;
         if (argc == 2) {
-            toTest = new PosixUdpTransport(sleep);
+            toTest = new PosixUdpTransport();
         } else {
             char* ip1;
             int port1;
@@ -87,9 +84,9 @@ bool gMute = FALSE;
             int port2;
             Transport::parseUrl(argv[2], &ip1, &port1);
             Transport::parseUrl(argv[3], &ip2, &port2);
-            toTest = new PosixUdpTransport(ip1, port1, ip2, port2, sleep);
+            toTest = new PosixUdpTransport(ip1, port1, ip2, port2);
         }
-        Transport::testTransport(*toTest, *sleep);
+        Transport::testTransport(*toTest);
     }
 
     int numPlayers;
@@ -101,14 +98,11 @@ bool gMute = FALSE;
         gameLevel = atoi(argv[1]);
     }
     
-    // Setup the platform specific logger
-    Transport::setLogger(new MacLogger());
-    
     // Read the command line arguments and setup the communication with the other players
     const int DEFAULT_PORT = 5678;
     if (argc <= 2) {
         numPlayers = 2;
-        transport = new PosixUdpTransport(sleep);
+        transport = new PosixUdpTransport();
         transport->connect();
         thisPlayer = transport->getTestSetupNumber();
         Platform_MuteSound(thisPlayer == 1);

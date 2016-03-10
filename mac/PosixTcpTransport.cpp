@@ -17,8 +17,7 @@
 #include <netdb.h>
 // End socket includes
 
-#include "Logger.hpp"
-#include "MacSleep.hpp"
+#include "Sys.hpp"
 
 PosixTcpTransport::PosixTcpTransport() :
   TcpTransport()
@@ -47,7 +46,7 @@ int PosixTcpTransport::openServerSocket() {
     
     serverSocketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocketFd < 0) {
-        logger->error("ERROR opening socket");
+        Sys::log("ERROR opening socket");
         return Transport::TPT_ERROR;
     }
 
@@ -70,7 +69,7 @@ int PosixTcpTransport::openServerSocket() {
                        (struct sockaddr *) &cli_addr,
                        &clilen);
     if (socketFd < 0) {
-        logger->error("ERROR on accept");
+        Sys::log("ERROR on accept");
         return Transport::TPT_ERROR;
     }
     fcntl(socketFd, F_SETFL, O_NONBLOCK);
@@ -88,12 +87,12 @@ int PosixTcpTransport::openClientSocket() {
     
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFd < 0) {
-        logger->error("ERROR opening socket");
+        Sys::log("ERROR opening socket");
         return Transport::TPT_ERROR;
     }
     server = gethostbyname(ip);
     if (server == NULL) {
-        logger->error("ERROR, no such host\n");
+        Sys::log("ERROR, no such host\n");
         return Transport::TPT_ERROR;
     }
     bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -104,7 +103,7 @@ int PosixTcpTransport::openClientSocket() {
     serv_addr.sin_port = htons(port);
     n = ::connect(socketFd,(struct sockaddr *) &serv_addr,sizeof(serv_addr));
     if (n < 0) {
-        logger->error("ERROR connecting");
+        Sys::log("ERROR connecting");
         return Transport::TPT_ERROR;
     }
     fcntl(socketFd, F_SETFL, O_NONBLOCK);
@@ -126,7 +125,6 @@ int PosixTcpTransport::readData(char *buffer, int bufferLength) {
 
 void PosixTcpTransport::testSockets() {
     PosixTcpTransport t;
-    MacSleep sleep;
-    Transport::testTransport(t, sleep);
+    Transport::testTransport(t);
 }
 

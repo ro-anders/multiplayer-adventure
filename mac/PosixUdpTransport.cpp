@@ -18,19 +18,17 @@
 #include <unistd.h>
 // End socket includes
 
-#include "Logger.hpp"
-#include "MacSleep.hpp"
+#include "Sys.hpp"
 
-
-PosixUdpTransport::PosixUdpTransport(Sleep* sleep) :
-  UdpTransport(sleep)
+PosixUdpTransport::PosixUdpTransport() :
+  UdpTransport()
 {
     setup();
 }
 
 PosixUdpTransport::PosixUdpTransport(const char* inMyExternalIp, int inMyExternalPort,
-                                     const char* inTheirIp, int inTheirPort, Sleep* sleep) :
-UdpTransport(inMyExternalIp, inMyExternalPort, inTheirIp, inTheirPort, sleep)
+                                     const char* inTheirIp, int inTheirPort) :
+UdpTransport(inMyExternalIp, inMyExternalPort, inTheirIp, inTheirPort)
 {
     setup();
 }
@@ -44,7 +42,10 @@ PosixUdpTransport::~PosixUdpTransport() {
 void PosixUdpTransport::setup() {
     memset((char *) &remaddr, 0, sizeof(remaddr));
     printf("Uninitialized = %s:%d.\n", inet_ntoa(remaddr.sin_addr), ntohs(remaddr.sin_port));
-    
+}
+
+int PosixUdpTransport::openSocket() {
+ 
     // TODO: Fix this
     // ip is an ip, not a hostname, but don't know how to convert a
     // string ip to a server address format, so calling gethost - ugh
@@ -54,14 +55,10 @@ void PosixUdpTransport::setup() {
           hp->h_length);
     remaddr.sin_port = htons(theirPort);
     printf("Initialized = %s:%d.\n", inet_ntoa(remaddr.sin_addr), ntohs(remaddr.sin_port));
-    
-}
 
-int PosixUdpTransport::openSocket() {
-    
     socketFd = socket(AF_INET, SOCK_DGRAM, 0);
     if (socketFd < 0) {
-        logger->error("ERROR opening socket");
+        Sys::log("ERROR opening socket");
         return TPT_ERROR;
     }
     struct sockaddr_in serv_addr;
@@ -100,7 +97,6 @@ int PosixUdpTransport::readData(char *buffer, int bufferLength) {
 
 void PosixUdpTransport::testSockets(const char* myExternalIp, int myExternalPort, const char* theirExternalIp, int theirExternalPort)
 {
-    MacSleep* sleep = new MacSleep();
-    PosixUdpTransport t(sleep);
-    Transport::testTransport(t, *sleep);
+    PosixUdpTransport t;
+    Transport::testTransport(t);
 }
