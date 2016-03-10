@@ -1,6 +1,6 @@
 
 
-#include "WinTransport.h"
+#include "WinTcpTransport.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -11,6 +11,7 @@
 #include <iphlpapi.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "..\engine\Sys.hpp"
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -22,55 +23,55 @@
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "27015"
 
-WinTransport::WinTransport() :
-	Transport(),
+WinTcpTransport::WinTcpTransport() :
+	TcpTransport(),
 	ClientSocket(INVALID_SOCKET)
 {
 	winSetup();
 }
 
-WinTransport::WinTransport(int port) :
-	Transport(port),
+WinTcpTransport::WinTcpTransport(int port) :
+	TcpTransport(port),
 	ClientSocket(INVALID_SOCKET)
 {
 	winSetup();
 }
 
-WinTransport::WinTransport(char* ip, int port) :
-	Transport(ip, port),
+WinTcpTransport::WinTcpTransport(char* ip, int port) :
+	TcpTransport(ip, port),
 	ClientSocket(INVALID_SOCKET)
 {
 	winSetup();
 }
 
-WinTransport::~WinTransport() {
+WinTcpTransport::~WinTcpTransport() {
 	if (ClientSocket != INVALID_SOCKET) {
 		closesocket(ClientSocket);
 		WSACleanup();
 	}
-	free(portStr);
+	delete[] portStr;
 }
 
-void WinTransport::winSetup() {
-	portStr = (char*)malloc(10 * sizeof(char));
+void WinTcpTransport::winSetup() {
+	portStr = new char[10];
 	sprintf(portStr, "%d", port);
 }
 
 
-int WinTransport::writeData(const char* packetData, int numBytes) {
+int WinTcpTransport::writeData(const char* packetData, int numBytes) {
 	int iResult = send(ClientSocket, packetData, numBytes, 0);
 	// TODO: Shouldn't we call WSAGetLastError() and return the real error code?
 	return iResult;
 }
 
-int WinTransport::readData(char* buffer, int bufferLength) {
+int WinTcpTransport::readData(char* buffer, int bufferLength) {
 	int iResult = recv(ClientSocket, buffer, bufferLength, 0);
 	// TODO: Shouldn't we call WSAGetLastError() and return the real error code?
 	return iResult;
 }
 
-int WinTransport::openServerSocket() {
-	logError("Opening server socket\n");
+int WinTcpTransport::openServerSocket() {
+	Sys::log("Opening server socket\n");
 	WSADATA wsaData;
 	int iResult;
 	char errorMessage[2000];
@@ -89,7 +90,7 @@ int WinTransport::openServerSocket() {
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResult != 0) {
 		sprintf(errorMessage, "WSAStartup failed with error: %d\n", iResult);
-		logError(errorMessage);
+		Sys::log(errorMessage);
 		return 1;
 	}
 
@@ -103,7 +104,7 @@ int WinTransport::openServerSocket() {
 	iResult = getaddrinfo(NULL, portStr, &hints, &result);
 	if (iResult != 0) {
 		sprintf(errorMessage, "getaddrinfo failed with error: %d\n", iResult);
-		logError(errorMessage);
+		Sys::log(errorMessage);
 		WSACleanup();
 		return 1;
 	}
@@ -112,7 +113,7 @@ int WinTransport::openServerSocket() {
 	ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 	if (ListenSocket == INVALID_SOCKET) {
 		sprintf(errorMessage, "socket failed with error: %ld\n", WSAGetLastError());
-		logError(errorMessage);
+		Sys::log(errorMessage);
 		freeaddrinfo(result);
 		WSACleanup();
 		return 1;
@@ -122,7 +123,7 @@ int WinTransport::openServerSocket() {
 	iResult = bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
 	if (iResult == SOCKET_ERROR) {
 		sprintf(errorMessage, "bind failed with error: %d\n", WSAGetLastError());
-		logError(errorMessage);
+		Sys::log(errorMessage);
 		freeaddrinfo(result);
 		closesocket(ListenSocket);
 		WSACleanup();
@@ -134,7 +135,7 @@ int WinTransport::openServerSocket() {
 	iResult = listen(ListenSocket, SOMAXCONN);
 	if (iResult == SOCKET_ERROR) {
 		sprintf(errorMessage, "listen failed with error: %d\n", WSAGetLastError());
-		logError(errorMessage);
+		Sys::log(errorMessage);
 		closesocket(ListenSocket);
 		WSACleanup();
 		return 1;
@@ -144,7 +145,7 @@ int WinTransport::openServerSocket() {
 	ClientSocket = accept(ListenSocket, NULL, NULL);
 	if (ClientSocket == INVALID_SOCKET) {
 		sprintf(errorMessage, "accept failed with error: %d\n", WSAGetLastError());
-		logError(errorMessage);
+		Sys::log(errorMessage);
 		closesocket(ListenSocket);
 		WSACleanup();
 		return 1;
@@ -155,7 +156,7 @@ int WinTransport::openServerSocket() {
 	iResult = ioctlsocket(ClientSocket, FIONBIO, &nbflag);
 	if (iResult != 0) {
 		sprintf(errorMessage, "ioctlsocket failed with error: %d\n", WSAGetLastError());
-		logError(errorMessage);
+		Sys::log(errorMessage);
 		WSACleanup();
 		return 1;
 	}
@@ -166,15 +167,14 @@ int WinTransport::openServerSocket() {
 	closesocket(ListenSocket);
 
 	sprintf(errorMessage, "Connected.  Listening on port %s\n", portStr);
-	logError(errorMessage);
+	Sys::log(errorMessage);
 }
 
-int WinTransport::openClientSocket() {
-	logError("Opening client socket\n");
+int WinTcpTransport::openClientSocket() {
+	Sys::log("Opening client socket\n");
 	WSADATA wsaData;
 	ClientSocket = INVALID_SOCKET;
 	
-	const char* host = (ip == UNSPECIFIED ? "localhost" : ip);
 	struct addrinfo *result = NULL,
 		*ptr = NULL,
 		hints;
@@ -188,7 +188,7 @@ int WinTransport::openClientSocket() {
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResult != 0) {
 		sprintf(errorMessage, "WSAStartup failed with error: %d\n", iResult);
-		logError(errorMessage);
+		Sys::log(errorMessage);
 		return 1;
 	}
 
@@ -198,10 +198,10 @@ int WinTransport::openClientSocket() {
 	hints.ai_protocol = IPPROTO_TCP;
 
 	// Resolve the server address and port
-	iResult = getaddrinfo(host, portStr, &hints, &result);
+	iResult = getaddrinfo(ip, portStr, &hints, &result);
 	if (iResult != 0) {
 		sprintf(errorMessage, "getaddrinfo failed with error: %d\n", iResult);
-		logError(errorMessage);
+		Sys::log(errorMessage);
 		WSACleanup();
 		return 1;
 	}
@@ -214,7 +214,7 @@ int WinTransport::openClientSocket() {
 			ptr->ai_protocol);
 		if (ClientSocket == INVALID_SOCKET) {
 			sprintf(errorMessage, "socket failed with error: %ld\n", WSAGetLastError());
-			logError(errorMessage);
+			Sys::log(errorMessage);
 			WSACleanup();
 			return 1;
 		}
@@ -234,7 +234,7 @@ int WinTransport::openClientSocket() {
 	iResult = ioctlsocket(ClientSocket, FIONBIO, &nbflag);
 	if (iResult != 0) {
 		sprintf(errorMessage, "ioctlsocket failed with error: %d\n", WSAGetLastError());
-		logError(errorMessage);
+		Sys::log(errorMessage);
 		WSACleanup();
 		return 1;
 	}
@@ -242,68 +242,17 @@ int WinTransport::openClientSocket() {
 	freeaddrinfo(result);
 
 	if (ClientSocket == INVALID_SOCKET) {
-		logError("Unable to connect to server!\n");
+		Sys::log("Unable to connect to server!\n");
 		WSACleanup();
 		return 1;
 	}
 
-	sprintf(errorMessage, "Connected to %s on port %s\n", host, portStr);
-	logError(errorMessage);
+	sprintf(errorMessage, "Connected to %s on port %s\n", ip, portStr);
+	Sys::log(errorMessage);
 
 }
 
-void WinTransport::testSockets() {
-	int NUM_MESSAGES = 10;
-	char logMessage[1000];
-
-	WinTransport* t = new WinTransport();
-	t->connect();
-	if (t->getConnectNumber() == 1) {
-		for (int ctr = 0; ctr<NUM_MESSAGES; ++ctr) {
-			sprintf(logMessage, "Sending message %d\n", (ctr + 1));
-			t->logError(logMessage);
-			char message[256];
-			sprintf(message, "Message %d\n\0", (ctr + 1));
-			int charsSent = t->sendPacket(message);
-			if (charsSent <= 0) {
-				t->logError("Error sending packet");
-			}
-			if (ctr == (NUM_MESSAGES / 2)) {
-				t->logError("Pausing 5 seconds\n");
-				Sleep(5000);
-			}
-		}
-	}
-	else {
-		// We wait a second for the sender to send some stuff
-		t->logError("Pausing 2 seconds\n");
-		Sleep(2000);
-		for (int ctr = 0; ctr<NUM_MESSAGES; ++ctr) {
-			char buffer[256];
-			int charsReceived = t->getPacket(buffer, 256);
-			if (charsReceived < 0) {
-				t->logError("Error receiving packet");
-			}
-			else if (charsReceived == 0) {
-				sprintf(logMessage, "Receive %d got no data.\n", (ctr + 1));
-				t->logError(logMessage);
-			}
-			else {
-				sprintf(logMessage, "Receive %d got: %s\n",(ctr+1), buffer);
-				t->logError(logMessage);
-			}
-		}
-	}
-	// Pause
-	t->logError("Exiting");
-	delete t;
-	exit(0);
-
-}
-
-void WinTransport::logError(const char* message) {
-	char buffer[1000];
-	sprintf(buffer, "%d: %s", (connectNumber + 1), message);
-	OutputDebugString(buffer);
-	//perror(message);
+void WinTcpTransport::testSockets() {
+	WinTcpTransport t;
+	Transport::testTransport(t);
 }

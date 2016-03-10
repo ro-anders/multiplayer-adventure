@@ -6,9 +6,6 @@
 
 #include <stdio.h>
 
-class Logger;
-class Sleep;
-
 class Transport {
 public:
     
@@ -55,12 +52,10 @@ public:
      */
     static void parseUrl(char* socketAddress, char** outIp, int* outPort);
     
-    static void setLogger(Logger* logger);
-    
     /**
      * This runs a test - assuming another transport has been setup to talk with. 
      */
-    static void testTransport(Transport& tpt, Sleep& sleep);
+    static void testTransport(Transport& tpt);
     
     
 protected:
@@ -75,8 +70,6 @@ protected:
     static const int TPT_BUSY;
     
     static const char* LOCALHOST_IP;
-    
-    static Logger* logger;
     
     /**
      * Send data on the socket.

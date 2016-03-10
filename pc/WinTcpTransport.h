@@ -1,14 +1,14 @@
 #pragma once
 
-#ifndef WinTransport_h
-#define WinTransport_h
+#ifndef WinTcpTransport_h
+#define WinTcpTransport_h
 
 #include <stdio.h>
 #include <winsock2.h>
 
-#include "..\engine\Transport.hpp"
+#include "..\engine\TcpTransport.hpp"
 
-class WinTransport: public Transport {
+class WinTcpTransport: public TcpTransport {
 public:
 
 	/**
@@ -16,29 +16,24 @@ public:
 	* a server socket, but if the port is already busy open up a client socket.
 	* Useful for testing.
 	*/
-	WinTransport();
+	WinTcpTransport();
 
 	/**
 	* Create a server socket.
 	* port - the port to listen on.  If 0, will listen on the default port.
 	*/
-	WinTransport(int port);
+	WinTcpTransport(int port);
 
 	/**
 	* Connect a socket to another machine.
 	* ip - the ip of the machine to connect to
 	* port - the port to connect to.  If 0, will listen on the default port.
 	*/
-	WinTransport(char* ip, int port);
+	WinTcpTransport(char* ip, int port);
 
-	~WinTransport();
+	~WinTcpTransport();
 
-	/**
-	* Report an error - different OS's have different behavior
-	*/
-	void logError(const char* msg);
-
-	static void WinTransport::testSockets();
+	static void WinTcpTransport::testSockets();
 
 protected:
 
@@ -77,4 +72,4 @@ private:
 
 };
 
-#endif /* WinTransport_h */
+#endif /* WinTcpTransport_h */

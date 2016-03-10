@@ -94,17 +94,19 @@
     <ClCompile Include="..\engine\Board.cpp" />
     <ClCompile Include="..\engine\Dragon.cpp" />
     <ClCompile Include="..\engine\GameObject.cpp" />
-    <ClCompile Include="..\engine\Logger.cpp" />
     <ClCompile Include="..\engine\Map.cpp" />
     <ClCompile Include="..\engine\Portcullis.cpp" />
     <ClCompile Include="..\engine\RemoteAction.cpp" />
     <ClCompile Include="..\engine\Room.cpp" />
     <ClCompile Include="..\engine\Sync.cpp" />
+    <ClCompile Include="..\engine\Sys.cpp" />
+    <ClCompile Include="..\engine\TcpTransport.cpp" />
     <ClCompile Include="..\engine\Transport.cpp" />
+    <ClCompile Include="..\engine\UdpTransport.cpp" />
     <ClCompile Include="..\engine\YTransport.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="WinAdventure.cpp" />
-    <ClCompile Include="WinTransport.cpp" />
+    <ClCompile Include="WinTcpTransport.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\engine\ActionQueue.hpp" />
@@ -116,18 +118,20 @@
     <ClInclude Include="..\engine\color.h" />
     <ClInclude Include="..\engine\Dragon.hpp" />
     <ClInclude Include="..\engine\GameObject.hpp" />
-    <ClInclude Include="..\engine\Logger.hpp" />
     <ClInclude Include="..\engine\Map.hpp" />
     <ClInclude Include="..\engine\Portcullis.hpp" />
     <ClInclude Include="..\engine\RemoteAction.hpp" />
     <ClInclude Include="..\engine\Room.hpp" />
     <ClInclude Include="..\engine\Sync.hpp" />
+    <ClInclude Include="..\engine\Sys.hpp" />
+    <ClInclude Include="..\engine\TcpTransport.hpp" />
     <ClInclude Include="..\engine\Transport.hpp" />
+    <ClInclude Include="..\engine\UdpTransport.hpp" />
     <ClInclude Include="..\engine\YTransport.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="WinAdventure.h" />
-    <ClInclude Include="WinTransport.h" />
+    <ClInclude Include="WinTcpTransport.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico" />

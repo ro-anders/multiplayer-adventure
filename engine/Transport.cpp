@@ -5,9 +5,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-
-#include "Logger.hpp"
-#include "Sleep.hpp"
+#include "Sys.hpp"
 
 const int Transport::DEFAULT_PORT = 5678;
 
@@ -20,8 +18,6 @@ const int Transport::NOT_YET_DETERMINED = -2;
 
 const char* Transport::LOCALHOST_IP = "127.0.0.1";
 
-
-Logger* Transport::logger = new Logger();
 
 Transport::Transport(bool inATest)
 {
@@ -36,13 +32,6 @@ Transport::~Transport()
     delete [] streamBuffer;
 }
 
-void Transport::setLogger(Logger* newLogger) {
-    if (newLogger != NULL) {
-        delete logger;
-        logger = newLogger;
-    }
-}
-
 int Transport::getTestSetupNumber() {
     return testSetupNumber;
 }
@@ -54,12 +43,12 @@ void Transport::setTestSetupNumber(int newNum) {
 int Transport::sendPacket(const char* packetData) {
 	int n = writeData(packetData, strlen(packetData)+1); // +1 to include the \0
 	if (n < 0) {
-		logger->error("ERROR writing to socket");
+		Sys::log("ERROR writing to socket");
 	}
 	else {
         char message[1000];
         sprintf(message, "Sent \"%s\"", packetData);
-        logger->info(message);
+		Sys::log(message);
 	}
 	return n;
 }
@@ -79,7 +68,7 @@ int Transport::getPacket(char* buffer, int bufferLength) {
         
         // Detect if we've run out of buffer.
         if ((delimeterIndex < 0) && (charsInStreamBuffer >= streamBufferSize)) {
-            logger->error("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
+			Sys::log("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
             streamBuffer[streamBufferSize-1] = '\0';
             delimeterIndex = streamBufferSize-1;
         }
@@ -103,7 +92,7 @@ int Transport::getPacket(char* buffer, int bufferLength) {
     
     int charsInPacket = 0;
     if (hitError) {
-        logger->error("ERROR reading from socket");
+		Sys::log("ERROR reading from socket");
     } else if (ranOutOfData) {
         charsInPacket = 0;
         buffer[0] = '\0';
@@ -111,7 +100,7 @@ int Transport::getPacket(char* buffer, int bufferLength) {
         // Copy the data into the passed in buffer.
         charsInPacket = delimeterIndex; // We don't copy the delimeter
         if (delimeterIndex >= bufferLength) {
-            logger->error("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
+			Sys::log("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
             charsInPacket = bufferLength-1;
         }
         memcpy(buffer, streamBuffer, charsInPacket * sizeof(char));
@@ -122,13 +111,13 @@ int Transport::getPacket(char* buffer, int bufferLength) {
         charsInStreamBuffer = charsInStreamBuffer-delimeterIndex-1;
 		char logMessage[1000];
         sprintf(logMessage, "Received message: \"%s\"",buffer);
-		logger->info(logMessage);
+		Sys::log(logMessage);
     }
     
     return (hitError ? hitError : charsInPacket);
 }
 
-void Transport::testTransport(Transport& t, Sleep& sleep) {
+void Transport::testTransport(Transport& t) {
     int NUM_MESSAGES = 10;
     // If this is a test, make sure test roles are negotiated.
     t.testSetupNumber = NOT_YET_DETERMINED;
@@ -146,14 +135,14 @@ void Transport::testTransport(Transport& t, Sleep& sleep) {
             }
             if (ctr == (NUM_MESSAGES/2)) {
                 printf("Pausing\n");
-                sleep.sleep(5);
+                Sys::sleep(5000);
             }
         }
         printf("Sent %d messages.  %s.\n", numSent, (numSent == 10 ? "PASS" : "FAIL"));
     } else {
         int numReceived = 0;
         // We wait a second for the sender to send some stuff
-        sleep.sleep(2);
+        Sys::sleep(2000);
         for(int ctr=0;ctr<NUM_MESSAGES;++ctr) {
             char buffer[256];
             int charsReceived = t.getPacket(buffer, 256);

@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include "WinTransport.h"
+#include "WinTcpTransport.h"
 #include "..\engine\YTransport.hpp"
 
 
@@ -249,9 +249,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    const int DEFAULT_PORT = 5678;
    if (argc <= 2) {
 	   numPlayers = 2;
-	   transport = new WinTransport();
+	   transport = new WinTcpTransport();
 	   transport->connect();
-	   thisPlayer = transport->getConnectNumber();
+	   thisPlayer = transport->getTestSetupNumber();
    }
    else {
 	   numPlayers = argc - 1;
@@ -261,12 +261,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	   if (strlen(otherPlayer1) <= 5) {
 		   // It is just a port.
 		   port1 = atoi(otherPlayer1);
-		   transport = new WinTransport(port1);
+		   transport = new WinTcpTransport(port1);
 	   }
 	   else {
 		   char* ip1 = NULL;
 		   Transport::parseUrl(otherPlayer1, &ip1, &port1);
-		   transport = new WinTransport(ip1, port1);
+		   transport = new WinTcpTransport(ip1, port1);
 	   }
 
 	   // Process player 3
@@ -277,12 +277,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		   if (strlen(otherPlayer2) <= 5) {
 			   // It is just a port.
 			   port2 = atoi(otherPlayer2);
-			   transport2 = new WinTransport(port2);
+			   transport2 = new WinTcpTransport(port2);
 		   }
 		   else {
 			   char* ip2 = NULL;
 			   Transport::parseUrl(otherPlayer2, &ip2, &port2);
-			   transport2 = new WinTransport(ip2, port2);
+			   transport2 = new WinTcpTransport(ip2, port2);
 		   }
 		   transport = new YTransport(transport, transport2);
 	   }

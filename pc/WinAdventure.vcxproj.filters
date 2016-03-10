@@ -63,9 +63,6 @@
     <ClCompile Include="WinAdventure.cpp">
       <Filter>Source Files\pc</Filter>
     </ClCompile>
-    <ClCompile Include="WinTransport.cpp">
-      <Filter>Source Files\pc</Filter>
-    </ClCompile>
     <ClCompile Include="..\engine\YTransport.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
@@ -78,7 +75,16 @@
     <ClCompile Include="..\engine\Room.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\engine\Logger.cpp">
+    <ClCompile Include="WinTcpTransport.cpp">
+      <Filter>Source Files\pc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\TcpTransport.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\UdpTransport.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\Sys.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
   </ItemGroup>
@@ -128,9 +134,6 @@
     <ClInclude Include="WinAdventure.h">
       <Filter>Header Files\pc</Filter>
     </ClInclude>
-    <ClInclude Include="WinTransport.h">
-      <Filter>Header Files\pc</Filter>
-    </ClInclude>
     <ClInclude Include="..\engine\YTransport.hpp">
       <Filter>Header Files\engine</Filter>
     </ClInclude>
@@ -143,7 +146,16 @@
     <ClInclude Include="..\engine\Room.hpp">
       <Filter>Header Files\engine</Filter>
     </ClInclude>
-    <ClInclude Include="..\engine\Logger.hpp">
+    <ClInclude Include="WinTcpTransport.h">
+      <Filter>Header Files\pc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\TcpTransport.hpp">
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\UdpTransport.hpp">
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\Sys.hpp">
       <Filter>Header Files\engine</Filter>
     </ClInclude>
   </ItemGroup>

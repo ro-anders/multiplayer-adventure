@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "Logger.hpp"
-
 TcpTransport::TcpTransport() :
 Transport(true),
 port(DEFAULT_PORT),
