@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "WinTcpTransport.h"
+#include "WinUdpTransport.h"
 #include "..\engine\YTransport.hpp"
 
 
@@ -240,6 +241,23 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    // Read the command line arguments and setup the communication with the other players
    // expecting command line args to be <gamenum> <thisPlayerNum> <port|socketaddr> [port2|socketaddr2]
+
+   if ((argc > 0) && (strcmp(argv[0], "test") == 0)) {
+	   Transport* toTest = NULL;
+	   if (argc == 1) {
+		   toTest = new WinUdpTransport();
+	   }
+	   else {
+		   char* ip1;
+		   int port1;
+		   char* ip2;
+		   int port2;
+		   Transport::parseUrl(argv[1], &ip1, &port1);
+		   Transport::parseUrl(argv[2], &ip2, &port2);
+		   toTest = new WinUdpTransport(ip1, port1, ip2, port2);
+	   }
+	   Transport::testTransport(*toTest);
+   }
 
    int gameLevel = 1;
    if (argc > 2) {

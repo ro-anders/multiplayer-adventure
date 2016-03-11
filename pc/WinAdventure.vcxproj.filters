@@ -87,6 +87,9 @@
     <ClCompile Include="..\engine\Sys.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
+    <ClCompile Include="WinUdpTransport.cpp">
+      <Filter>Source Files\pc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\engine\ActionQueue.hpp">
@@ -157,6 +160,9 @@
     </ClInclude>
     <ClInclude Include="..\engine\Sys.hpp">
       <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="WinUdpTransport.h">
+      <Filter>Header Files\pc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

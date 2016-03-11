@@ -107,6 +107,7 @@
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="WinAdventure.cpp" />
     <ClCompile Include="WinTcpTransport.cpp" />
+    <ClCompile Include="WinUdpTransport.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\engine\ActionQueue.hpp" />
@@ -132,6 +133,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="WinAdventure.h" />
     <ClInclude Include="WinTcpTransport.h" />
+    <ClInclude Include="WinUdpTransport.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico" />
