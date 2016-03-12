@@ -1363,18 +1363,6 @@ void MoveGroundObject()
             linkedObj->y = object->y + bat->linkedObjectY;
             linkedObj->room = object->room;
         }
-        // TODO: Seems awfully inefficient and with C++ multiple inheritance not even sure
-        // that pointer equality check will always work.  Think about another way.
-        for (int ctr=0; ctr<numDragons; ++ctr) {
-            if ((object == dragons[ctr]) && (dragons[ctr]->eaten != NULL))
-            {
-                Dragon* dragon = dragons[ctr];
-                BALL* linkedObj = dragon->eaten;
-                linkedObj->x = object->x + dragon->eatenX;
-                linkedObj->y = object->y + dragon->eatenY;
-                linkedObj->room = object->room;
-            }
-        }
     }
 }
 
