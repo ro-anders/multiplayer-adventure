@@ -51,11 +51,6 @@ private:
     // Code common to all consturctors.
     void setup();
     
-    void punchHole();
-    
-    void compareNumbers(int myRandomNumber, char* theirMessage);
-
-
 };
 
 #endif /* PosixUdpTransport_hpp */

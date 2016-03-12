@@ -93,7 +93,7 @@ bool gMute = FALSE;
     int thisPlayer;
     Transport* transport;
     
-    int gameLevel = 3;
+    int gameLevel = 1;
     if (argc > 2) {
         gameLevel = atoi(argv[1]);
     }
@@ -102,7 +102,7 @@ bool gMute = FALSE;
     const int DEFAULT_PORT = 5678;
     if (argc <= 2) {
         numPlayers = 2;
-        transport = new PosixUdpTransport();
+        transport = new PosixTcpTransport();
         transport->connect();
         thisPlayer = transport->getTestSetupNumber();
         Platform_MuteSound(thisPlayer == 1);

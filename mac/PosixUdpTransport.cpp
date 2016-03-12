@@ -41,7 +41,6 @@ PosixUdpTransport::~PosixUdpTransport() {
 
 void PosixUdpTransport::setup() {
     memset((char *) &remaddr, 0, sizeof(remaddr));
-    printf("Uninitialized = %s:%d.\n", inet_ntoa(remaddr.sin_addr), ntohs(remaddr.sin_port));
 }
 
 int PosixUdpTransport::openSocket() {
@@ -49,10 +48,12 @@ int PosixUdpTransport::openSocket() {
     // TODO: Fix this
     // ip is an ip, not a hostname, but don't know how to convert a
     // string ip to a server address format, so calling gethost - ugh
+    // Should be remaddr.sin_addr.S_un.S_addr = inet_addr(theirIp)  - or something like that
     hostent* hp = gethostbyname(theirIp);
     bcopy((char *)hp->h_addr,
           (char *)&remaddr.sin_addr.s_addr,
           hp->h_length);
+    remaddr.sin_family = AF_INET;
     remaddr.sin_port = htons(theirPort);
     printf("Initialized = %s:%d.\n", inet_ntoa(remaddr.sin_addr), ntohs(remaddr.sin_port));
 
