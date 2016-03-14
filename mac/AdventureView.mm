@@ -107,7 +107,7 @@ bool gMute = FALSE;
         thisPlayer = transport->getTestSetupNumber();
         Platform_MuteSound(thisPlayer == 1);
     } else {
-        numPlayers = argc-2;
+        numPlayers = argc-3;
         thisPlayer = atoi(argv[2])-1;
         char* ip0;
         int port0;
@@ -118,21 +118,14 @@ bool gMute = FALSE;
         transport = new PosixUdpTransport(ip0, port0, ip1, port1);
         
         // Process player 3
-//        Transport* transport2 = NULL;
-//        if (argc > 4) {
-//            char* otherPlayer2 = argv[4];
-//            int port2 = (port1 == DEFAULT_PORT ? DEFAULT_PORT : DEFAULT_PORT+1);
-//            if (strlen(otherPlayer2) <= 5) {
-//                // It is just a port.
-//                port2 = atoi(otherPlayer2);
-//                transport2 = new PosixTcpTransport(port2);
-//            } else {
-//                char* ip2 = NULL;
-//                Transport::parseUrl(otherPlayer2, &ip2, &port2);
-//                transport2 = new PosixTcpTransport(ip2, port2);
-//            }
-//            transport = new YTransport(transport, transport2);
-//        }
+        Transport* transport2 = NULL;
+        if (argc > 5) {
+            char* ip2;
+            int port2;
+            Transport::parseUrl(argv[5], &ip2, &port2);
+            transport2 = new PosixUdpTransport(ip0, port0+1, ip2, port2);
+            transport = new YTransport(transport, transport2);
+        }
         transport->connect();
     }
     
