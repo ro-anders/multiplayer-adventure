@@ -267,43 +267,39 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    const int DEFAULT_PORT = 5678;
    if (argc <= 2) {
 	   numPlayers = 2;
-	   transport = new WinTcpTransport();
+	   transport = new WinUdpTransport();
 	   transport->connect();
 	   thisPlayer = transport->getTestSetupNumber();
    }
    else {
 	   numPlayers = argc - 1;
 	   thisPlayer = atoi(argv[1]) - 1;
-	   char* otherPlayer1 = argv[2];
-	   int port1 = DEFAULT_PORT;
-	   if (strlen(otherPlayer1) <= 5) {
-		   // It is just a port.
-		   port1 = atoi(otherPlayer1);
-		   transport = new WinTcpTransport(port1);
-	   }
-	   else {
-		   char* ip1 = NULL;
-		   Transport::parseUrl(otherPlayer1, &ip1, &port1);
-		   transport = new WinTcpTransport(ip1, port1);
-	   }
 
-	   // Process player 3
-	   Transport* transport2 = NULL;
-	   if (argc > 4) {
-		   char* otherPlayer2 = argv[3];
-		   int port2 = (port1 == DEFAULT_PORT ? DEFAULT_PORT : DEFAULT_PORT + 1);
-		   if (strlen(otherPlayer2) <= 5) {
-			   // It is just a port.
-			   port2 = atoi(otherPlayer2);
-			   transport2 = new WinTcpTransport(port2);
-		   }
-		   else {
-			   char* ip2 = NULL;
-			   Transport::parseUrl(otherPlayer2, &ip2, &port2);
-			   transport2 = new WinTcpTransport(ip2, port2);
-		   }
-		   transport = new YTransport(transport, transport2);
-	   }
+	   char* ip0;
+	   int port0;
+	   char* ip1;
+	   int port1;
+	   Transport::parseUrl(argv[2], &ip0, &port0);
+	   Transport::parseUrl(argv[3], &ip1, &port1);
+	   transport = new WinUdpTransport(ip0, port0, ip1, port1);
+
+	   // TODO: Process player 3
+	   //Transport* transport2 = NULL;
+	   //if (argc > 4) {
+	///	   char* otherPlayer2 = argv[3];
+	//	   int port2 = (port1 == DEFAULT_PORT ? DEFAULT_PORT : DEFAULT_PORT + 1);
+	//	   if (strlen(otherPlayer2) <= 5) {
+	//		   // It is just a port.
+	//		   port2 = atoi(otherPlayer2);
+	//		   transport2 = new WinTcpTransport(port2);
+	//	   }
+	//	   else {
+	//		   char* ip2 = NULL;
+	//		   Transport::parseUrl(otherPlayer2, &ip2, &port2);
+	//		   transport2 = new WinTcpTransport(ip2, port2);
+	//	   }
+	//	   transport = new YTransport(transport, transport2);
+	 //  }
 	   transport->connect();
    }
 
