@@ -102,41 +102,37 @@ bool gMute = FALSE;
     const int DEFAULT_PORT = 5678;
     if (argc <= 2) {
         numPlayers = 2;
-        transport = new PosixTcpTransport();
+        transport = new PosixUdpTransport();
         transport->connect();
         thisPlayer = transport->getTestSetupNumber();
         Platform_MuteSound(thisPlayer == 1);
     } else {
         numPlayers = argc-2;
         thisPlayer = atoi(argv[2])-1;
-        char* otherPlayer1 = argv[3];
-        int port1 = DEFAULT_PORT;
-        if (strlen(otherPlayer1) <= 5) {
-            // It is just a port.
-            port1 = atoi(otherPlayer1);
-            transport = new PosixTcpTransport(port1);
-        } else {
-            char* ip1 = NULL;
-            Transport::parseUrl(otherPlayer1, &ip1, &port1);
-            transport = new PosixTcpTransport(ip1, port1);
-        }
+        char* ip0;
+        int port0;
+        char* ip1;
+        int port1;
+        Transport::parseUrl(argv[3], &ip0, &port0);
+        Transport::parseUrl(argv[4], &ip1, &port1);
+        transport = new PosixUdpTransport(ip0, port0, ip1, port1);
         
         // Process player 3
-        Transport* transport2 = NULL;
-        if (argc > 4) {
-            char* otherPlayer2 = argv[4];
-            int port2 = (port1 == DEFAULT_PORT ? DEFAULT_PORT : DEFAULT_PORT+1);
-            if (strlen(otherPlayer2) <= 5) {
-                // It is just a port.
-                port2 = atoi(otherPlayer2);
-                transport2 = new PosixTcpTransport(port2);
-            } else {
-                char* ip2 = NULL;
-                Transport::parseUrl(otherPlayer2, &ip2, &port2);
-                transport2 = new PosixTcpTransport(ip2, port2);
-            }
-            transport = new YTransport(transport, transport2);
-        }
+//        Transport* transport2 = NULL;
+//        if (argc > 4) {
+//            char* otherPlayer2 = argv[4];
+//            int port2 = (port1 == DEFAULT_PORT ? DEFAULT_PORT : DEFAULT_PORT+1);
+//            if (strlen(otherPlayer2) <= 5) {
+//                // It is just a port.
+//                port2 = atoi(otherPlayer2);
+//                transport2 = new PosixTcpTransport(port2);
+//            } else {
+//                char* ip2 = NULL;
+//                Transport::parseUrl(otherPlayer2, &ip2, &port2);
+//                transport2 = new PosixTcpTransport(ip2, port2);
+//            }
+//            transport = new YTransport(transport, transport2);
+//        }
         transport->connect();
     }
     
