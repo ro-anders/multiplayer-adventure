@@ -35,6 +35,13 @@ HINSTANCE hInst;                                // current instance
 TCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
+int leftKey = VK_LEFT;
+int rightKey = VK_RIGHT;
+int upKey = VK_UP;
+int downKey = VK_DOWN;
+int dropKey = VK_RCONTROL;
+int resetKey = VK_RETURN;
+
 int argc = 0;
 int maxArgs = 10;
 char* argv[10]; // We ignore more than 10 arguments
@@ -270,6 +277,15 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	   transport = new WinUdpTransport();
 	   transport->connect();
 	   thisPlayer = transport->getTestSetupNumber();
+	   if (thisPlayer == 1) {
+		   // Remap the keys so that one keyboard can do two players
+		   leftKey = 'A'; // A
+		   upKey = 0x57; // W
+		   rightKey = 0x44; // D
+		   downKey = 0x53; // S
+		   dropKey = VK_SPACE;
+		   resetKey = '1';
+	   }
    }
    else {
 	   numPlayers = argc - 1;
@@ -565,16 +581,16 @@ void SetFullscreen(BOOL aFullscreen)
 
 void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire)
 {
-    if (left) *left = GetAsyncKeyState(VK_LEFT) & 0x8000;
-    if (up) *up = GetAsyncKeyState(VK_UP) & 0x8000;
-    if (right) *right = GetAsyncKeyState(VK_RIGHT) & 0x8000;
-    if (down) *down = GetAsyncKeyState(VK_DOWN) & 0x8000;
-    if (fire) *fire = (GetAsyncKeyState(VK_SPACE) & 0x8000) || (GetAsyncKeyState(VK_LCONTROL) & 0x8000);
+    if (left) *left = GetAsyncKeyState(leftKey) & 0x8000;
+    if (up) *up = GetAsyncKeyState(upKey) & 0x8000;
+    if (right) *right = GetAsyncKeyState(rightKey) & 0x8000;
+    if (down) *down = GetAsyncKeyState(downKey) & 0x8000;
+    if (fire) *fire = (GetAsyncKeyState(dropKey) & 0x8000) || (GetAsyncKeyState(VK_LCONTROL) & 0x8000);
 }
 
 void Platform_ReadConsoleSwitches(bool* reset)
 {
-    if (reset) *reset = GetAsyncKeyState('2') & 0x8000;
+    if (reset) *reset = GetAsyncKeyState(resetKey) & 0x8000;
 }
 
 void Platform_ReadDifficultySwitches(int* left, int* right)
