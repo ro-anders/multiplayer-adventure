@@ -3,6 +3,7 @@
 
 #include "color.h"
 #include "Map.hpp"
+#include "Room.hpp"
 
 // Object #1 States 940FF (Graphic)
 static const byte objectGfxPort [] =
@@ -104,14 +105,22 @@ static const byte portStates [] =
 const int Portcullis::OPEN_STATE=0;
 const int Portcullis::CLOSED_STATE=12;
 
+const int Portcullis::EXIT_X = 0xA0;
+const int Portcullis::EXIT_Y = 0x2C * 2;
 
 
-Portcullis::Portcullis(const char* inLabel, int inOutsideRoom, int inInsideRoom, OBJECT* inKey) :
-  OBJECT(inLabel, objectGfxPort, portStates, 0x0C, COLOR_BLACK, inOutsideRoom, 0x4d, 0x31),
+Portcullis::Portcullis(const char* inLabel, int inOutsideRoom, ROOM* inInsideRoom, OBJECT* inKey) :
+  OBJECT(inLabel, objectGfxPort, portStates, 0x0C, COLOR_BLACK, inOutsideRoom, 0x4d, 0x31, OBJECT::FIXED_LOCATION),
   isActive(false),
-  insideRoom(inInsideRoom),
+  insideRoom(inInsideRoom->index),
   key(inKey),
-  allInsideRooms(NULL) {}
+  allInsideRooms(NULL) {
+      
+    if (inInsideRoom->visibility == ROOM::OPEN) {
+        inInsideRoom->visibility = ROOM::IN_CASTLE;
+    }
+    
+}
 
 Portcullis::~Portcullis() {
     if (allInsideRooms != NULL) {
@@ -154,22 +163,23 @@ void Portcullis::forceOpen() {
     isActive = true;
 }
 
-void Portcullis::addRoom(int firstRoom, int lastRoom) {
+void Portcullis::addRoom(ROOM* room) {
     if (allInsideRooms == NULL) {
         int arraySize = Map::getNumRooms(); // Overkill, but easier than authoring a List<int> class.
         allInsideRooms = new int[arraySize];
         allInsideRooms[0] = insideRoom;
         numInsideRooms = 1;
     }
-    int numNewRooms = (lastRoom <= firstRoom ? 1 : lastRoom - firstRoom + 1);
-    for(int ctr=0; ctr<=numNewRooms; ++ctr) {
-        allInsideRooms[numInsideRooms+ctr] = firstRoom+ctr;
+    allInsideRooms[numInsideRooms] = room->index;
+    numInsideRooms++;
+    if (room->visibility == ROOM::OPEN) {
+        room->visibility = ROOM::IN_CASTLE;
     }
-    numInsideRooms += numNewRooms;
 }
 
 
-bool Portcullis::isRoomInCastle(int room) {
+
+bool Portcullis::containsRoom(int room) {
     bool found = false;
     if (allInsideRooms == NULL) {
         found = (room == insideRoom);

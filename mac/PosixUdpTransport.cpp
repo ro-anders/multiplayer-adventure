@@ -87,7 +87,6 @@ int PosixUdpTransport::writeData(const char* data, int numBytes)
 }
 
 int PosixUdpTransport::readData(char *buffer, int bufferLength) {
-    printf("Checking message from %s:%d\n", inet_ntoa(remaddr.sin_addr), ntohs(remaddr.sin_port));
     int n = recvfrom(socketFd, buffer, bufferLength, 0, NULL, NULL);
     if (n > 0) {
         printf("Received message: %s.\n", buffer);

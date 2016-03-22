@@ -54,6 +54,13 @@ public:
     void addObject(int pkey, OBJECT* object);
     
     OBJECT* getObject(int pkey);
+    
+    /**
+     * Get the number of objects on the board.
+     * This does not include the "null" object that the old game used to mark the end of the list.
+     * This does include all game 2 objects even on game 1 when they are all shoved into the unreachable first room.
+     */
+    int getNumObjects();
         
     bool static HitTestRects(int ax, int ay, int awidth, int aheight,
                              int bx, int by, int bwidth, int bheight);
@@ -66,7 +73,7 @@ public:
 
 private:
     
-    int numObjects;
+    int numObjects; // Includes the "null" object which the old game used to mark the end of the list
     int numPlayers;
     BALL** players;
 

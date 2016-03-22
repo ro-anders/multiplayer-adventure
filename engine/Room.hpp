@@ -15,6 +15,14 @@
 class ROOM
 {
 public:
+    
+    // An attribute indicating whether objects should be placed in a room when randomly placing objects.
+    enum RandomVisibility {
+            OPEN, // A room freely accessible without use of a key (e.g. blue labyrinth)
+            IN_CASTLE, // a room behind a castle portcullis (e.g. red labyrinth)
+            HIDDEN // a room that shouldn't have objects randomly put in it (e.g. the easter egg room)
+    };
+    
     int index;                  // index into the map
     const byte* graphicsData;   // pointer to room graphics data
     byte flags;                 // room flags - see below
@@ -24,9 +32,10 @@ public:
     int roomDown;               // index of room DOWN
     int roomLeft;               // index of room LEFT
     char* label;                // a short, unique name for the object
+    RandomVisibility visibility; // attribute indicating whether objects can be randomly placed in this room.
     
     ROOM(const byte* graphicsData, byte flags, int color,
-         int roomUp, int roomRight, int roomDown, int roomLeft, const char* inLabel);
+         int roomUp, int roomRight, int roomDown, int roomLeft, const char* inLabel, RandomVisibility inVis=OPEN);
     
     ~ROOM();
     

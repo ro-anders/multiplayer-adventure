@@ -12,6 +12,14 @@ class Board;
 class OBJECT {
 
 public:
+    
+    enum RandomizedLocations {
+        OUT_IN_OPEN,
+        OPEN_OR_IN_CASTLE,
+        FIXED_LOCATION
+    };
+    
+
     const byte* gfxData;        // graphics data for each state
     const byte* states;         // array of indicies for each state
     int state;                  // current state
@@ -24,10 +32,11 @@ public:
     int size;                   // size (used for bridge and surround)
     bool displayed;             // flag indicating object was displayed (when more than maxDisplayableObjects for instance)
     char* label;                // a short, unique name for the object
+    RandomizedLocations randomPlacement; // How to randomly place this object in game 3
 
     
     OBJECT(const char* inLabel, const byte* inGfxData, const byte* inStates, int inState, int inColor, int inRoom, int inX, int inY,
-               int size=0);
+               RandomizedLocations inRandomPlacement=OPEN_OR_IN_CASTLE, int inSize=0);
     
     virtual ~OBJECT();
     

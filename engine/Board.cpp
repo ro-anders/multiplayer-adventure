@@ -27,6 +27,11 @@ Board::~Board() {
     
 }
 
+int Board::getNumObjects() {
+    // Don't include the "null" object.
+    return numObjects - 1;
+}
+
 void Board::addObject(int pkey, OBJECT* object) {
     objects[pkey] = object;
     object->setBoard(this, pkey);

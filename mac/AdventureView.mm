@@ -93,7 +93,7 @@ bool gMute = FALSE;
     int thisPlayer;
     Transport* transport;
     
-    int gameLevel = 1;
+    int gameLevel = 3;
     if (argc > 2) {
         gameLevel = atoi(argv[1]);
     }

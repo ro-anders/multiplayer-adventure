@@ -5,14 +5,15 @@
 #include <string.h>
 
 ROOM::ROOM(const byte* inGraphicsData, byte inFlags, int inColor,
-           int inRoomUp, int inRoomRight, int inRoomDown, int inRoomLeft, const char* inLabel) :
+           int inRoomUp, int inRoomRight, int inRoomDown, int inRoomLeft, const char* inLabel, RandomVisibility inVis) :
 graphicsData(inGraphicsData),
 flags(inFlags),
 color(inColor),
 roomUp(inRoomUp),
 roomRight(inRoomRight),
 roomDown(inRoomDown),
-roomLeft(inRoomLeft) {
+roomLeft(inRoomLeft),
+visibility(inVis) {
 
     label = new char[strlen(inLabel)+1];
     strcpy(label, inLabel);

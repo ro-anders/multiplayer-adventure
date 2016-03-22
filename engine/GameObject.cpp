@@ -5,8 +5,8 @@
 
 #include "Board.hpp"
 
-OBJECT::OBJECT(const char* inLabel, const byte* inGfxData, const byte* inStates, int inState, int inColor, int inRoom, int inX, int inY,
-                       int inSize):
+OBJECT::OBJECT(const char* inLabel, const byte* inGfxData, const byte* inStates, int inState, int inColor,
+               int inRoom, int inX, int inY, RandomizedLocations inRandomPlacement, int inSize):
     gfxData(inGfxData),
     states(inStates),
     state(inState),
@@ -16,6 +16,7 @@ OBJECT::OBJECT(const char* inLabel, const byte* inGfxData, const byte* inStates,
     movementY(0),
     x(inX),
     y(inY),
+    randomPlacement(inRandomPlacement),
     size(inSize)
 {
     label = new char[strlen(inLabel)+1];

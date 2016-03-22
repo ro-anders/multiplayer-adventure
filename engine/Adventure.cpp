@@ -33,6 +33,7 @@
 #include "Portcullis.hpp"
 #include "Room.hpp"
 #include "Sync.hpp"
+#include "Sys.hpp"
 #include "Transport.hpp"
 
 #ifndef max
@@ -67,6 +68,7 @@ static void MoveDragon(Dragon* dragon, const int* matrix, int speed);
 static void Magnet();
 
 // My helper functions
+void addAllRoomsToPort(Portcullis* port, int firstRoom, int lastRoom);
 static void DrawObjects(int room);
 static void DrawObject(const OBJECT* object);
 void DrawBall(const BALL* ball, COLOR color);
@@ -556,7 +558,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     char surroundName[16];
     for(int ctr=0; ctr<numPlayers; ++ctr) {
         sprintf(surroundName, "surround%d", ctr);
-        surrounds[ctr] = new OBJECT(surroundName, objectGfxSurround, 0, 0, COLOR_ORANGE, -1, 0, 0, 0x07);
+        surrounds[ctr] = new OBJECT(surroundName, objectGfxSurround, 0, 0, COLOR_ORANGE, -1, 0, 0, OBJECT::FIXED_LOCATION, 0x07);
     }
     
     dragons = new Dragon*[numDragons];
@@ -565,9 +567,9 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     dragons[2] = new Dragon("rhindle", 2, 0, COLOR_RED, -1, 0, 0);
     bat = new Bat(COLOR_BLACK, -1, 0, 0);
 
-    OBJECT* goldKey = new OBJECT("gold key", objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0);
-    OBJECT* copperKey = new OBJECT("coppey key", objectGfxKey, 0, 0, COLOR_COPPER, -1, 0, 0);
-    OBJECT* jadeKey = new OBJECT("jade key", objectGfxKey, 0, 0, COLOR_JADE, -1, 0, 0);
+    OBJECT* goldKey = new OBJECT("gold key", objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0, OBJECT::OUT_IN_OPEN);
+    OBJECT* copperKey = new OBJECT("coppey key", objectGfxKey, 0, 0, COLOR_COPPER, -1, 0, 0, OBJECT::OUT_IN_OPEN);
+    OBJECT* jadeKey = new OBJECT("jade key", objectGfxKey, 0, 0, COLOR_JADE, -1, 0, 0, OBJECT::OUT_IN_OPEN);
     OBJECT* whiteKey = new OBJECT("white key", objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0);
     OBJECT* blackKey = new OBJECT("black key", objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
 
@@ -578,15 +580,15 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     
     numPorts = numPlayers + 2;
     ports = new Portcullis*[5]; // We always create 5 even though we might only use 4.
-    ports[0] = new Portcullis("gold gate", GOLD_CASTLE, GOLD_FOYER, goldKey); // Gold
-    ports[1] = new Portcullis("white gate", WHITE_CASTLE, RED_MAZE_1, whiteKey); // White
-    ports[1]->addRoom(RED_MAZE_3, RED_MAZE_1);
-    ports[2] = new Portcullis("black gate", BLACK_CASTLE, BLACK_FOYER, blackKey); // Black
-    ports[2]->addRoom(BLACK_MAZE_1, BLACK_MAZE_ENTRY);
-    ports[2]->addRoom(BLACK_FOYER);
-    ports[2]->addRoom(BLACK_INNERMOST_ROOM);
-    ports[3] = new Portcullis("copper gate", COPPER_CASTLE, COPPER_FOYER, copperKey);
-    ports[4] = new Portcullis("jade gate", JADE_CASTLE, JADE_FOYER, jadeKey);
+    ports[0] = new Portcullis("gold gate", GOLD_CASTLE, gameMap->getRoom(GOLD_FOYER), goldKey); // Gold
+    ports[1] = new Portcullis("white gate", WHITE_CASTLE, gameMap->getRoom(RED_MAZE_1), whiteKey); // White
+    addAllRoomsToPort(ports[1], RED_MAZE_3, RED_MAZE_1);
+    ports[2] = new Portcullis("black gate", BLACK_CASTLE, gameMap->getRoom(BLACK_FOYER), blackKey); // Black
+    addAllRoomsToPort(ports[2], BLACK_MAZE_1, BLACK_MAZE_ENTRY);
+    ports[2]->addRoom(gameMap->getRoom(BLACK_FOYER));
+    ports[2]->addRoom(gameMap->getRoom(BLACK_INNERMOST_ROOM));
+    ports[3] = new Portcullis("copper gate", COPPER_CASTLE, gameMap->getRoom(COPPER_FOYER), copperKey);
+    ports[4] = new Portcullis("jade gate", JADE_CASTLE, gameMap->getRoom(JADE_FOYER), jadeKey);
     gameMap->addCastles(numPorts, ports);
     
     
@@ -596,20 +598,23 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     gameBoard->addObject(OBJECT_JADE_PORT, ports[4]);
     gameBoard->addObject(OBJECT_WHITE_PORT, ports[1]);
     gameBoard->addObject(OBJECT_BLACK_PORT, ports[2]);
-    gameBoard->addObject(OBJECT_NAME, new OBJECT("easter egg message", objectGfxAuthor, 0, 0, COLOR_FLASH, 0x1E, 0x50, 0x69));
-    gameBoard->addObject(OBJECT_NUMBER, new OBJECT("number", objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, 0x00, 0x50, 0x40));
+    gameBoard->addObject(OBJECT_NAME, new OBJECT("easter egg message", objectGfxAuthor, 0, 0, COLOR_FLASH,
+                                                 0x1E, 0x50, 0x69,  OBJECT::FIXED_LOCATION));
+    gameBoard->addObject(OBJECT_NUMBER, new OBJECT("number", objectGfxNum, numberStates, 0, COLOR_LIMEGREEN,
+                                                   0x00, 0x50, 0x40, OBJECT::FIXED_LOCATION));
     gameBoard->addObject(OBJECT_REDDRAGON, dragons[2]);
     gameBoard->addObject(OBJECT_YELLOWDRAGON,dragons[0]);
     gameBoard->addObject(OBJECT_GREENDRAGON, dragons[1]);
     gameBoard->addObject(OBJECT_SWORD, new OBJECT("sword", objectGfxSword, 0, 0, COLOR_YELLOW, -1, 0, 0));
-    gameBoard->addObject(OBJECT_BRIDGE, new OBJECT("bridge", objectGfxBridge, 0, 0, COLOR_PURPLE, -1, 0, 0, 0x07));
+    gameBoard->addObject(OBJECT_BRIDGE, new OBJECT("bridge", objectGfxBridge, 0, 0, COLOR_PURPLE, -1, 0, 0,
+                                                   OBJECT::OPEN_OR_IN_CASTLE, 0x07));
     gameBoard->addObject(OBJECT_YELLOWKEY, goldKey);
     gameBoard->addObject(OBJECT_COPPERKEY, copperKey);
     gameBoard->addObject(OBJECT_JADEKEY, jadeKey);
     gameBoard->addObject(OBJECT_WHITEKEY, whiteKey);
     gameBoard->addObject(OBJECT_BLACKKEY, blackKey);
     gameBoard->addObject(OBJECT_BAT, bat);
-    gameBoard->addObject(OBJECT_DOT, new OBJECT("dot", objectGfxDot, 0, 0, COLOR_LTGRAY, -1, 0, 0));
+    gameBoard->addObject(OBJECT_DOT, new OBJECT("dot", objectGfxDot, 0, 0, COLOR_LTGRAY, -1, 0, 0, OBJECT::FIXED_LOCATION));
     gameBoard->addObject(OBJECT_CHALISE, new OBJECT("chalise", objectGfxChallise, 0, 0, COLOR_FLASH, -1, 0, 0));
     gameBoard->addObject(OBJECT_MAGNET, new OBJECT("magnet", objectGfxMagnet, 0, 0, COLOR_BLACK, -1, 0, 0));
     
@@ -627,6 +632,13 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     sync = new Sync(numPlayers, thisPlayer, transport);
     
     printf("Player %d setup.\n", thisPlayer);
+}
+
+void addAllRoomsToPort(Portcullis* port, int firstRoom, int lastRoom) {
+    for(int nextKey=firstRoom; nextKey <= lastRoom; ++nextKey) {
+        ROOM* nextRoom = gameMap->getRoom(nextKey);
+        port->addRoom(nextRoom);
+    }
 }
 
 void ResetPlayers() {
@@ -881,6 +893,10 @@ void SetupRoomObjects()
         objectDefs[object]->movementX = movementX;
         objectDefs[object]->movementY = movementY;
     };
+    
+    if (numPlayers <= 2) {
+        objectDefs[OBJECT_JADEKEY]->randomPlacement = OBJECT::FIXED_LOCATION;
+    }
 
     // Put objects in random rooms for level 3.
     // Only first player does this and then broadcasts to other players.
@@ -890,7 +906,14 @@ void SetupRoomObjects()
     }
 }
 
-void randomizeRoomObjects() {
+/**
+ * This was the original algorithm.  Had to replace because
+ * 1) there was no way to have random algorithm to place objects inside copper castle without
+ *    changing entire room ordering - which might have too many side effects
+ * 2) original algorithm had that really annoying bug that it could put the gold key in the
+ *    black castle and the black key in the gold castle
+ */
+ void originalRandomizeRoomObjects() {
     const int* boundsData = roomBoundsData;
     
     int object = *(boundsData++);
@@ -918,7 +941,88 @@ void randomizeRoomObjects() {
         upper = *(boundsData++);
     }
     while (object > OBJECT_NONE);
+}
 
+/**
+ * Puts all the objects in random locations.
+ * This follows a different algorithm than the original game.
+ * We don't use the original algorithm because
+ * 1) it had a vulnerability that the gold key could be in the black 
+ * castle while the black key was in the gold castle
+ * 2) with three times the number of home castles the algorithm was three
+ * times more likely to be deadlocked
+ */
+void randomizeRoomObjects() {
+    int numRooms = gameMap->getNumRooms();
+    Portcullis* blackCastle = (Portcullis*)objectDefs[OBJECT_BLACK_PORT];
+    Portcullis* whiteCastle = (Portcullis*)objectDefs[OBJECT_WHITE_PORT];
+    
+    // Run through all the objects in the game.  The ones that shouldn't be
+    // randomized will have their random location flag turned off.
+    int numObjects = gameBoard->getNumObjects();
+    for(int objCtr=0; objCtr < numObjects; ++objCtr) {
+        OBJECT* nextObj = gameBoard->getObject(objCtr);
+        if (nextObj->randomPlacement != OBJECT::FIXED_LOCATION) {
+            bool ok = false;
+            while (!ok) {
+                int randomKey = Sys::random() * numRooms;
+                ROOM* randomRoom = gameMap->getRoom(randomKey);
+                
+                // Make sure the object isn't put in a hidden room
+                ok = randomRoom->visibility != ROOM::HIDDEN;
+                
+                // if the object can only be in the open, make sure that it's put in the open.
+                ok = ok && ((nextObj->randomPlacement != OBJECT::OUT_IN_OPEN) || (randomRoom->visibility == ROOM::OPEN));
+                
+                // Make sure not in JADE area for 2 player game
+                if (ok && (numPlayers <= 2)) {
+                    ok = (randomKey != JADE_CASTLE) && (randomKey != JADE_FOYER);
+                }
+                
+                // Make sure chalice is in a castle
+                if (ok && (objCtr == OBJECT_CHALISE)) {
+                    ok = (blackCastle->containsRoom(randomKey) || whiteCastle->containsRoom(randomKey));
+                }
+                
+                // Make sure white key not in white castle.
+                if (ok && (objCtr == OBJECT_WHITEKEY)) {
+                    ok = ok && !whiteCastle->containsRoom(randomKey);
+                }
+
+                // Make sure white and black key not cyclical
+                // We happen to know that the white key is placed first, so set the black.
+                if (ok && (objCtr == OBJECT_BLACKKEY)) {
+                    if (blackCastle->containsRoom(objectDefs[OBJECT_WHITEKEY]->room)) {
+                        ok = !whiteCastle->containsRoom(randomKey);
+                    }
+                    // Also make sure black key not in black castle
+                    ok = ok && !blackCastle->containsRoom(randomKey);
+                }
+                
+                // There are parts of the white castle not accessible without the bridge, but the bat
+                // can get stuff out of there.  So make sure, if the black key is in the white castle
+                // that the bat is not in the black castle.
+                if (ok && (objCtr == OBJECT_BAT)) {
+                    if (whiteCastle->containsRoom(objectDefs[OBJECT_BLACKKEY]->room)) {
+                        ok = !blackCastle->containsRoom(randomKey);
+                    }
+                }
+                
+                if (ok) {
+                    nextObj->room = randomKey;
+                    MapSetupObjectAction* action = new MapSetupObjectAction(objCtr, randomKey, nextObj->x, nextObj->y);
+                    sync->BroadcastAction(action);
+                }
+            }
+        }
+    }
+    
+    for(int objCtr=0; objCtr < numObjects; ++objCtr) {
+        OBJECT* nextObj = gameBoard->getObject(objCtr);
+        if (nextObj->randomPlacement != OBJECT::FIXED_LOCATION) {
+            printf("%s placed in %s.\n", nextObj->label, gameMap->getRoom(nextObj->room)->label);
+        }
+    }
 }
 
 /**

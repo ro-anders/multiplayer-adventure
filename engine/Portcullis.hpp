@@ -7,8 +7,16 @@
 
 #include "GameObject.hpp"
 
+class ROOM;
+
 class Portcullis: public OBJECT {
 public:
+    
+    /** The x-coord you come out at when you leave a castle. */
+    static const int EXIT_X;
+    
+    /** The y-coord you come out at when you leave a castle. */
+    static const int EXIT_Y;
     
     /** True if touching the gate will take you inside the castle.  False if gate is locked. */
     bool isActive;
@@ -31,17 +39,16 @@ public:
      *                  Optional.  If unspecified will assume castle is a one room castle with only insideRoom.
      * key - the key that opens this gate.
      */
-    Portcullis(const char* label, int outsideRoom, int insideRoom, OBJECT* key);
+    Portcullis(const char* label, int outsideRoom, ROOM* insideRoom, OBJECT* key);
     
     virtual ~Portcullis();
     
     /**
-     * If there are multiple rooms inside this castle, this will add these rooms to the portcullis's list of inside rooms.
+     * If there are multiple rooms inside this castle, this will add this room to the portcullis's list of inside rooms.
      * This list is used for things like randomizing objects for game 3 and making sure all objects can still be reached.
      * The 'insideRoom' passed into the constructor is already added to this list.
-     * If a second argument is given, all rooms between the indices are added.
      */
-    void addRoom(int firstRoom, int lastRoom=-1);
+    void addRoom(ROOM* room);
     
     void setState(int newState, bool isActive);
     
@@ -59,7 +66,7 @@ public:
     /**
      * Returns whether the room passed in is somewhere behind this gate.
      */
-    bool isRoomInCastle(int room);
+    bool containsRoom(int room);
     
 private:
     

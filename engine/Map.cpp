@@ -358,7 +358,7 @@ int Map::getNumRooms() {
 void Map::defaultRooms() {
     
     addRoom(NUMBER_ROOM, new ROOM(roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE,                       // 0x00
-                                  NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM, "Number Room"));
+                                  NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM, "Number Room", ROOM::HIDDEN));
     addRoom(MAIN_HALL_LEFT, new ROOM(roomGfxBelowYellowCastle, ROOMFLAG_LEFTTHINWALL, COLOR_OLIVEGREEN, // 0x01
                                      BLUE_MAZE_1, MAIN_HALL_CENTER,BLACK_CASTLE, MAIN_HALL_RIGHT, "Main Hall Left"));
     addRoom(MAIN_HALL_CENTER, new ROOM(roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_LIMEGREEN,        // 0x02
@@ -414,15 +414,15 @@ void Map::defaultRooms() {
     addRoom(BLACK_FOYER, new ROOM(roomGfxTwoExitRoom, ROOMFLAG_NONE, COLOR_RED,                         // 0x1B
                         BLACK_INNERMOST_ROOM,  BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, "Black Foyer"));
     addRoom(BLACK_INNERMOST_ROOM, new ROOM(roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_PURPLE,              // 0x1C
-        SOUTHEAST_ROOM, BLUE_MAZE_4, BLACK_FOYER, BLUE_MAZE_1, "Black Innermost Room"));    // TODO: Used to be north of se room.
+                            SOUTHEAST_ROOM, BLUE_MAZE_4, BLACK_FOYER, BLUE_MAZE_1, "Black Innermost Room"));
     addRoom(SOUTHEAST_ROOM, new ROOM(roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_RED,                     // 0x1D
                                      MAIN_HALL_RIGHT, MAIN_HALL_LEFT, BLACK_CASTLE, MAIN_HALL_RIGHT, "Southeast Room"));
     addRoom(ROBINETT_ROOM, new ROOM(roomGfxBelowYellowCastle, ROOMFLAG_NONE, COLOR_PURPLE,              // 0x1E
-                                    0x06,0x01,0x06,0x03, "Robinett Room"));
+                                    0x06,0x01,0x06,0x03, "Robinett Room", ROOM::HIDDEN));
     addRoom(JADE_CASTLE, new ROOM(roomGfxCastle3, ROOMFLAG_NONE, COLOR_JADE,                            // 0x1F
-                                  SOUTHEAST_ROOM, BLUE_MAZE_3, BLUE_MAZE_2, BLUE_MAZE_5, "Jade Castle"));
+                                  SOUTHEAST_ROOM, BLUE_MAZE_3, BLUE_MAZE_2, BLUE_MAZE_5, "Jade Castle", ROOM::HIDDEN));
     addRoom(JADE_FOYER, new ROOM(roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_JADE,                          // 0x20
-                                 JADE_FOYER, JADE_FOYER, JADE_FOYER, JADE_FOYER, "Jade Foyer"));
+                                 JADE_FOYER, JADE_FOYER, JADE_FOYER, JADE_FOYER, "Jade Foyer", ROOM::HIDDEN));
     addRoom(COPPER_CASTLE, new ROOM(roomGfxCastle2, ROOMFLAG_NONE, COLOR_COPPER,                        // 0x21
                                     BLUE_MAZE_3, MAIN_HALL_LEFT, MAIN_HALL_RIGHT, GOLD_CASTLE, "Copper Castle"));
     addRoom(COPPER_FOYER, new ROOM(roomGfxNumberRoom, ROOMFLAG_NONE, COLOR_COPPER,                      // 0x22
@@ -435,6 +435,8 @@ void Map::ConfigureMaze(int numPlayers, int gameMapLayout) {
     if (numPlayers > 2) {
         roomDefs[BLUE_MAZE_2]->roomUp = JADE_CASTLE;
         roomDefs[BLUE_MAZE_2]->graphicsData = roomGfxBlueMaze1B;
+        roomDefs[JADE_CASTLE]->visibility = ROOM::OPEN;
+        roomDefs[JADE_FOYER]->visibility = ROOM::IN_CASTLE;
     }
     
     if (gameMapLayout == 0) {
@@ -458,6 +460,7 @@ void Map::ConfigureMaze(int numPlayers, int gameMapLayout) {
         roomDefs[BLACK_FOYER]->roomRight = BLACK_MAZE_ENTRY;
         roomDefs[BLACK_FOYER]->roomDown = BLACK_MAZE_ENTRY;
         roomDefs[BLACK_FOYER]->roomLeft = BLACK_MAZE_ENTRY;
+        roomDefs[BLACK_INNERMOST_ROOM]->visibility = ROOM::HIDDEN;
         
     }
 }
@@ -529,6 +532,14 @@ void Map::ComputeDistances(int numPorts, Portcullis** ports) {
 void Map::addRoom(int key, ROOM* newRoom) {
     roomDefs[key] = newRoom;
     newRoom->setIndex(key);
+}
+
+ROOM* Map::getRoom(int key) {
+    if ((key < 0) || (key > numRooms)) {
+        return NULL;
+    } else {
+        return roomDefs[key];
+    }
 }
 
 
