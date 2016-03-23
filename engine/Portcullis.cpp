@@ -131,6 +131,10 @@ Portcullis::~Portcullis() {
 void Portcullis::setState(int newState, bool newActive) {
     state = newState;
     isActive = newActive;
+    printf("%s changed.  %s state = %d(%s)\n", this->label, (isActive ? "Active" : "Inactive"),
+                                                    newState, (newState == OPEN_STATE ? "open" :
+                                                    (newState < CLOSED_STATE ? "closing" :
+                                                     (newState == CLOSED_STATE ? "closed" : "opening"))));
 }
 
 void Portcullis::updateState() {
@@ -145,6 +149,9 @@ void Portcullis::updateState() {
         {
             // Port is unlocked
             state = OPEN_STATE;
+            printf("%s updated.  %s = %d(%s)\n", this->label, (isActive ? "Active" : "Inactive"), state, "open");
+        } else if (state == CLOSED_STATE) {
+            printf("%s updated.  %s = %d(%s)\n", this->label, (isActive ? "Active" : "Inactive"), state, "closed");
         }
     }
 }
@@ -152,15 +159,28 @@ void Portcullis::updateState() {
 void Portcullis::keyTouch() {
     state++;
     isActive = true; // Either the gate is now opening and active or now closing but still active
+    printf("%s touched by key.  %s = %d(%s)\n", this->label, (isActive ? "Active" : "Inactive"),
+                                                    state, (state == OPEN_STATE ? "open" :
+                                                    (state < CLOSED_STATE ? "closing" :
+                                                     (state == CLOSED_STATE ? "closed" : "opening"))));
+
 }
 
 void Portcullis::openFromInside() {
     ++state;
+    printf("%s opened from inside.  %s = %d(%s)\n", this->label, (isActive ? "Active" : "Inactive"),
+                                                                        state, (state == OPEN_STATE ? "open" :
+                                                                        (state < CLOSED_STATE ? "closing" :
+                                                                         (state == CLOSED_STATE ? "closed" : "opening"))));
 }
 
 void Portcullis::forceOpen() {
     state = OPEN_STATE;
     isActive = true;
+    printf("%s entered.  %s = %d(%s)\n", this->label, (isActive ? "Active" : "Inactive"),
+                                                                            state, (state == OPEN_STATE ? "open" :
+                                                                            (state < CLOSED_STATE ? "closing" :
+                                                                             (state == CLOSED_STATE ? "closed" : "opening"))));
 }
 
 void Portcullis::addRoom(ROOM* room) {

@@ -45,4 +45,16 @@ Port Restricted Cone NAT
   at first get blocked.  Machine2 sends to ipx1:portx1 using source port port2 and those should go through and the ones from
   machine1 should start going through.
 
-  If both machines are internal, machine1 needs to
+--------------------------------------------------------------------------------------------------------------------------------
+Play
+  To run play tutorial 
+  1. go to play-scala-intro/ and run "./activator ui".  Opens a web browser to http://localhost:8888.
+  2. we have a play-scala-intro project that you can setup and run through the web interface.  Then hit http://localhost:9000.
+  3. Makes REST calls /person to create a person and persons/ to get person info.
+
+In code:
+POJO/DTO is in app/models.  Tied to JSON.
+Data Access is in app/dal.  Defines a mapping to the table as well as create and query for all people.  Calls are asynchronous.
+Controller in app/controller.  Defines actions for create and query, but no idea how they map to URLs.  Also define a form and an index.
+
+What I want is a REST call where you submit your name, your opponent's name, and game level.  It will return your public ip and port, your oponent's ip and port, and your player number.  This creates a request to play other player, and then looks in the database for a request to play us.  If it sees it, returns the all the info.

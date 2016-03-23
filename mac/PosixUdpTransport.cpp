@@ -81,16 +81,12 @@ int PosixUdpTransport::openSocket() {
 
 int PosixUdpTransport::writeData(const char* data, int numBytes)
 {
-    printf("Sending message to %s:%d: %s.\n", inet_ntoa(remaddr.sin_addr), ntohs(remaddr.sin_port), data);
     int n = sendto(socketFd, data, numBytes, 0, (struct sockaddr *)&remaddr, sizeof(remaddr));
     return n;
 }
 
 int PosixUdpTransport::readData(char *buffer, int bufferLength) {
     int n = recvfrom(socketFd, buffer, bufferLength, 0, NULL, NULL);
-    if (n > 0) {
-        printf("Received message: %s.\n", buffer);
-    }
     return n;
 }
 

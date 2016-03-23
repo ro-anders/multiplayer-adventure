@@ -1393,12 +1393,10 @@ void MoveGroundObject()
             objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
             objectBall->previousY = objectBall->y;
             // make sure it stays unlocked in case we are walking in with the key
-            if (nextPort->state != Portcullis::OPEN_STATE) {
-                nextPort->forceOpen();
-                PortcullisStateAction* gateAction =
-                    new PortcullisStateAction(portalCtr, nextPort->state, nextPort->isActive);
-                sync->BroadcastAction(gateAction);
-            }
+            nextPort->forceOpen();
+            PortcullisStateAction* gateAction =
+            new PortcullisStateAction(portalCtr, nextPort->state, nextPort->isActive);
+            sync->BroadcastAction(gateAction);
             
             // Report the ball entering the castle
             PlayerMoveAction* moveAction = new PlayerMoveAction(objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
@@ -1750,6 +1748,9 @@ void Portals()
                         PortcullisStateAction* gateAction =
                             new PortcullisStateAction(portalCtr, port->state, port->isActive);
                         sync->BroadcastAction(gateAction);
+                    } else {
+                        printf("Not broadcasting.  Player in %s.  Gate in %s.\n", gameMap->getRoom(objectBall->room)->label,
+                               gameMap->getRoom(port->room)->label);
                     }
                 }
 
