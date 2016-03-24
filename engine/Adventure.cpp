@@ -69,6 +69,7 @@ static void Magnet();
 
 // My helper functions
 void addAllRoomsToPort(Portcullis* port, int firstRoom, int lastRoom);
+bool checkReturnedChailise();
 static void DrawObjects(int room);
 static void DrawObject(const OBJECT* object);
 void DrawBall(const BALL* ball, COLOR color);
@@ -81,7 +82,7 @@ void handleSetupMessages();
 void randomizeRoomObjects();
 static void ResetPlayers();
 static void ResetPlayer(BALL* ball);
-static void WinGame();
+static void WinGame(int winCastle);
 
 
 COLOR GetFlashColor();
@@ -122,6 +123,7 @@ static int gameNum; // Which game is being played.  May be different from game l
 static int displayedRoomIndex = 0;                                   // index of current (displayed) room
 
 static int winFlashTimer=0;
+static int winningCastle=-1; // The room number of the castle of the winning player.
 
 static int flashColorHue=0;
 static int flashColorLum=0;
@@ -425,10 +427,10 @@ static const byte game1Objects [] =
     OBJECT_COPPERKEY, COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
     OBJECT_JADEKEY, JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Jade Key
     OBJECT_WHITEKEY, 0x0E, 0x20, 0x40, 0x00, 0x00, 0x00, // White Key
-    OBJECT_BLACKKEY, 0x10/*0x1D*/, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
+    OBJECT_BLACKKEY, 0x1D, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
     OBJECT_BAT, 0x1A, 0x20, 0x20, 0x00, 0x00, 0x00, // Bat
     OBJECT_DOT, 0x15, 0x51, 0x12, 0x00, 0x00, 0x00, // Dot
-    OBJECT_CHALISE, 0x1C, 0x30, 0x20, 0x00, 0x00, 0x00, // Challise
+    OBJECT_CHALISE, 0x02 /*0x1C*/, 0x30, 0x20, 0x00, 0x00, 0x00, // Challise
     OBJECT_MAGNET, 0x1B, 0x80, 0x20, 0x00, 0x00, 0x00, // Magnet
     0xff,0,0,0,0,0,0
 };
@@ -731,15 +733,15 @@ void Adventure_Run()
             // See if anyone else won the game
             PlayerWinAction* lost = sync->GetGameWon();
             if (lost != NULL) {
-                WinGame();
+                WinGame(gameBoard->getPlayer(lost->sender)->homeGate->room);
                 delete lost;
                 lost = NULL;
             }
             // Get the room the chalise is in
             // Is it in the home castle?
-            else if (objectDefs[OBJECT_CHALISE]->room == objectBall->homeGate->insideRoom)
+            else if (checkReturnedChailise())
             {
-                WinGame();
+                WinGame(objectBall->homeGate->room);
                 PlayerWinAction* won = new PlayerWinAction(objectBall->room);
                 sync->BroadcastAction(won);
             }
@@ -836,8 +838,14 @@ void Adventure_Run()
         }
         else if (gameState == GAMESTATE_WIN)
         {
-            if (winFlashTimer > 0)
+            // We keep the display pointed at your current room while we make the
+            // whole board flash, but once the flash is done, we point the display
+            // at the winning castle.
+            if (winFlashTimer > 0) {
                 --winFlashTimer;
+            } else {
+                displayedRoomIndex = winningCastle;
+            }
 
             // Display the room and objects
             PrintDisplay();
@@ -1063,10 +1071,33 @@ float volumeAtDistance(int room) {
     return volume;
 }
 
-void WinGame() {
+/**
+ * Returns true if this player has gotten the chalise to their home castle and won the game.
+ */
+bool checkReturnedChailise() {
+    bool returned = false;
+    // Player MUST be holding the chalise to win.  Another player can't win for you.
+    if (objectBall->linkedObject == OBJECT_CHALISE) {
+        // Player either has to bring the chalise into the castle or touch the chalise to the gate
+        if (objectDefs[OBJECT_CHALISE]->room == objectBall->homeGate->insideRoom) {
+            returned = true;
+        } else {
+            if ((objectBall->room == objectBall->homeGate->room) &&
+                (objectBall->homeGate->state == Portcullis::OPEN_STATE) &&
+                CollisionCheckObjectObject(objectBall->homeGate, objectDefs[OBJECT_CHALISE])) {
+                
+                returned = true;
+            }
+        }
+    }
+    return returned;
+}
+
+void WinGame(int winCastle) {
     // Go to won state
     gameState = GAMESTATE_WIN;
     winFlashTimer = 0xff;
+    winningCastle = winCastle;
     
     // Play the sound
     Platform_MakeSound(SOUND_WON, MAX_VOLUME);
