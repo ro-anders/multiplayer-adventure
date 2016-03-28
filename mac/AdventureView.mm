@@ -78,13 +78,9 @@ bool gMute = FALSE;
         if (argc == 2) {
             toTest = new PosixUdpTransport();
         } else {
-            char* ip1;
-            int port1;
-            char* ip2;
-            int port2;
-            Transport::parseUrl(argv[2], &ip1, &port1);
-            Transport::parseUrl(argv[3], &ip2, &port2);
-            toTest = new PosixUdpTransport(ip1, port1, ip2, port2);
+            Transport::Address addr1 = Transport::parseUrl(argv[2]);
+            Transport::Address addr2 = Transport::parseUrl(argv[3]);
+            toTest = new PosixUdpTransport(addr1, addr2);
         }
         Transport::testTransport(*toTest);
     }
@@ -109,21 +105,15 @@ bool gMute = FALSE;
     } else {
         numPlayers = argc-3;
         thisPlayer = atoi(argv[2])-1;
-        char* ip0;
-        int port0;
-        char* ip1;
-        int port1;
-        Transport::parseUrl(argv[3], &ip0, &port0);
-        Transport::parseUrl(argv[4], &ip1, &port1);
-        transport = new PosixUdpTransport(ip0, port0, ip1, port1);
+        Transport::Address addr0 = Transport::parseUrl(argv[3]);
+        Transport::Address addr1 = Transport::parseUrl(argv[4]);
+        transport = new PosixUdpTransport(addr0, addr1);
         
         // Process player 3
         Transport* transport2 = NULL;
         if (argc > 5) {
-            char* ip2;
-            int port2;
-            Transport::parseUrl(argv[5], &ip2, &port2);
-            transport2 = new PosixUdpTransport(ip0, port0+1, ip2, port2);
+            Transport::Address addr2 = Transport::parseUrl(argv[5]);
+            transport2 = new PosixUdpTransport(addr0, addr2);
             transport = new YTransport(transport, transport2);
         }
         transport->connect();

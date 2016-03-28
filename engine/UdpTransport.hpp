@@ -17,20 +17,15 @@ public:
     /**
      * Used only for in testing when running two games on one machine.  Attempts to listen first on the
      * default port and, if that is taken by the other game, on the default port + 1.
-     * sleep - something to call sleep in a platform specific way
      */
     UdpTransport();
     
     /**
      * Connect to another game using UDP.
-     * myExternalIp - the IP address my packets appear as
-     * myExternaPort - the port my packets appear to come from
-     * theirIp - the ip of the machine to connect to
-     * theirPort - the port to connect to
-     * sleep - something to call sleep in a platform specific way
+     * myExternalAddr - the IP address and port my packets appear to come from
+     * theirIp - the ip and port of the machine to connect to
      */
-    UdpTransport(const char* myExternalIp, int myExternalPort,
-                 const char* theirIp, int theirPort);
+    UdpTransport(const Address& myExternalAddrconst, const Address & theirAddr);
     
     ~UdpTransport();
     
@@ -38,15 +33,11 @@ public:
     
 protected:
     
-    const char* myExternalIp;
-    
-    int myExternalPort;
+    Address myExternalAddr;
     
     int myInternalPort;
     
-    const char* theirIp;
-    
-    int theirPort;
+    Address theirAddr;
     
     virtual int openSocket() = 0;
         

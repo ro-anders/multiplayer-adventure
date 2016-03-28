@@ -26,9 +26,8 @@ PosixUdpTransport::PosixUdpTransport() :
     setup();
 }
 
-PosixUdpTransport::PosixUdpTransport(const char* inMyExternalIp, int inMyExternalPort,
-                                     const char* inTheirIp, int inTheirPort) :
-UdpTransport(inMyExternalIp, inMyExternalPort, inTheirIp, inTheirPort)
+PosixUdpTransport::PosixUdpTransport(const Address& inMyExternalAddr,  const Address& inTheirAddr) :
+UdpTransport(inMyExternalAddr, inTheirAddr)
 {
     setup();
 }
@@ -49,12 +48,12 @@ int PosixUdpTransport::openSocket() {
     // ip is an ip, not a hostname, but don't know how to convert a
     // string ip to a server address format, so calling gethost - ugh
     // Should be remaddr.sin_addr.S_un.S_addr = inet_addr(theirIp)  - or something like that
-    hostent* hp = gethostbyname(theirIp);
+    hostent* hp = gethostbyname(theirAddr.ip());
     bcopy((char *)hp->h_addr,
           (char *)&remaddr.sin_addr.s_addr,
           hp->h_length);
     remaddr.sin_family = AF_INET;
-    remaddr.sin_port = htons(theirPort);
+    remaddr.sin_port = htons(theirAddr.port());
     printf("Initialized = %s:%d.\n", inet_ntoa(remaddr.sin_addr), ntohs(remaddr.sin_port));
 
     socketFd = socket(AF_INET, SOCK_DGRAM, 0);

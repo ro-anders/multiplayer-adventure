@@ -9,6 +9,23 @@
 class Transport {
 public:
     
+    /** A simple class to hold an ip and port */
+    /* There's gotta be a class that does this already. */
+    class Address {
+    public:
+        Address();
+        Address(const char* ip, int port);
+        Address(const Address& other);
+        ~Address();
+        Address& operator=(const Address& other);
+        const char* ip() const;
+        int port() const;
+    private:
+        const char* _ip;
+        int _port;
+        static char* copyIp(const char* ip);
+    };
+    
     static const int DEFAULT_PORT;
     
     static const int NOT_A_TEST;
@@ -46,11 +63,9 @@ public:
     int getTestSetupNumber();
     
     /**
-     * Parse an socket address of the form 127.0.0.1:5678 into an ip/address and a port.
-     * TODO: This does weird things with the input string.  It modifies it and requires is not
-     * be deleted.
+     * Parse an socket address of the form 127.0.0.1:5678 into an ip address and a port.
      */
-    static void parseUrl(char* socketAddress, char** outIp, int* outPort);
+    static Address parseUrl(const char* socketAddress);
     
     /**
      * This runs a test - assuming another transport has been setup to talk with. 

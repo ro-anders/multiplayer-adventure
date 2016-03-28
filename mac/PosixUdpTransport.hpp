@@ -22,13 +22,10 @@ public:
 
     /**
      * Connect to another game using UDP.
-     * myExternalIp - the IP address my packets appear as
-     * myExternaPort - the port my packets appear to come from
-     * theirIp - the ip of the machine to connect to
-     * theirPort - the port to connect to
+     * myExternalAddr - the IP address and port my packets appear to come from
+     * theirAddr - the ip and port of the machine to connect to
      */
-    PosixUdpTransport(const char* myExternalIp, int myExternalPort,
-                      const char* theirIp, int theirPort);
+    PosixUdpTransport(const Address& myExternalAddr, const Address& theirAddr);
 
     ~PosixUdpTransport();
     

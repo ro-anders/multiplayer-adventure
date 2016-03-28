@@ -11,22 +11,17 @@
 
 UdpTransport::UdpTransport() :
 Transport(true),
-myExternalIp(LOCALHOST_IP),
-myExternalPort(DEFAULT_PORT),
-theirIp(LOCALHOST_IP),
-theirPort(DEFAULT_PORT+1),
+myExternalAddr(LOCALHOST_IP, DEFAULT_PORT),
+theirAddr(LOCALHOST_IP, DEFAULT_PORT+1),
 myInternalPort(DEFAULT_PORT)
 {}
 
-UdpTransport::UdpTransport(const char* inMyExternalIp, int inMyExternalPort,
-                           const char* inTheirIp, int inTheirPort) :
+UdpTransport::UdpTransport(const Address& inMyExternalAddr,  const Address& inTheirAddr) :
 Transport(false),
-myExternalIp(inMyExternalIp),
-myExternalPort(inMyExternalPort),
-theirIp(inTheirIp),
-theirPort(inTheirPort),
+myExternalAddr(inMyExternalAddr),
+theirAddr(inTheirAddr),
 // We use the default port internally unless the other side is also on the same machine.
-myInternalPort(strcmp(inTheirIp, LOCALHOST_IP)==0 ? inMyExternalPort : DEFAULT_PORT)
+myInternalPort(strcmp(inTheirAddr.ip(), LOCALHOST_IP)==0 ? inMyExternalAddr.port() : DEFAULT_PORT)
 {}
 
 UdpTransport::~UdpTransport() {
@@ -38,9 +33,8 @@ void UdpTransport::connect() {
         // If that is busy, switch them.
         int busy = openSocket();
         if (busy == Transport::TPT_BUSY) {
-            myExternalPort = DEFAULT_PORT+1;
-            myInternalPort = DEFAULT_PORT+1;
-            theirPort = DEFAULT_PORT;
+            myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT+1);
+            theirAddr = Address(LOCALHOST_IP, DEFAULT_PORT);
             openSocket();
         }
     } else {
@@ -128,14 +122,14 @@ void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage) {
     } else if (theirRandomNumber < myRandomNumber) {
         setTestSetupNumber(1);
     } else {
-        int ipCmp = strcmp(myExternalIp, theirIp);
+        int ipCmp = strcmp(myExternalAddr.ip(), theirAddr.ip());
         if (ipCmp < 0) {
             setTestSetupNumber(0);
         } else if (ipCmp > 0) {
             setTestSetupNumber(1);
         } else {
             // If IP's are equal then ports can't be equal.
-            setTestSetupNumber(myExternalPort < theirPort ? 0 : 1);
+            setTestSetupNumber(myExternalAddr.port() < theirAddr.port() ? 0 : 1);
         }
     }
     
