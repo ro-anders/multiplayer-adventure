@@ -35,6 +35,7 @@ void UdpTransport::connect() {
         if (busy == Transport::TPT_BUSY) {
             myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT+1);
             theirAddr = Address(LOCALHOST_IP, DEFAULT_PORT);
+            myInternalPort = DEFAULT_PORT+1;
             openSocket();
         }
     } else {
