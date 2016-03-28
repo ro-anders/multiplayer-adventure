@@ -15,3 +15,14 @@ To Check
 - Green dragon ate player 1.  Player 2 reset and now didn't see green dragon.
 - Right arrow key seemed to get stuck.
 
+Original Disparities
+--------------------
+- Win screen only shows two objects in room
+- Objects aren't occluded by the wall in the catacombs
+- Ball doesn't make pyramid as it drags along the bottom wall
+- Chalice touch gate doesn't trigger win
+  (work around in mine wins, but doesn't have same behavior where too many objects in room obscures touch)
+- Can't escape dragon by running left 
+  (work around in mine allows left but then doesn't allow up and right)
+- Bat sometimes gets stuck picking up object (fixed in mine & original branch)
+
