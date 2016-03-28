@@ -73,6 +73,7 @@ bool gMute = FALSE;
     
     
     // Test UDP Sockets
+    // MacAdventure test <myip>:<myport> <theirip>:<theirport>
     if ((argc > 2) && (strcmp(argv[1], "test")==0)) {
         Transport* toTest = NULL;
         if (argc == 2) {
@@ -95,6 +96,7 @@ bool gMute = FALSE;
     }
     
     // Read the command line arguments and setup the communication with the other players
+    // MacAdventure <gameLevel> <thisPlayer> <myip>:<myport> <theirip>:<theirport> [<thirdip>:<thirdport>]
     const int DEFAULT_PORT = 5678;
     if (argc <= 2) {
         numPlayers = 2;
