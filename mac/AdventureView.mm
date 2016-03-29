@@ -21,6 +21,7 @@
 #include "args.h"
 #include "PosixTcpTransport.hpp"
 #include "PosixUdpTransport.hpp"
+#include "Sys.hpp"
 #include "Transport.hpp"
 #include "YTransport.hpp"
 
@@ -102,8 +103,6 @@ bool gMute = FALSE;
         numPlayers = 2;
         transport = new PosixUdpTransport();
         transport->connect();
-        thisPlayer = transport->getTestSetupNumber();
-        Platform_MuteSound(thisPlayer == 1);
     } else {
         numPlayers = argc-3;
         thisPlayer = atoi(argv[2])-1;
@@ -119,6 +118,16 @@ bool gMute = FALSE;
             transport = new YTransport(transport, transport2);
         }
         transport->connect();
+    }
+    
+    while (!transport->isConnected()) {
+        Sys::sleep(1000);
+    }
+    
+    int testNum = transport->getTestSetupNumber();
+    if (testNum != Transport::NOT_A_TEST) {
+        thisPlayer = testNum;
+        Platform_MuteSound(thisPlayer == 1);
     }
     
 	if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))

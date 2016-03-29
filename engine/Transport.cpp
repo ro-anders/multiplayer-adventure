@@ -57,8 +57,8 @@ const int Transport::NOT_YET_DETERMINED = -2;
 const char* Transport::LOCALHOST_IP = "127.0.0.1";
 
 
-Transport::Transport(bool inATest)
-{
+Transport::Transport(bool inATest) :
+  connected(false) {
     streamBufferSize = 1024;
     streamBuffer = new char[streamBufferSize]; // TODO: Make this more dynamic.
     charsInStreamBuffer = 0;
@@ -68,6 +68,10 @@ Transport::Transport(bool inATest)
 Transport::~Transport()
 {
     delete [] streamBuffer;
+}
+
+bool Transport::isConnected() {
+    return connected;
 }
 
 int Transport::getTestSetupNumber() {

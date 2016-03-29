@@ -31,6 +31,12 @@ public:
     
     void connect();
     
+    /**
+     * We override isConnected() to not only check to see if we have connected but also send appropriate
+     * messages to the other machine.  If we never check to see if we are connected we will never connect.
+     */
+    bool isConnected();
+    
 protected:
     
     Address myExternalAddr;
@@ -42,6 +48,17 @@ protected:
     virtual int openSocket() = 0;
         
 private:
+    
+    static const char* NOT_YET_INITIATED;
+    static const char* RECVD_NOTHING;
+    static const char* RECVD_MESSAGE;
+    static const char* RECVD_ACK;
+
+    /* The state of the UDP connection */
+    const char* state;
+    
+    /** A random number we use to determine test number */
+    long randomNum;
     
     void punchHole();
     

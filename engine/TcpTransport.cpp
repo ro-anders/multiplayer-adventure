@@ -43,6 +43,7 @@ void TcpTransport::connect() {
     } else {
         openClientSocket();
     }
+    connected = true;
 }
 
 

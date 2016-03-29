@@ -39,7 +39,16 @@ public:
     
     virtual ~Transport();
     
+    /**
+     * Connect to the other machine.  This is asynchronous.  You need to poll isConnecting() to
+     * determine if a connection was made. 
+     */
     virtual void connect() = 0;
+    
+    /**
+     * Whether this transport has successfully connected to the other machine.
+     */
+    virtual bool isConnected();
     
     /**
      * Send a packet to a client.  Assumes the packet is \0 terminated.
@@ -78,6 +87,8 @@ protected:
     void setTestSetupNumber(int num);
 
     static const int NOT_YET_DETERMINED;
+    
+    bool connected;
     
     /** Return codes from connection methods */
     static const int TPT_ERROR;

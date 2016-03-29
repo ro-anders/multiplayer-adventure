@@ -9,11 +9,18 @@
 #include <string.h>
 #include "Sys.hpp"
 
+const char* UdpTransport::NOT_YET_INITIATED = "UX";
+const char* UdpTransport::RECVD_NOTHING = "UA";
+const char* UdpTransport::RECVD_MESSAGE = "UB";
+const char* UdpTransport::RECVD_ACK = "UC";
+
+
 UdpTransport::UdpTransport() :
 Transport(true),
 myExternalAddr(LOCALHOST_IP, DEFAULT_PORT),
 theirAddr(LOCALHOST_IP, DEFAULT_PORT+1),
-myInternalPort(DEFAULT_PORT)
+myInternalPort(DEFAULT_PORT),
+state(NOT_YET_INITIATED)
 {}
 
 UdpTransport::UdpTransport(const Address& inMyExternalAddr,  const Address& inTheirAddr) :
@@ -21,7 +28,8 @@ Transport(false),
 myExternalAddr(inMyExternalAddr),
 theirAddr(inTheirAddr),
 // We use the default port internally unless the other side is also on the same machine.
-myInternalPort(strcmp(inTheirAddr.ip(), LOCALHOST_IP)==0 ? inMyExternalAddr.port() : DEFAULT_PORT)
+myInternalPort(strcmp(inTheirAddr.ip(), LOCALHOST_IP)==0 ? inMyExternalAddr.port() : DEFAULT_PORT),
+state(NOT_YET_INITIATED)
 {}
 
 UdpTransport::~UdpTransport() {
@@ -42,32 +50,34 @@ void UdpTransport::connect() {
         openSocket();
     }
     
+    state = RECVD_NOTHING;
     printf("Bound to socket.  Initiating handshake.\n");
+    // We need a big random integer.
+    randomNum = Sys::random() * 1000000;
     
     punchHole();
+}
+
+bool UdpTransport::isConnected() {
+    if ((!connected) && (state != NOT_YET_INITIATED)) {
+            punchHole();
+    }
+    return connected;
 }
 
 
 
 void UdpTransport::punchHole() {
     
-    // We need a big random integer.
-    long randomNum = Sys::random() * 1000000;
-    
     // Since this is UDP and NATs may be involved, our messages may be blocked until the other game sends
     // packets to us.  So we must enter a loop constantly sending a message and checking if we are getting their
-    // messages.
-    
-    const char* RECVD_NOTHING = "UA";
-    const char* RECVD_MESSAGE = "UB";
-    const char* RECVD_ACK = "UC";
+    // messages.  The owner of this class handles the looping, but this is one instance of the loop.
     
     char sendBuffer[16] = "";
     const int READ_BUFFER_LENGTH = 200;
     char recvBuffer[READ_BUFFER_LENGTH];
     
-    const char* state = RECVD_NOTHING;
-    while (state != RECVD_ACK) {
+    if (state != RECVD_ACK) {
         printf("Checking for messages.\n");
         // See what messages we have received.
         int bytes = getPacket(recvBuffer, READ_BUFFER_LENGTH);
@@ -83,6 +93,7 @@ void UdpTransport::punchHole() {
             if (recvBuffer[1] != RECVD_NOTHING[1]) {
                 // They have received our message, and now we have received their's.  So ACK.
                 state = RECVD_ACK;
+                connected = true;
                 // If this is a test case, figure out who is player one.
                 if (getTestSetupNumber() == NOT_YET_DETERMINED) {
                         compareNumbers(randomNum, recvBuffer);
@@ -98,9 +109,6 @@ void UdpTransport::punchHole() {
         // Now send a packet
         sprintf(sendBuffer, "%s%ld", state, randomNum);
         sendPacket(sendBuffer);
-        
-        // Now wait a second.
-        Sys::sleep(1000);
     }
 }
 
