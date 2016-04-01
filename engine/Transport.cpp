@@ -159,16 +159,34 @@ int Transport::getPacket(char* buffer, int bufferLength) {
     return (hitError ? hitError : charsInPacket);
 }
 
+void Transport::appendDataToBuffer(const char *data, int dataLength) {
+    // TODO: Should really resize buffer rather than truncate.
+    bool truncating = false;
+    if (charsInStreamBuffer + dataLength > streamBufferSize) {
+        Sys::log("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
+        dataLength = streamBufferSize-charsInStreamBuffer;
+        truncating = true;
+    }
+    memcpy(streamBuffer+charsInStreamBuffer, data, dataLength * sizeof(char));
+    charsInStreamBuffer += dataLength;
+    if (truncating) {
+        streamBuffer[streamBufferSize-1] = '\0';
+    }
+}
+
 void Transport::testTransport(Transport& t) {
     int NUM_MESSAGES = 10;
     // If this is a test, make sure test roles are negotiated.
     t.testSetupNumber = NOT_YET_DETERMINED;
     t.connect();
+    while (!t.isConnected()) {
+        Sys::sleep(1000);
+    }
     if (t.getTestSetupNumber() == 1) {
         int numSent = 0;
         for(int ctr=0; ctr<NUM_MESSAGES; ++ctr) {
             char message[256];
-            sprintf(message, "Message %d\n\0", (ctr+1));
+            sprintf(message, "Message %d\0", (ctr+1));
             int charsSent = t.sendPacket(message);
             if (charsSent <= 0) {
                 perror("Error sending packet");

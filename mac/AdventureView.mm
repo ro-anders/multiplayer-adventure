@@ -75,7 +75,7 @@ bool gMute = FALSE;
     
     // Test UDP Sockets
     // MacAdventure test <myip>:<myport> <theirip>:<theirport>
-    if ((argc > 2) && (strcmp(argv[1], "test")==0)) {
+    if ((argc >= 2) && (strcmp(argv[1], "test")==0)) {
         Transport* toTest = NULL;
         if (argc == 2) {
             toTest = new PosixUdpTransport();

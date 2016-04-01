@@ -37,6 +37,9 @@ public:
      */
     bool isConnected();
     
+    int getPacket(char* buffer, int bufferLength);
+    
+    
 protected:
     
     Address myExternalAddr;
@@ -44,9 +47,21 @@ protected:
     int myInternalPort;
     
     Address theirAddr;
+
+    /**
+     * Pull data off the socket - non-blocking
+     */
+    int readData(char* buffer, int bufferLength);
     
+
     virtual int openSocket() = 0;
-        
+    
+    /**
+     * Pull data off the socket - non-blocking
+     */
+    virtual int readData(char* buffer, int bufferLength, Address* from) = 0;
+
+    
 private:
     
     static const char* NOT_YET_INITIATED;

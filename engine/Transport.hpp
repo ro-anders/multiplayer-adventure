@@ -84,6 +84,10 @@ public:
     
 protected:
     
+    bool hasDataInBuffer() {return charsInStreamBuffer > 0;}
+    
+    void appendDataToBuffer(const char* data, int dataLength);
+    
     void setTestSetupNumber(int num);
 
     static const int NOT_YET_DETERMINED;

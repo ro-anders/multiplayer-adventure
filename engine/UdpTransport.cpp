@@ -65,6 +65,21 @@ bool UdpTransport::isConnected() {
     return connected;
 }
 
+int UdpTransport::getPacket(char* buffer, int bufferLength) {
+    if ((state == RECVD_ACK) && !hasDataInBuffer()) {
+        // Now that setup is done, we can stop buffering data.
+        return readData(buffer, bufferLength, NULL);
+    } else {
+        return Transport::getPacket(buffer, bufferLength);
+    }
+}
+
+/**
+ * Read a pacet off the UDP port and throw away the sender information.
+ */
+int UdpTransport::readData(char* buffer, int bufferLength) {
+    return readData(buffer, bufferLength, NULL);
+}
 
 
 void UdpTransport::punchHole() {
@@ -76,33 +91,40 @@ void UdpTransport::punchHole() {
     char sendBuffer[16] = "";
     const int READ_BUFFER_LENGTH = 200;
     char recvBuffer[READ_BUFFER_LENGTH];
+    Address sender;
     
     if (state != RECVD_ACK) {
         printf("Checking for messages.\n");
         // See what messages we have received.
-        int bytes = getPacket(recvBuffer, READ_BUFFER_LENGTH);
+        int bytes = readData(recvBuffer, READ_BUFFER_LENGTH, &sender);
         while (bytes > 0) {
             printf("Got message: %s.\n", recvBuffer);
-            if (bytes != 8) {
-                Sys::log("Read packet of unexpected length.");
-                printf("Message=%s.  Bytes read=%d.\n", recvBuffer, bytes);
-            }
-            if (state == RECVD_NOTHING) {
-                state = RECVD_MESSAGE;
-            }
-            if (recvBuffer[1] != RECVD_NOTHING[1]) {
-                // They have received our message, and now we have received their's.  So ACK.
-                state = RECVD_ACK;
-                connected = true;
-                // If this is a test case, figure out who is player one.
-                if (getTestSetupNumber() == NOT_YET_DETERMINED) {
+            // This could be non-setup messages, which need to be put in the base class's stream buffer
+            // until the setup is complete.
+            if (recvBuffer[0] != RECVD_NOTHING[0]) { // Only UDP setup messages begin with 'U'
+                appendDataToBuffer(recvBuffer, bytes);
+            } else {
+                if (bytes != 9) {
+                    Sys::log("Read packet of unexpected length.");
+                    printf("Message=%s.  Bytes read=%d.\n", recvBuffer, bytes);
+                }
+                if (state == RECVD_NOTHING) {
+                    state = RECVD_MESSAGE;
+                }
+                if (recvBuffer[1] != RECVD_NOTHING[1]) {
+                    // They have received our message, and now we have received their's.  So ACK.
+                    state = RECVD_ACK;
+                    connected = true;
+                    // If this is a test case, figure out who is player one.
+                    if (getTestSetupNumber() == NOT_YET_DETERMINED) {
                         compareNumbers(randomNum, recvBuffer);
+                    }
                 }
             }
             
             // Check for more messages.
             printf("Checking for init messages.\n");
-            bytes = getPacket(recvBuffer, READ_BUFFER_LENGTH);
+            bytes = readData(recvBuffer, READ_BUFFER_LENGTH, &sender);
         }
         
         printf("Sending init message.\n");
@@ -141,8 +163,6 @@ void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage) {
             setTestSetupNumber(myExternalAddr.port() < theirAddr.port() ? 0 : 1);
         }
     }
-    
-    
 }
 
 

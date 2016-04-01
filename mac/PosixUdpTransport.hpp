@@ -37,7 +37,7 @@ protected:
     
     int writeData(const char* data, int numBytes);
     
-    int readData(char* buffer, int bufferLength);
+    int readData(char* buffer, int bufferLength, Address* from);
 
 private:
         

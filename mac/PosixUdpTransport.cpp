@@ -84,7 +84,8 @@ int PosixUdpTransport::writeData(const char* data, int numBytes)
     return n;
 }
 
-int PosixUdpTransport::readData(char *buffer, int bufferLength) {
+int PosixUdpTransport::readData(char *buffer, int bufferLength, Address* from) {
+    // TODO: Read sender information
     int n = recvfrom(socketFd, buffer, bufferLength, 0, NULL, NULL);
     return n;
 }
