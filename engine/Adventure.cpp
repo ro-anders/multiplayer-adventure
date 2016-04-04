@@ -619,7 +619,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     gameBoard->addObject(OBJECT_DOT, new OBJECT("dot", objectGfxDot, 0, 0, COLOR_LTGRAY, -1, 0, 0, OBJECT::FIXED_LOCATION));
     gameBoard->addObject(OBJECT_CHALISE, new OBJECT("chalise", objectGfxChallise, 0, 0, COLOR_FLASH, -1, 0, 0));
     gameBoard->addObject(OBJECT_MAGNET, new OBJECT("magnet", objectGfxMagnet, 0, 0, COLOR_BLACK, -1, 0, 0));
-    
+
     // Setup the players
     
     gameBoard->addPlayer(new BALL(0, ports[0]));
@@ -629,11 +629,15 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     }
     objectBall = gameBoard->getPlayer(thisPlayer);
 
-    // Setup the transport
-    transport = inTransport;
-    sync = new Sync(numPlayers, thisPlayer, transport);
-    
-    printf("Player %d setup.\n", thisPlayer);
+	// Setup the transport
+	transport = inTransport;
+	sync = new Sync(numPlayers, thisPlayer, transport);
+
+	// Need to have the transport setup before we setup the objects,
+	// because we may be broadcasting randomized locations to other machines
+	SetupRoomObjects();
+
+	printf("Player %d setup.\n", thisPlayer);
 }
 
 void addAllRoomsToPort(Portcullis* port, int firstRoom, int lastRoom) {
@@ -713,8 +717,7 @@ void Adventure_Run()
         {
             --timeToStartGame;
             if (timeToStartGame <= 0) {
-                SetupRoomObjects();
-                gameState = GAMESTATE_ACTIVE_1;
+				gameState = GAMESTATE_ACTIVE_1;
                 ResetPlayers();
             } else {
                 int displayNum = timeToStartGame / 60;
@@ -901,17 +904,18 @@ void SetupRoomObjects()
         objectDefs[object]->movementX = movementX;
         objectDefs[object]->movementY = movementY;
     };
+	Sys::log("Set initial object positions.\n");
     
     if (numPlayers <= 2) {
         objectDefs[OBJECT_JADEKEY]->randomPlacement = OBJECT::FIXED_LOCATION;
     }
 
-    // Put objects in random rooms for level 3.
-    // Only first player does this and then broadcasts to other players.
-    if ((gameLevel == 2) && (thisPlayer == 0))
-    {
-        randomizeRoomObjects();
-    }
+	// Put objects in random rooms for level 3.
+	// Only first player does this and then broadcasts to other players.
+	if ((gameLevel == 2) && (thisPlayer == 0))
+	{
+		randomizeRoomObjects();
+	}
 }
 
 /**
