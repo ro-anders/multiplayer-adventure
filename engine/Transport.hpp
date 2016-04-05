@@ -18,6 +18,7 @@ public:
         Address(const Address& other);
         ~Address();
         Address& operator=(const Address& other);
+        bool operator==(const Address& other);
         const char* ip() const;
         int port() const;
     private:

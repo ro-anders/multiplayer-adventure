@@ -31,6 +31,10 @@ Transport::Address& Transport::Address::operator=(const Transport::Address &othe
     return *this;
 }
 
+bool Transport::Address::operator==(const Transport::Address &other) {
+    return ((_port == other._port) && (strcmp(_ip, other._ip)==0));
+}
+
 const char* Transport::Address::ip() const {
     return _ip;
 }
