@@ -32,8 +32,9 @@ UdpTransport(inMyExternalAddr, inTheirAddr)
     setup();
 }
 
-PosixUdpTransport::PosixUdpTransport(const Address& inMyExternalAddr,  const Address& otherAddr1, const Address& otherAddr2) :
-UdpTransport(inMyExternalAddr, otherAddr1, otherAddr2)
+PosixUdpTransport::PosixUdpTransport(const Address& inMyExternalAddr,  int transportNum,
+                                     const Address& otherAddr1, const Address& otherAddr2) :
+UdpTransport(inMyExternalAddr, transportNum, otherAddr1, otherAddr2)
 {
     setup();
 }
@@ -101,23 +102,9 @@ int PosixUdpTransport::writeData(const char* data, int numBytes, int recipient)
     return numSent;
 }
 
-int PosixUdpTransport::readData(char *buffer, int bufferLength, Address* from) {
-    // First setup the variables to get the sender information, which we will only do
-    // if a from argument was passed in.
-    socklen_t senderSize;
-    struct sockaddr* senderSlot = (from == NULL ? NULL : (struct sockaddr*)&sender);
-    socklen_t* senderSizeAddr = (from == NULL ? NULL : &senderSize);
-    
+int PosixUdpTransport::readData(char *buffer, int bufferLength) {
     // Receive the next packet
-    int n = recvfrom(socketFd, buffer, bufferLength, 0, senderSlot, senderSizeAddr);
-    
-    // Decode the sender information into an Address object
-    if (from != NULL) {
-        char* ip = inet_ntoa(sender.sin_addr);
-        int port = sender.sin_port; // TODO: Do I need to convert this?
-        *from = Address(ip, port);
-    }
-    
+    int n = recvfrom(socketFd, buffer, bufferLength, 0, NULL, NULL);
     return n;
 }
 

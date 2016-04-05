@@ -30,10 +30,11 @@ public:
     /**
      * Connect to two other games using UDP.
      * myExternalAddr - the IP address and port my packets appear to come from
+     * transportNum - the three machines have an order in which they are declared.  This is this machine's placement in that order.
      * otherAddr1 - the ip and port of the first machine to connect to (order is important)
      * otherAddr2 - the ip and port of the second machine to connect to (order is important)
      */
-    PosixUdpTransport(const Address& myExternalAddr, const Address& otherAddr1, const Address& otherAddr2);
+    PosixUdpTransport(const Address& myExternalAddr, int transportNum, const Address& otherAddr1, const Address& otherAddr2);
     
     ~PosixUdpTransport();
     
@@ -51,7 +52,7 @@ protected:
      */
     int writeData(const char* data, int numBytes, int recipient);
     
-    int readData(char* buffer, int bufferLength, Address* from);
+    int readData(char* buffer, int bufferLength);
 
 private:
         

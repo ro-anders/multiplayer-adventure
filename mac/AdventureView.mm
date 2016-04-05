@@ -98,7 +98,6 @@ bool gMute = FALSE;
     
     // Read the command line arguments and setup the communication with the other players
     // MacAdventure <gameLevel> <thisPlayer> <myip>:<myport> <theirip>:<theirport> [<thirdip>:<thirdport>]
-    const int DEFAULT_PORT = 5678;
     if (argc <= 2) {
         numPlayers = 2;
         transport = new PosixUdpTransport();
@@ -108,14 +107,11 @@ bool gMute = FALSE;
         thisPlayer = atoi(argv[2])-1;
         Transport::Address addr0 = Transport::parseUrl(argv[3]);
         Transport::Address addr1 = Transport::parseUrl(argv[4]);
-        transport = new PosixUdpTransport(addr0, addr1);
-        
-        // Process player 3
-        Transport* transport2 = NULL;
-        if (argc > 5) {
+        if (argc <= 5) {
+            transport = new PosixUdpTransport(addr0, addr1);
+        } else {
             Transport::Address addr2 = Transport::parseUrl(argv[5]);
-            transport2 = new PosixUdpTransport(addr0, addr2);
-            transport = new YTransport(transport, transport2);
+            transport = new PosixUdpTransport(addr0, thisPlayer, addr1, addr2);
         }
         transport->connect();
     }

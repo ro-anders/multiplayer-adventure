@@ -21,7 +21,8 @@ myExternalAddr(LOCALHOST_IP, DEFAULT_PORT),
 theirAddrs(new Address[1]),
 myInternalPort(DEFAULT_PORT),
 states(new const char*[1]),
-numOtherMachines(1)
+numOtherMachines(1),
+transportNum(0)
 {
     theirAddrs[0] = Address(LOCALHOST_IP, DEFAULT_PORT+1);
     states[0] = NOT_YET_INITIATED;
@@ -34,13 +35,15 @@ theirAddrs(new Address[1]),
 // We use the default port internally unless the other side is also on the same machine.
 myInternalPort(strcmp(inTheirAddr.ip(), LOCALHOST_IP)==0 ? inMyExternalAddr.port() : DEFAULT_PORT),
 states(new const char*[1]),
-numOtherMachines(1)
+numOtherMachines(1),
+transportNum(0)
 {
     theirAddrs[0] = inTheirAddr;
     states[0] = NOT_YET_INITIATED;
 }
 
-UdpTransport::UdpTransport(const Address& inMyExternalAddr,  const Address& other1, const Address& other2) :
+UdpTransport::UdpTransport(const Address& inMyExternalAddr,  int inTransportNum,
+                           const Address& other1, const Address& other2) :
 Transport(false),
 myExternalAddr(inMyExternalAddr),
 theirAddrs(new Address[2]),
@@ -49,7 +52,8 @@ theirAddrs(new Address[2]),
 myInternalPort((strcmp(other1.ip(), LOCALHOST_IP)==0) && (strcmp(other1.ip(), LOCALHOST_IP)==0) ?
                inMyExternalAddr.port() : DEFAULT_PORT),
 states(new const char*[1]),
-numOtherMachines(2)
+numOtherMachines(2),
+transportNum(inTransportNum)
 {
     theirAddrs[0] = other1;
     theirAddrs[1] = other2;
@@ -96,17 +100,10 @@ bool UdpTransport::isConnected() {
 int UdpTransport::getPacket(char* buffer, int bufferLength) {
     if (connected && !hasDataInBuffer()) {
         // Now that setup is done, we can stop buffering data.
-        return readData(buffer, bufferLength, NULL);
+        return readData(buffer, bufferLength);
     } else {
         return Transport::getPacket(buffer, bufferLength);
     }
-}
-
-/**
- * Read a pacet off the UDP port and throw away the sender information.
- */
-int UdpTransport::readData(char* buffer, int bufferLength) {
-    return readData(buffer, bufferLength, NULL);
 }
 
 int UdpTransport::writeData(const char* data, int numBytes) {
@@ -125,12 +122,11 @@ void UdpTransport::punchHole() {
         char sendBuffer[16] = "";
         const int READ_BUFFER_LENGTH = 200;
         char recvBuffer[READ_BUFFER_LENGTH];
-        Address sender;
         bool justAcked[2] = {false, false};
     
         printf("Checking for messages.\n");
         // See what messages we have received.
-        int bytes = readData(recvBuffer, READ_BUFFER_LENGTH, &sender);
+        int bytes = readData(recvBuffer, READ_BUFFER_LENGTH);
         while (bytes > 0) {
             printf("Got message: %s.\n", recvBuffer);
             // This could be non-setup messages, which need to be put in the base class's stream buffer
@@ -138,21 +134,18 @@ void UdpTransport::punchHole() {
             if (recvBuffer[0] != RECVD_NOTHING[0]) { // Only UDP setup messages begin with 'U'
                 appendDataToBuffer(recvBuffer, bytes);
             } else {
-                if (bytes != 9) {
+                if (bytes != 10) {
                     Sys::log("Read packet of unexpected length.");
                     printf("Message=%s.  Bytes read=%d.\n", recvBuffer, bytes);
                 }
-                int senderIndex = -1;
-                if (sender == theirAddrs[0]) {
-                    senderIndex = 0;
-                } else if ((numOtherMachines > 1) && (sender == theirAddrs[1])) {
-                    senderIndex = 1;
-                } else {
-                    Sys::log("Received message for unknown sender.\n");
-                    printf("%s:%d\n", sender.ip(), sender.port());
-                }
+                // Figure out the sender.  The third character will be the machine number.
+                char senderChar = recvBuffer[2];
+                // Two machine games don't need this so the number is always 0.
+                // Three machine games need to map a 0, 1, or 2 to their array of machines 0 or 1.
+                int senderInt = senderChar - '0';
+                int senderIndex = (senderInt <= transportNum ? senderInt : senderInt-1);
                 
-                if (senderIndex > 0) {
+                if (senderIndex >= 0) {
                     if (states[senderIndex] == RECVD_NOTHING) {
                         states[senderIndex] = RECVD_MESSAGE;
                     }
@@ -171,7 +164,7 @@ void UdpTransport::punchHole() {
             
             // Check for more messages.
             printf("Checking for init messages.\n");
-            bytes = readData(recvBuffer, READ_BUFFER_LENGTH, &sender);
+            bytes = readData(recvBuffer, READ_BUFFER_LENGTH);
         }
         
         printf("Sending init message.\n");
@@ -179,7 +172,7 @@ void UdpTransport::punchHole() {
         // Note, we may look all connected, but if we just got acknowledged we need to send one more message.
         for(int ctr=0; ctr<numOtherMachines; ++ctr) {
             if (justAcked[ctr] || ((states[ctr] != NOT_YET_INITIATED) && (states[ctr] != RECVD_ACK))) {
-                sprintf(sendBuffer, "%s%ld", states[ctr], randomNum);
+                sprintf(sendBuffer, "%s%d%ld", states[ctr], transportNum, randomNum);
                 sendPacket(sendBuffer);
             }
         }
@@ -193,8 +186,8 @@ void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage, int ot
     
     long theirRandomNumber;
     // Pull out the number and figure out the connect number.
-    char temp1, temp2;
-    int parsed = sscanf(theirMessage, "%c%c%ld", &temp1, &temp2, &theirRandomNumber);
+    char temp1, temp2, temp3;
+    int parsed = sscanf(theirMessage, "%c%c%c%ld", &temp1, &temp2, &temp3, &theirRandomNumber);
     if (parsed < 3) {
 		Sys::log("Parsed packet of unexpected length.");
         printf("Message=%s.  Number=%ld.  Parsed=%d.\n", theirMessage, theirRandomNumber, parsed);

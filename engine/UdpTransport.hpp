@@ -30,10 +30,11 @@ public:
     /**
      * Connect to two other games using UDP.
      * myExternalAddr - the IP address and port my packets appear to come from
+     * transportNum - the three machines have an order in which they are declared.  This is this machine's placement in that order.
      * other1 - the ip and port of the first machine to connect to
      * other2 - the ip and port of the second machine to connect to
      */
-    UdpTransport(const Address& myExternalAddrconst, const Address & other1, const Address& other2);
+    UdpTransport(const Address& myExternalAddrconst, int transportNum, const Address & other1, const Address& other2);
     
     ~UdpTransport();
     
@@ -64,7 +65,7 @@ protected:
      * Pull data off the socket - non-blocking.  If connected to multiple machines, will
      * return data from either machine.
      */
-    int readData(char* buffer, int bufferLength);
+    virtual int readData(char* buffer, int bufferLength) = 0;
     
     /**
      * Send data on the socket.  If connected to multiple machines, will send
@@ -74,16 +75,7 @@ protected:
     
 
     virtual int openSocket() = 0;
-    
-    /**
-     * Pull data off the socket - non-blocking.
-     * buffer - buffer to put read data into
-     * bufferLength - maximum number of characters to read in
-     * from - address field to fill in with who sent the message.  If null, no 
-     *        sender information will be returned.
-     */
-    virtual int readData(char* buffer, int bufferLength, Address* from) = 0;
-    
+        
     /**
      * Send data on the socket.
      * data - data to send
@@ -102,6 +94,11 @@ private:
     
     /** An array of the states of the UDP connection (a state is a char*) */
     const char** states;
+    
+    /** 0, 1, or 2.  The machines in the game are specified with an ordering consistent across the three games.
+     * This is this machine's place in that ordering, though in just a two player game it is not needed and
+     * will always be 0. */
+    int transportNum;
     
     /** A random number we use to determine test number */
     long randomNum;
