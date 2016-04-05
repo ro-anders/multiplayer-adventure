@@ -289,7 +289,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	   }
    }
    else {
-	   numPlayers = argc - 1;
+	   numPlayers = argc - 2;
 	   thisPlayer = atoi(argv[1]) - 1;
 
 	   char* ip0;
