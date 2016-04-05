@@ -15,13 +15,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -38,7 +36,7 @@ IDI_SMALL               ICON                    "small.ico"
 // Menu
 //
 
-IDC_WINADVENTURE MENU 
+IDC_WINADVENTURE MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -56,7 +54,7 @@ END
 // Accelerator
 //
 
-IDC_WINADVENTURE ACCELERATORS 
+IDC_WINADVENTURE ACCELERATORS
 BEGIN
     "?",            IDM_ABOUT,              ASCII,  ALT
     "/",            IDM_ABOUT,              ASCII,  ALT
@@ -93,16 +91,28 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// WAVE
+//
+
+IDR_DRAGONDIE_WAV       WAVE                    "C:\\Temp\\multiplayer-adventure\\sounds\\dragondie.wav"
+IDR_EATEN_WAV           WAVE                    "C:\\Temp\\multiplayer-adventure\\sounds\\eaten.wav"
+IDR_PICKUP_WAV          WAVE                    "C:\\Temp\\multiplayer-adventure\\sounds\\pickup.wav"
+IDR_PUTDOWN_WAV         WAVE                    "C:\\Temp\\multiplayer-adventure\\sounds\\putdown.wav"
+IDR_ROAR_WAV            WAVE                    "C:\\Temp\\multiplayer-adventure\\sounds\\roar.wav"
+IDR_WON_WAV             WAVE                    "C:\\Temp\\multiplayer-adventure\\sounds\\won.wav"
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_APP_TITLE           "Adventure: Revisited"
     IDC_WINADVENTURE        "WINADVENTURE"
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

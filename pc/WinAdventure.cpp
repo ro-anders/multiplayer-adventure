@@ -15,6 +15,7 @@
 
 
 #include "stdafx.h"
+#include "resource.h"
 #include "WinAdventure.h"
 #include <mmsystem.h>
 #include <stdlib.h>
@@ -634,23 +635,24 @@ void Platform_MakeSound(int sound, float volume)
     switch (sound)
     {
         case SOUND_PICKUP:
+			PlaySound((char*)IDR_PICKUP_WAV, NULL, SND_RESOURCE | SND_ASYNC);
             wsprintf(szSoundPath, "%s%ssounds\\pickup.wav", szDrive, szDir);
             break;
         case SOUND_PUTDOWN:
-            wsprintf(szSoundPath, "%s%ssounds\\putdown.wav", szDrive, szDir);
-            break;
+			PlaySound((char*)IDR_PUTDOWN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+			break;
         case SOUND_WON:
-            wsprintf(szSoundPath, "%s%ssounds\\won.wav", szDrive, szDir);
-            break;
+			PlaySound((char*)IDR_WON_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+			break;
         case SOUND_ROAR:
-            wsprintf(szSoundPath, "%s%ssounds\\roar.wav", szDrive, szDir);
-            break;
+			PlaySound((char*)IDR_ROAR_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+			break;
         case SOUND_EATEN:
-            wsprintf(szSoundPath, "%s%ssounds\\eaten.wav", szDrive, szDir);
-            break;
+			PlaySound((char*)IDR_EATEN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+			break;
         case SOUND_DRAGONDIE:
-            wsprintf(szSoundPath, "%s%ssounds\\dragondie.wav", szDrive, szDir);
-            break;
+			PlaySound((char*)IDR_DRAGONDIE_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+			break;
     }
 
     sndPlaySound(szSoundPath, SND_ASYNC | SND_NODEFAULT);
