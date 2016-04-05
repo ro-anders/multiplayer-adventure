@@ -83,7 +83,6 @@ void UdpTransport::connect() {
     
     states[0] = RECVD_NOTHING;
     states[1] = (numOtherMachines > 1 ? RECVD_NOTHING : RECVD_ACK);
-    printf("Bound to socket.  Initiating handshake.\n");
     // We need a big random integer.
     randomNum = Sys::random() * 1000000;
     
@@ -124,11 +123,9 @@ void UdpTransport::punchHole() {
         char recvBuffer[READ_BUFFER_LENGTH];
         bool justAcked[2] = {false, false};
     
-        printf("Checking for messages.\n");
         // See what messages we have received.
         int bytes = readData(recvBuffer, READ_BUFFER_LENGTH);
         while (bytes > 0) {
-            printf("Got message: %s.\n", recvBuffer);
             // This could be non-setup messages, which need to be put in the base class's stream buffer
             // until the setup is complete.
             if (recvBuffer[0] != RECVD_NOTHING[0]) { // Only UDP setup messages begin with 'U'
@@ -154,6 +151,9 @@ void UdpTransport::punchHole() {
                         states[senderIndex] = RECVD_ACK;
                         justAcked[senderIndex] = true;
                         connected = states[1-senderIndex] == RECVD_ACK;
+                        char logMsg[1000];
+                        sprintf(logMsg, "Connected with %s:%d\n", theirAddrs[senderIndex].ip(), theirAddrs[senderIndex].port());
+                        Sys::log(logMsg);
                         // If this is a test case, figure out who is player one.
                         if (getTestSetupNumber() == NOT_YET_DETERMINED) {
                             compareNumbers(randomNum, recvBuffer, senderIndex);
@@ -163,11 +163,9 @@ void UdpTransport::punchHole() {
             }
             
             // Check for more messages.
-            printf("Checking for init messages.\n");
             bytes = readData(recvBuffer, READ_BUFFER_LENGTH);
         }
         
-        printf("Sending init message.\n");
         // Now send a packet to each other machine.  Don't send if we're not initialized or we're all connected.
         // Note, we may look all connected, but if we just got acknowledged we need to send one more message.
         for(int ctr=0; ctr<numOtherMachines; ++ctr) {
