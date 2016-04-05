@@ -26,9 +26,15 @@ PosixUdpTransport::PosixUdpTransport() :
     setup();
 }
 
-PosixUdpTransport::PosixUdpTransport(const char* inMyExternalIp, int inMyExternalPort,
-                                     const char* inTheirIp, int inTheirPort) :
-UdpTransport(inMyExternalIp, inMyExternalPort, inTheirIp, inTheirPort)
+PosixUdpTransport::PosixUdpTransport(const Address& inMyExternalAddr,  const Address& inTheirAddr) :
+UdpTransport(inMyExternalAddr, inTheirAddr)
+{
+    setup();
+}
+
+PosixUdpTransport::PosixUdpTransport(const Address& inMyExternalAddr,  int transportNum,
+                                     const Address& otherAddr1, const Address& otherAddr2) :
+UdpTransport(inMyExternalAddr, transportNum, otherAddr1, otherAddr2)
 {
     setup();
 }
@@ -40,22 +46,28 @@ PosixUdpTransport::~PosixUdpTransport() {
 }
 
 void PosixUdpTransport::setup() {
-    memset((char *) &remaddr, 0, sizeof(remaddr));
+    remaddrs = new sockaddr_in[numOtherMachines];
+    for(int ctr=0; ctr<numOtherMachines; ++ctr) {
+        memset((char *) &remaddrs[ctr], 0, sizeof(sender));
+    }
+    memset((char *) &sender, 0, sizeof(sender));
 }
 
 int PosixUdpTransport::openSocket() {
  
-    // TODO: Fix this
-    // ip is an ip, not a hostname, but don't know how to convert a
-    // string ip to a server address format, so calling gethost - ugh
-    // Should be remaddr.sin_addr.S_un.S_addr = inet_addr(theirIp)  - or something like that
-    hostent* hp = gethostbyname(theirIp);
-    bcopy((char *)hp->h_addr,
-          (char *)&remaddr.sin_addr.s_addr,
-          hp->h_length);
-    remaddr.sin_family = AF_INET;
-    remaddr.sin_port = htons(theirPort);
-    printf("Initialized = %s:%d.\n", inet_ntoa(remaddr.sin_addr), ntohs(remaddr.sin_port));
+    for(int ctr=0; ctr<numOtherMachines; ++ctr) {
+        // TODO: Fix this
+        // ip is an ip, not a hostname, but don't know how to convert a
+        // string ip to a server address format, so calling gethost - ugh
+        // Should be remaddr.sin_addr.S_un.S_addr = inet_addr(theirIp)  - or something like that
+        hostent* hp = gethostbyname(theirAddrs[ctr].ip());
+        bcopy((char *)hp->h_addr,
+              (char *)&remaddrs[ctr].sin_addr.s_addr,
+              hp->h_length);
+        remaddrs[ctr].sin_family = AF_INET;
+        remaddrs[ctr].sin_port = htons(theirAddrs[ctr].port());
+        printf("Initialized = %s:%d.\n", inet_ntoa(remaddrs[ctr].sin_addr), ntohs(remaddrs[ctr].sin_port));
+    }
 
     socketFd = socket(AF_INET, SOCK_DGRAM, 0);
     if (socketFd < 0) {
@@ -79,13 +91,19 @@ int PosixUdpTransport::openSocket() {
     return Transport::TPT_OK;
 }
 
-int PosixUdpTransport::writeData(const char* data, int numBytes)
+int PosixUdpTransport::writeData(const char* data, int numBytes, int recipient)
 {
-    int n = sendto(socketFd, data, numBytes, 0, (struct sockaddr *)&remaddr, sizeof(remaddr));
-    return n;
+    int numSent = 0; // If sending to multiple machines, we just return what one send reported.
+    for(int ctr=0; ctr<numOtherMachines; ++ctr) {
+        if ((recipient < 0) || (ctr == recipient)) {
+            numSent = sendto(socketFd, data, numBytes, 0, (struct sockaddr *)&remaddrs[ctr], sizeof(remaddrs[ctr]));
+        }
+    }
+    return numSent;
 }
 
 int PosixUdpTransport::readData(char *buffer, int bufferLength) {
+    // Receive the next packet
     int n = recvfrom(socketFd, buffer, bufferLength, 0, NULL, NULL);
     return n;
 }

@@ -7,6 +7,48 @@
 #include <string.h>
 #include "Sys.hpp"
 
+Transport::Address::Address() :
+  _ip(copyIp("")),
+  _port(0) {}
+
+Transport::Address::Address(const char* inIp, int inPort) :
+  _ip(copyIp(inIp)),
+  _port(inPort) {}
+
+Transport::Address::Address(const Address& other) :
+  _ip(copyIp(other._ip)),
+  _port(other._port) {}
+
+Transport::Address::~Address() {
+    delete[] _ip;
+}
+
+Transport::Address& Transport::Address::operator=(const Transport::Address &other) {
+    char* tmp = copyIp(other._ip);
+    delete _ip;
+    _ip = tmp;
+    _port = other._port;
+    return *this;
+}
+
+bool Transport::Address::operator==(const Transport::Address &other) {
+    return ((_port == other._port) && (strcmp(_ip, other._ip)==0));
+}
+
+const char* Transport::Address::ip() const {
+    return _ip;
+}
+
+int Transport::Address::port() const {
+    return _port;
+}
+
+char* Transport::Address::copyIp(const char* inIp) {
+    char* newIp = new char[strlen(inIp)+1];
+    strcpy(newIp, inIp);
+    return newIp;
+}
+
 const int Transport::DEFAULT_PORT = 5678;
 
 const int Transport::TPT_ERROR = -1;
@@ -19,8 +61,8 @@ const int Transport::NOT_YET_DETERMINED = -2;
 const char* Transport::LOCALHOST_IP = "127.0.0.1";
 
 
-Transport::Transport(bool inATest)
-{
+Transport::Transport(bool inATest) :
+  connected(false) {
     streamBufferSize = 1024;
     streamBuffer = new char[streamBufferSize]; // TODO: Make this more dynamic.
     charsInStreamBuffer = 0;
@@ -30,6 +72,10 @@ Transport::Transport(bool inATest)
 Transport::~Transport()
 {
     delete [] streamBuffer;
+}
+
+bool Transport::isConnected() {
+    return connected;
 }
 
 int Transport::getTestSetupNumber() {
@@ -117,16 +163,34 @@ int Transport::getPacket(char* buffer, int bufferLength) {
     return (hitError ? hitError : charsInPacket);
 }
 
+void Transport::appendDataToBuffer(const char *data, int dataLength) {
+    // TODO: Should really resize buffer rather than truncate.
+    bool truncating = false;
+    if (charsInStreamBuffer + dataLength > streamBufferSize) {
+        Sys::log("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
+        dataLength = streamBufferSize-charsInStreamBuffer;
+        truncating = true;
+    }
+    memcpy(streamBuffer+charsInStreamBuffer, data, dataLength * sizeof(char));
+    charsInStreamBuffer += dataLength;
+    if (truncating) {
+        streamBuffer[streamBufferSize-1] = '\0';
+    }
+}
+
 void Transport::testTransport(Transport& t) {
     int NUM_MESSAGES = 10;
     // If this is a test, make sure test roles are negotiated.
     t.testSetupNumber = NOT_YET_DETERMINED;
     t.connect();
+    while (!t.isConnected()) {
+        Sys::sleep(1000);
+    }
     if (t.getTestSetupNumber() == 1) {
         int numSent = 0;
         for(int ctr=0; ctr<NUM_MESSAGES; ++ctr) {
             char message[256];
-            sprintf(message, "Message %d\n\0", (ctr+1));
+            sprintf(message, "Message %d\0", (ctr+1));
             int charsSent = t.sendPacket(message);
             if (charsSent <= 0) {
                 perror("Error sending packet");
@@ -169,12 +233,10 @@ void Transport::testTransport(Transport& t) {
 
 /**
  * Parse an socket address of the form 127.0.0.1:5678.
- * Port may be omitted, in which case the outPort is not modified.
- * TODO: This does weird things with the socket address.  It modifies it and requires is not
- * be deleted.
+ * Port may be omitted, in which case the port will be 0.
  */
-void Transport::parseUrl(char* socketAddr, char** outIp, int* outPort) {
-    *outIp = socketAddr;
+Transport::Address Transport::parseUrl(const char* socketAddr) {
+    char temp[256];
     // TODO: Isn't there a find() defined somewhere?
     int colonIndex = -1;
     for(int ctr=0; (colonIndex == -1) && (socketAddr[ctr] != '\0'); ++ctr) {
@@ -183,8 +245,12 @@ void Transport::parseUrl(char* socketAddr, char** outIp, int* outPort) {
         }
     }
     if (colonIndex > 0) {
-        *outPort = atoi(socketAddr+colonIndex+1);
-        socketAddr[colonIndex] = '\0';
+        strcpy(temp, socketAddr);
+        temp[colonIndex] = '\0';
+        int port = atoi((socketAddr+colonIndex+1));
+        return Address(temp, port);
+    } else {
+        return Address(socketAddr, 0);
     }
 }
 

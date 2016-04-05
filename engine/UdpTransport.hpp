@@ -17,44 +17,97 @@ public:
     /**
      * Used only for in testing when running two games on one machine.  Attempts to listen first on the
      * default port and, if that is taken by the other game, on the default port + 1.
-     * sleep - something to call sleep in a platform specific way
      */
     UdpTransport();
     
     /**
      * Connect to another game using UDP.
-     * myExternalIp - the IP address my packets appear as
-     * myExternaPort - the port my packets appear to come from
-     * theirIp - the ip of the machine to connect to
-     * theirPort - the port to connect to
-     * sleep - something to call sleep in a platform specific way
+     * myExternalAddr - the IP address and port my packets appear to come from
+     * theirIp - the ip and port of the machine to connect to
      */
-    UdpTransport(const char* myExternalIp, int myExternalPort,
-                 const char* theirIp, int theirPort);
+    UdpTransport(const Address& myExternalAddrconst, const Address & theirAddr);
+    
+    /**
+     * Connect to two other games using UDP.
+     * myExternalAddr - the IP address and port my packets appear to come from
+     * transportNum - the three machines have an order in which they are declared.  This is this machine's placement in that order.
+     * other1 - the ip and port of the first machine to connect to
+     * other2 - the ip and port of the second machine to connect to
+     */
+    UdpTransport(const Address& myExternalAddrconst, int transportNum, const Address & other1, const Address& other2);
     
     ~UdpTransport();
     
     void connect();
     
+    /**
+     * We override isConnected() to not only check to see if we have connected but also send appropriate
+     * messages to the other machine.  If we never check to see if we are connected we will never connect.
+     */
+    bool isConnected();
+    
+    int getPacket(char* buffer, int bufferLength);
+    
+    
 protected:
     
-    const char* myExternalIp;
-    
-    int myExternalPort;
+    Address myExternalAddr;
     
     int myInternalPort;
     
-    const char* theirIp;
+    /** Array of the other machines addresses, one for each other machine. */
+    Address* theirAddrs;
     
-    int theirPort;
+    /** Whether comminicating with one or two other machines */
+    const int numOtherMachines;
     
+    /**
+     * Pull data off the socket - non-blocking.  If connected to multiple machines, will
+     * return data from either machine.
+     */
+    virtual int readData(char* buffer, int bufferLength) = 0;
+    
+    /**
+     * Send data on the socket.  If connected to multiple machines, will send
+     * data to both machines.
+     */
+    int writeData(const char* data, int numBytes);
+    
+
     virtual int openSocket() = 0;
         
+    /**
+     * Send data on the socket.
+     * data - data to send
+     * numBytes - number of bytes to send (does not assume data is null terminated)
+     * recipient - the index in the theirAddrs array of the address to send the data.  -1 will send to all addresses.
+     */
+    virtual int writeData(const char* data, int numBytes, int recipient) = 0;
+
+    
 private:
     
+    static const char* NOT_YET_INITIATED;
+    static const char* RECVD_NOTHING;
+    static const char* RECVD_MESSAGE;
+    static const char* RECVD_ACK;
+    
+    /** An array of the states of the UDP connection (a state is a char*) */
+    const char** states;
+    
+    /** 0, 1, or 2.  The machines in the game are specified with an ordering consistent across the three games.
+     * This is this machine's place in that ordering, though in just a two player game it is not needed and
+     * will always be 0. */
+    int transportNum;
+    
+    /** A random number we use to determine test number */
+    long randomNum;
+    
+    /** Look for connection messages from other machines, and send a 
+     * connection message to each machine that isn't acknowledged yet */
     void punchHole();
     
-    void compareNumbers(int myRandomNumber, char* theirMessage);
+    void compareNumbers(int myRandomNumber, char* theirMessage, int otherIndex);
     
     
 };
