@@ -1076,8 +1076,10 @@ float volumeAtDistance(int room) {
  */
 bool checkReturnedChailise() {
     bool returned = false;
-    // Player MUST be holding the chalise to win.  Another player can't win for you.
-    if (objectBall->linkedObject == OBJECT_CHALISE) {
+    // Player MUST be holding the chalise to win (or holding the bat holding the chalise).
+    // Another player can't win for you.
+    if ((objectBall->linkedObject == OBJECT_CHALISE) ||
+        ((objectBall->linkedObject == OBJECT_BAT) && (bat->linkedObject == OBJECT_CHALISE))) {
         // Player either has to bring the chalise into the castle or touch the chalise to the gate
         if (objectDefs[OBJECT_CHALISE]->room == objectBall->homeGate->insideRoom) {
             returned = true;
