@@ -1417,28 +1417,33 @@ void MoveCarriedObjects()
 
 void MoveGroundObject()
 {
-    // Handle ball going into the castles
-    for(int portalCtr=0; portalCtr<numPorts; ++portalCtr) {
-        Portcullis* nextPort = ports[portalCtr];
-        if (objectBall->room == nextPort->room && nextPort->isActive && CollisionCheckObject(nextPort, (objectBall->x-4), (objectBall->y-1), 8, 8))
-        {
-            objectBall->room = nextPort->insideRoom;
-            objectBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
-            objectBall->previousY = objectBall->y;
-            // make sure it stays unlocked in case we are walking in with the key
-            nextPort->forceOpen();
-            PortcullisStateAction* gateAction =
-            new PortcullisStateAction(portalCtr, nextPort->state, nextPort->isActive);
-            sync->BroadcastAction(gateAction);
-            
-            // Report the ball entering the castle
-            PlayerMoveAction* moveAction = new PlayerMoveAction(objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
-            sync->BroadcastAction(moveAction);
-            
-            break;
+    for(int ctr=0; ctr<numPlayers; ++ctr) {
+        BALL* nextBall = gameBoard->getPlayer(ctr);
+        // Handle balls going into the castles
+        for(int portalCtr=0; portalCtr<numPorts; ++portalCtr) {
+            Portcullis* nextPort = ports[portalCtr];
+            if (nextBall->room == nextPort->room && nextPort->isActive && CollisionCheckObject(nextPort, (nextBall->x-4), (nextBall->y-1), 8, 8))
+            {
+                nextBall->room = nextPort->insideRoom;
+                nextBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
+                nextBall->previousY = nextBall->y;
+                // make sure it stays unlocked in case we are walking in with the key
+                nextPort->forceOpen();
+                // Report to all the other players only if its the current player entering
+                if (ctr == thisPlayer) {
+                    PortcullisStateAction* gateAction =
+                    new PortcullisStateAction(portalCtr, nextPort->state, nextPort->isActive);
+                    sync->BroadcastAction(gateAction);
+                    
+                    // Report the ball entering the castle
+                    PlayerMoveAction* moveAction = new PlayerMoveAction(objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
+                    sync->BroadcastAction(moveAction);
+                }
+                break;
+            }
         }
     }
-
+    
     // Move any objects that need moving, and wrap objects from room to room
     for (int i=OBJECT_REDDRAGON; objectDefs[i]->gfxData; i++)
     {

@@ -1,10 +1,5 @@
 To Do
 -----
-- Too often unlock and enter castle and leave the gate locked behind you.  Seems to be repeatable if a third object in the castle room.
-  Reproduced once.  Player entered a castle with key behind him.  Looks like everything went well in his world, key never touched the gate and 
-  gate never changed state.  On the other player the key touched the gate and the gate started to close but no event was sent since 
-  other player was not in the same room.  When first player entered castle gate was not forced open because in other world they don't enter
-  castles but instead just sent a player move event that they are now in the castle.  Think there needs to be a "player entered castle" event sent.
 - Win screen showing castle will only show two objects and often randomly displays the other players even if they weren't there to start
 - Hold a key beneath you and just step into a castle.  Key appears at top of outside of castle.
 
@@ -14,6 +9,12 @@ To Check
 - Looked like other player wasn't carrying an object when he was
 - Green dragon ate player 1.  Player 2 reset and now didn't see green dragon.
 - Right arrow key seemed to get stuck.
+- Too often unlock and enter castle and leave the gate locked behind you.  Seems to be repeatable if a third object in the castle room.
+  Reproduced once.  Player entered a castle with key behind him.  Looks like everything went well in his world, key never touched the gate and 
+  gate never changed state.  On the other player the key touched the gate and the gate started to close but no event was sent since 
+  other player was not in the same room.  When first player entered castle gate was not forced open because in other world they don't enter
+  castles but instead just sent a player move event that they are now in the castle.
+  Attempted to fix by having game move all players to the inside of the castle without waiting for a move event.  See if that worked.
 
 Original Disparities
 --------------------
