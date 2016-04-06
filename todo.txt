@@ -5,6 +5,7 @@ To Do
   gate never changed state.  On the other player the key touched the gate and the gate started to close but no event was sent since 
   other player was not in the same room.  When first player entered castle gate was not forced open because in other world they don't enter
   castles but instead just sent a player move event that they are now in the castle.  Think there needs to be a "player entered castle" event sent.
+- Win screen showing castle will only show two objects and often randomly displays the other players even if they weren't there to start
 - Hold a key beneath you and just step into a castle.  Key appears at top of outside of castle.
 
 To Check

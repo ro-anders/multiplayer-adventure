@@ -146,7 +146,8 @@ void UdpTransport::punchHole() {
                     if (states[senderIndex] == RECVD_NOTHING) {
                         states[senderIndex] = RECVD_MESSAGE;
                     }
-                    if (recvBuffer[1] != RECVD_NOTHING[1]) {
+                    // See if they have received ours and this is the first time we have seen them receive ours
+                    if ((recvBuffer[1] != RECVD_NOTHING[1]) && (states[senderIndex] != RECVD_ACK)) {
                         // They have received our message, and now we have received their's.  So ACK.
                         states[senderIndex] = RECVD_ACK;
                         justAcked[senderIndex] = true;
