@@ -120,6 +120,11 @@ static int gameLevel = 0;                               // current game level (1
 static int gameMapLayout = 0;                               // The board setup.  Level 1 = 0, Levels 2 & 3 = 1, Gauntlet = 2
 static int gameNum; // Which game is being played.  May be different from game level.
 
+#define GAMEOPTION_PRIVATE_MAGNETS  1
+// This holds all the switches for whether to turn on or off different game options
+// It is a bitwise or of each game option
+static int gameOptions = 1;
+
 static int displayedRoomIndex = 0;                                   // index of current (displayed) room
 
 static int winFlashTimer=0;
@@ -2356,9 +2361,9 @@ static int CollisionCheckBallWithObjects(BALL* ball, int startIndex)
     // Go through all the objects
     for (int i=startIndex; objectDefs[i]->gfxData; i++)
     {
-        // If this object is in the current room, check it against the ball
+        // If this object is in the current room and can be picked up, check it against the ball
         const OBJECT* object = objectDefs[i];
-        if (object->displayed && (ball->room == object->room))
+        if (object->displayed && object->isTangibleTo(thisPlayer) && (ball->room == object->room))
         {
             if (CollisionCheckObject(object, ball->x-4,(ball->y-1), 8, 8))
             {

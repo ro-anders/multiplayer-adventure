@@ -17,7 +17,8 @@ OBJECT::OBJECT(const char* inLabel, const byte* inGfxData, const byte* inStates,
     x(inX),
     y(inY),
     randomPlacement(inRandomPlacement),
-    size(inSize)
+    size(inSize),
+    privateToPlayer(-1)
 {
     label = new char[strlen(inLabel)+1];
     strcpy(label, inLabel);
@@ -30,6 +31,14 @@ OBJECT::~OBJECT() {
 void OBJECT::setBoard(Board* newBoard, int newPKey) {
     board = newBoard;
     pkey = newPKey;
+}
+
+void OBJECT::setPrivateToPlayer(int player) {
+    privateToPlayer = player;
+}
+
+bool OBJECT::isTangibleTo(int player) const {
+    return (privateToPlayer < 0) || (privateToPlayer == player);
 }
 
 OBJECT* OBJECT::lookupObject(int objKey) {

@@ -42,12 +42,27 @@ public:
     
     void setBoard(Board* newBoard, int newPKey);
     
+    /** 
+     * Only one player can pickup this object.  All other players pass through it.  Used for private magnets.
+     * player - player it is private to.  A negative number means obect is not private.
+     */
+    void setPrivateToPlayer(int player);
+
+    /**
+     * Returns true if this object is solid or grabbable by the player.  If object is private (e.g. private magnet)
+     * will return false and player will pass right through it without picking it up.
+     */
+    bool isTangibleTo(int player) const;
+    
     void CalcSpriteExtents(int* cx, int* cy, int* cw, int* ch) const;
     
 protected:
 
     Board* board;               // The board on which this object has been placed.
     OBJECT* lookupObject(int objectKey);
+    
+    /** For private magnets. */
+    int privateToPlayer = -1;
     
 private:
     
