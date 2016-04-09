@@ -14,6 +14,19 @@
 		403175381C49C6010051B60C /* pickup.wav in Resources */ = {isa = PBXBuildFile; fileRef = 403175331C49C6010051B60C /* pickup.wav */; };
 		403175391C49C6010051B60C /* roar.wav in Resources */ = {isa = PBXBuildFile; fileRef = 403175341C49C6010051B60C /* roar.wav */; };
 		4031753A1C49C6010051B60C /* won.wav in Resources */ = {isa = PBXBuildFile; fileRef = 403175351C49C6010051B60C /* won.wav */; };
+		4036B3001CB87CE90024439C /* glow.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B2FF1CB87CE90024439C /* glow.wav */; };
+		4036B30D1CB87D080024439C /* dragondie_far.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B3011CB87D080024439C /* dragondie_far.wav */; };
+		4036B30E1CB87D080024439C /* dragondie_near.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B3021CB87D080024439C /* dragondie_near.wav */; };
+		4036B30F1CB87D080024439C /* eaten_far.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B3031CB87D080024439C /* eaten_far.wav */; };
+		4036B3101CB87D080024439C /* eaten_near.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B3041CB87D080024439C /* eaten_near.wav */; };
+		4036B3111CB87D080024439C /* glow_far.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B3051CB87D080024439C /* glow_far.wav */; };
+		4036B3121CB87D080024439C /* glow_near.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B3061CB87D080024439C /* glow_near.wav */; };
+		4036B3131CB87D080024439C /* pickup_far.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B3071CB87D080024439C /* pickup_far.wav */; };
+		4036B3141CB87D080024439C /* pickup_near.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B3081CB87D080024439C /* pickup_near.wav */; };
+		4036B3151CB87D080024439C /* putdown_far.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B3091CB87D080024439C /* putdown_far.wav */; };
+		4036B3161CB87D080024439C /* putdown_near.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B30A1CB87D080024439C /* putdown_near.wav */; };
+		4036B3171CB87D080024439C /* roar_far.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B30B1CB87D080024439C /* roar_far.wav */; };
+		4036B3181CB87D080024439C /* roar_near.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B30C1CB87D080024439C /* roar_near.wav */; };
 		403DA0921C20C722002FF18B /* Ball.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 403DA0901C20C722002FF18B /* Ball.cpp */; };
 		40509AAA1C05E9750008BACF /* ActionQueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40509AA41C05E9750008BACF /* ActionQueue.cpp */; };
 		40509AAB1C05E9750008BACF /* GameObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40509AA61C05E9750008BACF /* GameObject.cpp */; };
@@ -60,6 +73,19 @@
 		403175331C49C6010051B60C /* pickup.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = pickup.wav; path = ../sounds/pickup.wav; sourceTree = "<group>"; };
 		403175341C49C6010051B60C /* roar.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = roar.wav; path = ../sounds/roar.wav; sourceTree = "<group>"; };
 		403175351C49C6010051B60C /* won.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = won.wav; path = ../sounds/won.wav; sourceTree = "<group>"; };
+		4036B2FF1CB87CE90024439C /* glow.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = glow.wav; path = ../sounds/glow.wav; sourceTree = "<group>"; };
+		4036B3011CB87D080024439C /* dragondie_far.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = dragondie_far.wav; path = ../sounds/dragondie_far.wav; sourceTree = "<group>"; };
+		4036B3021CB87D080024439C /* dragondie_near.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = dragondie_near.wav; path = ../sounds/dragondie_near.wav; sourceTree = "<group>"; };
+		4036B3031CB87D080024439C /* eaten_far.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = eaten_far.wav; path = ../sounds/eaten_far.wav; sourceTree = "<group>"; };
+		4036B3041CB87D080024439C /* eaten_near.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = eaten_near.wav; path = ../sounds/eaten_near.wav; sourceTree = "<group>"; };
+		4036B3051CB87D080024439C /* glow_far.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = glow_far.wav; path = ../sounds/glow_far.wav; sourceTree = "<group>"; };
+		4036B3061CB87D080024439C /* glow_near.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = glow_near.wav; path = ../sounds/glow_near.wav; sourceTree = "<group>"; };
+		4036B3071CB87D080024439C /* pickup_far.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = pickup_far.wav; path = ../sounds/pickup_far.wav; sourceTree = "<group>"; };
+		4036B3081CB87D080024439C /* pickup_near.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = pickup_near.wav; path = ../sounds/pickup_near.wav; sourceTree = "<group>"; };
+		4036B3091CB87D080024439C /* putdown_far.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = putdown_far.wav; path = ../sounds/putdown_far.wav; sourceTree = "<group>"; };
+		4036B30A1CB87D080024439C /* putdown_near.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = putdown_near.wav; path = ../sounds/putdown_near.wav; sourceTree = "<group>"; };
+		4036B30B1CB87D080024439C /* roar_far.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = roar_far.wav; path = ../sounds/roar_far.wav; sourceTree = "<group>"; };
+		4036B30C1CB87D080024439C /* roar_near.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = roar_near.wav; path = ../sounds/roar_near.wav; sourceTree = "<group>"; };
 		403DA0901C20C722002FF18B /* Ball.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Ball.cpp; path = ../engine/Ball.cpp; sourceTree = "<group>"; };
 		403DA0911C20C722002FF18B /* Ball.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Ball.hpp; path = ../engine/Ball.hpp; sourceTree = "<group>"; };
 		40509AA41C05E9750008BACF /* ActionQueue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ActionQueue.cpp; path = ../engine/ActionQueue.cpp; sourceTree = "<group>"; };
@@ -184,12 +210,25 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				4036B3011CB87D080024439C /* dragondie_far.wav */,
+				4036B3021CB87D080024439C /* dragondie_near.wav */,
 				403175311C49C6010051B60C /* dragondie.wav */,
+				4036B3031CB87D080024439C /* eaten_far.wav */,
+				4036B3041CB87D080024439C /* eaten_near.wav */,
 				403175321C49C6010051B60C /* eaten.wav */,
+				4036B3051CB87D080024439C /* glow_far.wav */,
+				4036B3061CB87D080024439C /* glow_near.wav */,
+				4036B2FF1CB87CE90024439C /* glow.wav */,
+				4036B3071CB87D080024439C /* pickup_far.wav */,
+				4036B3081CB87D080024439C /* pickup_near.wav */,
 				403175331C49C6010051B60C /* pickup.wav */,
+				4036B3091CB87D080024439C /* putdown_far.wav */,
+				4036B30A1CB87D080024439C /* putdown_near.wav */,
+				4031752F1C49C5CC0051B60C /* putdown.wav */,
+				4036B30B1CB87D080024439C /* roar_far.wav */,
+				4036B30C1CB87D080024439C /* roar_near.wav */,
 				403175341C49C6010051B60C /* roar.wav */,
 				403175351C49C6010051B60C /* won.wav */,
-				4031752F1C49C5CC0051B60C /* putdown.wav */,
 				D009FDD10BCA0A64007C5A37 /* MacAdventureIcon.icns */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
@@ -316,14 +355,27 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4036B30E1CB87D080024439C /* dragondie_near.wav in Resources */,
 				403175391C49C6010051B60C /* roar.wav in Resources */,
+				4036B3101CB87D080024439C /* eaten_near.wav in Resources */,
 				403175301C49C5CC0051B60C /* putdown.wav in Resources */,
 				8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */,
 				403175381C49C6010051B60C /* pickup.wav in Resources */,
+				4036B3151CB87D080024439C /* putdown_far.wav in Resources */,
 				403175371C49C6010051B60C /* eaten.wav in Resources */,
+				4036B3121CB87D080024439C /* glow_near.wav in Resources */,
+				4036B3001CB87CE90024439C /* glow.wav in Resources */,
+				4036B3181CB87D080024439C /* roar_near.wav in Resources */,
+				4036B3161CB87D080024439C /* putdown_near.wav in Resources */,
+				4036B30F1CB87D080024439C /* eaten_far.wav in Resources */,
 				403175361C49C6010051B60C /* dragondie.wav in Resources */,
+				4036B3131CB87D080024439C /* pickup_far.wav in Resources */,
 				4031753A1C49C6010051B60C /* won.wav in Resources */,
+				4036B3111CB87D080024439C /* glow_far.wav in Resources */,
+				4036B3171CB87D080024439C /* roar_far.wav in Resources */,
 				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
+				4036B30D1CB87D080024439C /* dragondie_far.wav in Resources */,
+				4036B3141CB87D080024439C /* pickup_near.wav in Resources */,
 				D009FDD20BCA0A64007C5A37 /* MacAdventureIcon.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
