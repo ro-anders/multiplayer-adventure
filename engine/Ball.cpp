@@ -84,9 +84,18 @@ BALL::BALL(int inPlayerNum, Portcullis* inHomeGate) :
     hitY(false),
     hitObject(-1), // TODO: This should be OBJECT_NONE
     gfxData((playerNum == 0 ? ballGfxSolid : (playerNum == 1 ? ballGfxOne : ballGfxTwo))),
-    homeGate(inHomeGate) {}
+    homeGate(inHomeGate),
+    glowing(false) {}
 
 BALL::~BALL() {}
+
+bool BALL::isGlowing() {
+    return glowing;
+}
+
+void BALL::setGlowing(bool nowIsGlowing) {
+    glowing = nowIsGlowing;
+}
 
 int BALL::distanceTo(int otherX, int otherY) {
     // Figure out the distance (which is really the max difference along one axis)

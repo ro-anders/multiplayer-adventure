@@ -91,7 +91,7 @@ bool gMute = FALSE;
     int thisPlayer;
     Transport* transport;
     
-    int gameLevel = 1;
+    int gameLevel = 4;
     if (argc > 2) {
         gameLevel = atoi(argv[1]);
     }
@@ -421,7 +421,10 @@ void Platform_MakeSound(int nSound, float volume)
             case SOUND_DRAGONDIE:
                 sound = [NSSound soundNamed:@"dragondie"];
                 break;
-        }	
+            case SOUND_GLOW:
+                sound = [NSSound soundNamed:@"pickup"];
+                break;
+        }
         
         if (sound)
         {
