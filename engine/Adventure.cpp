@@ -116,9 +116,12 @@ static int gameState = GAMESTATE_GAMESELECT;            // finite state machine
 #define DIFFICULTY_B           1
 static int gameDifficultyLeft = DIFFICULTY_B;           // 2600 left difficulty switch
 static int gameDifficultyRight = DIFFICULTY_B;          // 2600 right difficulty switch
-static int gameLevel = 0;                               // current game level (1,2,3 - zero justified)
+
 static int gameMapLayout = 0;                               // The board setup.  Level 1 = 0, Levels 2 & 3 = 1, Gauntlet = 2
-static int gameNum; // Which game is being played.  May be different from game level.
+
+/** There are four game modes, the original three (but zero justified so game mode 0 means original level 1) and
+ * a new fourth, gameMode 3, which I call The Gauntlet. */
+static int gameMode = 0;
 
 static int displayedRoomIndex = 0;                                   // index of current (displayed) room
 
@@ -548,9 +551,8 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
                      int initialLeftDiff, int initialRightDiff) {
     numPlayers = inNumPlayers;
     thisPlayer = inThisPlayer;
-    gameNum = inGameNum;
-    gameLevel = gameNum-1;
-    gameMapLayout = (gameLevel == 0 ? 0 : 1);
+    gameMode = inGameNum-1;
+    gameMapLayout = ((gameMode == 0) ||  (gameMode == 3) ? 0: 1);
     timeToStartGame = 60 * 3;
     
     gameMap = new Map(numPlayers, gameMapLayout);
@@ -656,10 +658,12 @@ void ResetPlayer(BALL* ball) {
     ball->previousX = objectBall->x;
     ball->previousY = objectBall->y;
     ball->linkedObject = OBJECT_NONE;  // Not carrying anything
+    ball->setGlowing(false);
     
     displayedRoomIndex = objectBall->room;
     
     // Make the bat want something right away
+    // I guess the bat is reset just like the dragons are reset.
     bat->lookForNewObject();
     
     // Bring the dragons back to life
@@ -879,7 +883,7 @@ void SetupRoomObjects()
 
     // Read the object initialization table for the current game level
     const byte* p;
-    if (gameLevel == 0)
+    if ((gameMode == 0) || (gameMode == 3))
         p = (byte*)game1Objects;
     else
         p = (byte*)game2Objects;
@@ -908,7 +912,7 @@ void SetupRoomObjects()
 
     // Put objects in random rooms for level 3.
     // Only first player does this and then broadcasts to other players.
-    if ((gameLevel == 2) && (thisPlayer == 0))
+    if ((gameMode == 2) && (thisPlayer == 0))
     {
         randomizeRoomObjects();
     }
@@ -1369,7 +1373,7 @@ void SyncDragons() {
             else if (nextState->newState == Dragon::ROAR) {
                 // We ignore roar actions if we are already in an eaten state or dead state
                 if ((dragon->state != Dragon::EATEN) && (dragon->state != Dragon::DEAD)) {
-                    dragon->roar(nextState->posx, nextState->posy, gameLevel, gameDifficultyLeft==DIFFICULTY_A);
+                    dragon->roar(nextState->posx, nextState->posy, gameMode, gameDifficultyLeft==DIFFICULTY_A);
                     // Play the sound
                     Platform_MakeSound(SOUND_ROAR, volumeAtDistance(dragon->room));
                 }
@@ -1438,6 +1442,11 @@ void MoveGroundObject()
                     // Report the ball entering the castle
                     PlayerMoveAction* moveAction = new PlayerMoveAction(objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
                     sync->BroadcastAction(moveAction);
+                }
+                // If entering the black castle in the gauntlet, glow.
+                if ((gameMode == 3) && (nextPort == objectDefs[OBJECT_BLACK_PORT]) && !nextBall->isGlowing()) {
+                    nextBall->setGlowing(true);
+                    Platform_MakeSound(SOUND_GLOW, volumeAtDistance(nextBall->room));
                 }
                 break;
             }
@@ -1587,11 +1596,13 @@ void PrintDisplay()
     //
     // Draw the balls
     //
-    color = colorTable[roomDefs[displayedRoomIndex]->color];
+    COLOR defaultColor = colorTable[roomDefs[displayedRoomIndex]->color];
 
 	for (int i = 0; i < numPlayers; ++i) {
-		if (objectBall->room == gameBoard->getPlayer(i)->room) {
-			DrawBall(gameBoard->getPlayer(i), color);
+        BALL* player = gameBoard->getPlayer(i);
+		if (objectBall->room == player->room) {
+            COLOR ballColor = (player->isGlowing() ? GetFlashColor() : defaultColor);
+			DrawBall(gameBoard->getPlayer(i), ballColor);
 		}
 	}
 
@@ -1838,7 +1849,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
         // Has the Ball hit the Dragon?
         if ((objectBall->room == dragon->room) && CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-4), 8, 8))
         {
-            dragon->roar(objectBall->x/2, objectBall->y/2,gameLevel, gameDifficultyLeft==DIFFICULTY_A);
+            dragon->roar(objectBall->x/2, objectBall->y/2,gameMode, gameDifficultyLeft==DIFFICULTY_A);
             
             // Notify others
             DragonStateAction* action = new DragonStateAction(dragon->dragonNumber, Dragon::ROAR, dragon->room, dragon->x, dragon->y);

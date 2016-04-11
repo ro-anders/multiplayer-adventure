@@ -25,7 +25,7 @@ public:
     bool hitY;                  // the ball hit something on the Y axis
     int hitObject;              // the object that the ball hit
     const byte* gfxData;		// graphics data for ball
-    Portcullis* homeGate;
+    Portcullis* homeGate;       // The gate of the castle you start at
    
     BALL(int numPlayer, Portcullis* homeGate);
     
@@ -35,6 +35,16 @@ public:
      * The distance from ball to a point.  Takes into account Ball is on a 2x resolution than everything else.
      */
     int distanceTo(int x, int y);
+    
+    bool isGlowing();
+    
+    void setGlowing(bool nowIsGlowing);
+    
+private:
+    /** During the gauntlet, once you reach the black castle you flash like the chalise until you reset or you reach the
+     * gold castle where you win. */
+    bool glowing;
+
 };
 
 #endif /* Ball_hpp */

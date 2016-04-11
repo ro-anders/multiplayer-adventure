@@ -45,3 +45,4 @@ float Platform_Random();
 #define SOUND_DRAGONDIE 3
 #define SOUND_PUTDOWN   4
 #define SOUND_PICKUP    5
+#define SOUND_GLOW      6
