@@ -119,9 +119,14 @@ static int gameDifficultyRight = DIFFICULTY_B;          // 2600 right difficulty
 
 static int gameMapLayout = 0;                               // The board setup.  Level 1 = 0, Levels 2 & 3 = 1, Gauntlet = 2
 
-/** There are four game modes, the original three (but zero justified so game mode 0 means original level 1) and
- * a new fourth, gameMode 3, which I call The Gauntlet. */
+/** There are five game modes, the original three (but zero justified so game mode 0 means original level 1) and
+ * a new fourth, gameMode 3, which I call The Gauntlet. The fifth is used for generating videos and plays a preplanned script. */
 static int gameMode = 0;
+#define GAME_MODE_SCRIPTING  -1
+#define GAME_MODE_1  0
+#define GAME_MODE_2  1
+#define GAME_MODE_3  2
+#define GAME_MODE_GAUNTLET  4
 
 static int displayedRoomIndex = 0;                                   // index of current (displayed) room
 
@@ -552,7 +557,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     numPlayers = inNumPlayers;
     thisPlayer = inThisPlayer;
     gameMode = inGameNum-1;
-    gameMapLayout = ((gameMode == 0) ||  (gameMode == 3) ? 0: 1);
+    gameMapLayout = ((gameMode == GAME_MODE_1) ||  (gameMode == GAME_MODE_GAUNTLET) ? 0: 1);
     timeToStartGame = 60 * 3;
     
     gameMap = new Map(numPlayers, gameMapLayout);
@@ -565,6 +570,9 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
         surrounds[ctr] = new OBJECT(surroundName, objectGfxSurround, 0, 0, COLOR_ORANGE, -1, 0, 0, OBJECT::FIXED_LOCATION, 0x07);
     }
     
+    Dragon::Difficulty difficulty = (gameMode == GAME_MODE_1 ? (initialLeftDiff == DIFFICULTY_B ?  Dragon::TRIVIAL : Dragon::EASY) :
+                                     (initialLeftDiff == DIFFICULTY_B ? Dragon::MODERATE : Dragon::HARD));
+    Dragon::setDifficulty(difficulty);
     dragons = new Dragon*[numDragons];
     dragons[0]= new Dragon("yorgle", 0, 0, COLOR_YELLOW, -1, 0, 0);
     dragons[1] = new Dragon("grindle", 1, 0, COLOR_LIMEGREEN, -1, 0, 0);
@@ -883,7 +891,7 @@ void SetupRoomObjects()
 
     // Read the object initialization table for the current game level
     const byte* p;
-    if ((gameMode == 0) || (gameMode == 3))
+    if ((gameMode == GAME_MODE_1) || (gameMode == GAME_MODE_GAUNTLET))
         p = (byte*)game1Objects;
     else
         p = (byte*)game2Objects;
@@ -912,7 +920,7 @@ void SetupRoomObjects()
 
     // Put objects in random rooms for level 3.
     // Only first player does this and then broadcasts to other players.
-    if ((gameMode == 2) && (thisPlayer == 0))
+    if ((gameMode == GAME_MODE_3) && (thisPlayer == 0))
     {
         randomizeRoomObjects();
     }
@@ -1373,7 +1381,7 @@ void SyncDragons() {
             else if (nextState->newState == Dragon::ROAR) {
                 // We ignore roar actions if we are already in an eaten state or dead state
                 if ((dragon->state != Dragon::EATEN) && (dragon->state != Dragon::DEAD)) {
-                    dragon->roar(nextState->posx, nextState->posy, gameMode, gameDifficultyLeft==DIFFICULTY_A);
+                    dragon->roar(nextState->posx, nextState->posy);
                     // Play the sound
                     Platform_MakeSound(SOUND_ROAR, volumeAtDistance(dragon->room));
                 }
@@ -1444,7 +1452,7 @@ void MoveGroundObject()
                     sync->BroadcastAction(moveAction);
                 }
                 // If entering the black castle in the gauntlet, glow.
-                if ((gameMode == 3) && (nextPort == objectDefs[OBJECT_BLACK_PORT]) && !nextBall->isGlowing()) {
+                if ((gameMode == GAME_MODE_GAUNTLET) && (nextPort == objectDefs[OBJECT_BLACK_PORT]) && !nextBall->isGlowing()) {
                     nextBall->setGlowing(true);
                     Platform_MakeSound(SOUND_GLOW, volumeAtDistance(nextBall->room));
                 }
@@ -1849,7 +1857,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
         // Has the Ball hit the Dragon?
         if ((objectBall->room == dragon->room) && CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-4), 8, 8))
         {
-            dragon->roar(objectBall->x/2, objectBall->y/2,gameMode, gameDifficultyLeft==DIFFICULTY_A);
+            dragon->roar(objectBall->x/2, objectBall->y/2);
             
             // Notify others
             DragonStateAction* action = new DragonStateAction(dragon->dragonNumber, Dragon::ROAR, dragon->room, dragon->x, dragon->y);
