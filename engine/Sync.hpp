@@ -11,7 +11,7 @@ class Sync {
 public:
     Sync(int numPlayers, int thisPlayer, Transport* transport);
     
-    ~Sync();
+    virtual ~Sync();
     
     /**
      * Call this before the start of each frame.
@@ -24,7 +24,7 @@ public:
      * This does not process them, but demuxes them and puts them where they can be grabbed
      * when it is time to process that type of message.
      */
-    void PullLatestMessages();
+     void PullLatestMessages();
     
     /**
      *  Get the latest changes to another player.  Returns the last known state of a
@@ -88,8 +88,16 @@ public:
      * @param action an action to broadcast.  The Sync now owns this action and is responsible
      * for deleting it.
      */
-    void BroadcastAction(RemoteAction* action);
+    virtual void BroadcastAction(RemoteAction* action);
+  
+protected:
+    /**
+     * This pulls the next message off the socket.
+     */
+    virtual int pullNextPacket(char* buffer, int bufferSize);
     
+    int getFrameNumber();
+
 private:
     Transport* transport;
     

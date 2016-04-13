@@ -32,6 +32,7 @@
 #include "Map.hpp"
 #include "Portcullis.hpp"
 #include "Room.hpp"
+#include "ScriptedSync.hpp"
 #include "Sync.hpp"
 #include "Sys.hpp"
 #include "Transport.hpp"
@@ -122,11 +123,6 @@ static int gameMapLayout = 0;                               // The board setup. 
 /** There are five game modes, the original three (but zero justified so game mode 0 means original level 1) and
  * a new fourth, gameMode 3, which I call The Gauntlet. The fifth is used for generating videos and plays a preplanned script. */
 static int gameMode = 0;
-#define GAME_MODE_SCRIPTING  -1
-#define GAME_MODE_1  0
-#define GAME_MODE_2  1
-#define GAME_MODE_3  2
-#define GAME_MODE_GAUNTLET  4
 
 static int displayedRoomIndex = 0;                                   // index of current (displayed) room
 
@@ -556,7 +552,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
                      int initialLeftDiff, int initialRightDiff) {
     numPlayers = inNumPlayers;
     thisPlayer = inThisPlayer;
-    gameMode = inGameNum-1;
+    gameMode = inGameNum;
     gameMapLayout = ((gameMode == GAME_MODE_1) ||  (gameMode == GAME_MODE_GAUNTLET) ? 0: 1);
     timeToStartGame = 60 * 3;
     
@@ -641,7 +637,8 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
 
     // Setup the transport
     transport = inTransport;
-    sync = new Sync(numPlayers, thisPlayer, transport);
+    sync = (gameMode == GAME_MODE_SCRIPTING ? new ScriptedSync(numPlayers, thisPlayer) :
+                                              new Sync(numPlayers, thisPlayer, transport));
     
     printf("Player %d setup.\n", thisPlayer);
 }
@@ -1147,30 +1144,33 @@ void ThisBallMovement()
 {
 	// Read the joystick and translate into a velocity
 	bool velocityChanged = false;
-	int newVelY = 0;
-	if (joyUp) {
-		if (!joyDown) {
-			newVelY = 6;
-		}
-	}
-	else if (joyDown) {
-		newVelY = -6;
-	}
-	velocityChanged = (objectBall->vely != newVelY);
-	objectBall->vely = newVelY;
-
-	int newVelX = 0;
-	if (joyRight) {
-		if (!joyLeft) {
-			newVelX = 6;
-		}
-	}
-	else if (joyLeft) {
-		newVelX = -6;
-	}
-	velocityChanged = velocityChanged || (objectBall->velx != newVelX);
-	objectBall->velx = newVelX;
-
+    // If we are scripting, we don't ever look at the joystick or change the velocity here.
+    if (gameMode != GAME_MODE_SCRIPTING) {
+        int newVelY = 0;
+        if (joyUp) {
+            if (!joyDown) {
+                newVelY = 6;
+            }
+        }
+        else if (joyDown) {
+            newVelY = -6;
+        }
+        velocityChanged = (objectBall->vely != newVelY);
+        objectBall->vely = newVelY;
+        
+        int newVelX = 0;
+        if (joyRight) {
+            if (!joyLeft) {
+                newVelX = 6;
+            }
+        }
+        else if (joyLeft) {
+            newVelX = -6;
+        }
+        velocityChanged = velocityChanged || (objectBall->velx != newVelX);
+        objectBall->velx = newVelX;
+    }
+    
 	BallMovement(objectBall);
 
 	if (velocityChanged) {
@@ -1339,7 +1339,8 @@ void BallMovement(BALL* ball) {
 
 void OtherBallMovement() {
 	for (int i = 0; i < numPlayers; ++i) {
-        if (i != thisPlayer) {
+        // Unless we are scripting we ignore messages to move our own player
+        if ((gameMode == GAME_MODE_SCRIPTING) || (i != thisPlayer)) {
             BALL* nextPayer = gameBoard->getPlayer(i);
             PlayerMoveAction* movement = sync->GetLatestBallSync(i);
             if (movement != 0x0) {
