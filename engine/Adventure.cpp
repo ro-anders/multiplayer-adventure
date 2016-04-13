@@ -1351,7 +1351,11 @@ void OtherBallMovement() {
                 nextPayer->vely = movement->vely;
             }
             
-            BallMovement(nextPayer);
+            // Even in scripting we don't calculate normal movement of this ball in this method
+            // because that is done in another phase.
+            if (i != thisPlayer) {
+                BallMovement(nextPayer);
+            }
 		}
 	}
 

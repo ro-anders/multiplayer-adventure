@@ -90,14 +90,14 @@ public:
      */
     virtual void BroadcastAction(RemoteAction* action);
   
+    int getFrameNumber();
+    
 protected:
     /**
      * This pulls the next message off the socket.
      */
     virtual int pullNextPacket(char* buffer, int bufferSize);
     
-    int getFrameNumber();
-
 private:
     Transport* transport;
     

@@ -25,7 +25,7 @@ ScriptedSync::ScriptedSync(int numPlayers, int thisPlayer):
     
     //Sent "PM 0 2 34 190 0 0" on frame #370
     addCommand(214, "PM 0 17 160 58 0 -6");
-    //addCommand(214, "PM 1 33 160 58 0 -6");
+    addCommand(214, "PM 1 33 160 58 0 -6");
 }
 
 ScriptedSync::~ScriptedSync() {
