@@ -123,6 +123,7 @@ static int gameMapLayout = 0;                               // The board setup. 
 /** There are five game modes, the original three (but zero justified so game mode 0 means original level 1) and
  * a new fourth, gameMode 3, which I call The Gauntlet. The fifth is used for generating videos and plays a preplanned script. */
 static int gameMode = 0;
+static bool joystickDisabled = false;
 
 static int displayedRoomIndex = 0;                                   // index of current (displayed) room
 
@@ -553,6 +554,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     numPlayers = inNumPlayers;
     thisPlayer = inThisPlayer;
     gameMode = inGameNum;
+    joystickDisabled = (gameMode == GAME_MODE_SCRIPTING);
     gameMapLayout = ((gameMode == GAME_MODE_1) ||  (gameMode == GAME_MODE_GAUNTLET) ? 0: 1);
     timeToStartGame = 60 * 3;
     
@@ -694,9 +696,15 @@ void Adventure_Run()
 
     // read the console switches every frame
     bool reset;
-    Platform_ReadConsoleSwitches(&reset);
     Platform_ReadDifficultySwitches(&gameDifficultyLeft, &gameDifficultyRight);
-
+    Platform_ReadConsoleSwitches(&reset);
+    // If joystick is disabled and we hit the reset switch we don't treat it as a reset but as
+    // a enable the joystick.  The next time you hit the reset switch it will work as a reset.
+    if (joystickDisabled && switchReset && !reset) {
+        joystickDisabled = false;
+        switchReset = false;
+    }
+    
     // Reset switch
     // First check for other resets
     PlayerResetAction* otherReset = sync->GetNextResetAction();
@@ -1145,7 +1153,7 @@ void ThisBallMovement()
 	// Read the joystick and translate into a velocity
 	bool velocityChanged = false;
     // If we are scripting, we don't ever look at the joystick or change the velocity here.
-    if (gameMode != GAME_MODE_SCRIPTING) {
+    if (!joystickDisabled) {
         int newVelY = 0;
         if (joyUp) {
             if (!joyDown) {
@@ -1669,7 +1677,7 @@ void OthersPickupPutdown() {
 
 void PickupPutdown()
 {
-    if (joyFire && (objectBall->linkedObject >= 0))
+    if (!joystickDisabled && joyFire && (objectBall->linkedObject >= 0))
     {
         int dropped = objectBall->linkedObject;
         OBJECT* droppedObject = objectDefs[dropped];
