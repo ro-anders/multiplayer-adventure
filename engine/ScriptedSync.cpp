@@ -18,18 +18,18 @@ commandList(new const char*[STARTING_LIST_SIZE])
     addCommand(213, "DM 0 0 80 32 2 2 0 77"); // Hide the dragons
     addCommand(213, "DM 0 0 80 32 2 2 1 77");
     addCommand(213, "DM 0 0 80 32 2 2 2 77");
-    addCommand(213, "PP 1 10 -6 -4 -1 0 0 0"); // Pickup & Place the lance
+    addCommand(213, "PP 1 10 -6 -4 -1 0 0 0"); // Setup lance
     addCommand(216, "PP 1 -1 0 0 10 4 119 92");
     addCommand(219, "PP 1 16 -6 -4 -1 0 0 0"); // P2 holds black key
-    addCommand(225, "PM 0 7 155 42 0 6"); // P1 & P2 moving up in blue maze
-    addCommand(225, "PM 1 7 155 162 0 6");
-    addCommand(333, "PM 0 4 161 72 0 0");
+    addCommand(225, "PM 1 7 155 162 0 6"); // P2 goes up to castle
     addCommand(365, "PM 1 16 155 42 -6 0"); // P2 hides the key
     addCommand(380, "PM 1 16 125 42 0 0");
     addCommand(387, "PP 1 -1 0 0 16 16 50 17");
     addCommand(390, "PM 1 16 125 42 6 0"); // P2 heads back down
-    addCommand(390, "PM 0 4 161 78 0 6");
     addCommand(405, "PM 1 16 155 42 0 -6");
+    addCommand(225, "PM 0 7 155 42 0 6"); // P1 moving up in blue maze
+    addCommand(333, "PM 0 4 161 72 0 0");
+    addCommand(390, "PM 0 4 161 78 0 6");
     addCommand(411, "PM 0 4 167 120 6 6");
     addCommand(417, "PM 0 4 179 126 6 0");
     addCommand(450, "PM 0 4 233 132 0 6");
@@ -110,12 +110,24 @@ void ScriptedSync::addCommand(int frame, const char *commandStr) {
     if (currentCommand + numCommands == sizeAllocated) {
         makeMoreSpace();
     }
-    int newSlot = currentCommand + numCommands;
-    frameList[newSlot] = frame;
+    
+    // We make sure the list is sorted by frame num, but start searching for the proper
+    // point at the back of the list
+    int candidateSlot = currentCommand + numCommands-1; // The slot that we will put this AFTER
+    while ((candidateSlot >= currentCommand) && (frameList[candidateSlot] > frame)) {
+        --candidateSlot;
+    }
+    // If not going in the last slot, shift all the lists up one.
+    if (candidateSlot != currentCommand + numCommands-1) {
+        int numToMove = currentCommand + numCommands - 1 - candidateSlot;
+        memcpy(frameList+candidateSlot+2, frameList+candidateSlot+1, numToMove * sizeof(int));
+        memcpy(commandList+candidateSlot+2, commandList+candidateSlot+1, numToMove * sizeof(const char*));
+    }
+    frameList[candidateSlot+1] = frame;
     int cmdLength = strlen(commandStr);
     char* copiedCmd = new char[cmdLength+1];
     strcpy(copiedCmd, commandStr);
-    commandList[newSlot] = copiedCmd;
+    commandList[candidateSlot+1] = copiedCmd;
     ++numCommands;
 }
 
