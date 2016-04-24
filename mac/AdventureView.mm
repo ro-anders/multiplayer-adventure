@@ -74,7 +74,6 @@ bool gMute = FALSE;
     
     
     // Test UDP Sockets
-    // MacAdventure test <myip>:<myport> <theirip>:<theirport>
     if ((argc >= 2) && (strcmp(argv[1], "test")==0)) {
         Transport* toTest = NULL;
         if (argc == 2) {
@@ -99,7 +98,7 @@ bool gMute = FALSE;
         transport = NULL;
     } else {
         
-        if (argc > 2) {
+        if (argc >= 2) {
             gameLevel = atoi(argv[1])-1;
         }
         
@@ -108,7 +107,6 @@ bool gMute = FALSE;
         if (argc <= 2) {
             numPlayers = 2;
             transport = new PosixUdpTransport();
-            transport->connect();
         } else {
             numPlayers = argc-3;
             thisPlayer = atoi(argv[2])-1;
@@ -120,8 +118,8 @@ bool gMute = FALSE;
                 Transport::Address addr2 = Transport::parseUrl(argv[5]);
                 transport = new PosixUdpTransport(addr0, thisPlayer, addr1, addr2);
             }
-            transport->connect();
         }
+        transport->connect();
         
         while (!transport->isConnected()) {
             Sys::sleep(1000);

@@ -21,14 +21,20 @@ WinUdpTransport::WinUdpTransport() :
     setup();
 }
 
-WinUdpTransport::WinUdpTransport(const char* inMyExternalIp, int inMyExternalPort,
-                                     const char* inTheirIp, int inTheirPort) :
-UdpTransport(inMyExternalIp, inMyExternalPort, inTheirIp, inTheirPort),
+WinUdpTransport::WinUdpTransport(const Address& inMyExternalAddr, const Address& inTheirAddr) :
+UdpTransport(inMyExternalAddr, inTheirAddr),
 socket(INVALID_SOCKET)
 {
     setup();
 }
 
+WinUdpTransport::WinUdpTransport(const Address& inMyExternalAddr, int transportNum,
+	const Address& otherAddr1, const Address& otherAddr2) :
+UdpTransport(inMyExternalAddr, transportNum, otherAddr1, otherAddr2),
+socket(INVALID_SOCKET)
+{
+	setup();
+}
 WinUdpTransport::~WinUdpTransport() {
 	if (socket != INVALID_SOCKET) {
 		closesocket(socket);
@@ -37,17 +43,22 @@ WinUdpTransport::~WinUdpTransport() {
 }
 
 void WinUdpTransport::setup() {
-    memset((char *) &remaddr, 0, sizeof(remaddr));
-    printf("Uninitialized = %s:%d.\n", inet_ntoa(remaddr.sin_addr), ntohs(remaddr.sin_port));
+	remaddrs = new sockaddr_in[numOtherMachines];
+	for (int ctr = 0; ctr<numOtherMachines; ++ctr) {
+		memset((char *)&remaddrs[ctr], 0, sizeof(sender));
+	}
+	memset((char *)&sender, 0, sizeof(sender));
 }
 
 int WinUdpTransport::openSocket() {
 	char errorMessage[2000];
 
-	remaddr.sin_family = AF_INET;
-	remaddr.sin_addr.S_un.S_addr = inet_addr(theirIp);
-	remaddr.sin_port = htons(theirPort);
-    printf("Initialized = %s:%d.\n", inet_ntoa(remaddr.sin_addr), ntohs(remaddr.sin_port));
+	for (int ctr = 0; ctr < numOtherMachines; ++ctr) {
+		remaddrs[ctr].sin_family = AF_INET;
+		remaddrs[ctr].sin_addr.S_un.S_addr = inet_addr(theirAddrs[ctr].ip());
+		remaddrs[ctr].sin_port = htons(theirAddrs[ctr].port());
+		printf("Initialized = %s:%d.\n", inet_ntoa(remaddrs[ctr].sin_addr), ntohs(remaddrs[ctr].sin_port));
+	}
 
 	// Initialize Winsock
 	WSADATA wsaData;
@@ -89,19 +100,19 @@ int WinUdpTransport::openSocket() {
 	return Transport::TPT_OK;
 }
 
-int WinUdpTransport::writeData(const char* data, int numBytes)
+int WinUdpTransport::writeData(const char* data, int numBytes, int recipient)
 {
-    printf("Sending message to %s:%d: %s.\n", inet_ntoa(remaddr.sin_addr), ntohs(remaddr.sin_port), data);
-    int n = sendto(socket, data, numBytes, 0, (struct sockaddr *)&remaddr, sizeof(remaddr));
-    return n;
+	int numSent = 0; // If sending to multiple machines, we just return what one send reported.
+	for (int ctr = 0; ctr < numOtherMachines; ++ctr) {
+		if ((recipient < 0) || (ctr == recipient)) {
+			numSent = sendto(socket, data, numBytes, 0, (struct sockaddr *)&remaddrs[ctr], sizeof(remaddrs[ctr]));
+		}
+	}
+    return numSent;
 }
 
 int WinUdpTransport::readData(char *buffer, int bufferLength) {
-    printf("Checking message from %s:%d\n", inet_ntoa(remaddr.sin_addr), ntohs(remaddr.sin_port));
     int n = recvfrom(socket, buffer, bufferLength, 0, NULL, NULL);
-    if (n > 0) {
-        printf("Received message: %s.\n", buffer);
-    }
     return n;
 }
 
