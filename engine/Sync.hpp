@@ -88,7 +88,7 @@ public:
      * @param action an action to broadcast.  The Sync now owns this action and is responsible
      * for deleting it.
      */
-    virtual void BroadcastAction(RemoteAction* action);
+    void BroadcastAction(RemoteAction* action);
   
     int getFrameNumber();
     

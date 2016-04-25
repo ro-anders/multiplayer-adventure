@@ -15,65 +15,61 @@ commandList(new const char*[STARTING_LIST_SIZE])
 {
     // To start with, hard code some scripted commands.
     
-    addCommand(213, "DM 0 0 80 32 2 2 0 77"); // Hide the dragons
+    addCommand(213, "DM 0 7 80 46 0 0 2 77"); // Place rhindle in maze
+    addCommand(213, "DM 0 0 80 32 2 2 0 77"); // Hide the other two dragons and bat
     addCommand(213, "DM 0 0 80 32 2 2 1 77");
-    addCommand(213, "DM 0 0 80 32 2 2 2 77");
-    addCommand(213, "PP 1 10 -6 -4 -1 0 0 0"); // Setup lance
-    addCommand(216, "PP 1 -1 0 0 10 4 119 92");
-    addCommand(219, "PP 1 16 -6 -4 -1 0 0 0"); // P2 holds black key
-    addCommand(225, "PM 1 7 155 162 0 6"); // P2 goes up to castle
-    addCommand(365, "PM 1 16 155 42 -6 0"); // P2 hides the key
-    addCommand(380, "PM 1 16 125 42 0 0");
-    addCommand(387, "PP 1 -1 0 0 16 16 50 17");
-    addCommand(390, "PM 1 16 125 42 6 0"); // P2 heads back down
-    addCommand(405, "PM 1 16 155 42 0 -6");
-    addCommand(225, "PM 0 7 155 42 0 6"); // P1 moving up in blue maze
-    addCommand(333, "PM 0 4 161 72 0 0");
-    addCommand(390, "PM 0 4 161 78 0 6");
-    addCommand(411, "PM 0 4 167 120 6 6");
-    addCommand(417, "PM 0 4 179 126 6 0");
-    addCommand(450, "PM 0 4 233 132 0 6");
-    addCommand(456, "PM 0 4 233 138 0 0");
-    addCommand(525, "PM 0 4 233 132 0 -6");
-    addCommand(534, "PM 0 4 227 120 -6 0");
-    addCommand(570, "PM 0 4 155 126 -6 6");
-    addCommand(576, "PM 0 4 149 138 0 6");
-    addCommand(630, "PM 0 16 149 54 0 0");
-    addCommand(693, "PM 0 16 149 48 0 -6");
-    addCommand(747, "PM 0 4 155 124 6 -6");
-    addCommand(756, "PM 0 4 173 112 6 0");
-    addCommand(774, "PM 0 4 209 118 6 6");
-    addCommand(805, "PP 0 10 0 3 -1 0 0 0");
-    addCommand(813, "PM 0 4 233 184 0 0");
-    addCommand(828, "PM 0 4 233 178 0 -6");
-    addCommand(858, "PM 0 4 227 118 -6 -6");
-    addCommand(864, "PM 0 4 215 112 -6 0");
-    addCommand(894, "PM 0 4 155 118 -6 6");
-    addCommand(897, "PM 0 4 155 124 0 6");
-    addCommand(936, "PM 0 4 161 202 6 6");
-    addCommand(942, "PM 0 4 167 214 0 6");
-    addCommand(951, "PM 0 16 167 36 0 0");
-    addCommand(993, "PM 0 16 167 42 0 6");
-    addCommand(999, "PM 0 16 167 48 0 0");
-    addCommand(1000, "PP 0 -1 0 0 10 16 89 30");
-    addCommand(1006, "PM 0 16 160 48 -6 0");
-    addCommand(1009, "PM 0 16 154 54 -6 6");
-    addCommand(1051, "PM 0 16 76 78 0 0");
-    addCommand(1054, "PM 0 16 70 78 -6 0");
-    addCommand(1057, "PM 0 16 70 78 0 0");
-    addCommand(1069, "PM 0 16 64 72 -6 -6");
-    addCommand(1099, "PM 0 16 28 36 6 -6");
-    addCommand(1139, "PP 0 16 -3 -2 -1 0 0 0");
-    addCommand(1147, "PM 0 16 106 42 0 0");
-    addCommand(1162, "PM 0 16 112 42 6 0");
-    addCommand(1180, "PM 0 16 142 42 0 0");
-    addCommand(1186, "PM 0 16 142 48 0 6");
-    addCommand(1207, "PM 0 16 148 72 6 6");
-    addCommand(1216, "PM 0 16 154 84 0 6");
-    addCommand(1217, "GS 0 2 13 1");
-    addCommand(1219, "GS 0 2 0 1");
-    addCommand(1219, "PM 0 27 154 30 0 6");
-    addCommand(1246, "PM 0 27 154 78 0 0");
+    addCommand(213, "BM 0 9 14 87 0 1 1");
+    addCommand(213, "PP 0 10 -2 -4 -1 0 0 0"); // Get rid of the lance
+    addCommand(219, "PP 0 -1 0 0 10 7 104 26");
+    addCommand(213, "PP 0 15 -8 -5 -1 0 0 0"); // Start off with white key
+    addCommand(250, "PM 0 8 51 48 0 0");
+    addCommand(253, "PM 0 8 53 56 -6 0"); // Get chased by dragon
+    addCommand(291, "DM 0 7 98 28 3 0 2 50");
+    addCommand(313, "PM 0 7 279 56 0 0");
+    addCommand(316, "PM 0 7 285 56 6 0");
+    addCommand(351, "DM 0 8 3 31 3 -3 2 14");
+    addCommand(354, "DM 0 8 6 28 3 0 2 14");
+    addCommand(358, "PM 0 8 53 50 6 -6");
+    addCommand(363, "DM 0 8 15 28 3 -3 2 14");
+    addCommand(369, "DM 0 8 21 22 3 0 2 14");
+    addCommand(379, "PM 0 8 95 44 6 0");
+    addCommand(403, "PM 0 8 143 38 6 -6");
+    addCommand(405, "DM 0 8 57 22 3 -3 2 14");
+    addCommand(413, "PP 0 -1 0 0 15 1 72 96");
+    addCommand(460, "PM 0 1 251 124 6 0");
+    addCommand(462, "DM 0 1 114 60 3 3 2 11");
+    addCommand(465, "DM 0 1 117 63 3 -3 2 11");
+    addCommand(468, "DM 0 1 120 60 3 3 2 11");
+    addCommand(471, "DM 0 1 123 63 3 -3 2 11");
+    addCommand(474, "DM 0 1 126 60 3 3 2 11");
+    addCommand(477, "DM 0 1 129 63 3 -3 2 11");
+    addCommand(480, "DM 0 1 132 60 3 3 2 11");
+    addCommand(483, "DM 0 1 135 63 3 -3 2 11");
+    addCommand(486, "DM 0 1 138 60 3 3 2 11");
+    addCommand(489, "DM 0 1 141 63 3 -3 2 11");
+    addCommand(492, "DM 0 1 144 60 3 3 2 11");
+    addCommand(535, "PM 0 2 83 124 0 0");
+    addCommand(550, "PM 1 5 75 48 0 0"); // P2 walks into rhindle
+    addCommand(742, "PM 1 5 75 42 0 -6");
+    addCommand(829, "PM 1 8 69 52 -6 -6");
+    addCommand(832, "PM 1 8 63 52 -6 0");
+    addCommand(871, "PM 1 7 303 52 0 0");
+    addCommand(958, "PM 1 7 309 52 6 0");
+    addCommand(1021, "PM 1 8 119 46 6 -6");
+    addCommand(1044, "DM 1 1 72 96 3 3 2 8");
+    addCommand(1047, "DS 1 2 3 1 81 101");
+    addCommand(1060, "PM 1 1 167 202 6 0");
+    addCommand(1063, "PM 1 1 161 202 0 0");
+    addCommand(1065, "DS 1 2 2 1 81 101");
+    addCommand(1174, "PM 1 1 162 182 -6 0");
+    addCommand(1198, "PM 1 1 162 176 -6 -6");
+    addCommand(1204, "PM 1 1 168 176 0 -6");
+    addCommand(1207, "PM 1 1 174 176 6 -6");
+    addCommand(1216, "PM 1 1 174 182 6 0");
+    addCommand(1228, "PM 1 1 174 188 6 6");
+    addCommand(1240, "PM 1 1 174 182 6 0");
+    addCommand(1243, "PM 1 1 168 182 0 0");
+
 }
 
 ScriptedSync::~ScriptedSync() {
@@ -83,11 +79,6 @@ ScriptedSync::~ScriptedSync() {
     }
     delete[] commandList;
 }
-
-void ScriptedSync::BroadcastAction(RemoteAction* action) {
-    // This does nothing.
-}
-
 
 int ScriptedSync::pullNextPacket(char* buffer, int bufferLength) {
     int frameNum = getFrameNumber();

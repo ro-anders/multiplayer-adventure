@@ -94,12 +94,12 @@ bool gMute = FALSE;
     
     if ((argc >= 2) && (strcmp(argv[1], "script")==0)) {
         numPlayers = 2;
-        thisPlayer = 0;
+        thisPlayer = (argc == 2 ? 0 : atoi(argv[2])-1);
         gameLevel = GAME_MODE_SCRIPTING;
         transport = NULL;
     } else {
         
-        if (argc > 2) {
+        if (argc >= 2) {
             gameLevel = atoi(argv[1])-1;
         }
         
@@ -110,8 +110,8 @@ bool gMute = FALSE;
             transport = new PosixUdpTransport();
             transport->connect();
         } else {
-            numPlayers = argc-3;
             thisPlayer = atoi(argv[2])-1;
+            numPlayers = argc-3;
             Transport::Address addr0 = Transport::parseUrl(argv[3]);
             Transport::Address addr1 = Transport::parseUrl(argv[4]);
             if (argc <= 5) {

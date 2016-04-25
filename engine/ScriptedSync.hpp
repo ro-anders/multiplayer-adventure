@@ -16,12 +16,6 @@ public:
     
     ~ScriptedSync();
     
-    /**
-     * This does nothing for this implementation.
-     */
-    void BroadcastAction(RemoteAction* action);
-
-    
 protected:
     /**
      * If a scripted action is scheduled now, this returns the scripted action.
