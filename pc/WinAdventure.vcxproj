@@ -98,6 +98,7 @@
     <ClCompile Include="..\engine\Portcullis.cpp" />
     <ClCompile Include="..\engine\RemoteAction.cpp" />
     <ClCompile Include="..\engine\Room.cpp" />
+    <ClCompile Include="..\engine\ScriptedSync.cpp" />
     <ClCompile Include="..\engine\Sync.cpp" />
     <ClCompile Include="..\engine\Sys.cpp" />
     <ClCompile Include="..\engine\TcpTransport.cpp" />
@@ -123,6 +124,7 @@
     <ClInclude Include="..\engine\Portcullis.hpp" />
     <ClInclude Include="..\engine\RemoteAction.hpp" />
     <ClInclude Include="..\engine\Room.hpp" />
+    <ClInclude Include="..\engine\ScriptedSync.hpp" />
     <ClInclude Include="..\engine\Sync.hpp" />
     <ClInclude Include="..\engine\Sys.hpp" />
     <ClInclude Include="..\engine\TcpTransport.hpp" />

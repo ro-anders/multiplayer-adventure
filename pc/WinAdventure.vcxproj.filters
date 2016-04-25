@@ -90,6 +90,9 @@
     <ClCompile Include="WinUdpTransport.cpp">
       <Filter>Source Files\pc</Filter>
     </ClCompile>
+    <ClCompile Include="..\engine\ScriptedSync.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\engine\ActionQueue.hpp">
@@ -163,6 +166,9 @@
     </ClInclude>
     <ClInclude Include="WinUdpTransport.h">
       <Filter>Header Files\pc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\ScriptedSync.hpp">
+      <Filter>Header Files\engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
