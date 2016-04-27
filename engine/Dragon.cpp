@@ -12,14 +12,6 @@ static const byte dragonStates [] =
     0,2,0,1
 };
 
-// Dragon Difficulty
-static const byte dragonDiff [] =
-{
-    0xD0, 0xE8,           // Level 1 : Am, Pro
-    0xF0, 0xF6,           // Level 2 : Am, Pro
-    0xF0, 0xF6            // Level 3 : Am, Pro
-};
-
 static const byte objectGfxDrag [] =
 {
     // Object #6 : State #00 : Graphic
@@ -89,7 +81,7 @@ static const byte objectGfxDrag [] =
     0x7E                   //  XXXXXX
 };
 
-
+int Dragon::dragonResetTime = Dragon::TRIVIAL;
 
 Dragon::Dragon(const char* label, int inNumber, int inState, int inColor, int inRoom, int inX, int inY):
     OBJECT(label, objectGfxDrag, dragonStates, inState, inColor, inRoom, inX, inY),
@@ -104,8 +96,8 @@ Dragon::~Dragon() {
     
 }
 
-void Dragon::resetTimer(int gameLevel, int dragonDifficulty) {
-    timer = 0xFC - dragonDiff[(gameLevel*2) + dragonDifficulty];
+void Dragon::resetTimer() {
+    timer = 0xFC - dragonResetTime;
 }
 
 void Dragon::decrementTimer() {
@@ -116,16 +108,20 @@ int Dragon::timerExpired() {
     return (timer <= 0);
 }
 
-void Dragon::roar(int atX, int atY, int gameLevel, int dragonDifficulty) {
+void Dragon::roar(int atX, int atY) {
     state = ROAR;
     
-    resetTimer(gameLevel, dragonDifficulty);
+    resetTimer();
     
     // Set the dragon's position to the same as the ball
-    x = atX+1;
+    x = atX+1; // Added one to get over disparity between C++ port and original atari game - not the best solution
     y = atY;
     
     movementX = 0;
     movementY = 0;
     
+}
+
+void Dragon::setDifficulty(Dragon::Difficulty newDifficulty) {
+    dragonResetTime = newDifficulty;
 }

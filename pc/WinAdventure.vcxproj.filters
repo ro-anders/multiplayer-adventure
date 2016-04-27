@@ -90,6 +90,9 @@
     <ClCompile Include="WinUdpTransport.cpp">
       <Filter>Source Files\pc</Filter>
     </ClCompile>
+    <ClCompile Include="..\engine\ScriptedSync.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\engine\ActionQueue.hpp">
@@ -164,6 +167,9 @@
     <ClInclude Include="WinUdpTransport.h">
       <Filter>Header Files\pc</Filter>
     </ClInclude>
+    <ClInclude Include="..\engine\ScriptedSync.hpp">
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico">
@@ -180,5 +186,13 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="..\sounds\dragondie.wav" />
+    <Media Include="..\sounds\eaten.wav" />
+    <Media Include="..\sounds\pickup.wav" />
+    <Media Include="..\sounds\putdown.wav" />
+    <Media Include="..\sounds\roar.wav" />
+    <Media Include="..\sounds\won.wav" />
   </ItemGroup>
 </Project>

@@ -38,6 +38,10 @@ long Sys::systemTime() {
 }
 
 bool Sys::seedRandom() {
+#ifdef WIN32
+	srand((unsigned)time(NULL));
+#else
 	srand(systemTime());
+#endif
 	return true;
 }

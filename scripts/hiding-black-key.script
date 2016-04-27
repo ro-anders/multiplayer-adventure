@@ -1,0 +1,66 @@
+# Hiding black key near black castle
+# Hide the dragons
+Send "DM 0 0 80 32 2 2 0 77" on frame #213
+Send "DM 0 0 80 32 2 2 1 77" on frame #213
+Send "DM 0 0 80 32 2 2 2 77" on frame #213
+# Setup lance
+Send "PP 1 10 -6 -4 -1 0 0 0" on frame #213
+Send "PP 1 -1 0 0 10 4 119 92" on frame #216
+# P2 hides key at black castle
+Send "PP 1 16 -6 -4 -1 0 0 0" on frame #219
+Send "PM 1 7 155 162 0 6" on frame #225
+Send "PM 1 16 155 42 -6 0" on frame #365
+Send "PM 1 16 125 42 0 0" on frame #380
+Send "PP 1 -1 0 0 16 16 50 17" on frame #387
+# P2 heads back down
+Send "PM 1 16 125 42 6 0" on frame #390
+Send "PM 1 16 155 42 0 -6" on frame #405
+# P1 heads up and finds key
+Send "PM 0 7 155 42 0 6" on frame #225
+Send "PM 0 4 161 72 0 0" on frame #333
+Send "PM 0 4 161 78 0 6" on frame #390
+Send "PM 0 4 167 120 6 6" on frame #411
+Send "PM 0 4 179 126 6 0" on frame #417
+Send "PM 0 4 233 132 0 6" on frame #450
+Send "PM 0 4 233 138 0 0" on frame #456
+Send "PM 0 4 233 132 0 -6" on frame #525
+Send "PM 0 4 227 120 -6 0" on frame #534
+Send "PM 0 4 155 126 -6 6" on frame #570
+Send "PM 0 4 149 138 0 6" on frame #576
+Send "PM 0 16 149 54 0 0" on frame #630
+Send "PM 0 16 149 48 0 -6" on frame #693
+Send "PM 0 4 155 124 6 -6" on frame #747
+Send "PM 0 4 173 112 6 0" on frame #756
+Send "PM 0 4 209 118 6 6" on frame #774
+Send "PP 0 10 0 3 -1 0 0 0" on frame #805
+Send "PM 0 4 233 184 0 0" on frame #813
+Send "PM 0 4 233 178 0 -6" on frame #828
+Send "PM 0 4 227 118 -6 -6" on frame #858
+Send "PM 0 4 215 112 -6 0" on frame #864
+Send "PM 0 4 155 118 -6 6" on frame #894
+Send "PM 0 4 155 124 0 6" on frame #897
+Send "PM 0 4 161 202 6 6" on frame #936
+Send "PM 0 4 167 214 0 6" on frame #942
+Send "PM 0 16 167 36 0 0" on frame #951
+Send "PM 0 16 167 42 0 6" on frame #993
+Send "PM 0 16 167 48 0 0" on frame #999
+Send "PP 0 -1 0 0 10 16 89 30" on frame #1000
+Send "PM 0 16 160 48 -6 0" on frame #1006
+Send "PM 0 16 154 54 -6 6" on frame #1009
+Send "PM 0 16 76 78 0 0" on frame #1051
+Send "PM 0 16 70 78 -6 0" on frame #1054
+Send "PM 0 16 70 78 0 0" on frame #1057
+Send "PM 0 16 64 72 -6 -6" on frame #1069
+Send "PM 0 16 28 36 6 -6" on frame #1099
+Send "PP 0 16 -3 -2 -1 0 0 0" on frame #1139
+Send "PM 0 16 106 42 0 0" on frame #1147
+Send "PM 0 16 112 42 6 0" on frame #1162
+Send "PM 0 16 142 42 0 0" on frame #1180
+Send "PM 0 16 142 48 0 6" on frame #1186
+Send "PM 0 16 148 72 6 6" on frame #1207
+Send "PM 0 16 154 84 0 6" on frame #1216
+Send "GS 0 2 13 1" on frame #1217
+Send "GS 0 2 0 1" on frame #1219
+Send "PM 0 27 154 30 0 6" on frame #1219
+Send "PM 0 27 154 78 0 0" on frame #1246
+.

@@ -46,3 +46,11 @@ float Platform_Random();
 #define SOUND_PUTDOWN   4
 #define SOUND_PICKUP    5
 #define SOUND_GLOW      6
+
+// The game modes
+#define GAME_MODE_SCRIPTING  -1
+#define GAME_MODE_1  0
+#define GAME_MODE_2  1
+#define GAME_MODE_3  2
+#define GAME_MODE_GAUNTLET  4
+

@@ -15,6 +15,7 @@
 
 
 #include "stdafx.h"
+#include "resource.h"
 #include "WinAdventure.h"
 #include <mmsystem.h>
 #include <stdlib.h>
@@ -28,6 +29,7 @@
 #define MAX_LOADSTRING 100
 
 #include "..\engine\Adventure.h"
+#include "..\engine\Sys.hpp"
 
 
 // Global Variables:
@@ -241,82 +243,79 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    CreateOffscreen();
 
-   // TODO: Pull other player info off the command line
-   int numPlayers;
-   int thisPlayer;
-   Transport* transport;
-
-   // Read the command line arguments and setup the communication with the other players
-   // expecting command line args to be <gamenum> <thisPlayerNum> <port|socketaddr> [port2|socketaddr2]
-
-   if ((argc > 0) && (strcmp(argv[0], "test") == 0)) {
+   // Test UDP Sockets
+   if ((argc >= 1) && (strcmp(argv[0], "test") == 0)) {
 	   Transport* toTest = NULL;
 	   if (argc == 1) {
 		   toTest = new WinUdpTransport();
 	   }
 	   else {
-		   char* ip1;
-		   int port1;
-		   char* ip2;
-		   int port2;
-		   Transport::parseUrl(argv[1], &ip1, &port1);
-		   Transport::parseUrl(argv[2], &ip2, &port2);
-		   toTest = new WinUdpTransport(ip1, port1, ip2, port2);
+		   Transport::Address addr1 = Transport::parseUrl(argv[2]);
+		   Transport::Address addr2 = Transport::parseUrl(argv[3]);
+		   toTest = new WinUdpTransport(addr1, addr2);
 	   }
 	   Transport::testTransport(*toTest);
    }
 
-   int gameLevel = 1;
-   if (argc > 2) {
-	   gameLevel = atoi(argv[0]);
-   }
+   int numPlayers;
+   int thisPlayer;
+   Transport* transport;
+   int gameLevel = GAME_MODE_1;
 
-   const int DEFAULT_PORT = 5678;
-   if (argc <= 2) {
+   if ((argc >= 1) && (strcmp(argv[0], "script") == 0)) {
 	   numPlayers = 2;
-	   transport = new WinUdpTransport();
-	   transport->connect();
-	   thisPlayer = transport->getTestSetupNumber();
-	   if (thisPlayer == 1) {
-		   // Remap the keys so that one keyboard can do two players
-		   leftKey = 'A'; // A
-		   upKey = 0x57; // W
-		   rightKey = 0x44; // D
-		   downKey = 0x53; // S
-		   dropKey = VK_SPACE;
-		   resetKey = '1';
+	   thisPlayer = 0;
+	   gameLevel = GAME_MODE_SCRIPTING;
+	   transport = NULL;
+   } else {
+
+	   if (argc >= 1) {
+		   gameLevel = atoi(argv[0])-1;
 	   }
-   }
-   else {
-	   numPlayers = argc - 1;
-	   thisPlayer = atoi(argv[1]) - 1;
 
-	   char* ip0;
-	   int port0;
-	   char* ip1;
-	   int port1;
-	   Transport::parseUrl(argv[2], &ip0, &port0);
-	   Transport::parseUrl(argv[3], &ip1, &port1);
-	   transport = new WinUdpTransport(ip0, port0, ip1, port1);
-
-	   // TODO: Process player 3
-	   //Transport* transport2 = NULL;
-	   //if (argc > 4) {
-	///	   char* otherPlayer2 = argv[3];
-	//	   int port2 = (port1 == DEFAULT_PORT ? DEFAULT_PORT : DEFAULT_PORT + 1);
-	//	   if (strlen(otherPlayer2) <= 5) {
-	//		   // It is just a port.
-	//		   port2 = atoi(otherPlayer2);
-	//		   transport2 = new WinTcpTransport(port2);
-	//	   }
-	//	   else {
-	//		   char* ip2 = NULL;
-	//		   Transport::parseUrl(otherPlayer2, &ip2, &port2);
-	//		   transport2 = new WinTcpTransport(ip2, port2);
-	//	   }
-	//	   transport = new YTransport(transport, transport2);
-	 //  }
+	   // Read the command line arguments and setup the communication with the other players
+	   // expecting command line args to be <gamenum> <thisPlayerNum> <port|socketaddr> [port2|socketaddr2]
+	   if (argc <= 1) {
+		   numPlayers = 2;
+		   transport = new WinUdpTransport();
+	   }
+	   else {
+		   numPlayers = argc - 2;
+		   thisPlayer = atoi(argv[1]) - 1;
+		   Transport::Address addr0 = Transport::parseUrl(argv[2]);
+		   Transport::Address addr1 = Transport::parseUrl(argv[3]);
+		   if (argc <= 4) {
+			   transport = new WinUdpTransport(addr0, addr1);
+		   }
+		   else {
+			   Transport::Address addr2 = Transport::parseUrl(argv[4]);
+			   transport = new WinUdpTransport(addr0, thisPlayer, addr1, addr2);
+		   }
+	   }
 	   transport->connect();
+
+	   while (!transport->isConnected()) {
+		   Sys::sleep(1000);
+	   }
+
+	   // When running a no-arg test, handle
+	   // determinining player numbers, remapping keys
+	   // to allow both, and muting sound on one.
+	   int testNum = transport->getTestSetupNumber();
+	   if (testNum != Transport::NOT_A_TEST) {
+		   thisPlayer = testNum;
+		   Platform_MuteSound(thisPlayer == 1);
+		   if (thisPlayer == 1) {
+			   // Remap the keys so that one keyboard can do two players
+			   leftKey = 'A'; // A
+			   upKey = 0x57; // W
+			   rightKey = 0x44; // D
+			   downKey = 0x53; // S
+			   dropKey = VK_SPACE;
+			   resetKey = '1';
+		   }
+	   }
+
    }
 
 
@@ -620,6 +619,11 @@ void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int
     }
 }
 
+void Platform_MuteSound(bool nMute)
+{
+	// TODO: Implement
+}
+
 void Platform_MakeSound(int sound, float volume)
 {
 	// TODO: Handle volume
@@ -634,23 +638,24 @@ void Platform_MakeSound(int sound, float volume)
     switch (sound)
     {
         case SOUND_PICKUP:
+			PlaySound((char*)IDR_PICKUP_WAV, NULL, SND_RESOURCE | SND_ASYNC);
             wsprintf(szSoundPath, "%s%ssounds\\pickup.wav", szDrive, szDir);
             break;
         case SOUND_PUTDOWN:
-            wsprintf(szSoundPath, "%s%ssounds\\putdown.wav", szDrive, szDir);
-            break;
+			PlaySound((char*)IDR_PUTDOWN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+			break;
         case SOUND_WON:
-            wsprintf(szSoundPath, "%s%ssounds\\won.wav", szDrive, szDir);
-            break;
+			PlaySound((char*)IDR_WON_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+			break;
         case SOUND_ROAR:
-            wsprintf(szSoundPath, "%s%ssounds\\roar.wav", szDrive, szDir);
-            break;
+			PlaySound((char*)IDR_ROAR_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+			break;
         case SOUND_EATEN:
-            wsprintf(szSoundPath, "%s%ssounds\\eaten.wav", szDrive, szDir);
-            break;
+			PlaySound((char*)IDR_EATEN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+			break;
         case SOUND_DRAGONDIE:
-            wsprintf(szSoundPath, "%s%ssounds\\dragondie.wav", szDrive, szDir);
-            break;
+			PlaySound((char*)IDR_DRAGONDIE_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+			break;
     }
 
     sndPlaySound(szSoundPath, SND_ASYNC | SND_NODEFAULT);

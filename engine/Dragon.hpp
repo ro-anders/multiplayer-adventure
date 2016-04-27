@@ -10,6 +10,13 @@ class BALL;
 class Dragon: public OBJECT {
 public:
     
+    enum Difficulty {
+        TRIVIAL = 0xD0,
+        EASY = 0xE8,
+        MODERATE = 0xF0,
+        HARD = 0xF6
+    };
+    
     static const int STALKING;
     static const int DEAD;
     static const int EATEN;
@@ -24,26 +31,30 @@ public:
     
     ~Dragon();
     
-    /**
-     * Reset's the dragon's bite timer.
-     * gameLevel - which game is being played (1-3)
-     * dragonDifficulty - Whether the dragons are in amateur mode (0) or pro mode (1)
-     */
-    void resetTimer(int gameLevel, int dragonDifficulty);
-    
     void decrementTimer();
     
     int timerExpired();
     
-    void roar(int atX, int atY, int gameLevel, int dragonDifficulty);
+    void roar(int atX, int atY);
+    
+    static void setDifficulty(Difficulty newDifficulty);
     
     int dragonNumber;
 
     
 private:
     
+    static int dragonResetTime;
+    
     /** How many seconds left waiting to bite. */
     int timer;
+
+    /**
+     * Reset's the dragon's bite timer.
+     */
+    void resetTimer();
+    
+
 
 };
 
