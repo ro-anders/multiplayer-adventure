@@ -49,7 +49,7 @@ void Sync::BroadcastAction(RemoteAction* action) {
     }
     
     char message[1000];
-    sprintf(message, "addCommand(%d, \"%s\");", frameNum, sendBuffer);
+    sprintf(message, "Sent \"%s\" on frame #%d", sendBuffer, frameNum);
     Sys::log(message);
 
     delete action;
