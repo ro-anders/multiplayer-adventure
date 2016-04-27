@@ -9,6 +9,7 @@
 #include "ActionQueue.hpp"
 #include "RemoteAction.hpp"
 #include "Transport.hpp"
+#include "Sys.hpp"
 
 
 // The existing adventure port doesn't do a lot of dynamic memory allocation, but instead 
@@ -28,14 +29,29 @@ Sync::Sync(int inNumPlayers, int inThisPlayer, Transport* inTransport) :
     
 }
 
+Sync::~Sync() {
+    delete[] playersLastMove;
+}
+
 void Sync::StartFrame() {
 	++frameNum;
+}
+
+int Sync::getFrameNumber() {
+    return frameNum;
 }
 
 void Sync::BroadcastAction(RemoteAction* action) {
     action->setSender(thisPlayer);
     action->serialize(sendBuffer, MAX_MESSAGE_SIZE);
-    transport->sendPacket(sendBuffer);
+    if (transport != NULL) {
+        transport->sendPacket(sendBuffer);
+    }
+    
+    char message[1000];
+    sprintf(message, "Sent \"%s\" on frame #%d", sendBuffer, frameNum);
+    Sys::log(message);
+
     delete action;
 }
 
@@ -112,11 +128,15 @@ void Sync::handleMazeSetupObjectMessage(const char* message) {
     mazeSetupActions.enQ(nextAction);
 }
 
+int Sync::pullNextPacket(char* buffer, int bufferSize) {
+    int numChars = transport->getPacket(buffer, bufferSize);
+    return numChars;
+}
 
 
 void Sync::PullLatestMessages() {
     const int TYPE_LENGTH = 2;
-    int numChars = transport->getPacket(receiveBuffer, MAX_MESSAGE_SIZE);
+    int numChars = pullNextPacket(receiveBuffer, MAX_MESSAGE_SIZE);
     while(numChars >= TYPE_LENGTH+1) {
         char type[TYPE_LENGTH+1];
         // First two characters are the type of message
@@ -198,7 +218,7 @@ void Sync::PullLatestMessages() {
                 printf("Message with unknown message type %c*: %s\n", receiveBuffer[0], receiveBuffer);
         }
         
-        numChars = transport->getPacket(receiveBuffer, MAX_MESSAGE_SIZE);
+        numChars = pullNextPacket(receiveBuffer, MAX_MESSAGE_SIZE);
     }
 }
 

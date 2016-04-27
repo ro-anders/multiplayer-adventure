@@ -33,6 +33,7 @@
 		40509AAC1C05E9750008BACF /* RemoteAction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40509AA81C05E9750008BACF /* RemoteAction.cpp */; };
 		406264921C236DE600154D97 /* args.c in Sources */ = {isa = PBXBuildFile; fileRef = 406264901C236DE600154D97 /* args.c */; };
 		40662F361C767ACB00FFC715 /* PosixUdpTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40662F351C767ACB00FFC715 /* PosixUdpTransport.cpp */; };
+		40663AC61CBD122900A75EE3 /* ScriptedSync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40663AC41CBD122900A75EE3 /* ScriptedSync.cpp */; };
 		406CD1541C0C7C17002477BB /* Dragon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 406CD1521C0C7C17002477BB /* Dragon.cpp */; };
 		40740BAE1C1859730018AE6D /* Bat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40740BAC1C1859730018AE6D /* Bat.cpp */; };
 		407773D31BF2AC9C00454AC5 /* Transport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 407773D11BF2AC9C00454AC5 /* Transport.cpp */; };
@@ -98,6 +99,8 @@
 		406264911C236DE600154D97 /* args.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = args.h; sourceTree = "<group>"; };
 		40662F341C767A7C00FFC715 /* PosixUdpTransport.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PosixUdpTransport.hpp; sourceTree = "<group>"; };
 		40662F351C767ACB00FFC715 /* PosixUdpTransport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PosixUdpTransport.cpp; sourceTree = "<group>"; };
+		40663AC41CBD122900A75EE3 /* ScriptedSync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ScriptedSync.cpp; path = ../engine/ScriptedSync.cpp; sourceTree = "<group>"; };
+		40663AC51CBD122900A75EE3 /* ScriptedSync.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ScriptedSync.hpp; path = ../engine/ScriptedSync.hpp; sourceTree = "<group>"; };
 		406CD1521C0C7C17002477BB /* Dragon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Dragon.cpp; path = ../engine/Dragon.cpp; sourceTree = "<group>"; };
 		406CD1531C0C7C17002477BB /* Dragon.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Dragon.hpp; path = ../engine/Dragon.hpp; sourceTree = "<group>"; };
 		40740BAC1C1859730018AE6D /* Bat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Bat.cpp; path = ../engine/Bat.cpp; sourceTree = "<group>"; };
@@ -290,6 +293,8 @@
 				40509AA91C05E9750008BACF /* RemoteAction.hpp */,
 				4013C09F1C503FAA00C99342 /* Room.cpp */,
 				4013C0A01C503FAA00C99342 /* Room.hpp */,
+				40663AC41CBD122900A75EE3 /* ScriptedSync.cpp */,
+				40663AC51CBD122900A75EE3 /* ScriptedSync.hpp */,
 				40E8214E1C0FACB9004CCADB /* Sync.hpp */,
 				4084EC8D1BF22AEE00E8F375 /* Sync.cpp */,
 				40B029D81C91449200DA27FD /* Sys.cpp */,
@@ -410,6 +415,7 @@
 				40B029DD1C91449200DA27FD /* UdpTransport.cpp in Sources */,
 				40662F361C767ACB00FFC715 /* PosixUdpTransport.cpp in Sources */,
 				40B345F91C25A2B4001EE63C /* args.m in Sources */,
+				40663AC61CBD122900A75EE3 /* ScriptedSync.cpp in Sources */,
 				40E47FB11BF22BA20052B84E /* AdventureView.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

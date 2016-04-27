@@ -32,6 +32,7 @@
 #include "Map.hpp"
 #include "Portcullis.hpp"
 #include "Room.hpp"
+#include "ScriptedSync.hpp"
 #include "Sync.hpp"
 #include "Sys.hpp"
 #include "Transport.hpp"
@@ -119,9 +120,10 @@ static int gameDifficultyRight = DIFFICULTY_B;          // 2600 right difficulty
 
 static int gameMapLayout = 0;                               // The board setup.  Level 1 = 0, Levels 2 & 3 = 1, Gauntlet = 2
 
-/** There are four game modes, the original three (but zero justified so game mode 0 means original level 1) and
- * a new fourth, gameMode 3, which I call The Gauntlet. */
+/** There are five game modes, the original three (but zero justified so game mode 0 means original level 1) and
+ * a new fourth, gameMode 3, which I call The Gauntlet. The fifth is used for generating videos and plays a preplanned script. */
 static int gameMode = 0;
+static bool joystickDisabled = false;
 
 static int displayedRoomIndex = 0;                                   // index of current (displayed) room
 
@@ -551,8 +553,9 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
                      int initialLeftDiff, int initialRightDiff) {
     numPlayers = inNumPlayers;
     thisPlayer = inThisPlayer;
-    gameMode = inGameNum-1;
-    gameMapLayout = ((gameMode == 0) ||  (gameMode == 3) ? 0: 1);
+    gameMode = inGameNum;
+    joystickDisabled = (gameMode == GAME_MODE_SCRIPTING);
+    gameMapLayout = ((gameMode == GAME_MODE_1) ||  (gameMode == GAME_MODE_GAUNTLET) ? 0: 1);
     timeToStartGame = 60 * 3;
     
     gameMap = new Map(numPlayers, gameMapLayout);
@@ -565,6 +568,9 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
         surrounds[ctr] = new OBJECT(surroundName, objectGfxSurround, 0, 0, COLOR_ORANGE, -1, 0, 0, OBJECT::FIXED_LOCATION, 0x07);
     }
     
+    Dragon::Difficulty difficulty = (gameMode == GAME_MODE_1 ? (initialLeftDiff == DIFFICULTY_B ?  Dragon::TRIVIAL : Dragon::EASY) :
+                                     (initialLeftDiff == DIFFICULTY_B ? Dragon::MODERATE : Dragon::HARD));
+    Dragon::setDifficulty(difficulty);
     dragons = new Dragon*[numDragons];
     dragons[0]= new Dragon("yorgle", 0, 0, COLOR_YELLOW, -1, 0, 0);
     dragons[1] = new Dragon("grindle", 1, 0, COLOR_LIMEGREEN, -1, 0, 0);
@@ -633,7 +639,8 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
 
     // Setup the transport
     transport = inTransport;
-    sync = new Sync(numPlayers, thisPlayer, transport);
+    sync = (gameMode == GAME_MODE_SCRIPTING ? new ScriptedSync(numPlayers, thisPlayer) :
+                                              new Sync(numPlayers, thisPlayer, transport));
     
     printf("Player %d setup.\n", thisPlayer);
 }
@@ -689,9 +696,15 @@ void Adventure_Run()
 
     // read the console switches every frame
     bool reset;
-    Platform_ReadConsoleSwitches(&reset);
     Platform_ReadDifficultySwitches(&gameDifficultyLeft, &gameDifficultyRight);
-
+    Platform_ReadConsoleSwitches(&reset);
+    // If joystick is disabled and we hit the reset switch we don't treat it as a reset but as
+    // a enable the joystick.  The next time you hit the reset switch it will work as a reset.
+    if (joystickDisabled && switchReset && !reset) {
+        joystickDisabled = false;
+        switchReset = false;
+    }
+    
     // Reset switch
     // First check for other resets
     PlayerResetAction* otherReset = sync->GetNextResetAction();
@@ -883,7 +896,7 @@ void SetupRoomObjects()
 
     // Read the object initialization table for the current game level
     const byte* p;
-    if ((gameMode == 0) || (gameMode == 3))
+    if ((gameMode == GAME_MODE_1) || (gameMode == GAME_MODE_GAUNTLET))
         p = (byte*)game1Objects;
     else
         p = (byte*)game2Objects;
@@ -912,7 +925,7 @@ void SetupRoomObjects()
 
     // Put objects in random rooms for level 3.
     // Only first player does this and then broadcasts to other players.
-    if ((gameMode == 2) && (thisPlayer == 0))
+    if ((gameMode == GAME_MODE_3) && (thisPlayer == 0))
     {
         randomizeRoomObjects();
     }
@@ -1139,30 +1152,33 @@ void ThisBallMovement()
 {
 	// Read the joystick and translate into a velocity
 	bool velocityChanged = false;
-	int newVelY = 0;
-	if (joyUp) {
-		if (!joyDown) {
-			newVelY = 6;
-		}
-	}
-	else if (joyDown) {
-		newVelY = -6;
-	}
-	velocityChanged = (objectBall->vely != newVelY);
-	objectBall->vely = newVelY;
-
-	int newVelX = 0;
-	if (joyRight) {
-		if (!joyLeft) {
-			newVelX = 6;
-		}
-	}
-	else if (joyLeft) {
-		newVelX = -6;
-	}
-	velocityChanged = velocityChanged || (objectBall->velx != newVelX);
-	objectBall->velx = newVelX;
-
+    // If we are scripting, we don't ever look at the joystick or change the velocity here.
+    if (!joystickDisabled) {
+        int newVelY = 0;
+        if (joyUp) {
+            if (!joyDown) {
+                newVelY = 6;
+            }
+        }
+        else if (joyDown) {
+            newVelY = -6;
+        }
+        velocityChanged = (objectBall->vely != newVelY);
+        objectBall->vely = newVelY;
+        
+        int newVelX = 0;
+        if (joyRight) {
+            if (!joyLeft) {
+                newVelX = 6;
+            }
+        }
+        else if (joyLeft) {
+            newVelX = -6;
+        }
+        velocityChanged = velocityChanged || (objectBall->velx != newVelX);
+        objectBall->velx = newVelX;
+    }
+    
 	BallMovement(objectBall);
 
 	if (velocityChanged) {
@@ -1331,7 +1347,8 @@ void BallMovement(BALL* ball) {
 
 void OtherBallMovement() {
 	for (int i = 0; i < numPlayers; ++i) {
-        if (i != thisPlayer) {
+        // Unless we are scripting we ignore messages to move our own player
+        if ((gameMode == GAME_MODE_SCRIPTING) || (i != thisPlayer)) {
             BALL* nextPayer = gameBoard->getPlayer(i);
             PlayerMoveAction* movement = sync->GetLatestBallSync(i);
             if (movement != 0x0) {
@@ -1342,7 +1359,11 @@ void OtherBallMovement() {
                 nextPayer->vely = movement->vely;
             }
             
-            BallMovement(nextPayer);
+            // Even in scripting we don't calculate normal movement of this ball in this method
+            // because that is done in another phase.
+            if (i != thisPlayer) {
+                BallMovement(nextPayer);
+            }
 		}
 	}
 
@@ -1373,7 +1394,7 @@ void SyncDragons() {
             else if (nextState->newState == Dragon::ROAR) {
                 // We ignore roar actions if we are already in an eaten state or dead state
                 if ((dragon->state != Dragon::EATEN) && (dragon->state != Dragon::DEAD)) {
-                    dragon->roar(nextState->posx, nextState->posy, gameMode, gameDifficultyLeft==DIFFICULTY_A);
+                    dragon->roar(nextState->posx, nextState->posy);
                     // Play the sound
                     Platform_MakeSound(SOUND_ROAR, volumeAtDistance(dragon->room));
                 }
@@ -1444,7 +1465,7 @@ void MoveGroundObject()
                     sync->BroadcastAction(moveAction);
                 }
                 // If entering the black castle in the gauntlet, glow.
-                if ((gameMode == 3) && (nextPort == objectDefs[OBJECT_BLACK_PORT]) && !nextBall->isGlowing()) {
+                if ((gameMode == GAME_MODE_GAUNTLET) && (nextPort == objectDefs[OBJECT_BLACK_PORT]) && !nextBall->isGlowing()) {
                     nextBall->setGlowing(true);
                     Platform_MakeSound(SOUND_GLOW, volumeAtDistance(nextBall->room));
                 }
@@ -1656,7 +1677,7 @@ void OthersPickupPutdown() {
 
 void PickupPutdown()
 {
-    if (joyFire && (objectBall->linkedObject >= 0))
+    if (!joystickDisabled && joyFire && (objectBall->linkedObject >= 0))
     {
         int dropped = objectBall->linkedObject;
         OBJECT* droppedObject = objectDefs[dropped];
@@ -1849,7 +1870,7 @@ void MoveDragon(Dragon* dragon, const int* matrix, int speed)
         // Has the Ball hit the Dragon?
         if ((objectBall->room == dragon->room) && CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-4), 8, 8))
         {
-            dragon->roar(objectBall->x/2, objectBall->y/2,gameMode, gameDifficultyLeft==DIFFICULTY_A);
+            dragon->roar(objectBall->x/2, objectBall->y/2);
             
             // Notify others
             DragonStateAction* action = new DragonStateAction(dragon->dragonNumber, Dragon::ROAR, dragon->room, dragon->x, dragon->y);
