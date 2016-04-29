@@ -70,7 +70,7 @@ static void Magnet();
 
 // My helper functions
 void addAllRoomsToPort(Portcullis* port, int firstRoom, int lastRoom);
-bool checkReturnedChailise();
+bool checkWonGame();
 static void DrawObjects(int room);
 static void DrawObject(const OBJECT* object);
 void DrawBall(const BALL* ball, COLOR color);
@@ -128,7 +128,7 @@ static bool joystickDisabled = false;
 static int displayedRoomIndex = 0;                                   // index of current (displayed) room
 
 static int winFlashTimer=0;
-static int winningCastle=-1; // The room number of the castle of the winning player.
+static int winningRoom=-1; // The room number of the castle of the winning player.
 
 static int flashColorHue=0;
 static int flashColorLum=0;
@@ -753,15 +753,19 @@ void Adventure_Run()
             // See if anyone else won the game
             PlayerWinAction* lost = sync->GetGameWon();
             if (lost != NULL) {
-                WinGame(gameBoard->getPlayer(lost->sender)->homeGate->room);
+                WinGame(lost->winInRoom);
                 delete lost;
                 lost = NULL;
             }
             // Get the room the chalise is in
             // Is it in the home castle?
-            else if (checkReturnedChailise())
+            else if (checkWonGame())
             {
-                WinGame(objectBall->homeGate->room);
+                // Once we win the game it doesn't update the room, so make sure we're looking
+                // at the inside of the castle
+                displayedRoomIndex = objectBall->room;
+                
+                WinGame(objectBall->room);
                 PlayerWinAction* won = new PlayerWinAction(objectBall->room);
                 sync->BroadcastAction(won);
             }
@@ -864,7 +868,7 @@ void Adventure_Run()
             if (winFlashTimer > 0) {
                 --winFlashTimer;
             } else {
-                displayedRoomIndex = winningCastle;
+                displayedRoomIndex = winningRoom;
             }
 
             // Display the room and objects
@@ -921,8 +925,8 @@ void SetupRoomObjects()
         objectDefs[object]->movementX = movementX;
         objectDefs[object]->movementY = movementY;
     };
-	Sys::log("Set initial object positions.\n");
     
+    // Hide the jade key if only 2 player
     if (numPlayers <= 2) {
         objectDefs[OBJECT_JADEKEY]->randomPlacement = OBJECT::FIXED_LOCATION;
     }
@@ -932,6 +936,14 @@ void SetupRoomObjects()
     if ((gameMode == GAME_MODE_3) && (thisPlayer == 0))
     {
         randomizeRoomObjects();
+    }
+    
+    // Open the gates if running the gauntlet
+    if (gameMode == GAME_MODE_GAUNTLET) {
+        Portcullis* blackPort = (Portcullis*)objectDefs[OBJECT_BLACK_PORT];
+        blackPort->setState(Portcullis::OPEN_STATE, true);
+        Portcullis* goldPort = (Portcullis*)objectDefs[OBJECT_YELLOW_PORT];
+        goldPort->setState(Portcullis::OPEN_STATE, true);
     }
 }
 
@@ -1093,34 +1105,39 @@ float volumeAtDistance(int room) {
 }
 
 /**
- * Returns true if this player has gotten the chalise to their home castle and won the game.
+ * Returns true if this player has gotten the chalise to their home castle and won the game, or, if
+ * this is the gauntlet, if the player has reached the gold castle.
  */
-bool checkReturnedChailise() {
-    bool returned = false;
-    // Player MUST be holding the chalise to win (or holding the bat holding the chalise).
-    // Another player can't win for you.
-    if ((objectBall->linkedObject == OBJECT_CHALISE) ||
-        ((objectBall->linkedObject == OBJECT_BAT) && (bat->linkedObject == OBJECT_CHALISE))) {
-        // Player either has to bring the chalise into the castle or touch the chalise to the gate
-        if (objectDefs[OBJECT_CHALISE]->room == objectBall->homeGate->insideRoom) {
-            returned = true;
-        } else {
-            if ((objectBall->room == objectBall->homeGate->room) &&
-                (objectBall->homeGate->state == Portcullis::OPEN_STATE) &&
-                CollisionCheckObjectObject(objectBall->homeGate, objectDefs[OBJECT_CHALISE])) {
-                
-                returned = true;
+bool checkWonGame() {
+    bool won = false;
+    if (gameMode == GAME_MODE_GAUNTLET) {
+        won = (objectBall->isGlowing() && (objectBall->room == objectBall->homeGate->insideRoom));
+    } else {
+        // Player MUST be holding the chalise to win (or holding the bat holding the chalise).
+        // Another player can't win for you.
+        if ((objectBall->linkedObject == OBJECT_CHALISE) ||
+            ((objectBall->linkedObject == OBJECT_BAT) && (bat->linkedObject == OBJECT_CHALISE))) {
+            // Player either has to bring the chalise into the castle or touch the chalise to the gate
+            if (objectDefs[OBJECT_CHALISE]->room == objectBall->homeGate->insideRoom) {
+                won = true;
+            } else {
+                if ((objectBall->room == objectBall->homeGate->room) &&
+                    (objectBall->homeGate->state == Portcullis::OPEN_STATE) &&
+                    CollisionCheckObjectObject(objectBall->homeGate, objectDefs[OBJECT_CHALISE])) {
+                    
+                    won = true;
+                }
             }
         }
     }
-    return returned;
+    return won;
 }
 
-void WinGame(int winCastle) {
+void WinGame(int winRoom) {
     // Go to won state
     gameState = GAMESTATE_WIN;
     winFlashTimer = 0xff;
-    winningCastle = winCastle;
+    winningRoom = winRoom;
     
     // Play the sound
     Platform_MakeSound(SOUND_WON, MAX_VOLUME);
