@@ -14,7 +14,7 @@ class BALL;
 #define CLOCKS_HSYNC        2
 #define CLOCKS_VSYNC        4
 
-
+#define OBJECT_BALL			(-2)
 enum
 {
     OBJECT_NONE=-1,

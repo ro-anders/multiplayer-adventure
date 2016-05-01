@@ -6,6 +6,7 @@
 #include "GameObject.hpp"
 
 class BALL;
+class RemoteAction;
 
 class Dragon: public OBJECT {
 public:
@@ -21,6 +22,8 @@ public:
     static const int DEAD;
     static const int EATEN;
     static const int ROAR;
+
+	static bool runFromSword;
     
     BALL* eaten;
     int eatenX;
@@ -30,18 +33,25 @@ public:
     Dragon(const char* label, int number, int inState, int inColor, int inRoom, int inX, int inY);
     
     ~Dragon();
-    
-    void decrementTimer();
-    
-    int timerExpired();
-    
-    void roar(int atX, int atY);
+
+	static void setRunFromSword(bool willRunFromSword);
     
     static void setDifficulty(Difficulty newDifficulty);
     
-    void move(const int* matrix, int speed);
+	/**
+	* Move the dragon this turn.
+	* matrix - The dragon list of things he runs from, goes after, or guards
+	* speed - the dragon's speed
+	* displayedRoomIndex - if the dragon eats the current player, the dragon controls what room is displayed
+	* and needs to update the displayedRoomIndex
+	*/
+    RemoteAction* move(const int* matrix, int speed, int* displayedRoomIndex);
     
-    int dragonNumber;
+	void roar(int atX, int atY);
+
+	int dragonNumber;
+
+	bool hasEatenCurrentPlayer();
 
     
 private:
@@ -56,7 +66,11 @@ private:
      */
     void resetTimer();
     
+	void decrementTimer();
 
+	int timerExpired();
+
+	BALL* closestBall(int room, int x, int y);
 
 };
 

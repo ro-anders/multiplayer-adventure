@@ -45,7 +45,6 @@
 // Types
 
 
-#define OBJECT_BALL			(-2)
 #define OBJECT_LEFTWALL		(-3)
 #define OBJECT_RIGHTWALL	(-4)
 #define OBJECT_SURROUND		(-5) // Actually, up to 3 surrounds with values -5 to -7
@@ -584,7 +583,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     OBJECT* blackKey = new OBJECT("black key", objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
 
     // We need to setup the keys before the portcullises
-    gameBoard = new Board();
+    gameBoard = new Board(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT);
     objectDefs = gameBoard->objects;
     
     
@@ -630,10 +629,10 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
 
     // Setup the players
     
-    gameBoard->addPlayer(new BALL(0, ports[0]));
-    gameBoard->addPlayer(new BALL(1, ports[3]));
+    gameBoard->addPlayer(new BALL(0, ports[0]), thisPlayer == 0);
+    gameBoard->addPlayer(new BALL(1, ports[3]), thisPlayer == 1);
     if (numPlayers > 2) {
-        gameBoard->addPlayer(new BALL(2, ports[4]));
+        gameBoard->addPlayer(new BALL(2, ports[4]), thisPlayer == 2);
     }
     objectBall = gameBoard->getPlayer(thisPlayer);
 
@@ -702,6 +701,8 @@ void Adventure_Run()
     bool reset;
     Platform_ReadDifficultySwitches(&gameDifficultyLeft, &gameDifficultyRight);
     Platform_ReadConsoleSwitches(&reset);
+
+	Dragon::setRunFromSword(gameDifficultyRight == DIFFICULTY_A);
     // If joystick is disabled and we hit the reset switch we don't treat it as a reset but as
     // a enable the joystick.  The next time you hit the reset switch it will work as a reset.
     if (joystickDisabled && switchReset && !reset) {
@@ -838,13 +839,16 @@ void Adventure_Run()
                     SyncDragons();
                     
                     // Move and deal with the green dragon
-                    MoveDragon((Dragon*)objectDefs[OBJECT_GREENDRAGON], greenDragonMatrix, 2);
+					Dragon* greenDragon = (Dragon*)objectDefs[OBJECT_GREENDRAGON];
+					greenDragon->move(greenDragonMatrix, 2, &displayedRoomIndex);
 
+					Dragon* yellowDragon = (Dragon*)objectDefs[OBJECT_YELLOWDRAGON];
                     // Move and deal with the yellow dragon
-                    MoveDragon((Dragon*)objectDefs[OBJECT_YELLOWDRAGON], yellowDragonMatrix, 2);
+                    yellowDragon->move(yellowDragonMatrix, 2, &displayedRoomIndex);
 
                     // Move and deal with the red dragon
-                    MoveDragon((Dragon*)objectDefs[OBJECT_REDDRAGON], redDragonMatrix, 3);
+					Dragon* redDragon = (Dragon*)objectDefs[OBJECT_REDDRAGON];
+                    redDragon->move(redDragonMatrix, 3, &displayedRoomIndex);
 
                     // Deal with the magnet
                     Magnet();
@@ -1847,201 +1851,7 @@ void Portals()
     
 }
 
-/**
- * Returns the ball closest to the point in the adventure.
- */
-BALL* closestBall(int room, int x, int y) {
-    int shortestDistance = 10000; // Some big number greater than the diagnol of the board
-    BALL* found = 0x0;
-    for(int ctr=0; ctr<numPlayers; ++ctr) {
-        BALL* nextBall = gameBoard->getPlayer(ctr);
-        if (nextBall->room == room)
-        {
-            int dist = nextBall->distanceTo(x, y);
-            if (dist < shortestDistance) {
-                shortestDistance = dist;
-                found = nextBall;
-            }
-        }
-    }
-    return found;
-}
 
-void MoveDragon(Dragon* dragon, const int* matrix, int speed)
-{
-    if (dragon->state == Dragon::STALKING)
-    {
-        // Has the Ball hit the Dragon?
-        if ((objectBall->room == dragon->room) && CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-4), 8, 8))
-        {
-            dragon->roar(objectBall->x/2, objectBall->y/2);
-            
-            // Notify others
-            DragonStateAction* action = new DragonStateAction(dragon->dragonNumber, Dragon::ROAR, dragon->room, dragon->x, dragon->y);
-            
-            sync->BroadcastAction(action);
-
-            // Play the sound
-            Platform_MakeSound(SOUND_ROAR, MAX_VOLUME);
-        }
-
-        // Has the Sword hit the Dragon?
-        if (CollisionCheckObjectObject(dragon, objectDefs[OBJECT_SWORD]))
-        {
-            // Set the State to 01 (Dead)
-            dragon->state = Dragon::DEAD;
-            dragon->movementX = 0;
-            dragon->movementY = 0;
-
-            // Notify others
-            DragonStateAction* action = new DragonStateAction(dragon->dragonNumber, Dragon::DEAD, dragon->room, dragon->x, dragon->y);
-            
-            sync->BroadcastAction(action);
-            
-            // Play the sound
-            Platform_MakeSound(SOUND_DRAGONDIE, MAX_VOLUME);
-        }
-
-        if (dragon->state == Dragon::STALKING)
-        {
-            // Go through the dragon's object matrix
-            // Difficulty switch determines flee or don't flee from sword
-            const int* matrixP = (gameDifficultyRight == DIFFICULTY_A) ? matrix : matrix+2;
-            do
-            {
-                int seekDir = 0; // 1 is seeking, -1 is fleeing
-                int seekX=0, seekY=0;
-
-                int fleeObject = *(matrixP+0); 
-                int seekObject = *(matrixP+1); 
-
-                // Dragon fleeing an object
-                if ((fleeObject > OBJECT_NONE) && objectDefs[fleeObject] != dragon)
-                {
-                    // get the object it is fleeing
-                    const OBJECT* object = objectDefs[fleeObject];
-                    if (object->room == dragon->room)
-                    {
-                        seekDir = -1;
-                        seekX = object->x;
-                        seekY = object->y;
-                    }
-                }
-                else
-                {
-                    // Dragon seeking the ball
-                    if (seekDir == 0)
-                    {
-                        if (*(matrixP+1) == OBJECT_BALL)
-                        {
-                            BALL* closest = closestBall(dragon->room, dragon->x, dragon->y);
-                            if (closest != 0x0) {
-                                seekDir = 1;
-                                seekX = closest->x/2;
-                                seekY = closest->y/2;
-                            }
-                        }
-                    }
-
-                    // Dragon seeking an object
-                    if ((seekDir == 0) && (seekObject > OBJECT_NONE))
-                    {
-                        // Get the object it is seeking
-                        const OBJECT* object = objectDefs[seekObject];
-                        if (object->room == dragon->room)
-                        {
-                            seekDir = 1;
-                            seekX = object->x;
-                            seekY = object->y;
-                        }
-                    }
-                }
-
-                // Move the dragon
-                if ((seekDir > 0) || (seekDir < 0))
-                {
-                    int newMovementX = 0;
-                    int newMovementY = 0;
-
-                    // horizontal axis
-                    if (dragon->x < seekX)
-                    {
-                        newMovementX = seekDir*speed;
-                    }
-                    else if (dragon->x > seekX)
-                    {
-                        newMovementX = -(seekDir*speed);
-                    }
-
-                    // vertical axis
-                    if (dragon->y < seekY)
-                    {
-                        newMovementY = seekDir*speed;
-                    }
-                    else if (dragon->y > seekY)
-                    {
-                        newMovementY = -(seekDir*speed);
-                    }
-                    
-                    // Notify others if we've changed our direction
-                    if ((dragon->room == objectBall->room) && ((newMovementX != dragon->movementX) || (newMovementY != dragon->movementY))) {
-                        int distanceToMe = gameBoard->getPlayer(thisPlayer)->distanceTo(dragon->x, dragon->y);
-                        DragonMoveAction* newAction = new DragonMoveAction(dragon->room, dragon->x, dragon->y, newMovementX, newMovementY, dragon->dragonNumber, distanceToMe);
-                        sync->BroadcastAction(newAction);
-                    }
-                    dragon->movementX = newMovementX;
-                    dragon->movementY = newMovementY;
-
-                    // Found something - we're done
-                    return;
-                }
-            }
-            while (*(matrixP+=2));
-
-        }
-    }
-    else if (dragon->state == Dragon::EATEN)
-    {
-        // Eaten
-        dragon->eaten->room = dragon->room;
-        dragon->eaten->x = (dragon->x + 3) * 2;
-        dragon->eaten->y = (dragon->y - 10) * 2;
-        dragon->movementX = 0;
-        dragon->movementY = 0;
-        if (objectBall == dragon->eaten) {
-            displayedRoomIndex = objectBall->room;
-        }
-    }
-    else if (dragon->state == Dragon::ROAR)
-    {
-        dragon->decrementTimer();
-        if (dragon->timerExpired())
-        {
-            // Has the Ball hit the Dragon?
-            if ((objectBall->room == dragon->room) && CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-1), 8, 8))
-            {
-                // Set the State to 01 (eaten)
-                dragon->eaten = objectBall;
-                dragon->state = Dragon::EATEN;
-
-                // Notify others
-                DragonStateAction* action = new DragonStateAction(dragon->dragonNumber, Dragon::EATEN, dragon->room, dragon->x, dragon->y);
-                
-                sync->BroadcastAction(action);
-                
-
-                // Play the sound
-                Platform_MakeSound(SOUND_EATEN, MAX_VOLUME);
-            }
-            else
-            {
-                // Go back to stalking
-                dragon->state = Dragon::STALKING;
-            }
-        }
-    }
-    // else dead!
-}
 
 void Magnet()
 {

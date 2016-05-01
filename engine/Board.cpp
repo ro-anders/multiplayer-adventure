@@ -60,6 +60,10 @@ BALL* Board::getPlayer(int playerNum) {
     return players[playerNum];
 }
 
+BALL* Board::getCurrentPlayer() {
+	return players[currentPlayer];
+}
+
 bool Board::HitTestRects(int ax, int ay, int awidth, int aheight,
                   int bx, int by, int bwidth, int bheight)
 {
