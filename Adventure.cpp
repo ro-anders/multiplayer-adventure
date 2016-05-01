@@ -1686,8 +1686,16 @@ void MoveGroundObject()
         OBJECT* object = &objectDefs[i];
 
         // Apply movement
-        object->x += object->movementX;
-        object->y += object->movementY;
+        // RCA: Trying to fix discrepancy when you leave the room with the dragon still roaring.
+        // In c++port the dragon stays still until you reenter the room.  In original game
+        // the dragon continues moving in its original pre-roar direction.
+        // No idea how Warren Robinett originally did it nor where he stored the dragons
+        // pre-roar velocity, so I left velocity alone and put in this check to not move
+        // when roaring.
+        if (object->state != 3) {
+            object->x += object->movementX;
+            object->y += object->movementY;
+        }
 
         // Check and Deal with Up
         if (object->y > 0x6A)
@@ -2108,8 +2116,11 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
             dragon->x = (objectBall.x/2);
             dragon->y = (objectBall.y/2);
 
-            dragon->movementX = 0;
-            dragon->movementY = 0;
+            // RCA: Trying to fix discrepancy when you leave the room with the dragon still roaring.
+            // In c++port the dragon stays still until you reenter the room.  In original game
+            // dragon continues moving in its original pre-roar direction.
+            //dragon->movementX = 0;
+            //dragon->movementY = 0;
 
             // Play the sound
             Platform_MakeSound(SOUND_ROAR);
