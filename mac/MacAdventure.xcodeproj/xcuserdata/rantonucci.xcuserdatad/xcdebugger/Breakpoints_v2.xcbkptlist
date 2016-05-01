@@ -51,9 +51,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "180"
-            endingLineNumber = "180"
-            landmarkName = "Portcullis::addRoom(ROOM* room)"
-            landmarkType = "5">
+            endingLineNumber = "180">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

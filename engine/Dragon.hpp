@@ -39,6 +39,8 @@ public:
     
     static void setDifficulty(Difficulty newDifficulty);
     
+    void move(const int* matrix, int speed);
+    
     int dragonNumber;
 
     
