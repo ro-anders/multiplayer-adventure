@@ -1686,13 +1686,14 @@ void MoveGroundObject()
         OBJECT* object = &objectDefs[i];
 
         // Apply movement
-        // RCA: Trying to fix discrepancy when you leave the room with the dragon still roaring.
-        // In c++port the dragon stays still until you reenter the room.  In original game
-        // the dragon continues moving in its original pre-roar direction.
+        // RCA: Trying to fix discrepancy between C++ port and original game.
+        // In original game if dragon is roaring, dead, or has eaten you it stops but
+        // when it returns to original state is goes back to its previous velocity.
+        // C++ port has the dragon stay stopped until you are in the same room again.
         // No idea how Warren Robinett originally did it nor where he stored the dragons
-        // pre-roar velocity, so I left velocity alone and put in this check to not move
-        // when roaring.
-        if (object->state != 3) {
+        // previous velocity, so I left velocity alone and put in this check to not move
+        // unless in stalking state.
+        if ((object->gfxData != objectGfxDrag) || (object->state == 0)) {
             object->x += object->movementX;
             object->y += object->movementY;
         }
@@ -2131,8 +2132,11 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
         {
             // Set the State to 01 (Dead)
             dragon->state = 1;
-            dragon->movementX = 0;
-            dragon->movementY = 0;
+            // RCA: Trying to fix discrepancy when you leave the room with the dragon still roaring.
+            // In c++port the dragon stays still until you reenter the room.  In original game
+            // dragon continues moving in its original pre-roar direction.
+            //dragon->movementX = 0;
+            //dragon->movementY = 0;
         
             // Play the sound
             Platform_MakeSound(SOUND_DRAGONDIE);
@@ -2233,8 +2237,11 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
         objectBall.room = dragon->room;
         objectBall.x = (dragon->x + 3) * 2;
         objectBall.y = (dragon->y - 10) * 2;
-        dragon->movementX = 0;
-        dragon->movementY = 0;
+        // RCA: Trying to fix discrepancy when you leave the room with the dragon still roaring.
+        // In c++port the dragon stays still until you reenter the room.  In original game
+        // dragon continues moving in its original pre-roar direction.
+        //dragon->movementX = 0;
+        //dragon->movementY = 0;
         displayedRoomIndex = objectBall.room;
     }
     else if (dragon->state == 3)
