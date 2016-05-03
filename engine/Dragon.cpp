@@ -90,9 +90,11 @@ static const byte objectGfxDrag [] =
 
 int Dragon::dragonResetTime = Dragon::TRIVIAL;
 
-Dragon::Dragon(const char* label, int inNumber, int inState, int inColor, int inRoom, int inX, int inY):
-    OBJECT(label, objectGfxDrag, dragonStates, inState, inColor, inRoom, inX, inY),
+Dragon::Dragon(const char* label, int inNumber, int inColor, int inSpeed, const int* chaseMatrix):
+    OBJECT(label, objectGfxDrag, dragonStates, 0, inColor, -1, 0, 0),
     dragonNumber(inNumber),
+    speed(inSpeed),
+    matrix(chaseMatrix),
     timer(0),
     eaten(NULL),
     eatenX(0),
@@ -141,7 +143,7 @@ bool Dragon::hasEatenCurrentPlayer() {
 	return (state == Dragon::EATEN) && (eaten == board->getCurrentPlayer());
 }
 
-RemoteAction* Dragon::move(const int* matrix, int speed, int* displayedRoomIndex)
+RemoteAction* Dragon::move(int* displayedRoomIndex)
 {
 	RemoteAction* actionTaken = NULL;
     Dragon* dragon = this;
@@ -178,6 +180,11 @@ RemoteAction* Dragon::move(const int* matrix, int speed, int* displayedRoomIndex
         
         if (dragon->state == Dragon::STALKING)
         {
+            // If nothing is around the dragon to move him, keep going in
+            // previous direction.
+            dragon->movementX = dragon->prevMovementX;
+            dragon->movementY = dragon->prevMovementY;
+            
             // Go through the dragon's object matrix
             // Difficulty switch determines flee or don't flee from sword
             const int* matrixP = (runFromSword ? matrix : matrix+2);
@@ -264,6 +271,8 @@ RemoteAction* Dragon::move(const int* matrix, int speed, int* displayedRoomIndex
                     }
                     dragon->movementX = newMovementX;
                     dragon->movementY = newMovementY;
+                    dragon->prevMovementX = newMovementX;
+                    dragon->prevMovementY = newMovementY;
                     
                     // Found something - we're done
                     return actionTaken;

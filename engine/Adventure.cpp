@@ -571,9 +571,9 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
                                      (initialLeftDiff == DIFFICULTY_B ? Dragon::MODERATE : Dragon::HARD));
     Dragon::setDifficulty(difficulty);
     dragons = new Dragon*[numDragons];
-    dragons[0]= new Dragon("yorgle", 0, 0, COLOR_YELLOW, -1, 0, 0);
-    dragons[1] = new Dragon("grindle", 1, 0, COLOR_LIMEGREEN, -1, 0, 0);
-    dragons[2] = new Dragon("rhindle", 2, 0, COLOR_RED, -1, 0, 0);
+    dragons[0] = new Dragon( "yorgle", 0, COLOR_YELLOW, 2, yellowDragonMatrix);
+    dragons[1] = new Dragon("grindle", 1, COLOR_LIMEGREEN, 2, greenDragonMatrix);
+    dragons[2] = new Dragon("rhindle", 2, COLOR_RED, 3, redDragonMatrix);
     bat = new Bat(COLOR_BLACK, -1, 0, 0);
 
     OBJECT* goldKey = new OBJECT("gold key", objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0, OBJECT::OUT_IN_OPEN);
@@ -838,17 +838,13 @@ void Adventure_Run()
                     // Read remote dragon actions
                     SyncDragons();
                     
-                    // Move and deal with the green dragon
-					Dragon* greenDragon = (Dragon*)objectDefs[OBJECT_GREENDRAGON];
-					greenDragon->move(greenDragonMatrix, 2, &displayedRoomIndex);
-
-					Dragon* yellowDragon = (Dragon*)objectDefs[OBJECT_YELLOWDRAGON];
-                    // Move and deal with the yellow dragon
-                    yellowDragon->move(yellowDragonMatrix, 2, &displayedRoomIndex);
-
-                    // Move and deal with the red dragon
-					Dragon* redDragon = (Dragon*)objectDefs[OBJECT_REDDRAGON];
-                    redDragon->move(redDragonMatrix, 3, &displayedRoomIndex);
+                    // Move and deal with the dragons
+                    for(int dragonCtr=0; dragonCtr<numDragons; ++dragonCtr) {
+                        RemoteAction* dragonAction = dragons[dragonCtr]->move(&displayedRoomIndex);
+                        if (dragonAction != NULL) {
+                            sync->BroadcastAction(dragonAction);
+                        }
+                    }
 
                     // Deal with the magnet
                     Magnet();
