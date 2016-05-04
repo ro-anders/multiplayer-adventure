@@ -45,7 +45,6 @@
 // Types
 
 
-#define OBJECT_BALL			(-2)
 #define OBJECT_LEFTWALL		(-3)
 #define OBJECT_RIGHTWALL	(-4)
 #define OBJECT_SURROUND		(-5) // Actually, up to 3 surrounds with values -5 to -7
@@ -572,9 +571,9 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
                                      (initialLeftDiff == DIFFICULTY_B ? Dragon::MODERATE : Dragon::HARD));
     Dragon::setDifficulty(difficulty);
     dragons = new Dragon*[numDragons];
-    dragons[0]= new Dragon("yorgle", 0, 0, COLOR_YELLOW, -1, 0, 0);
-    dragons[1] = new Dragon("grindle", 1, 0, COLOR_LIMEGREEN, -1, 0, 0);
-    dragons[2] = new Dragon("rhindle", 2, 0, COLOR_RED, -1, 0, 0);
+    dragons[0] = new Dragon( "yorgle", 0, COLOR_YELLOW, 2, yellowDragonMatrix);
+    dragons[1] = new Dragon("grindle", 1, COLOR_LIMEGREEN, 2, greenDragonMatrix);
+    dragons[2] = new Dragon("rhindle", 2, COLOR_RED, 3, redDragonMatrix);
     bat = new Bat(COLOR_BLACK, -1, 0, 0);
 
     OBJECT* goldKey = new OBJECT("gold key", objectGfxKey, 0, 0, COLOR_YELLOW, -1, 0, 0, OBJECT::OUT_IN_OPEN);
@@ -584,7 +583,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     OBJECT* blackKey = new OBJECT("black key", objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
 
     // We need to setup the keys before the portcullises
-    gameBoard = new Board();
+    gameBoard = new Board(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT);
     objectDefs = gameBoard->objects;
     
     
@@ -630,12 +629,12 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
 
     // Setup the players
     
-    gameBoard->addPlayer(new BALL(0, ports[0]));
+    gameBoard->addPlayer(new BALL(0, ports[0]), thisPlayer == 0);
     Portcullis* p2Home = (gameMode == GAME_MODE_GAUNTLET ? ports[0] : ports[3]);
-    gameBoard->addPlayer(new BALL(1, p2Home));
+    gameBoard->addPlayer(new BALL(1, p2Home), thisPlayer == 1);
     if (numPlayers > 2) {
         Portcullis* p3Home = (gameMode == GAME_MODE_GAUNTLET ? ports[0] : ports[4]);
-        gameBoard->addPlayer(new BALL(2, p3Home));
+        gameBoard->addPlayer(new BALL(2, p3Home), thisPlayer == 2);
     }
     objectBall = gameBoard->getPlayer(thisPlayer);
 
@@ -704,6 +703,8 @@ void Adventure_Run()
     bool reset;
     Platform_ReadDifficultySwitches(&gameDifficultyLeft, &gameDifficultyRight);
     Platform_ReadConsoleSwitches(&reset);
+
+	Dragon::setRunFromSword(gameDifficultyRight == DIFFICULTY_A);
     // If joystick is disabled and we hit the reset switch we don't treat it as a reset but as
     // a enable the joystick.  The next time you hit the reset switch it will work as a reset.
     if (joystickDisabled && switchReset && !reset) {
@@ -843,14 +844,13 @@ void Adventure_Run()
                     // Read remote dragon actions
                     SyncDragons();
                     
-                    // Move and deal with the green dragon
-                    MoveDragon((Dragon*)objectDefs[OBJECT_GREENDRAGON], greenDragonMatrix, 2);
-
-                    // Move and deal with the yellow dragon
-                    MoveDragon((Dragon*)objectDefs[OBJECT_YELLOWDRAGON], yellowDragonMatrix, 2);
-
-                    // Move and deal with the red dragon
-                    MoveDragon((Dragon*)objectDefs[OBJECT_REDDRAGON], redDragonMatrix, 3);
+                    // Move and deal with the dragons
+                    for(int dragonCtr=0; dragonCtr<numDragons; ++dragonCtr) {
+                        RemoteAction* dragonAction = dragons[dragonCtr]->move(&displayedRoomIndex);
+                        if (dragonAction != NULL) {
+                            sync->BroadcastAction(dragonAction);
+                        }
+                    }
 
                     // Deal with the magnet
                     Magnet();
@@ -1866,201 +1866,7 @@ void Portals()
     
 }
 
-/**
- * Returns the ball closest to the point in the adventure.
- */
-BALL* closestBall(int room, int x, int y) {
-    int shortestDistance = 10000; // Some big number greater than the diagnol of the board
-    BALL* found = 0x0;
-    for(int ctr=0; ctr<numPlayers; ++ctr) {
-        BALL* nextBall = gameBoard->getPlayer(ctr);
-        if (nextBall->room == room)
-        {
-            int dist = nextBall->distanceTo(x, y);
-            if (dist < shortestDistance) {
-                shortestDistance = dist;
-                found = nextBall;
-            }
-        }
-    }
-    return found;
-}
 
-void MoveDragon(Dragon* dragon, const int* matrix, int speed)
-{
-    if (dragon->state == Dragon::STALKING)
-    {
-        // Has the Ball hit the Dragon?
-        if ((objectBall->room == dragon->room) && CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-4), 8, 8))
-        {
-            dragon->roar(objectBall->x/2, objectBall->y/2);
-            
-            // Notify others
-            DragonStateAction* action = new DragonStateAction(dragon->dragonNumber, Dragon::ROAR, dragon->room, dragon->x, dragon->y);
-            
-            sync->BroadcastAction(action);
-
-            // Play the sound
-            Platform_MakeSound(SOUND_ROAR, MAX_VOLUME);
-        }
-
-        // Has the Sword hit the Dragon?
-        if (CollisionCheckObjectObject(dragon, objectDefs[OBJECT_SWORD]))
-        {
-            // Set the State to 01 (Dead)
-            dragon->state = Dragon::DEAD;
-            dragon->movementX = 0;
-            dragon->movementY = 0;
-
-            // Notify others
-            DragonStateAction* action = new DragonStateAction(dragon->dragonNumber, Dragon::DEAD, dragon->room, dragon->x, dragon->y);
-            
-            sync->BroadcastAction(action);
-            
-            // Play the sound
-            Platform_MakeSound(SOUND_DRAGONDIE, MAX_VOLUME);
-        }
-
-        if (dragon->state == Dragon::STALKING)
-        {
-            // Go through the dragon's object matrix
-            // Difficulty switch determines flee or don't flee from sword
-            const int* matrixP = (gameDifficultyRight == DIFFICULTY_A) ? matrix : matrix+2;
-            do
-            {
-                int seekDir = 0; // 1 is seeking, -1 is fleeing
-                int seekX=0, seekY=0;
-
-                int fleeObject = *(matrixP+0); 
-                int seekObject = *(matrixP+1); 
-
-                // Dragon fleeing an object
-                if ((fleeObject > OBJECT_NONE) && objectDefs[fleeObject] != dragon)
-                {
-                    // get the object it is fleeing
-                    const OBJECT* object = objectDefs[fleeObject];
-                    if (object->room == dragon->room)
-                    {
-                        seekDir = -1;
-                        seekX = object->x;
-                        seekY = object->y;
-                    }
-                }
-                else
-                {
-                    // Dragon seeking the ball
-                    if (seekDir == 0)
-                    {
-                        if (*(matrixP+1) == OBJECT_BALL)
-                        {
-                            BALL* closest = closestBall(dragon->room, dragon->x, dragon->y);
-                            if (closest != 0x0) {
-                                seekDir = 1;
-                                seekX = closest->x/2;
-                                seekY = closest->y/2;
-                            }
-                        }
-                    }
-
-                    // Dragon seeking an object
-                    if ((seekDir == 0) && (seekObject > OBJECT_NONE))
-                    {
-                        // Get the object it is seeking
-                        const OBJECT* object = objectDefs[seekObject];
-                        if (object->room == dragon->room)
-                        {
-                            seekDir = 1;
-                            seekX = object->x;
-                            seekY = object->y;
-                        }
-                    }
-                }
-
-                // Move the dragon
-                if ((seekDir > 0) || (seekDir < 0))
-                {
-                    int newMovementX = 0;
-                    int newMovementY = 0;
-
-                    // horizontal axis
-                    if (dragon->x < seekX)
-                    {
-                        newMovementX = seekDir*speed;
-                    }
-                    else if (dragon->x > seekX)
-                    {
-                        newMovementX = -(seekDir*speed);
-                    }
-
-                    // vertical axis
-                    if (dragon->y < seekY)
-                    {
-                        newMovementY = seekDir*speed;
-                    }
-                    else if (dragon->y > seekY)
-                    {
-                        newMovementY = -(seekDir*speed);
-                    }
-                    
-                    // Notify others if we've changed our direction
-                    if ((dragon->room == objectBall->room) && ((newMovementX != dragon->movementX) || (newMovementY != dragon->movementY))) {
-                        int distanceToMe = gameBoard->getPlayer(thisPlayer)->distanceTo(dragon->x, dragon->y);
-                        DragonMoveAction* newAction = new DragonMoveAction(dragon->room, dragon->x, dragon->y, newMovementX, newMovementY, dragon->dragonNumber, distanceToMe);
-                        sync->BroadcastAction(newAction);
-                    }
-                    dragon->movementX = newMovementX;
-                    dragon->movementY = newMovementY;
-
-                    // Found something - we're done
-                    return;
-                }
-            }
-            while (*(matrixP+=2));
-
-        }
-    }
-    else if (dragon->state == Dragon::EATEN)
-    {
-        // Eaten
-        dragon->eaten->room = dragon->room;
-        dragon->eaten->x = (dragon->x + 3) * 2;
-        dragon->eaten->y = (dragon->y - 10) * 2;
-        dragon->movementX = 0;
-        dragon->movementY = 0;
-        if (objectBall == dragon->eaten) {
-            displayedRoomIndex = objectBall->room;
-        }
-    }
-    else if (dragon->state == Dragon::ROAR)
-    {
-        dragon->decrementTimer();
-        if (dragon->timerExpired())
-        {
-            // Has the Ball hit the Dragon?
-            if ((objectBall->room == dragon->room) && CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-1), 8, 8))
-            {
-                // Set the State to 01 (eaten)
-                dragon->eaten = objectBall;
-                dragon->state = Dragon::EATEN;
-
-                // Notify others
-                DragonStateAction* action = new DragonStateAction(dragon->dragonNumber, Dragon::EATEN, dragon->room, dragon->x, dragon->y);
-                
-                sync->BroadcastAction(action);
-                
-
-                // Play the sound
-                Platform_MakeSound(SOUND_EATEN, MAX_VOLUME);
-            }
-            else
-            {
-                // Go back to stalking
-                dragon->state = Dragon::STALKING;
-            }
-        }
-    }
-    // else dead!
-}
 
 void Magnet()
 {
@@ -2430,167 +2236,14 @@ static int CollisionCheckBallWithObjects(BALL* ball, int startIndex)
 // On the 2600 this is done in hardware by the Player/Missile collision registers
 bool CollisionCheckObjectObject(const OBJECT* object1, const OBJECT* object2)
 {
-    // Before we do pixel by pixel collision checking, do some trivial rejection
-    // and return early if the object extents do not even overlap or are not in the same room
-
-    if (object1->room != object2->room)
-        return false;
-
-    int cx1, cy1, cw1, ch1;
-    int cx2, cy2, cw2, ch2;
-    object1->CalcSpriteExtents(&cx1, &cy1, &cw1, &ch1);
-    object2->CalcSpriteExtents(&cx2, &cy2, &cw2, &ch2);
-    if (!Board::HitTestRects(cx1, cy1, cw1, ch1, cx2, cy2, cw2, ch2))
-        return false;
-
-    // Object extents overlap go pixel by pixel
-
-    int objectX1 = object1->x;
-    int objectY1 = object1->y;
-    int objectSize1 = (object1->size/2) + 1;
-
-    int objectX2 = object2->x;
-    int objectY2 = object2->y;
-    int objectSize2 = (object2->size/2) + 1;
-
-    // Look up the index to the current state for the objects
-    int stateIndex1 = object1->states ? object1->states[object1->state] : 0;
-    int stateIndex2 = object2->states ? object2->states[object2->state] : 0;
-    
-    // Get the height, then the data
-    // (the first byte of the data is the height)
-
-    const byte* dataP1 = object1->gfxData;
-    int objHeight1 = *dataP1;
-    ++dataP1;
-
-    const byte* dataP2 = object2->gfxData;
-    int objHeight2 = *dataP2;
-    ++dataP2;
-
-    // Index into the proper states
-    for (int i=0; i < stateIndex1; i++)
-    {
-        dataP1 += objHeight1; // skip over the data
-        objHeight1 = *dataP1;
-        ++dataP1;
-    }
-    for (int i=0; i < stateIndex2; i++)
-    {
-        dataP2 += objHeight2; // skip over the data
-        objHeight2 = *dataP2;
-        ++dataP2;
-    }
-
-    // Adjust for proper position
-    objectX1 -= CLOCKS_HSYNC;
-    objectX2 -= CLOCKS_HSYNC;
-
-    // Scan the the object1 data
-    const byte* rowByte1 = dataP1;
-    for (int i=0; i < objHeight1; i++)
-    {
-        // Parse the object1 row - each bit is a 2 x 2 block
-        for (int bit1=0; bit1 < 8; bit1++)
-        {
-            if (*rowByte1 & (1 << (7-bit1)))
-            {
-                // test this pixel of object1 for intersection against the pixels of object2
-                
-                // Scan the the object2 data
-                objectY2 = object2->y;
-                const byte* rowByte2 = dataP2;
-                for (int j=0; j < objHeight2; j++)
-                {
-                    // Parse the object2 row - each bit is a 2 x 2 block
-                    for (int bit2=0; bit2 < 8; bit2++)
-                    {
-                        if (*rowByte2 & (1 << (7-bit2)))
-                        {
-                            int wrappedX1 = objectX1+(bit1*2*objectSize1);
-                            if (wrappedX1 >= ADVENTURE_SCREEN_WIDTH)
-                                wrappedX1-=ADVENTURE_SCREEN_WIDTH;
-
-                            int wrappedX2 = objectX2+(bit2*2*objectSize2);
-                            if (wrappedX2 >= ADVENTURE_SCREEN_WIDTH)
-                                wrappedX2-=ADVENTURE_SCREEN_WIDTH;
-
-                            if (Board::HitTestRects(wrappedX1, objectY1, 2*objectSize1, 2, wrappedX2, objectY2, 2*objectSize2, 2))
-                                // The objects are touching
-                                return true;
-                        }
-                    }
-
-                    // Object 2 - next byte and next row
-                    ++rowByte2;
-                    objectY2-=2;
-                }
-            }
-        }
-
-        // Object 1 - next byte and next row
-        ++rowByte1;
-        objectY1-=2;
-    }
-
-    return false;
-
+    return gameBoard->CollisionCheckObjectObject(object1, object2);
 }
 
 // Checks an object for collision against the specified rectangle
 // On the 2600 this is done in hardware by the Player/Missile collision registers
 bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, int height)
 {
-    int objectX = object->x * 2;
-    int objectY = object->y * 2;
-    int objectSize = (object->size/2) + 1;
-
-    // Look up the index to the current state for this object
-    int stateIndex = object->states ? object->states[object->state] : 0;
-    
-    // Get the height, then the data
-    // (the first byte of the data is the height)
-    const byte* dataP = object->gfxData;
-    int objHeight = *dataP;
-    ++dataP;
-
-    // Index into the proper state
-    for (int i=0; i < stateIndex; i++)
-    {
-        dataP += objHeight; // skip over the data
-        objHeight = *dataP;
-        ++dataP;
-    }
-
-    // Adjust for proper position
-    objectX -= CLOCKS_HSYNC;
-
-    // scan the data
-    const byte* rowByte = dataP;
-    for (int i=0; i < objHeight; i++)
-    {
-        // Parse the row - each bit is a 2 x 2 block
-        for (int bit=0; bit < 8; bit++)
-        {
-            if (*rowByte & (1 << (7-bit)))
-            {
-                // test this pixel for intersection
-            
-                int wrappedX = objectX+(bit*2*objectSize);
-                if (wrappedX >= ADVENTURE_SCREEN_WIDTH)
-                    wrappedX-=ADVENTURE_SCREEN_WIDTH;
-                
-                if (Board::HitTestRects(x, y, width, height, wrappedX, objectY, 2*objectSize, 2))
-                    return true;
-            }
-        }
-
-        // next byte - next row
-        ++rowByte;
-        objectY-=2;
-    }
-
-    return false;
+    return gameBoard->CollisionCheckObject(object, x, y, width, height);
 }
 
 COLOR GetFlashColor()

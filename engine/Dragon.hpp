@@ -6,6 +6,7 @@
 #include "GameObject.hpp"
 
 class BALL;
+class RemoteAction;
 
 class Dragon: public OBJECT {
 public:
@@ -21,25 +22,45 @@ public:
     static const int DEAD;
     static const int EATEN;
     static const int ROAR;
+
+	static bool runFromSword;
     
     BALL* eaten;
     int eatenX;
     int eatenY;
 
     
-    Dragon(const char* label, int number, int inState, int inColor, int inRoom, int inX, int inY);
+    /**
+     * Create a dragon
+     * label - used purely for debugging and logging
+     * number - the dragon's number in the game (used to identify it in remote messages)
+     * color - the color of the dragon
+     * speed - pixels/turn that the dragon can move
+     * chaseMatrix - the list of items that the dragon either runs from, attacks, or guards
+     *               NOTE: Assumes chaseMatrix will not be deleted.
+     */
+    Dragon(const char* label, int number, int inColor, int speed, const int* chaseMatrix);
     
     ~Dragon();
-    
-    void decrementTimer();
-    
-    int timerExpired();
-    
-    void roar(int atX, int atY);
+
+	static void setRunFromSword(bool willRunFromSword);
     
     static void setDifficulty(Difficulty newDifficulty);
     
-    int dragonNumber;
+	/**
+	* Move the dragon this turn.
+	* matrix - The dragon list of things he runs from, goes after, or guards
+	* speed - the dragon's speed
+	* displayedRoomIndex - if the dragon eats the current player, the dragon controls what room is displayed
+	* and needs to update the displayedRoomIndex
+	*/
+    RemoteAction* move(int* displayedRoomIndex);
+    
+	void roar(int atX, int atY);
+
+	int dragonNumber;
+
+	bool hasEatenCurrentPlayer();
 
     
 private:
@@ -48,13 +69,29 @@ private:
     
     /** How many seconds left waiting to bite. */
     int timer;
+    
+    /** How fast the dragon moves in Pixels/frame. */
+    int speed;
+    
+    /** The matrix of things the dragon runs from, attacks, and guards. */
+    const int* matrix;
 
     /**
      * Reset's the dragon's bite timer.
      */
     void resetTimer();
     
+	void decrementTimer();
 
+	int timerExpired();
+    
+    /**
+     * When a dragon stops (i.e. to roar) it needs to remember it's previous velocity.
+     */
+    int prevMovementX;
+    int prevMovementY;
+
+	BALL* closestBall(int room, int x, int y);
 
 };
 

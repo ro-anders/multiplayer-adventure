@@ -1,12 +1,12 @@
 To Do
 -----
 - Win screen showing castle will only show two objects and often randomly displays the other players even if they weren't there to start
-- Hold a key beneath you and just step into a castle.  Key appears at top of outside of castle.
+- Hold a key beneath you and just step into a castle.  Key appears at top of outside of castle.  Should appear right below gate (when gate is open)
 
 To Check
 --------
 - Bridge placement looked slightly off to other player
-- Looked like other player wasn't carrying an object when he was
+- Looked like other player wasn't carrying an object when he was - seen this several times
 - Green dragon ate player 1.  Player 2 reset and now didn't see green dragon.
 - Right arrow key seemed to get stuck.
 - Too often unlock and enter castle and leave the gate locked behind you.  Seems to be repeatable if a third object in the castle room.
@@ -21,6 +21,7 @@ Original Disparities
 - Win screen only shows two objects in room
 - Objects aren't occluded by the wall in the catacombs
 - Ball doesn't make pyramid as it drags along the bottom wall
+- If a dragon bites and you then leave the room, the dragon should continue along the direction it was heading before it bit you.  Right now it just stays still.
 - Chalice touch gate doesn't trigger win
   (work around in mine wins, but doesn't have same behavior where too many objects in room obscures touch)
 - Can't escape dragon by running left 

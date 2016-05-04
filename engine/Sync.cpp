@@ -42,17 +42,19 @@ int Sync::getFrameNumber() {
 }
 
 void Sync::BroadcastAction(RemoteAction* action) {
-    action->setSender(thisPlayer);
-    action->serialize(sendBuffer, MAX_MESSAGE_SIZE);
-    if (transport != NULL) {
-        transport->sendPacket(sendBuffer);
+    if (action != NULL) {
+        action->setSender(thisPlayer);
+        action->serialize(sendBuffer, MAX_MESSAGE_SIZE);
+        if (transport != NULL) {
+            transport->sendPacket(sendBuffer);
+        }
+        
+        char message[1000];
+        sprintf(message, "Sent \"%s\" on frame #%d", sendBuffer, frameNum);
+        Sys::log(message);
+        
+        delete action;
     }
-    
-    char message[1000];
-    sprintf(message, "Sent \"%s\" on frame #%d", sendBuffer, frameNum);
-    Sys::log(message);
-
-    delete action;
 }
 
 void Sync::RejectMessage(const char* message, const char* errorMsg) {
