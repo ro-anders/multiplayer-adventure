@@ -631,9 +631,11 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     // Setup the players
     
     gameBoard->addPlayer(new BALL(0, ports[0]));
-    gameBoard->addPlayer(new BALL(1, ports[3]));
+    Portcullis* p2Home = (gameMode == GAME_MODE_GAUNTLET ? ports[0] : ports[3]);
+    gameBoard->addPlayer(new BALL(1, p2Home));
     if (numPlayers > 2) {
-        gameBoard->addPlayer(new BALL(2, ports[4]));
+        Portcullis* p3Home = (gameMode == GAME_MODE_GAUNTLET ? ports[0] : ports[4]);
+        gameBoard->addPlayer(new BALL(2, p3Home));
     }
     objectBall = gameBoard->getPlayer(thisPlayer);
 
@@ -666,8 +668,8 @@ void ResetPlayer(BALL* ball) {
     ball->room = ball->homeGate->room;                 // Put us at our home castle
     ball->x = 0x50*2;                  //
     ball->y = 0x20*2;                  //
-    ball->previousX = objectBall->x;
-    ball->previousY = objectBall->y;
+    ball->previousX = ball->x;
+    ball->previousY = ball->y;
     ball->linkedObject = OBJECT_NONE;  // Not carrying anything
     ball->setGlowing(false);
     
