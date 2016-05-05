@@ -78,13 +78,6 @@ void Bat::moveOneTurn(Sync* sync, BALL* objectBall)
     if ((linkedObject != OBJECT_NONE) && (batFedUpTimer < MAX_FEDUP))
         ++batFedUpTimer;
     
-    RemoteAction* batAction = sync->GetNextBatAction();
-    while (batAction != NULL) {
-        handleAction(batAction, objectBall);
-        delete batAction;
-        batAction = sync->GetNextBatAction();
-    }
-    
     if (batFedUpTimer >= 0xff)
     {
         // Get the bat's current extents

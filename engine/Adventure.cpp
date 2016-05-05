@@ -19,6 +19,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
+
 
 #include "Adventure.h"
 
@@ -690,15 +692,62 @@ void ResetPlayer(BALL* ball) {
     }
 }
 
+void SyncWithOthers() {
+    sync->PullLatestMessages();
+
+    // Check for any setup messages first.
+    handleSetupMessages();
+    
+    // Move all the other players
+    OtherBallMovement();
+    OthersPickupPutdown();
+
+    // move the dragons
+    SyncDragons();
+    
+    // Move the bat
+    RemoteAction* batAction = sync->GetNextBatAction();
+    while (batAction != NULL) {
+        bat->handleAction(batAction, objectBall);
+        delete batAction;
+        batAction = sync->GetNextBatAction();
+    }
+    
+
+    
+    // Handle any remote changes to the portal.
+    PortcullisStateAction* nextAction = sync->GetNextPortcullisAction();
+    while (nextAction != NULL) {
+        ports[nextAction->portNumber]->setState(nextAction->newState, nextAction->isActive);
+        delete nextAction;
+        nextAction = sync->GetNextPortcullisAction();
+    }
+
+    // Do reset after dragon and move actions.
+    PlayerResetAction* otherReset = sync->GetNextResetAction();
+    while (otherReset != NULL) {
+        ResetPlayer(gameBoard->getPlayer(otherReset->sender));
+        delete otherReset;
+        otherReset = sync->GetNextResetAction();
+    }
+    
+    // Handle won games last.
+    PlayerWinAction* lost = sync->GetGameWon();
+    if (lost != NULL) {
+        WinGame(lost->winInRoom);
+        delete lost;
+        lost = NULL;
+    }
+
+
+}
+
 
 void Adventure_Run()
 {
 	sync->StartFrame();
-    sync->PullLatestMessages();
+    SyncWithOthers();
     
-    // Check for any setup messages first.
-    handleSetupMessages();
-
     // read the console switches every frame
     bool reset;
     Platform_ReadDifficultySwitches(&gameDifficultyLeft, &gameDifficultyRight);
@@ -713,13 +762,6 @@ void Adventure_Run()
     }
     
     // Reset switch
-    // First check for other resets
-    PlayerResetAction* otherReset = sync->GetNextResetAction();
-    while (otherReset != NULL) {
-        ResetPlayer(gameBoard->getPlayer(otherReset->sender));
-        delete otherReset;
-        otherReset = sync->GetNextResetAction();
-    }
     if ((gameState != GAMESTATE_WIN) && switchReset && !reset)
     {
         if (gameState != GAMESTATE_GAMESELECT) {
@@ -753,16 +795,8 @@ void Adventure_Run()
         }
         else if (ISGAMEACTIVE())
         {
-            // See if anyone else won the game
-            PlayerWinAction* lost = sync->GetGameWon();
-            if (lost != NULL) {
-                WinGame(lost->winInRoom);
-                delete lost;
-                lost = NULL;
-            }
-            // Get the room the chalise is in
-            // Is it in the home castle?
-            else if (checkWonGame())
+            // Has someone won the game.
+            if (checkWonGame())
             {
                 // Once we win the game it doesn't update the room, so make sure we're looking
                 // at the inside of the castle
@@ -781,8 +815,6 @@ void Adventure_Run()
                 {
                     // Check ball collisions and move ball
                     ThisBallMovement();
-					// Move all the other players
-					OtherBallMovement();
 
                     // Move the carried object
                     MoveCarriedObjects();
@@ -796,7 +828,6 @@ void Adventure_Run()
                 {
                     // Deal with object pickup and putdown
                     PickupPutdown();
-                    OthersPickupPutdown();
 
                     // Check ball collisions
                     if (!objectBall->hitX && !objectBall->hitY)
@@ -841,14 +872,20 @@ void Adventure_Run()
                 }
                 else if (gameState == GAMESTATE_ACTIVE_3)
                 {
-                    // Read remote dragon actions
-                    SyncDragons();
-                    
                     // Move and deal with the dragons
                     for(int dragonCtr=0; dragonCtr<numDragons; ++dragonCtr) {
-                        RemoteAction* dragonAction = dragons[dragonCtr]->move(&displayedRoomIndex);
+                        Dragon* dragon = dragons[dragonCtr];
+                        RemoteAction* dragonAction = dragon->move(&displayedRoomIndex);
                         if (dragonAction != NULL) {
                             sync->BroadcastAction(dragonAction);
+                        }
+                        // In gauntlet mode, getting eaten immediately triggers a reset.
+                        if ((gameMode == GAME_MODE_GAUNTLET) && (dragon->state == Dragon::EATEN) && (dragon->eaten == objectBall)) {
+                            ResetPlayer(objectBall);
+                            // Broadcast to everyone else
+                            PlayerResetAction* action = new PlayerResetAction();
+                            sync->BroadcastAction(action);
+
                         }
                     }
 
@@ -1812,14 +1849,6 @@ void Surround()
 
 void Portals()
 {
-    // Handle any remote changes to the portal.
-    PortcullisStateAction* nextAction = sync->GetNextPortcullisAction();
-    while (nextAction != NULL) {
-        ports[nextAction->portNumber]->setState(nextAction->newState, nextAction->isActive);
-        delete nextAction;
-        nextAction = sync->GetNextPortcullisAction();
-    }
-    
     // Handle all the local actions of portals
     for(int portalCtr=0; portalCtr<numPorts; ++portalCtr) {
         Portcullis* port = ports[portalCtr];

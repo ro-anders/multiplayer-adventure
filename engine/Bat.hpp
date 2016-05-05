@@ -23,6 +23,11 @@ public:
     
     void lookForNewObject();
     
+    /**
+     * A bat can process BatMoveActions and BatPickupActions and update its internal state accordingly.
+     */
+    void handleAction(RemoteAction* action, BALL* objectBall);
+
 private:
     
     static int MAX_FEDUP;
@@ -32,11 +37,6 @@ private:
     void pickupObject(int object, Sync* sync);
     
     void broadcastMoveAction(Sync* sync, BALL* thisPlayer);
-
-    /**
-     * A bat can process BatMoveActions and BatPickupActions and update its internal state accordingly.
-     */
-    void handleAction(RemoteAction* action, BALL* objectBall);
 };
 
 #endif /* Bat_hpp */
