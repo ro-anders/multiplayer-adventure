@@ -4,6 +4,51 @@
 #include "Ball.hpp"
 #include "GameObject.hpp"
 
+Board::ObjIter::ObjIter()
+: board(NULL),
+  ctr(0),
+  nextObj(NULL) {}
+
+Board::ObjIter::ObjIter(Board* inBoard) :
+board(inBoard),
+ctr(findNext(0)) {}
+    
+
+Board::ObjIter::ObjIter(const Board::ObjIter& other)
+: board(other.board),
+  ctr(other.ctr) {}
+
+Board::ObjIter& Board::ObjIter::operator=(const Board::ObjIter& other) {
+    this->board = other.board;
+    this->ctr = other.ctr;
+    return *this;
+}
+
+bool Board::ObjIter::hasNext() {
+    return (ctr >= 0);
+}
+OBJECT& Board::ObjIter::next() {
+    OBJECT* rtn = NULL;
+    if ((board == NULL) || (ctr < 0)) return *rtn;
+    rtn = board->getObject(ctr);
+    ctr = findNext(ctr+1);
+    return *rtn;
+}
+
+int Board::ObjIter::findNext(int startAt) {
+    int nextAt = -1;
+    if (board != NULL) {
+        int maxCtr = board->getNumObjects();
+        for(int nextCtr=startAt; (nextAt < 0) && (nextCtr<maxCtr); ++nextCtr) {
+            OBJECT* nextOnBoard = board->getObject(ctr);
+            if ((nextOnBoard != NULL) && (nextOnBoard->exists())) {
+                nextAt = nextCtr;
+            }
+        }
+    }
+    return nextAt;
+}
+
 Board::Board(int inScreenWidth, int inScreenHeight):
  screenWidth(inScreenWidth),
  screenHeight(inScreenHeight) {
@@ -35,13 +80,15 @@ int Board::getNumObjects() {
     return numObjects - 1;
 }
 
+Board::ObjIter Board::getObjects() {
+    Board::ObjIter iter(this);
+    return iter;
+}
+
+
 void Board::addObject(int pkey, OBJECT* object) {
     objects[pkey] = object;
     object->setBoard(this, pkey);
-}
-
-OBJECT* Board::getObject(int pkey) {
-    return objects[pkey];
 }
 
 int Board::getNumPlayers() {

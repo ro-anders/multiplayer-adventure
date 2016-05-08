@@ -44,8 +44,14 @@ public:
     
     void CalcSpriteExtents(int* cx, int* cy, int* cw, int* ch) const;
     
+    inline bool exists() {return objExists;}
+    inline void setExists(bool inExists) {objExists = inExists;}
+    
+    
+    
 protected:
 
+    bool objExists;             // Whether the object is active in this game
     Board* board;               // The board on which this object has been placed.
     OBJECT* lookupObject(int objectKey);
     

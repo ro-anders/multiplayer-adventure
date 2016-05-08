@@ -44,6 +44,21 @@ enum
 class Board {
 public:
     
+    class ObjIter {
+    public:
+        ObjIter();
+        ObjIter(Board* board);
+        ObjIter(const ObjIter& other);
+        ObjIter& operator=(const ObjIter& other);
+        bool hasNext();
+        OBJECT& next();
+    private:
+        Board* board;
+        int ctr;
+        OBJECT* nextObj;
+        int findNext(int startAt);
+    };
+    
     // TODO: We really don't want this public.  Migrate Adventure.cpp to using public methods instead.
     OBJECT** objects;
     
@@ -53,7 +68,7 @@ public:
     
     void addObject(int pkey, OBJECT* object);
     
-    OBJECT* getObject(int pkey);
+    inline OBJECT* getObject(int pkey) {return objects[pkey];}
     
     /**
      * Get the number of objects on the board.
@@ -61,6 +76,8 @@ public:
      * This does include all game 2 objects even on game 1 when they are all shoved into the unreachable first room.
      */
     int getNumObjects();
+    
+    ObjIter getObjects();
         
     bool static HitTestRects(int ax, int ay, int awidth, int aheight,
                              int bx, int by, int bwidth, int bheight);

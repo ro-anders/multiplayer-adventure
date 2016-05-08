@@ -17,7 +17,8 @@ OBJECT::OBJECT(const char* inLabel, const byte* inGfxData, const byte* inStates,
     x(inX),
     y(inY),
     randomPlacement(inRandomPlacement),
-    size(inSize)
+    size(inSize),
+    objExists(true)
 {
     label = new char[strlen(inLabel)+1];
     strcpy(label, inLabel);

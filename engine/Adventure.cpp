@@ -928,12 +928,13 @@ void Adventure_Run()
 void SetupRoomObjects()
 {
     // Init all objects
-    for (int i=0; objectDefs[i]->gfxData; i++)
-    {
-        OBJECT* object = objectDefs[i];
-        object->movementX = 0;
-        object->movementY = 0;
-    };
+    Board::ObjIter iter = gameBoard->getObjects();
+    while (iter.hasNext()) {
+        OBJECT& object = iter.next();
+        object.movementX = 0;
+        object.movementY = 0;
+    }
+    
     // Set to no carried objects
     for(int ctr=0; ctr<numDragons; ++ctr) {
         dragons[ctr]->eaten = NULL;
