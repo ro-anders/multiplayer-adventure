@@ -813,8 +813,13 @@ void Adventure_Run()
 
                 if (gameState == GAMESTATE_ACTIVE_1)
                 {
-                    // Check ball collisions and move ball
+                    // Check ball collisions and move balls
                     ThisBallMovement();
+                    for(int i=0; i<numPlayers; ++i) {
+                        if (i != thisPlayer) {
+                            BallMovement(gameBoard->getPlayer(i));
+                        }
+                    }
 
                     // Move the carried object
                     MoveCarriedObjects();
@@ -1419,13 +1424,7 @@ void OtherBallMovement() {
                 nextPayer->velx = movement->velx;
                 nextPayer->vely = movement->vely;
             }
-            
-            // Even in scripting we don't calculate normal movement of this ball in this method
-            // because that is done in another phase.
-            if (i != thisPlayer) {
-                BallMovement(nextPayer);
-            }
-		}
+        }
 	}
 
 }
