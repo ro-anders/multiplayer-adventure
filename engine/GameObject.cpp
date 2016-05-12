@@ -33,6 +33,10 @@ void OBJECT::setBoard(Board* newBoard, int newPKey) {
     pkey = newPKey;
 }
 
+int OBJECT::getPKey() const {
+    return pkey;
+}
+
 OBJECT* OBJECT::lookupObject(int objKey) {
     return board->getObject(objKey);
 }

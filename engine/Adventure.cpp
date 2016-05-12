@@ -77,7 +77,8 @@ static void DrawObject(const OBJECT* object);
 void DrawBall(const BALL* ball, COLOR color);
 static bool CrossingBridge(int room, int x, int y, BALL* ball);
 static bool CollisionCheckBallWithWalls(int room, int x, int y);
-static int CollisionCheckBallWithObjects(BALL* ball, int startIndex);
+static int CollisionCheckBallWithAllObjects(BALL* ball);
+static int CollisionCheckBallWithObjects(BALL* ball, Board::ObjIter& iter);
 bool CollisionCheckObjectObject(const OBJECT* object1, const OBJECT* object2);
 static bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, int height);
 void handleSetupMessages();
@@ -407,8 +408,8 @@ static OBJECT** surrounds;
 //
 // Indexed array of all objects and their properties
 //
-static OBJECT** objectDefs = 0x0;
-static Board* gameBoard;
+static Board board(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT);
+static Board* gameBoard = &board;
 
 //
 // Indexed array of all rooms and their properties
@@ -583,11 +584,6 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     OBJECT* jadeKey = new OBJECT("jade key", objectGfxKey, 0, 0, COLOR_JADE, -1, 0, 0, OBJECT::OUT_IN_OPEN);
     OBJECT* whiteKey = new OBJECT("white key", objectGfxKey, 0, 0, COLOR_WHITE, -1, 0, 0);
     OBJECT* blackKey = new OBJECT("black key", objectGfxKey, 0, 0, COLOR_BLACK, -1, 0, 0);
-
-    // We need to setup the keys before the portcullises
-    gameBoard = new Board(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT);
-    objectDefs = gameBoard->objects;
-    
     
     numPorts = numPlayers + 2;
     ports = new Portcullis*[5]; // We always create 5 even though we might only use 4.
@@ -783,7 +779,7 @@ void Adventure_Run()
                 ResetPlayers();
             } else {
                 int displayNum = timeToStartGame / 60;
-                objectDefs[OBJECT_NUMBER]->state = displayNum;
+                board[OBJECT_NUMBER]->state = displayNum;
 
                 // Display the room and objects
                 displayedRoomIndex = 0;
@@ -838,7 +834,9 @@ void Adventure_Run()
                     if (!objectBall->hitX && !objectBall->hitY)
                     {
                         // Make sure stuff we are carrying stays out of our way
-                        int hitObject = CollisionCheckBallWithObjects(objectBall, 0);
+                        // TODO: Why are we checking collision with all objects if all
+                        // we care about is the one we are carrying?
+                        int hitObject = CollisionCheckBallWithAllObjects(objectBall);
                         if ((hitObject > OBJECT_NONE) && (hitObject == objectBall->linkedObject))
                         {
                             int diffX = objectBall->x - objectBall->previousX;
@@ -935,9 +933,9 @@ void SetupRoomObjects()
     // Init all objects
     Board::ObjIter iter = gameBoard->getObjects();
     while (iter.hasNext()) {
-        OBJECT& object = iter.next();
-        object.movementX = 0;
-        object.movementY = 0;
+        OBJECT* object = iter.next();
+        object->movementX = 0;
+        object->movementY = 0;
     }
     
     // Set to no carried objects
@@ -963,17 +961,18 @@ void SetupRoomObjects()
         signed char movementX = *(p++);
         signed char movementY = *(p++);
 
-        objectDefs[object]->room = room;
-        objectDefs[object]->x = xpos;
-        objectDefs[object]->y = ypos;
-        objectDefs[object]->state = state;
-        objectDefs[object]->movementX = movementX;
-        objectDefs[object]->movementY = movementY;
+        OBJECT* toInit = board[object];
+        toInit->room = room;
+        toInit->x = xpos;
+        toInit->y = ypos;
+        toInit->state = state;
+        toInit->movementX = movementX;
+        toInit->movementY = movementY;
     };
     
     // Hide the jade key if only 2 player
     if (numPlayers <= 2) {
-        objectDefs[OBJECT_JADEKEY]->randomPlacement = OBJECT::FIXED_LOCATION;
+        board[OBJECT_JADEKEY]->randomPlacement = OBJECT::FIXED_LOCATION;
     }
 
     // Put objects in random rooms for level 3.
@@ -985,9 +984,9 @@ void SetupRoomObjects()
     
     // Open the gates if running the gauntlet
     if (gameMode == GAME_MODE_GAUNTLET) {
-        Portcullis* blackPort = (Portcullis*)objectDefs[OBJECT_BLACK_PORT];
+        Portcullis* blackPort = (Portcullis*)board[OBJECT_BLACK_PORT];
         blackPort->setState(Portcullis::OPEN_STATE, true);
-        Portcullis* goldPort = (Portcullis*)objectDefs[OBJECT_YELLOW_PORT];
+        Portcullis* goldPort = (Portcullis*)board[OBJECT_YELLOW_PORT];
         goldPort->setState(Portcullis::OPEN_STATE, true);
     }
 }
@@ -1009,7 +1008,7 @@ void SetupRoomObjects()
     do
     {
         // pick a room between upper and lower bounds (inclusive)
-        OBJECT* objPtr = objectDefs[object];
+        OBJECT* objPtr = board[object];
         while (1)
         {
             int room = Platform_Random() * 0x1f;
@@ -1040,8 +1039,8 @@ void SetupRoomObjects()
  */
 void randomizeRoomObjects() {
     int numRooms = gameMap->getNumRooms();
-    Portcullis* blackCastle = (Portcullis*)objectDefs[OBJECT_BLACK_PORT];
-    Portcullis* whiteCastle = (Portcullis*)objectDefs[OBJECT_WHITE_PORT];
+    Portcullis* blackCastle = (Portcullis*)board[OBJECT_BLACK_PORT];
+    Portcullis* whiteCastle = (Portcullis*)board[OBJECT_WHITE_PORT];
     
     // Run through all the objects in the game.  The ones that shouldn't be
     // randomized will have their random location flag turned off.
@@ -1078,7 +1077,7 @@ void randomizeRoomObjects() {
                 // Make sure white and black key not cyclical
                 // We happen to know that the white key is placed first, so set the black.
                 if (ok && (objCtr == OBJECT_BLACKKEY)) {
-                    if (blackCastle->containsRoom(objectDefs[OBJECT_WHITEKEY]->room)) {
+                    if (blackCastle->containsRoom(board[OBJECT_WHITEKEY]->room)) {
                         ok = !whiteCastle->containsRoom(randomKey);
                     }
                     // Also make sure black key not in black castle
@@ -1089,7 +1088,7 @@ void randomizeRoomObjects() {
                 // can get stuff out of there.  So make sure, if the black key is in the white castle
                 // that the bat is not in the black castle.
                 if (ok && (objCtr == OBJECT_BAT)) {
-                    if (whiteCastle->containsRoom(objectDefs[OBJECT_BLACKKEY]->room)) {
+                    if (whiteCastle->containsRoom(board[OBJECT_BLACKKEY]->room)) {
                         ok = !blackCastle->containsRoom(randomKey);
                     }
                 }
@@ -1117,7 +1116,7 @@ void randomizeRoomObjects() {
 void handleSetupMessages() {
     MapSetupObjectAction* nextMsg = sync->GetNextSetupAction();
     while (nextMsg != NULL) {
-        OBJECT* toSetup = objectDefs[nextMsg->object];
+        OBJECT* toSetup = board[nextMsg->object];
         toSetup->room = nextMsg->room;
         toSetup->x = nextMsg->x;
         toSetup->y = nextMsg->y;
@@ -1163,12 +1162,12 @@ bool checkWonGame() {
         if ((objectBall->linkedObject == OBJECT_CHALISE) ||
             ((objectBall->linkedObject == OBJECT_BAT) && (bat->linkedObject == OBJECT_CHALISE))) {
             // Player either has to bring the chalise into the castle or touch the chalise to the gate
-            if (objectDefs[OBJECT_CHALISE]->room == objectBall->homeGate->insideRoom) {
+            if (board[OBJECT_CHALISE]->room == objectBall->homeGate->insideRoom) {
                 won = true;
             } else {
                 if ((objectBall->room == objectBall->homeGate->room) &&
                     (objectBall->homeGate->state == Portcullis::OPEN_STATE) &&
-                    CollisionCheckObjectObject(objectBall->homeGate, objectDefs[OBJECT_CHALISE])) {
+                    CollisionCheckObjectObject(objectBall->homeGate, board[OBJECT_CHALISE])) {
                     
                     won = true;
                 }
@@ -1342,7 +1341,9 @@ void BallMovement(BALL* ball) {
         }
         // Collision check the ball with the new Y coordinate against walls and objects
         // For collisions with objects, we only care about hitting non-carryable objects at this point
-        int hitObject = CollisionCheckBallWithObjects(ball, 0);
+        // TODO: Says we only care about non-carryable object but making no attempt to ignore
+        // carryable objects.  Is this ok?
+        int hitObject = CollisionCheckBallWithAllObjects(ball);
         bool crossingBridge = CrossingBridge(ball->room, tempX, ball->y, ball);
         bool hitWall = crossingBridge ? false : CollisionCheckBallWithWalls(ball->room, tempX, ball->y);
         if (hitWall || (hitObject > OBJECT_NONE))
@@ -1395,7 +1396,7 @@ void BallMovement(BALL* ball) {
         }
         // Collision check the ball with the new Y coordinate against walls and objects
         // For collisions with objects, we only care about hitting non-carryable objects at this point
-        int hitObject = CollisionCheckBallWithObjects(ball, 0);
+        int hitObject = CollisionCheckBallWithAllObjects(ball);
         int hitWall = CollisionCheckBallWithWalls(ball->room, ball->x, tempY);
         if (hitWall || (hitObject > OBJECT_NONE))
         {
@@ -1489,7 +1490,7 @@ void MoveCarriedObjects()
         BALL* nextBall = gameBoard->getPlayer(ctr);
         if (nextBall->linkedObject != OBJECT_NONE)
         {
-            OBJECT* object = objectDefs[nextBall->linkedObject];
+            OBJECT* object = board[nextBall->linkedObject];
             object->x = (nextBall->x/2) + nextBall->linkedObjectX;
             object->y = (nextBall->y/2) + nextBall->linkedObjectY;
             object->room = nextBall->room;
@@ -1525,7 +1526,7 @@ void MoveGroundObject()
                     sync->BroadcastAction(moveAction);
                 }
                 // If entering the black castle in the gauntlet, glow.
-                if ((gameMode == GAME_MODE_GAUNTLET) && (nextPort == objectDefs[OBJECT_BLACK_PORT]) && !nextBall->isGlowing()) {
+                if ((gameMode == GAME_MODE_GAUNTLET) && (nextPort == board[OBJECT_BLACK_PORT]) && !nextBall->isGlowing()) {
                     nextBall->setGlowing(true);
                     Platform_MakeSound(SOUND_GLOW, volumeAtDistance(nextBall->room));
                 }
@@ -1535,9 +1536,10 @@ void MoveGroundObject()
     }
     
     // Move any objects that need moving, and wrap objects from room to room
-    for (int i=OBJECT_REDDRAGON; objectDefs[i]->gfxData; i++)
-    {
-        OBJECT* object = objectDefs[i];
+    Board::ObjIter iter = board.getMovableObjects();
+    while (iter.hasNext()) {
+        
+        OBJECT* object = iter.next();
 
         // Apply movement
         object->x += object->movementX;
@@ -1588,7 +1590,7 @@ void MoveGroundObject()
         // If the object has a linked object
         if ((object == bat) && (bat->linkedObject != OBJECT_NONE))
         {
-            OBJECT* linkedObj = objectDefs[bat->linkedObject];
+            OBJECT* linkedObj = board[bat->linkedObject];
             linkedObj->x = object->x + bat->linkedObjectX;
             linkedObj->y = object->y + bat->linkedObjectY;
             linkedObj->room = object->room;
@@ -1705,7 +1707,7 @@ void OthersPickupPutdown() {
         if ((action->dropObject != OBJECT_NONE) && (actor->linkedObject == action->dropObject)) {
             printf("Player %d dropped object %d\n", actorNum, action->dropObject);
             actor->linkedObject = OBJECT_NONE;
-            OBJECT* dropped = objectDefs[action->dropObject];
+            OBJECT* dropped = board[action->dropObject];
             dropped->room = action->dropRoom;
             dropped->x = action->dropX;
             dropped->y = action->dropY;
@@ -1740,7 +1742,7 @@ void PickupPutdown()
     if (!joystickDisabled && joyFire && (objectBall->linkedObject >= 0))
     {
         int dropped = objectBall->linkedObject;
-        OBJECT* droppedObject = objectDefs[dropped];
+        OBJECT* droppedObject = board[dropped];
         
         // Put down the current object!
         objectBall->linkedObject = OBJECT_NONE;
@@ -1756,14 +1758,15 @@ void PickupPutdown()
     else
     {
         // See if we are touching any carryable objects
-        int hitIndex = CollisionCheckBallWithObjects(objectBall, OBJECT_SWORD);
+        Board::ObjIter iter = gameBoard->getCarryableObjects();
+        int hitIndex = CollisionCheckBallWithObjects(objectBall, iter);
         if (hitIndex > OBJECT_NONE)
         {
             // Ignore the object we are already carrying
             if (hitIndex == objectBall->linkedObject)
             {
                 // Check the remainder of the objects
-                hitIndex = CollisionCheckBallWithObjects(objectBall, hitIndex + 1);
+                hitIndex = CollisionCheckBallWithObjects(objectBall, iter);
             }
 
             if (hitIndex > OBJECT_NONE)
@@ -1772,7 +1775,7 @@ void PickupPutdown()
                 PlayerPickupAction* action = new PlayerPickupAction(OBJECT_NONE, 0, 0, OBJECT_NONE, 0, 0, 0);
                 int dropIndex = objectBall->linkedObject;
                 if (dropIndex > OBJECT_NONE) {
-                    OBJECT* dropped = objectDefs[dropIndex];
+                    OBJECT* dropped = board[dropIndex];
                     action->setDrop(dropIndex, dropped->room, dropped->x, dropped->y);
                 }
                 
@@ -1797,8 +1800,8 @@ void PickupPutdown()
                     objectBall->linkedObject = hitIndex;
                     
                     // calculate the XY offsets from the ball's position
-                    objectBall->linkedObjectX = objectDefs[hitIndex]->x - (objectBall->x/2);
-                    objectBall->linkedObjectY = objectDefs[hitIndex]->y - (objectBall->y/2);
+                    objectBall->linkedObjectX = board[hitIndex]->x - (objectBall->x/2);
+                    objectBall->linkedObjectY = board[hitIndex]->y - (objectBall->y/2);
                     
                     // Take it away from anyone else if they were holding it.
                     for(int ctr=0; ctr<numPlayers; ++ctr) {
@@ -1899,13 +1902,13 @@ void Portals()
 
 void Magnet()
 {
-    const OBJECT* magnet = objectDefs[OBJECT_MAGNET];
+    const OBJECT* magnet = board[OBJECT_MAGNET];
     
     int i=0;
     while (magnetMatrix[i])
     {
         // Look for items in the magnet matrix that are in the same room as the magnet
-        OBJECT* object = objectDefs[magnetMatrix[i]];
+        OBJECT* object = board[magnetMatrix[i]];
         if ((magnetMatrix[i] != objectBall->linkedObject) && (object->room == magnet->room))
         {
             // horizontal axis
@@ -1947,17 +1950,18 @@ void DrawObjects(int room)
     int colorFirst = -1;
     int colorLast = -1;
 
-    for (int i=0; objectDefs[i]->gfxData; i++)
-    {
+    Board::ObjIter iter = board.getObjects();
+    while (iter.hasNext()) {
+        OBJECT* toDisplay = iter.next();
         // Init it to not displayed
-        objectDefs[i]->displayed = false;
-        if (objectDefs[i]->room == room)
+        toDisplay->displayed = false;
+        if (toDisplay->room == room)
         {
             // This object is in the current room - add it to the list
-            displayList[numAdded++] = i;
+            displayList[numAdded++] = toDisplay->getPKey();
 
-            if (colorFirst < 0) colorFirst = objectDefs[i]->color;
-            colorLast = objectDefs[i]->color;
+            if (colorFirst < 0) colorFirst = toDisplay->color;
+            colorLast = toDisplay->color;
         }
     }
 
@@ -1991,9 +1995,10 @@ void DrawObjects(int room)
         {
             if (displayList[i] > OBJECT_NONE)
             {
-                DrawObject(objectDefs[displayList[i]]);
-                objectDefs[displayList[i]]->displayed = true;
-                colorLast = objectDefs[displayList[i]]->color;
+                OBJECT* toDraw = board[displayList[i]];
+                DrawObject(toDraw);
+                toDraw->displayed = true;
+                colorLast = toDraw->color;
             }
             else if (displayList[i] <= OBJECT_SURROUND)
             {
@@ -2017,8 +2022,9 @@ void DrawObjects(int room)
         {
             if (displayList[i] > OBJECT_NONE)
             {
-                objectDefs[displayList[i]]->displayed = true;
-                colorLast = objectDefs[displayList[i]]->color;
+                OBJECT* toDraw = board[displayList[i]];
+                toDraw->displayed = true;
+                colorLast = toDraw->color;
             }
             else if (displayList[i] <= OBJECT_SURROUND)
             {
@@ -2034,10 +2040,11 @@ void DrawObjects(int room)
         }
 
         // Now just paint everything in this room so we bypass the flicker if desired
-        for (int i=0; objectDefs[i]->gfxData; i++)
-        {
-            if (objectDefs[i]->room == room)
-                DrawObject(objectDefs[i]);
+        Board::ObjIter iter = board.getObjects();
+        while(iter.hasNext()) {
+            OBJECT* next = iter.next();
+            if (next->room == room)
+                DrawObject(next);
         }
     }
 
@@ -2163,7 +2170,7 @@ bool CollisionCheckBallWithWalls(int room, int x, int y)
     if ((currentRoom->flags & ROOMFLAG_RIGHTTHINWALL) && ((x+4) > 0x96*2))
     {
         // If the dot is in this room, allow passage through the wall into the Easter Egg room
-        if (objectDefs[OBJECT_DOT]->room != room)
+        if (board[OBJECT_DOT]->room != room)
             hitWall = true;
     }
 
@@ -2223,7 +2230,7 @@ bool CollisionCheckBallWithWalls(int room, int x, int y)
 static bool CrossingBridge(int room, int x, int y, BALL* ball)
 {
     // Check going through the bridge
-    const OBJECT* bridge = objectDefs[OBJECT_BRIDGE];
+    const OBJECT* bridge = board[OBJECT_BRIDGE];
     if ((bridge->room == room)
         && (ball->linkedObject != OBJECT_BRIDGE))
     {
@@ -2241,19 +2248,24 @@ static bool CrossingBridge(int room, int x, int y, BALL* ball)
     return false;
 }
 
-static int CollisionCheckBallWithObjects(BALL* ball, int startIndex)
+static int CollisionCheckBallWithAllObjects(BALL* ball) {
+    Board::ObjIter iter = gameBoard->getObjects();
+    return CollisionCheckBallWithObjects(ball, iter);
+}
+
+static int CollisionCheckBallWithObjects(BALL* ball, Board::ObjIter& iter)
 {
     // Go through all the objects
-    for (int i=startIndex; objectDefs[i]->gfxData; i++)
+    while(iter.hasNext())
     {
         // If this object is in the current room, check it against the ball
-        const OBJECT* object = objectDefs[i];
+        const OBJECT* object = iter.next();
         if (object->displayed && (ball->room == object->room))
         {
             if (CollisionCheckObject(object, ball->x-4,(ball->y-1), 8, 8))
             {
                 // return the index of the object
-                return i;
+                return object->getPKey();
             }
         }
     }

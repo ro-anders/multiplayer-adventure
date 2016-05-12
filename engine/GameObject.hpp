@@ -44,6 +44,8 @@ public:
     
     void CalcSpriteExtents(int* cx, int* cy, int* cw, int* ch) const;
     
+    int getPKey() const;
+    
     inline bool exists() {return objExists;}
     inline void setExists(bool inExists) {objExists = inExists;}
     

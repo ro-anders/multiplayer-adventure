@@ -25,10 +25,10 @@ enum
     OBJECT_BLACK_PORT,
     OBJECT_NAME,
     OBJECT_NUMBER,
-    OBJECT_REDDRAGON,
+    OBJECT_REDDRAGON, // Put all immovable objects before this
     OBJECT_YELLOWDRAGON,
     OBJECT_GREENDRAGON,
-    OBJECT_SWORD,
+    OBJECT_SWORD, // Put all carryable objects after this
     OBJECT_BRIDGE,
     OBJECT_YELLOWKEY,
     OBJECT_COPPERKEY,
@@ -47,20 +47,17 @@ public:
     class ObjIter {
     public:
         ObjIter();
-        ObjIter(Board* board);
+        ObjIter(Board* board, int startingIndex);
         ObjIter(const ObjIter& other);
         ObjIter& operator=(const ObjIter& other);
         bool hasNext();
-        OBJECT& next();
+        OBJECT* next();
     private:
         Board* board;
-        int ctr;
-        OBJECT* nextObj;
-        int findNext(int startAt);
+        int nextExisting;
+        static int findNext(int startAt, Board* board);
     };
     
-    // TODO: We really don't want this public.  Migrate Adventure.cpp to using public methods instead.
-    OBJECT** objects;
     
     Board(int screenWidth, int screenHeight);
     
@@ -70,6 +67,8 @@ public:
     
     inline OBJECT* getObject(int pkey) {return objects[pkey];}
     
+    inline OBJECT* operator[](int pkey) {return objects[pkey];}
+    
     /**
      * Get the number of objects on the board.
      * This does not include the "null" object that the old game used to mark the end of the list.
@@ -78,7 +77,11 @@ public:
     int getNumObjects();
     
     ObjIter getObjects();
-        
+    
+    ObjIter getMovableObjects();
+    
+    ObjIter getCarryableObjects();
+
     bool static HitTestRects(int ax, int ay, int awidth, int aheight,
                              int bx, int by, int bwidth, int bheight);
     
@@ -102,6 +105,8 @@ public:
 private:
     
     int numObjects; // Includes the "null" object which the old game used to mark the end of the list
+    OBJECT** objects;
+
     int numPlayers;
     BALL** players;
     int currentPlayer;

@@ -4,43 +4,47 @@
 #include "Ball.hpp"
 #include "GameObject.hpp"
 
-Board::ObjIter::ObjIter()
-: board(NULL),
-  ctr(0),
-  nextObj(NULL) {}
+Board::ObjIter::ObjIter() :
+board(NULL),
+nextExisting(0) {}
 
-Board::ObjIter::ObjIter(Board* inBoard) :
+Board::ObjIter::ObjIter(Board* inBoard, int startingIndex) :
 board(inBoard),
-ctr(findNext(0)) {}
+nextExisting(findNext(startingIndex, inBoard)) {}
     
 
-Board::ObjIter::ObjIter(const Board::ObjIter& other)
-: board(other.board),
-  ctr(other.ctr) {}
+Board::ObjIter::ObjIter(const Board::ObjIter& other) :
+board(other.board),
+nextExisting(other.nextExisting) {}
 
 Board::ObjIter& Board::ObjIter::operator=(const Board::ObjIter& other) {
     this->board = other.board;
-    this->ctr = other.ctr;
+    this->nextExisting = other.nextExisting;
     return *this;
 }
 
 bool Board::ObjIter::hasNext() {
-    return (ctr >= 0);
-}
-OBJECT& Board::ObjIter::next() {
-    OBJECT* rtn = NULL;
-    if ((board == NULL) || (ctr < 0)) return *rtn;
-    rtn = board->getObject(ctr);
-    ctr = findNext(ctr+1);
-    return *rtn;
+    return (nextExisting >= 0);
 }
 
-int Board::ObjIter::findNext(int startAt) {
+OBJECT* Board::ObjIter::next() {
+    OBJECT* rtn = NULL;
+    if ((board == NULL) || (nextExisting < 0)) return rtn;
+    rtn = board->getObject(nextExisting);
+    nextExisting = findNext(nextExisting+1, board);
+    return rtn;
+}
+
+/**
+ * This is static because it is called before the body of the constructor is called so
+ * is safer to not access state.
+ */
+int Board::ObjIter::findNext(int startAt, Board* inBoard) {
     int nextAt = -1;
-    if (board != NULL) {
-        int maxCtr = board->getNumObjects();
+    if (inBoard != NULL) {
+        int maxCtr = inBoard->getNumObjects();
         for(int nextCtr=startAt; (nextAt < 0) && (nextCtr<maxCtr); ++nextCtr) {
-            OBJECT* nextOnBoard = board->getObject(ctr);
+            OBJECT* nextOnBoard = inBoard->getObject(nextCtr);
             if ((nextOnBoard != NULL) && (nextOnBoard->exists())) {
                 nextAt = nextCtr;
             }
@@ -81,7 +85,17 @@ int Board::getNumObjects() {
 }
 
 Board::ObjIter Board::getObjects() {
-    Board::ObjIter iter(this);
+    Board::ObjIter iter(this, 0);
+    return iter;
+}
+
+Board::ObjIter Board::getMovableObjects() {
+    Board::ObjIter iter(this, OBJECT_REDDRAGON);
+    return iter;
+}
+
+Board::ObjIter Board::getCarryableObjects() {
+    Board::ObjIter iter(this, OBJECT_SWORD);
     return iter;
 }
 
