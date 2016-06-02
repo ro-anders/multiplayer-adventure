@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include "Adventure.h"
 #include "Portcullis.hpp"
 #include "Room.hpp"
 
@@ -21,6 +22,18 @@ static const byte roomGfxLeftOfName [] =
     0x00,0x00,0x00,
     0x00,0x00,0x00,
     0xF0,0xFF,0x0F      // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRRRRRR
+};
+
+// Straight Hall
+static const byte roomGfxStraightHall [] =
+{
+    0xF0,0xFF,0xFF,     // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRRRRRR
+    0x00,0x00,0x00,
+    0x00,0x00,0x00,
+    0x00,0x00,0x00,
+    0x00,0x00,0x00,
+    0x00,0x00,0x00,
+    0xF0,0xFF,0xFF      // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRRRRRR
 };
 
 // Below Yellow Castle
@@ -439,8 +452,13 @@ void Map::ConfigureMaze(int numPlayers, int gameMapLayout) {
         roomDefs[JADE_FOYER]->visibility = ROOM::IN_CASTLE;
     }
     
-    if (gameMapLayout == 0) {
+    if (gameMapLayout == GAME_MODE_1) {
         // This is the default setup, so don't need to do anything.
+    } else if (gameMapLayout == GAME_MODE_GAUNTLET) {
+        // Make the right side of the main hall a dead end.
+        roomDefs[MAIN_HALL_RIGHT]->roomUp = BLUE_MAZE_3;
+        roomDefs[MAIN_HALL_RIGHT]->roomDown = BLACK_CASTLE;
+        roomDefs[MAIN_HALL_RIGHT]->graphicsData = roomGfxStraightHall;
     } else {
         // Games 2 or 3.
         // Connect the lower half of the world.

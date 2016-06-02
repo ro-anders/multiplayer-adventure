@@ -6,19 +6,19 @@
 #include "Board.hpp"
 
 OBJECT::OBJECT(const char* inLabel, const byte* inGfxData, const byte* inStates, int inState, int inColor,
-               int inRoom, int inX, int inY, RandomizedLocations inRandomPlacement, int inSize):
+               RandomizedLocations inRandomPlacement, int inSize):
     gfxData(inGfxData),
     states(inStates),
     state(inState),
     color(inColor),
-    room(inRoom),
+    room(-1),
     movementX(0),
     movementY(0),
-    x(inX),
-    y(inY),
+    x(0),
+    y(0),
     randomPlacement(inRandomPlacement),
     size(inSize),
-    objExists(true)
+    objExists(false)
 {
     label = new char[strlen(inLabel)+1];
     strcpy(label, inLabel);
@@ -35,6 +35,13 @@ void OBJECT::setBoard(Board* newBoard, int newPKey) {
 
 int OBJECT::getPKey() const {
     return pkey;
+}
+
+void OBJECT::init(int inRoom, int inX, int inY) {
+    room = inRoom;
+    x = inX;
+    y = inY;
+    objExists = true;
 }
 
 OBJECT* OBJECT::lookupObject(int objKey) {

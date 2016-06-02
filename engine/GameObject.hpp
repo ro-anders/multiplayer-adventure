@@ -35,7 +35,7 @@ public:
     RandomizedLocations randomPlacement; // How to randomly place this object in game 3
 
     
-    OBJECT(const char* inLabel, const byte* inGfxData, const byte* inStates, int inState, int inColor, int inRoom, int inX, int inY,
+    OBJECT(const char* inLabel, const byte* inGfxData, const byte* inStates, int inState, int inColor,
                RandomizedLocations inRandomPlacement=OPEN_OR_IN_CASTLE, int inSize=0);
     
     virtual ~OBJECT();
@@ -47,13 +47,16 @@ public:
     int getPKey() const;
     
     inline bool exists() {return objExists;}
-    inline void setExists(bool inExists) {objExists = inExists;}
+    inline bool setExists(bool inExists) {objExists = inExists;}
     
-    
+    /**
+     * Sets up the object in the room it will start off in.
+     */
+    void init(int room, int x, int y);
     
 protected:
 
-    bool objExists;             // Whether the object is active in this game
+    bool objExists;             // Whether the object is active in this game.  Starts out false until init() called.
     Board* board;               // The board on which this object has been placed.
     OBJECT* lookupObject(int objectKey);
     

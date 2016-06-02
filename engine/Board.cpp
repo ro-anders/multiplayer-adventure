@@ -59,7 +59,7 @@ Board::Board(int inScreenWidth, int inScreenHeight):
      
     numObjects = OBJECT_MAGNET+2;
     objects = new OBJECT*[numObjects];
-    objects[numObjects-1] = new OBJECT("", (const byte*)0, 0, 0, 0, -1, 0, 0);  // #12 Null
+    objects[numObjects-1] = new OBJECT("", (const byte*)0, 0, 0, 0);  // #12 Null
     
     int MAX_PLAYERS = 3;
     players = new BALL*[MAX_PLAYERS];

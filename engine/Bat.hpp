@@ -15,7 +15,7 @@ public:
     int linkedObjectX;
     int linkedObjectY;
 
-    Bat(int color, int inRoom, int inX, int inY);
+    Bat(int color);
     
     virtual ~Bat();
     
