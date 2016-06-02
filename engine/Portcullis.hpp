@@ -18,6 +18,12 @@ public:
     /** The y-coord you come out at when you leave a castle. */
     static const int EXIT_Y;
     
+    /** The x-coordinate of where the portcullis is placed. */
+    static const int PORT_X;
+    
+    /** The y-coordinate of where the portcullis is placed. */
+    static const int PORT_Y;
+    
     /** True if touching the gate will take you inside the castle.  False if gate is locked. */
     bool isActive;
     

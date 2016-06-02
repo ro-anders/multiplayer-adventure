@@ -91,7 +91,7 @@ static const byte objectGfxDrag [] =
 int Dragon::dragonResetTime = Dragon::TRIVIAL;
 
 Dragon::Dragon(const char* label, int inNumber, int inColor, int inSpeed, const int* chaseMatrix):
-    OBJECT(label, objectGfxDrag, dragonStates, 0, inColor, -1, 0, 0),
+    OBJECT(label, objectGfxDrag, dragonStates, 0, inColor),
     dragonNumber(inNumber),
     speed(inSpeed),
     matrix(chaseMatrix),

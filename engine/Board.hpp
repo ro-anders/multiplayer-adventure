@@ -25,10 +25,10 @@ enum
     OBJECT_BLACK_PORT,
     OBJECT_NAME,
     OBJECT_NUMBER,
-    OBJECT_REDDRAGON,
+    OBJECT_REDDRAGON, // Put all immovable objects before this
     OBJECT_YELLOWDRAGON,
     OBJECT_GREENDRAGON,
-    OBJECT_SWORD,
+    OBJECT_SWORD, // Put all carryable objects after this
     OBJECT_BRIDGE,
     OBJECT_YELLOWKEY,
     OBJECT_COPPERKEY,
@@ -44,8 +44,20 @@ enum
 class Board {
 public:
     
-    // TODO: We really don't want this public.  Migrate Adventure.cpp to using public methods instead.
-    OBJECT** objects;
+    class ObjIter {
+    public:
+        ObjIter();
+        ObjIter(Board* board, int startingIndex);
+        ObjIter(const ObjIter& other);
+        ObjIter& operator=(const ObjIter& other);
+        bool hasNext();
+        OBJECT* next();
+    private:
+        Board* board;
+        int nextExisting;
+        static int findNext(int startAt, Board* board);
+    };
+    
     
     Board(int screenWidth, int screenHeight);
     
@@ -53,7 +65,9 @@ public:
     
     void addObject(int pkey, OBJECT* object);
     
-    OBJECT* getObject(int pkey);
+    inline OBJECT* getObject(int pkey) {return objects[pkey];}
+    
+    inline OBJECT* operator[](int pkey) {return objects[pkey];}
     
     /**
      * Get the number of objects on the board.
@@ -61,7 +75,13 @@ public:
      * This does include all game 2 objects even on game 1 when they are all shoved into the unreachable first room.
      */
     int getNumObjects();
-        
+    
+    ObjIter getObjects();
+    
+    ObjIter getMovableObjects();
+    
+    ObjIter getCarryableObjects();
+
     bool static HitTestRects(int ax, int ay, int awidth, int aheight,
                              int bx, int by, int bwidth, int bheight);
     
@@ -85,6 +105,8 @@ public:
 private:
     
     int numObjects; // Includes the "null" object which the old game used to mark the end of the list
+    OBJECT** objects;
+
     int numPlayers;
     BALL** players;
     int currentPlayer;

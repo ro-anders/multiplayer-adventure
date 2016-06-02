@@ -107,14 +107,21 @@ const int Portcullis::CLOSED_STATE=12;
 
 const int Portcullis::EXIT_X = 0xA0;
 const int Portcullis::EXIT_Y = 0x2C * 2;
+const int Portcullis::PORT_X = 0x4d;
+const int Portcullis::PORT_Y = 0x31;
 
 
 Portcullis::Portcullis(const char* inLabel, int inOutsideRoom, ROOM* inInsideRoom, OBJECT* inKey) :
-  OBJECT(inLabel, objectGfxPort, portStates, 0x0C, COLOR_BLACK, inOutsideRoom, 0x4d, 0x31, OBJECT::FIXED_LOCATION),
+  OBJECT(inLabel, objectGfxPort, portStates, 0x0C, COLOR_BLACK, OBJECT::FIXED_LOCATION),
   isActive(false),
   insideRoom(inInsideRoom->index),
   key(inKey),
   allInsideRooms(NULL) {
+      
+    // Portcullis's unlike other objects, we know the location of before the game level is selected.
+    room = inOutsideRoom;
+    x = PORT_X;
+    y = PORT_Y;
       
     if (inInsideRoom->visibility == ROOM::OPEN) {
         inInsideRoom->visibility = ROOM::IN_CASTLE;

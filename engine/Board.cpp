@@ -4,13 +4,62 @@
 #include "Ball.hpp"
 #include "GameObject.hpp"
 
+Board::ObjIter::ObjIter() :
+board(NULL),
+nextExisting(0) {}
+
+Board::ObjIter::ObjIter(Board* inBoard, int startingIndex) :
+board(inBoard),
+nextExisting(findNext(startingIndex, inBoard)) {}
+    
+
+Board::ObjIter::ObjIter(const Board::ObjIter& other) :
+board(other.board),
+nextExisting(other.nextExisting) {}
+
+Board::ObjIter& Board::ObjIter::operator=(const Board::ObjIter& other) {
+    this->board = other.board;
+    this->nextExisting = other.nextExisting;
+    return *this;
+}
+
+bool Board::ObjIter::hasNext() {
+    return (nextExisting >= 0);
+}
+
+OBJECT* Board::ObjIter::next() {
+    OBJECT* rtn = NULL;
+    if ((board == NULL) || (nextExisting < 0)) return rtn;
+    rtn = board->getObject(nextExisting);
+    nextExisting = findNext(nextExisting+1, board);
+    return rtn;
+}
+
+/**
+ * This is static because it is called before the body of the constructor is called so
+ * is safer to not access state.
+ */
+int Board::ObjIter::findNext(int startAt, Board* inBoard) {
+    int nextAt = -1;
+    if (inBoard != NULL) {
+        int maxCtr = inBoard->getNumObjects();
+        for(int nextCtr=startAt; (nextAt < 0) && (nextCtr<maxCtr); ++nextCtr) {
+            OBJECT* nextOnBoard = inBoard->getObject(nextCtr);
+            if ((nextOnBoard != NULL) && (nextOnBoard->exists())) {
+                nextAt = nextCtr;
+            }
+        }
+    }
+    return nextAt;
+}
+
 Board::Board(int inScreenWidth, int inScreenHeight):
  screenWidth(inScreenWidth),
  screenHeight(inScreenHeight) {
      
     numObjects = OBJECT_MAGNET+2;
     objects = new OBJECT*[numObjects];
-    objects[numObjects-1] = new OBJECT("", (const byte*)0, 0, 0, 0, -1, 0, 0);  // #12 Null
+    objects[numObjects-1] = new OBJECT("", (const byte*)0, 0, 0, 0);  // #12 Null
     
     int MAX_PLAYERS = 3;
     players = new BALL*[MAX_PLAYERS];
@@ -35,13 +84,25 @@ int Board::getNumObjects() {
     return numObjects - 1;
 }
 
+Board::ObjIter Board::getObjects() {
+    Board::ObjIter iter(this, 0);
+    return iter;
+}
+
+Board::ObjIter Board::getMovableObjects() {
+    Board::ObjIter iter(this, OBJECT_REDDRAGON);
+    return iter;
+}
+
+Board::ObjIter Board::getCarryableObjects() {
+    Board::ObjIter iter(this, OBJECT_SWORD);
+    return iter;
+}
+
+
 void Board::addObject(int pkey, OBJECT* object) {
     objects[pkey] = object;
     object->setBoard(this, pkey);
-}
-
-OBJECT* Board::getObject(int pkey) {
-    return objects[pkey];
 }
 
 int Board::getNumPlayers() {

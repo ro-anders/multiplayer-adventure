@@ -58,8 +58,8 @@ static const int batMatrix [] =
 
 int Bat::MAX_FEDUP = 0xff;
 
-Bat::Bat(int inColor, int inRoom, int inX, int inY) :
-  OBJECT("bat", objectGfxBat, batStates, 0, inColor, inRoom, inX, inY),
+Bat::Bat(int inColor) :
+  OBJECT("bat", objectGfxBat, batStates, 0, inColor),
   linkedObject(0),
   linkedObjectX(0),
   linkedObjectY(0) {}
@@ -77,13 +77,6 @@ void Bat::moveOneTurn(Sync* sync, BALL* objectBall)
     
     if ((linkedObject != OBJECT_NONE) && (batFedUpTimer < MAX_FEDUP))
         ++batFedUpTimer;
-    
-    RemoteAction* batAction = sync->GetNextBatAction();
-    while (batAction != NULL) {
-        handleAction(batAction, objectBall);
-        delete batAction;
-        batAction = sync->GetNextBatAction();
-    }
     
     if (batFedUpTimer >= 0xff)
     {
