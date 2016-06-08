@@ -127,6 +127,11 @@ static int gameMapLayout = 0;                               // The board setup. 
 static int gameMode = 0;
 static bool joystickDisabled = false;
 
+#define GAMEOPTION_PRIVATE_MAGNETS  1
+// This holds all the switches for whether to turn on or off different game options
+// It is a bitwise or of each game option
+static int gameOptions = 1;
+
 static int displayedRoomIndex = 0;                                   // index of current (displayed) room
 
 static int winFlashTimer=0;
@@ -2227,9 +2232,9 @@ static int CollisionCheckBallWithObjects(BALL* ball, Board::ObjIter& iter)
     // Go through all the objects
     while(iter.hasNext())
     {
-        // If this object is in the current room, check it against the ball
+        // If this object is in the current room and can be picked up, check it against the ball
         const OBJECT* object = iter.next();
-        if (object->displayed && (ball->room == object->room))
+        if (object->displayed && object->isTangibleTo(thisPlayer) && (ball->room == object->room))
         {
             if (CollisionCheckObject(object, ball->x-4,(ball->y-1), 8, 8))
             {
