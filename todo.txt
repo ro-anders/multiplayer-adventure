@@ -2,6 +2,8 @@ To Do
 -----
 - Win screen showing castle will only show two objects and often randomly displays the other players even if they weren't there to start
 - Hold a key beneath you and just step into a castle.  Key appears at top of outside of castle.  Should appear right below gate (when gate is open)
+- Going right of Robinett room puts you in the main hall center - should be behind the bar of main hall left
+- Moving into a room that is immediately blocked by a wall should flicker and, when you stop moving kick you back to the previous room
 
 To Check
 --------
