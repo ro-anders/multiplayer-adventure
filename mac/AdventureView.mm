@@ -25,6 +25,9 @@
 #include "Transport.hpp"
 #include "YTransport.hpp"
 
+// TODO: Remove.  Just here for test.
+#include "MacRestClient.hpp"
+
 bool CreateOffscreen(int aWidth, int aHeight);
 void FreeOffscreen();
 
@@ -73,6 +76,8 @@ bool gMute = FALSE;
     Args_GetArgs(&argc, &argv);
     
     
+    MacRestClient::test();
+    
     // Test UDP Sockets
     if ((argc >= 2) && (strcmp(argv[1], "test")==0)) {
         Transport* toTest = NULL;
@@ -89,7 +94,7 @@ bool gMute = FALSE;
     int numPlayers;
     int thisPlayer;
     Transport* transport;
-    int gameLevel = GAME_MODE_GAUNTLET;
+    int gameLevel = GAME_MODE_2;
     
     if ((argc >= 2) && (strcmp(argv[1], "script")==0)) {
         numPlayers = 2;
