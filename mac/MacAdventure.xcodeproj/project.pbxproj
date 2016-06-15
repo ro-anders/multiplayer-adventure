@@ -35,6 +35,7 @@
 		40662F361C767ACB00FFC715 /* PosixUdpTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40662F351C767ACB00FFC715 /* PosixUdpTransport.cpp */; };
 		40663AC61CBD122900A75EE3 /* ScriptedSync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40663AC41CBD122900A75EE3 /* ScriptedSync.cpp */; };
 		406CD1541C0C7C17002477BB /* Dragon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 406CD1521C0C7C17002477BB /* Dragon.cpp */; };
+		4072EC701D0F59950074389A /* MacRestClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4072EC6E1D0F59950074389A /* MacRestClient.cpp */; };
 		40740BAE1C1859730018AE6D /* Bat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40740BAC1C1859730018AE6D /* Bat.cpp */; };
 		407773D31BF2AC9C00454AC5 /* Transport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 407773D11BF2AC9C00454AC5 /* Transport.cpp */; };
 		407773D61BF2AF6000454AC5 /* PosixTcpTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 407773D41BF2AF6000454AC5 /* PosixTcpTransport.cpp */; };
@@ -103,6 +104,8 @@
 		40663AC51CBD122900A75EE3 /* ScriptedSync.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ScriptedSync.hpp; path = ../engine/ScriptedSync.hpp; sourceTree = "<group>"; };
 		406CD1521C0C7C17002477BB /* Dragon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Dragon.cpp; path = ../engine/Dragon.cpp; sourceTree = "<group>"; };
 		406CD1531C0C7C17002477BB /* Dragon.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Dragon.hpp; path = ../engine/Dragon.hpp; sourceTree = "<group>"; };
+		4072EC6E1D0F59950074389A /* MacRestClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MacRestClient.cpp; sourceTree = "<group>"; };
+		4072EC6F1D0F59950074389A /* MacRestClient.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = MacRestClient.hpp; sourceTree = "<group>"; };
 		40740BAC1C1859730018AE6D /* Bat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Bat.cpp; path = ../engine/Bat.cpp; sourceTree = "<group>"; };
 		40740BAD1C1859730018AE6D /* Bat.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Bat.hpp; path = ../engine/Bat.hpp; sourceTree = "<group>"; };
 		407773D11BF2AC9C00454AC5 /* Transport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Transport.cpp; path = ../engine/Transport.cpp; sourceTree = "<group>"; };
@@ -253,6 +256,8 @@
 		407773CF1BF2AC3700454AC5 /* mac */ = {
 			isa = PBXGroup;
 			children = (
+				4072EC6E1D0F59950074389A /* MacRestClient.cpp */,
+				4072EC6F1D0F59950074389A /* MacRestClient.hpp */,
 				40E47FAD1BF22BA20052B84E /* AdventureView.h */,
 				40E47FAE1BF22BA20052B84E /* AdventureView.mm */,
 				40E47FAF1BF22BA20052B84E /* Controller.h */,
@@ -406,6 +411,7 @@
 				403DA0921C20C722002FF18B /* Ball.cpp in Sources */,
 				40A3CB321C8F6E2800E3AD73 /* TcpTransport.cpp in Sources */,
 				4092E1E21C4E731900B2AEBB /* Map.cpp in Sources */,
+				4072EC701D0F59950074389A /* MacRestClient.cpp in Sources */,
 				40E47FB21BF22BA20052B84E /* Controller.mm in Sources */,
 				406CD1541C0C7C17002477BB /* Dragon.cpp in Sources */,
 				40509AAB1C05E9750008BACF /* GameObject.cpp in Sources */,
