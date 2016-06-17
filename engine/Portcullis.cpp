@@ -2,7 +2,9 @@
 #include "Portcullis.hpp"
 
 #include "color.h"
+#include "Board.hpp"
 #include "Map.hpp"
+#include "RemoteAction.hpp"
 #include "Room.hpp"
 
 // Object #1 States 940FF (Graphic)
@@ -159,6 +161,22 @@ void Portcullis::updateState() {
 void Portcullis::keyTouch() {
     state++;
     isActive = true; // Either the gate is now opening and active or now closing but still active
+}
+
+PortcullisStateAction*  Portcullis::processTurn() {
+    PortcullisStateAction* gateAction = NULL;
+    if ((key->room == room) &&
+        (state == OPEN_STATE || state == CLOSED_STATE))
+    {
+        // Toggle the port state
+        if (board->CollisionCheckObjectObject(this, key)) {
+            keyTouch();
+            // If we are in the same room, broadcast the state change
+            gateAction = new PortcullisStateAction(NULL, getPKey(), state, isActive);
+        }
+        
+    }
+    return gateAction;
 }
 
 void Portcullis::openFromInside() {

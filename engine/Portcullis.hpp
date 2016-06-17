@@ -8,6 +8,7 @@
 #include "GameObject.hpp"
 
 class ROOM;
+class PortcullisStateAction;
 
 class Portcullis: public OBJECT {
 public:
@@ -61,6 +62,12 @@ public:
     void updateState();
     
     void keyTouch();
+    
+    /**
+     * See if this portcullis has been locked or unlocked.
+     * Caller is responsible for releasing memory of returned remote action.
+     */
+    PortcullisStateAction* processTurn();
     
     void openFromInside();
     

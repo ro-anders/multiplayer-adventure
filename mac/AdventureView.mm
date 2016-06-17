@@ -89,7 +89,7 @@ bool gMute = FALSE;
     int numPlayers;
     int thisPlayer;
     Transport* transport;
-    int gameLevel = GAME_MODE_GAUNTLET;
+    int gameLevel = GAME_MODE_2;
     
     if ((argc >= 2) && (strcmp(argv[1], "script")==0)) {
         numPlayers = 2;

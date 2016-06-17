@@ -157,7 +157,7 @@ public:
 
 class PortcullisStateAction: public RemoteAction {
 public:
-    int portNumber;
+    int portPkey; // The Object::pkey of the portcullis, nothing to do with the key that unlocks it
     int newState;
     int isActive;
     
@@ -165,7 +165,7 @@ public:
     
     PortcullisStateAction();
     
-    PortcullisStateAction(int portNumber, int newState, bool isActive);
+    PortcullisStateAction(void* ooga, int portPkey, int newState, bool isActive);
     
     ~PortcullisStateAction();
     

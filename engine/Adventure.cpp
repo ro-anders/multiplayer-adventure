@@ -79,7 +79,6 @@ static bool CrossingBridge(int room, int x, int y, BALL* ball);
 static bool CollisionCheckBallWithWalls(int room, int x, int y);
 static int CollisionCheckBallWithAllObjects(BALL* ball);
 static int CollisionCheckBallWithObjects(BALL* ball, Board::ObjIter& iter);
-bool CollisionCheckObjectObject(const OBJECT* object1, const OBJECT* object2);
 static bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, int height);
 void handleSetupMessages();
 void randomizeRoomObjects();
@@ -725,7 +724,8 @@ void SyncWithOthers() {
     // Handle any remote changes to the portal.
     PortcullisStateAction* nextAction = sync->GetNextPortcullisAction();
     while (nextAction != NULL) {
-        ports[nextAction->portNumber]->setState(nextAction->newState, nextAction->isActive);
+        Portcullis* port = (Portcullis*)gameBoard->getObject(nextAction->portPkey);
+        port->setState(nextAction->newState, nextAction->isActive);
         delete nextAction;
         nextAction = sync->GetNextPortcullisAction();
     }
@@ -1141,7 +1141,7 @@ bool checkWonGame() {
             } else {
                 if ((objectBall->room == objectBall->homeGate->room) &&
                     (objectBall->homeGate->state == Portcullis::OPEN_STATE) &&
-                    CollisionCheckObjectObject(objectBall->homeGate, board[OBJECT_CHALISE])) {
+                    gameBoard->CollisionCheckObjectObject(objectBall->homeGate, board[OBJECT_CHALISE])) {
                     
                     won = true;
                 }
@@ -1280,7 +1280,7 @@ void BallMovement(BALL* ball) {
                     // If we were locked in the castle, open the portcullis.
                     if (port->state == Portcullis::CLOSED_STATE) {
                         port->openFromInside();
-                        PortcullisStateAction* gateAction = new PortcullisStateAction(portalCtr, port->state, port->isActive);
+                        PortcullisStateAction* gateAction = new PortcullisStateAction(NULL, port->getPKey(), port->state, port->isActive);
                         sync->BroadcastAction(gateAction);
 
                     }
@@ -1492,7 +1492,7 @@ void MoveGroundObject()
                 // Report to all the other players only if its the current player entering
                 if (ctr == thisPlayer) {
                     PortcullisStateAction* gateAction =
-                    new PortcullisStateAction(portalCtr, nextPort->state, nextPort->isActive);
+                    new PortcullisStateAction(NULL, nextPort->getPKey(), nextPort->state, nextPort->isActive);
                     sync->BroadcastAction(gateAction);
                     
                     // Report the ball entering the castle
@@ -1830,31 +1830,25 @@ void Portals()
     for(int portalCtr=0; portalCtr<numPorts; ++portalCtr) {
         Portcullis* port = ports[portalCtr];
         
-        if ((port->key->room == port->room) &&
-            (port->state == Portcullis::OPEN_STATE || port->state == Portcullis::CLOSED_STATE))
-        {
-            // Someone has to be in the room for the key to trigger the gate
-            bool seen = false;
-            for(int ctr=0; !seen && ctr<numPlayers; ++ctr) {
-                seen = (gameBoard->getPlayer(ctr)->room == port->room);
-            }
-            if (seen) {
-                // Toggle the port state
-                if (CollisionCheckObjectObject(port, port->key)) {
-                    port->keyTouch();
-                    // If we are in the same room, broadcast the state change
-                    if (objectBall->room == port->room) {
-                        PortcullisStateAction* gateAction =
-                            new PortcullisStateAction(portalCtr, port->state, port->isActive);
-                        sync->BroadcastAction(gateAction);
-                    } else {
-                        printf("Not broadcasting.  Player in %s.  Gate in %s.\n", gameMap->getRoom(objectBall->room)->label,
-                               gameMap->getRoom(port->room)->label);
-                    }
+        // Someone has to be in the room for the key to trigger the gate
+        bool seen = false;
+        for(int ctr=0; !seen && ctr<numPlayers; ++ctr) {
+            seen = (gameBoard->getPlayer(ctr)->room == port->room);
+        }
+        if (seen) {
+            PortcullisStateAction* gateAction = port->processTurn();
+            if (gateAction != NULL) {
+                // If we are in the same room as the portcullis, broadcast any state change
+                if (objectBall->room == port->room) {
+                    sync->BroadcastAction(gateAction);
+                } else {
+                    printf("Not broadcasting.  Player in %s.  Gate in %s.\n", gameMap->getRoom(objectBall->room)->label,
+                           gameMap->getRoom(port->room)->label);
+                    delete gateAction;
                 }
-
             }
         }
+        
         // Raise/lower the port
         port->updateState();
         if (port->state == Portcullis::OPEN_STATE)
@@ -2245,13 +2239,6 @@ static int CollisionCheckBallWithObjects(BALL* ball, Board::ObjIter& iter)
     }
 
     return OBJECT_NONE;
-}
-
-// Collision check two objects
-// On the 2600 this is done in hardware by the Player/Missile collision registers
-bool CollisionCheckObjectObject(const OBJECT* object1, const OBJECT* object2)
-{
-    return gameBoard->CollisionCheckObjectObject(object1, object2);
 }
 
 // Checks an object for collision against the specified rectangle
