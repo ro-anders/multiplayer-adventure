@@ -42,6 +42,7 @@ public:
     int makeCall(char* buffer, int bufferLength);
     
     static void test();
+    static void mimicServer();
 };
 
 #endif /* MacRestClient_hpp */
