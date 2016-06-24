@@ -109,9 +109,9 @@ bool gMute = FALSE;
         GameSetup::GameParams params = setup.setup(client, addr0);
         // TODO: What do we do if we fail to setup a game?
         
-        // TODO: Figure out game level and player number
+        // TODO: Figure out game level
         gameLevel = GAME_MODE_2;
-        thisPlayer = 1;
+        thisPlayer = params.thisPlayer;
         
         if (params.thirdPlayerAddress.isValid()) {
             numPlayers = 3;

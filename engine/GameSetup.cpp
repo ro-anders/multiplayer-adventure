@@ -48,6 +48,8 @@ GameSetup::GameParams GameSetup::setup(RestClient& client, Transport::Address my
     }
     
     Json::Value gameParams = responseJson["gameParams"];
+    newParams.numberPlayers = gameParams["numPlayers"].asInt();
+    newParams.thisPlayer = gameParams["thisPlayer"].asInt();
     Json::Value otherPlayer = gameParams["otherPlayer"];
     const char* ip = otherPlayer["ip"].asCString();
     int port = otherPlayer["port"].asInt();

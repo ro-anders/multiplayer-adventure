@@ -20,6 +20,8 @@ public:
      */
     class GameParams {
     public:
+        int numberPlayers;
+        int thisPlayer;
         Transport::Address thisPlayerAddress;
         Transport::Address secondPlayerAddress;
         Transport::Address thirdPlayerAddress;
