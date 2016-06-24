@@ -43,6 +43,10 @@ int Transport::Address::port() const {
     return _port;
 }
 
+bool Transport::Address::isValid() const {
+    return (_port > 0);
+}
+
 char* Transport::Address::copyIp(const char* inIp) {
     char* newIp = new char[strlen(inIp)+1];
     strcpy(newIp, inIp);

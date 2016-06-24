@@ -7,7 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		400319151D1B30F300AEA951 /* jsoncpp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 400319141D1B30F300AEA951 /* jsoncpp.cpp */; };
 		4013C0A11C503FAA00C99342 /* Room.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4013C09F1C503FAA00C99342 /* Room.cpp */; };
+		401C851E1D195CBA00110952 /* GameSetup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 401C851C1D195CBA00110952 /* GameSetup.cpp */; };
+		401C85211D1960A100110952 /* RestClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 401C851F1D1960A100110952 /* RestClient.cpp */; };
 		403175301C49C5CC0051B60C /* putdown.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4031752F1C49C5CC0051B60C /* putdown.wav */; };
 		403175361C49C6010051B60C /* dragondie.wav in Resources */ = {isa = PBXBuildFile; fileRef = 403175311C49C6010051B60C /* dragondie.wav */; };
 		403175371C49C6010051B60C /* eaten.wav in Resources */ = {isa = PBXBuildFile; fileRef = 403175321C49C6010051B60C /* eaten.wav */; };
@@ -67,8 +70,15 @@
 		29B97319FDCFA39411CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* MacAdventure_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MacAdventure_Prefix.pch; sourceTree = "<group>"; };
+		400319141D1B30F300AEA951 /* jsoncpp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = jsoncpp.cpp; path = ../engine/jsoncpp.cpp; sourceTree = "<group>"; };
+		400319171D1B32A900AEA951 /* json-forwards.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "json-forwards.h"; path = "../engine/json/json-forwards.h"; sourceTree = "<group>"; };
+		400319181D1B32A900AEA951 /* json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = json.h; path = ../engine/json/json.h; sourceTree = "<group>"; };
 		4013C09F1C503FAA00C99342 /* Room.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Room.cpp; path = ../engine/Room.cpp; sourceTree = "<group>"; };
 		4013C0A01C503FAA00C99342 /* Room.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Room.hpp; path = ../engine/Room.hpp; sourceTree = "<group>"; };
+		401C851C1D195CBA00110952 /* GameSetup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GameSetup.cpp; path = ../engine/GameSetup.cpp; sourceTree = "<group>"; };
+		401C851D1D195CBA00110952 /* GameSetup.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = GameSetup.hpp; path = ../engine/GameSetup.hpp; sourceTree = "<group>"; };
+		401C851F1D1960A100110952 /* RestClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RestClient.cpp; path = ../engine/RestClient.cpp; sourceTree = "<group>"; };
+		401C85201D1960A100110952 /* RestClient.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = RestClient.hpp; path = ../engine/RestClient.hpp; sourceTree = "<group>"; };
 		4031752F1C49C5CC0051B60C /* putdown.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = putdown.wav; path = ../sounds/putdown.wav; sourceTree = "<group>"; };
 		403175311C49C6010051B60C /* dragondie.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = dragondie.wav; path = ../sounds/dragondie.wav; sourceTree = "<group>"; };
 		403175321C49C6010051B60C /* eaten.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = eaten.wav; path = ../sounds/eaten.wav; sourceTree = "<group>"; };
@@ -253,6 +263,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		400319161D1B329700AEA951 /* json */ = {
+			isa = PBXGroup;
+			children = (
+				400319171D1B32A900AEA951 /* json-forwards.h */,
+				400319181D1B32A900AEA951 /* json.h */,
+			);
+			name = json;
+			sourceTree = "<group>";
+		};
 		407773CF1BF2AC3700454AC5 /* mac */ = {
 			isa = PBXGroup;
 			children = (
@@ -276,6 +295,8 @@
 		407773D01BF2AC5900454AC5 /* engine */ = {
 			isa = PBXGroup;
 			children = (
+				400319161D1B329700AEA951 /* json */,
+				400319141D1B30F300AEA951 /* jsoncpp.cpp */,
 				40D0F81B1C356A360096980F /* adventure_sys.h */,
 				40509AA41C05E9750008BACF /* ActionQueue.cpp */,
 				40509AA51C05E9750008BACF /* ActionQueue.hpp */,
@@ -312,6 +333,10 @@
 				40B029DB1C91449200DA27FD /* UdpTransport.hpp */,
 				40D0F81C1C356A360096980F /* YTransport.cpp */,
 				40D0F81D1C356A360096980F /* YTransport.hpp */,
+				401C851C1D195CBA00110952 /* GameSetup.cpp */,
+				401C851D1D195CBA00110952 /* GameSetup.hpp */,
+				401C851F1D1960A100110952 /* RestClient.cpp */,
+				401C85201D1960A100110952 /* RestClient.hpp */,
 			);
 			name = engine;
 			sourceTree = "<group>";
@@ -403,7 +428,9 @@
 				407773D31BF2AC9C00454AC5 /* Transport.cpp in Sources */,
 				4013C0A11C503FAA00C99342 /* Room.cpp in Sources */,
 				407773D61BF2AF6000454AC5 /* PosixTcpTransport.cpp in Sources */,
+				401C851E1D195CBA00110952 /* GameSetup.cpp in Sources */,
 				40740BAE1C1859730018AE6D /* Bat.cpp in Sources */,
+				401C85211D1960A100110952 /* RestClient.cpp in Sources */,
 				4084EC8F1BF22AEE00E8F375 /* Adventure.cpp in Sources */,
 				406264921C236DE600154D97 /* args.c in Sources */,
 				4084EC901BF22AEE00E8F375 /* Sync.cpp in Sources */,
@@ -416,6 +443,7 @@
 				406CD1541C0C7C17002477BB /* Dragon.cpp in Sources */,
 				40509AAB1C05E9750008BACF /* GameObject.cpp in Sources */,
 				40509AAA1C05E9750008BACF /* ActionQueue.cpp in Sources */,
+				400319151D1B30F300AEA951 /* jsoncpp.cpp in Sources */,
 				40F99C051C1A31930032B2A2 /* Portcullis.cpp in Sources */,
 				40509AAC1C05E9750008BACF /* RemoteAction.cpp in Sources */,
 				40B029DD1C91449200DA27FD /* UdpTransport.cpp in Sources */,

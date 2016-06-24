@@ -19,14 +19,15 @@
 #include "AdventureView.h"
 #include "Adventure.h"
 #include "args.h"
+#include "GameSetup.hpp"
+#include "MacRestClient.hpp"
 #include "PosixTcpTransport.hpp"
 #include "PosixUdpTransport.hpp"
 #include "Sys.hpp"
 #include "Transport.hpp"
 #include "YTransport.hpp"
 
-// TODO: Remove.  Just here for test.
-#include "MacRestClient.hpp"
+
 
 bool CreateOffscreen(int aWidth, int aHeight);
 void FreeOffscreen();
@@ -75,9 +76,6 @@ bool gMute = FALSE;
     char** argv;
     Args_GetArgs(&argc, &argv);
     
-    
-    MacRestClient::test();
-    
     // Test UDP Sockets
     if ((argc >= 2) && (strcmp(argv[1], "test")==0)) {
         Transport* toTest = NULL;
@@ -101,6 +99,34 @@ bool gMute = FALSE;
         thisPlayer = (argc == 2 ? 0 : atoi(argv[2])-1);
         gameLevel = GAME_MODE_SCRIPTING;
         transport = NULL;
+    } else if ((argc >= 2) && (strcmp(argv[1], "broker")==0)){
+        // A server will broker the game but still need some info that we parse from the command line.
+        // MacAdventure broker <gameLevel> <myip>:<myport>
+
+        Transport::Address addr0 = Transport::parseUrl(argv[3]);
+        MacRestClient client;
+        GameSetup setup;
+        GameSetup::GameParams params = setup.setup(client, addr0);
+        // TODO: What do we do if we fail to setup a game?
+        
+        // TODO: Figure out game level and player number
+        gameLevel = GAME_MODE_2;
+        thisPlayer = 1;
+        
+        if (params.thirdPlayerAddress.isValid()) {
+            numPlayers = 3;
+            transport = new PosixUdpTransport(addr0, thisPlayer, params.secondPlayerAddress, params.thirdPlayerAddress);
+        } else {
+            numPlayers = 2;
+            transport = new PosixUdpTransport(addr0, params.secondPlayerAddress);
+        }
+        
+        transport->connect();
+        while (!transport->isConnected()) {
+            Sys::sleep(1000);
+        }
+
+
     } else {
         
         if (argc >= 2) {

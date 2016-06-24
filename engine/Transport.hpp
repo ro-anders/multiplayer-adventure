@@ -21,6 +21,7 @@ public:
         bool operator==(const Address& other);
         const char* ip() const;
         int port() const;
+        bool isValid() const;
     private:
         const char* _ip;
         int _port;

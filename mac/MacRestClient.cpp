@@ -16,82 +16,21 @@
 
 #include "Sys.hpp"
 
-StringMap::StringMap() :
-numEntries(0),
-spaceAllocated(16) {
-    keys = new const char*[spaceAllocated];
-    values = new const char*[spaceAllocated];
-}
-
-StringMap::~StringMap() {
-    for(int ctr=0; ctr<numEntries; ++ctr) {
-        delete[] keys[ctr];
-        delete[] values[ctr];
-    }
-    delete[] keys;
-    delete[] values;
-}
-
-const char* StringMap::get(const char* key) {
-    int foundAt = findIndex(key);
-    const char* found = (foundAt < 0 ? NULL : values[foundAt]);
-    return found;
-}
-
-void StringMap::put(const char* key, const char* value) {
-    int insertInSlot = findIndex(key);
-    if (insertInSlot > 0) {
-        delete[] values[insertInSlot];
-        values[insertInSlot] = copyString(value);
-    } else {
-        if (spaceAllocated == numEntries) {
-            allocateMoreSpace();
-        }
-        keys[numEntries] = copyString(key);
-        values[numEntries] = copyString(value);
-    }
-}
-
-void StringMap::remove(const char* key) {
-    int insertInSlot = findIndex(key);
-    if (insertInSlot > 0) {
-        delete[] keys[insertInSlot];
-        delete[] values[insertInSlot];
-        // Shift everything down
-        memcpy(keys+insertInSlot, keys+insertInSlot+1, numEntries-insertInSlot-1);
-    }
-}
-
-int StringMap::findIndex(const char* key) {
-    int found = -1;
-    for(int ctr=0; (ctr<numEntries) && (found < 0); ++ctr) {
-        if (strcmp(key, keys[ctr])==0) {
-            found = ctr;
-        }
-    }
-    return found;
-}
-
-
-int MacRestClient::makeCall(char* buffer, int bufferLength) {
+int MacRestClient::post(const char* path, const char* content, char* responseBuffer, int bufferLength) {
     
     // Open the HTTP connnection to the server
     const char* serverName = "localhost";
     int port = 9000;
-    // GET from Google
-    //const char* message = "GET / HTTP/1.1\r\nHost: www.google.com\r\nConnection: close\r\n\r\n";
-    // Get list of games
-    //const char* message = "GET /games HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n";
-    // Make a game request
-    const char* message =
-        "POST /game HTTP/1.1\r\n"
-        "Host: localhost:9000\r\n"
-        "User-Agent: curl/7.43.0\r\n"
+    
+    char message[2000];
+    int contentLength = strlen(content);
+    sprintf(message, "POST %s HTTP/1.1\r\n"
+        "Host: %s:%d\r\n"
         "Accept: */*\r\n"
-        "Content-Length: 20\r\n"
+        "Content-Length: %d\r\n"
         "Content-Type: application/x-www-form-urlencoded\r\n"
         "\r\n"
-        "ip=2.2.2.2&port=1111";
+        "%s", path, serverName, port, contentLength, content);
     
     printf("Opening http socket\n");
     int n;
@@ -140,7 +79,7 @@ int MacRestClient::makeCall(char* buffer, int bufferLength) {
     int charsRead = 0;
     bool keepGoing = true;
     while (keepGoing) {
-        charsRead = read( socketFd, buffer+charsInBuffer, bufferLength-charsInBuffer);
+        charsRead = read( socketFd, responseBuffer+charsInBuffer, bufferLength-charsInBuffer);
         // TODO: Sites like Google return negative number when you've read all the data off the socket, but Play just returns 0.
         // Figure this out.
         if (charsRead <= 0) {
@@ -153,7 +92,7 @@ int MacRestClient::makeCall(char* buffer, int bufferLength) {
             charsInBuffer += charsRead;
             if (charsInBuffer >= bufferLength) {
                 Sys::log("ERROR http response too big.  Truncated.");
-                Sys::log(buffer);
+                Sys::log(responseBuffer);
                 keepGoing = false;
             }
         }
@@ -161,14 +100,33 @@ int MacRestClient::makeCall(char* buffer, int bufferLength) {
         fcntl(socketFd, F_SETFL, O_NONBLOCK);
     }
     // Null terminate the response
-    buffer[charsInBuffer] = '\0';
+    responseBuffer[charsInBuffer] = '\0';
     
-    std::cout << "Response = \"" << buffer << "\"" << std::endl;
+    std::cout << "Response = \"" << responseBuffer << "\"" << std::endl;
     
     // Cleanup resources
     close(socketFd);
+    
+    charsInBuffer = stripOffHeaders(responseBuffer, charsInBuffer);
+
+    std::cout << "Response Body = \"" << responseBuffer << "\"" << std::endl;
 
     return charsInBuffer;
+}
+
+int MacRestClient::stripOffHeaders(char* buffer, int charsInBuffer) {
+    const char* DELIMETER = "\r\n\r\n";
+    int DELIMETER_LENGTH = 4;
+    char* found = strstr(buffer, DELIMETER);
+    if ((found == NULL) || (found+DELIMETER_LENGTH+1 >= buffer + charsInBuffer)) {
+        // No body.
+        buffer[0] = '\0';
+        return 0;
+    } else {
+        int charsInBody = charsInBuffer-(found-buffer)-DELIMETER_LENGTH;
+        strcpy(buffer, found+DELIMETER_LENGTH);
+        return charsInBody;
+    }
 }
 
 void MacRestClient::mimicServer() {
@@ -236,7 +194,7 @@ void MacRestClient::test() {
     int BUFFER_LENGTH = 10000;
     char buffer[BUFFER_LENGTH];
     
-    int responseSize = client.makeCall(buffer, BUFFER_LENGTH);
+    int responseSize = client.post("/game", "ip=2.2.2.2&port=2", buffer, BUFFER_LENGTH);
     if (responseSize < 0) {
         std::cout << "Error reading response.  code=" << responseSize << ", errno=" << errno << std::endl;
     } else {
