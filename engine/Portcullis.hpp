@@ -26,7 +26,7 @@ public:
     static const int PORT_Y;
     
     /** True if touching the gate will take you inside the castle.  False if gate is locked. */
-    bool isActive;
+    bool allowsEntry;
     
     /** Room that the gate takes you to */
     int insideRoom;
@@ -57,17 +57,20 @@ public:
      */
     void addRoom(ROOM* room);
     
-    void setState(int newState, bool isActive);
-    
-    void updateState();
-    
-    void keyTouch();
+    void setState(int newState, bool allowsEntry);
     
     /**
-     * See if this portcullis has been locked or unlocked.
+     * Update its internal state for this turn.  This involves lifting the gate if it is currently opening, etc...
+     */
+    void moveOneTurn();
+    
+    /**
+     * Check and handle locking or unlocked of the portcullis this turn.
+     * Returns a remote action describing any state change in the portcullis or null
+     * if no action is taken.
      * Caller is responsible for releasing memory of returned remote action.
      */
-    PortcullisStateAction* processTurn();
+    PortcullisStateAction* checkInteraction();
     
     void openFromInside();
     
@@ -80,7 +83,7 @@ public:
      * Returns whether the room passed in is somewhere behind this gate.
      */
     bool containsRoom(int room);
-    
+        
 private:
     
     /** Array of rooms inside this castle.  If NULL then it means only the insideRoom is inside this castle.  If not NULL,
@@ -90,6 +93,12 @@ private:
     
     /** Number entries in allInsideRooms array. */
     int numInsideRooms;
+    
+    /**
+     * Returns whether key is touching portcullis.
+     */
+    bool checkKeyTouch(OBJECT* key);
+
 };
 
 

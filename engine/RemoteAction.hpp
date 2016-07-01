@@ -159,13 +159,13 @@ class PortcullisStateAction: public RemoteAction {
 public:
     int portPkey; // The Object::pkey of the portcullis, nothing to do with the key that unlocks it
     int newState;
-    int isActive;
+    int allowsEntry;
     
     static const char* CODE;
     
     PortcullisStateAction();
     
-    PortcullisStateAction(void* ooga, int portPkey, int newState, bool isActive);
+    PortcullisStateAction(int portPkey, int newState, bool allowsEntry  );
     
     ~PortcullisStateAction();
     

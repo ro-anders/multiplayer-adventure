@@ -115,7 +115,7 @@ const int Portcullis::PORT_Y = 0x31;
 
 Portcullis::Portcullis(const char* inLabel, int inOutsideRoom, ROOM* inInsideRoom, OBJECT* inKey) :
   OBJECT(inLabel, objectGfxPort, portStates, 0x0C, COLOR_BLACK, OBJECT::FIXED_LOCATION),
-  isActive(false),
+  allowsEntry(false),
   insideRoom(inInsideRoom->index),
   key(inKey),
   allInsideRooms(NULL) {
@@ -137,16 +137,16 @@ Portcullis::~Portcullis() {
     }
 }
 
-void Portcullis::setState(int newState, bool newActive) {
+void Portcullis::setState(int newState, bool newAllowsEntry) {
     state = newState;
-    isActive = newActive;
+    allowsEntry = newAllowsEntry;
 }
 
-void Portcullis::updateState() {
+void Portcullis::moveOneTurn() {
     if (state == OPEN_STATE) {
-        isActive = true;
+        allowsEntry = true;
     } else if (state == CLOSED_STATE) {
-        isActive = false;
+        allowsEntry = false;
     } else {
         // Raise/lower the gate
         ++state;
@@ -158,25 +158,25 @@ void Portcullis::updateState() {
     }
 }
 
-void Portcullis::keyTouch() {
-    state++;
-    isActive = true; // Either the gate is now opening and active or now closing but still active
-}
-
-PortcullisStateAction*  Portcullis::processTurn() {
+PortcullisStateAction*  Portcullis::checkInteraction() {
     PortcullisStateAction* gateAction = NULL;
-    if ((key->room == room) &&
-        (state == OPEN_STATE || state == CLOSED_STATE))
-    {
+    if ((state == OPEN_STATE || state == CLOSED_STATE) && checkKeyTouch(key)) {
         // Toggle the port state
-        if (board->CollisionCheckObjectObject(this, key)) {
-            keyTouch();
-            // If we are in the same room, broadcast the state change
-            gateAction = new PortcullisStateAction(NULL, getPKey(), state, isActive);
-        }
-        
+        state++;
+        allowsEntry = true; // Either the gate is now opening and active or now closing but still active
+        // If we are in the same room, broadcast the state change
+        gateAction = new PortcullisStateAction(getPKey(), state, allowsEntry);
     }
     return gateAction;
+}
+
+/**
+ * Returns whether the key is touching the portcullis.  Does not care about other things like
+ * whether the gate is in a state where it cares or whether anyone is in the room
+ */
+bool Portcullis::checkKeyTouch(OBJECT* keyToCheck) {
+    bool touched = ((keyToCheck->room == this->room) && (board->CollisionCheckObjectObject(this, keyToCheck)));
+    return touched;
 }
 
 void Portcullis::openFromInside() {
@@ -185,7 +185,7 @@ void Portcullis::openFromInside() {
 
 void Portcullis::forceOpen() {
     state = OPEN_STATE;
-    isActive = true;
+    allowsEntry = true;
 }
 
 void Portcullis::addRoom(ROOM* room) {

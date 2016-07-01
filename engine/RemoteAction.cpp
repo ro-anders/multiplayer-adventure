@@ -255,11 +255,11 @@ const char* PortcullisStateAction::CODE = "GS";
 PortcullisStateAction::PortcullisStateAction() :
 RemoteAction(CODE) {}
 
-PortcullisStateAction::PortcullisStateAction(void * ooga, int inPortPkey, int inNewSate, bool inActive) :
+PortcullisStateAction::PortcullisStateAction(int inPortPkey, int inNewSate, bool inAllowsEntry) :
 RemoteAction(CODE),
 portPkey(inPortPkey),
 newState(inNewSate),
-isActive(inActive) {}
+allowsEntry(inAllowsEntry) {}
 
 PortcullisStateAction::~PortcullisStateAction() {}
 
@@ -267,13 +267,13 @@ int PortcullisStateAction::serialize(char* buffer, int bufferLength) {
     // TODO - Right now we are ignoring bufferLength
     // TODO - Reuse base class serialize
     int numChars = sprintf(buffer, "GS %d %d %d %d",
-                           sender, portPkey, newState, (int)isActive);
+                           sender, portPkey, newState, (int)allowsEntry);
     return numChars;
 }
 
 void PortcullisStateAction::deserialize(const char *message) {
     char type[8];
-    sscanf(message, "%s %d %d %d %d", type, &sender, &portPkey, &newState, &isActive);
+    sscanf(message, "%s %d %d %d %d", type, &sender, &portPkey, &newState, &allowsEntry);
 }
 
 

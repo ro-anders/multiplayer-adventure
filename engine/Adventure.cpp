@@ -129,7 +129,7 @@ static bool joystickDisabled = false;
 #define GAMEOPTION_PRIVATE_MAGNETS  1
 // This holds all the switches for whether to turn on or off different game options
 // It is a bitwise or of each game option
-static int gameOptions = 1;
+static int gameOptions = 0;
 
 static int displayedRoomIndex = 0;                                   // index of current (displayed) room
 
@@ -727,7 +727,7 @@ void SyncWithOthers() {
     PortcullisStateAction* nextAction = sync->GetNextPortcullisAction();
     while (nextAction != NULL) {
         Portcullis* port = (Portcullis*)gameBoard->getObject(nextAction->portPkey);
-        port->setState(nextAction->newState, nextAction->isActive);
+        port->setState(nextAction->newState, nextAction->allowsEntry);
         delete nextAction;
         nextAction = sync->GetNextPortcullisAction();
     }
@@ -1282,7 +1282,7 @@ void BallMovement(BALL* ball) {
                     // If we were locked in the castle, open the portcullis.
                     if (port->state == Portcullis::CLOSED_STATE) {
                         port->openFromInside();
-                        PortcullisStateAction* gateAction = new PortcullisStateAction(NULL, port->getPKey(), port->state, port->isActive);
+                        PortcullisStateAction* gateAction = new PortcullisStateAction(port->getPKey(), port->state, port->allowsEntry);
                         sync->BroadcastAction(gateAction);
 
                     }
@@ -1484,7 +1484,7 @@ void MoveGroundObject()
         // Handle balls going into the castles
         for(int portalCtr=0; portalCtr<numPorts; ++portalCtr) {
             Portcullis* nextPort = ports[portalCtr];
-            if (nextBall->room == nextPort->room && nextPort->isActive && CollisionCheckObject(nextPort, (nextBall->x-4), (nextBall->y-1), 8, 8))
+            if (nextBall->room == nextPort->room && nextPort->allowsEntry && CollisionCheckObject(nextPort, (nextBall->x-4), (nextBall->y-1), 8, 8))
             {
                 nextBall->room = nextPort->insideRoom;
                 nextBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
@@ -1494,7 +1494,7 @@ void MoveGroundObject()
                 // Report to all the other players only if its the current player entering
                 if (ctr == thisPlayer) {
                     PortcullisStateAction* gateAction =
-                    new PortcullisStateAction(NULL, nextPort->getPKey(), nextPort->state, nextPort->isActive);
+                    new PortcullisStateAction(nextPort->getPKey(), nextPort->state, nextPort->allowsEntry);
                     sync->BroadcastAction(gateAction);
                     
                     // Report the ball entering the castle
@@ -1838,7 +1838,7 @@ void Portals()
             seen = (gameBoard->getPlayer(ctr)->room == port->room);
         }
         if (seen) {
-            PortcullisStateAction* gateAction = port->processTurn();
+            PortcullisStateAction* gateAction = port->checkInteraction();
             if (gateAction != NULL) {
                 // If we are in the same room as the portcullis, broadcast any state change
                 if (objectBall->room == port->room) {
@@ -1852,13 +1852,13 @@ void Portals()
         }
         
         // Raise/lower the port
-        port->updateState();
-        if (port->state == Portcullis::OPEN_STATE)
+        port->moveOneTurn();
+        if (port->allowsEntry)
         {
             // Port is unlocked
             roomDefs[port->insideRoom]->roomDown = port->room;
         }
-        else if (port->state == Portcullis::CLOSED_STATE)
+        else
         {
             // Port is locked
             roomDefs[port->insideRoom]->roomDown = port->insideRoom;
