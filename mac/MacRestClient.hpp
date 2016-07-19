@@ -9,7 +9,9 @@
 class MacRestClient: public RestClient {
 public:
     int post(const char* path, const char* content, char* responseBuffer, int bufferLength);
-    
+
+    int get(const char* path, char* responseBuffer, int bufferLength);
+
     static void test();
     static void mimicServer();
     

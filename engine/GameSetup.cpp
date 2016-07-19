@@ -30,7 +30,7 @@ GameSetup::GameParams GameSetup::setup(RestClient& client, Transport::Address my
     Json::Value responseJson;
     // Connect to the client and register a game request.
     char requestContent[200];
-    sprintf(requestContent, "ip=%s&port=%d", myAddress.ip(), myAddress.port());
+    sprintf(requestContent, "{\"ip1\": \"%s\",\"port1\": %d}", myAddress.ip(), myAddress.port());
     char response[1000];
     bool gotResponse = false;
     
@@ -51,8 +51,8 @@ GameSetup::GameParams GameSetup::setup(RestClient& client, Transport::Address my
     newParams.numberPlayers = gameParams["numPlayers"].asInt();
     newParams.thisPlayer = gameParams["thisPlayer"].asInt();
     Json::Value otherPlayer = gameParams["otherPlayer"];
-    const char* ip = otherPlayer["ip"].asCString();
-    int port = otherPlayer["port"].asInt();
+    const char* ip = otherPlayer["ip1"].asCString();
+    int port = otherPlayer["port1"].asInt();
     
     Transport::Address secondPlayer(ip, port);
     std::cout << "Got second player " << secondPlayer.ip() << ":" << secondPlayer.port() << std::endl;

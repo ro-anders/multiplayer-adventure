@@ -42,6 +42,8 @@ private:
 
 class RestClient {
 public:
-    
+
+    virtual int get(const char* path, char* responseBuffer, int bufferLength) = 0;
+
     virtual int post(const char* path, const char* content, char* responseBuffer, int bufferLength) = 0;
 };
