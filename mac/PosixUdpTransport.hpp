@@ -15,11 +15,19 @@ class PosixUdpTransport: public UdpTransport {
 public:
     
     /**
+     * Create a UdpTransport.
+     * isTest - if running this in a development environment for testing something we want the transport
+     * to figure out how to talk to another test instance running on the same local host with no other
+     * information.  Otherwise, more information needs to be dictated before the transport can connect.
+     */
+    PosixUdpTransport(bool isTest);
+    
+    /**
      * Used only for in testing when running two games on one machine.  Attempts to listen first on the
      * default port and, if that is taken by the other game, on the default port + 1.
      */
     PosixUdpTransport();
-
+    
     /**
      * Connect to another game using UDP.
      * myExternalAddr - the IP address and port my packets appear to come from

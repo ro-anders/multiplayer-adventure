@@ -15,6 +15,14 @@ class UdpTransport: public Transport {
 public:
     
     /**
+     * Create a UdpTransport.
+     * isTest - if running this in a development environment for testing something we want the transport
+     * to figure out how to talk to another test instance running on the same local host with no other
+     * information.  Otherwise, more information needs to be dictated before the transport can connect.
+     */
+    UdpTransport(bool isTest);
+    
+    /**
      * Used only for in testing when running two games on one machine.  Attempts to listen first on the
      * default port and, if that is taken by the other game, on the default port + 1.
      */
@@ -38,6 +46,24 @@ public:
     
     ~UdpTransport();
     
+    /**
+     * Set the number this transport uses to identify itself to other transports.
+     * This number is vestigial when there are only two machines in the game but is used when there are three.
+     */
+    void setTransportNum(int transportNum);
+    
+    /**
+     * Registers another player.  Players needed to be added in the order of their transport number.
+     * If adding more than two will silently fail.
+     */
+    void addOtherPlayer(const Address & theirAdddr);
+    
+    /**
+     * This will bind to a port even though it is not yet setup to receive messages from other games.
+     * It is used mostly to determine before setup what our port will look like to other machines on the internet.
+     */
+    int reservePort();
+    
     void connect();
     
     /**
@@ -59,7 +85,7 @@ protected:
     Address* theirAddrs;
     
     /** Whether comminicating with one or two other machines */
-    const int numOtherMachines;
+    int numOtherMachines;
     
     /**
      * Pull data off the socket - non-blocking.  If connected to multiple machines, will

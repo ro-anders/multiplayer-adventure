@@ -50,7 +50,6 @@
 		40B029DC1C91449200DA27FD /* Sys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40B029D81C91449200DA27FD /* Sys.cpp */; };
 		40B029DD1C91449200DA27FD /* UdpTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40B029DA1C91449200DA27FD /* UdpTransport.cpp */; };
 		40B345F91C25A2B4001EE63C /* args.m in Sources */ = {isa = PBXBuildFile; fileRef = 40B345F81C25A2B4001EE63C /* args.m */; };
-		40D0F81E1C356A360096980F /* YTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40D0F81C1C356A360096980F /* YTransport.cpp */; };
 		40E47FB11BF22BA20052B84E /* AdventureView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40E47FAE1BF22BA20052B84E /* AdventureView.mm */; };
 		40E47FB21BF22BA20052B84E /* Controller.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40E47FB01BF22BA20052B84E /* Controller.mm */; };
 		40F99C051C1A31930032B2A2 /* Portcullis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40F99C031C1A31930032B2A2 /* Portcullis.cpp */; };
@@ -137,8 +136,6 @@
 		40B029DB1C91449200DA27FD /* UdpTransport.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = UdpTransport.hpp; path = ../engine/UdpTransport.hpp; sourceTree = "<group>"; };
 		40B345F81C25A2B4001EE63C /* args.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = args.m; sourceTree = "<group>"; };
 		40D0F81B1C356A360096980F /* adventure_sys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = adventure_sys.h; path = ../engine/adventure_sys.h; sourceTree = "<group>"; };
-		40D0F81C1C356A360096980F /* YTransport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = YTransport.cpp; path = ../engine/YTransport.cpp; sourceTree = "<group>"; };
-		40D0F81D1C356A360096980F /* YTransport.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = YTransport.hpp; path = ../engine/YTransport.hpp; sourceTree = "<group>"; };
 		40E47FAD1BF22BA20052B84E /* AdventureView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AdventureView.h; sourceTree = "<group>"; };
 		40E47FAE1BF22BA20052B84E /* AdventureView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AdventureView.mm; sourceTree = "<group>"; };
 		40E47FAF1BF22BA20052B84E /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Controller.h; sourceTree = "<group>"; };
@@ -331,8 +328,6 @@
 				407773D21BF2AC9C00454AC5 /* Transport.hpp */,
 				40B029DA1C91449200DA27FD /* UdpTransport.cpp */,
 				40B029DB1C91449200DA27FD /* UdpTransport.hpp */,
-				40D0F81C1C356A360096980F /* YTransport.cpp */,
-				40D0F81D1C356A360096980F /* YTransport.hpp */,
 				401C851C1D195CBA00110952 /* GameSetup.cpp */,
 				401C851D1D195CBA00110952 /* GameSetup.hpp */,
 				401C851F1D1960A100110952 /* RestClient.cpp */,
@@ -424,7 +419,6 @@
 			files = (
 				408E43D11C3C6D8C00E0715B /* Board.cpp in Sources */,
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
-				40D0F81E1C356A360096980F /* YTransport.cpp in Sources */,
 				407773D31BF2AC9C00454AC5 /* Transport.cpp in Sources */,
 				4013C0A11C503FAA00C99342 /* Room.cpp in Sources */,
 				407773D61BF2AF6000454AC5 /* PosixTcpTransport.cpp in Sources */,

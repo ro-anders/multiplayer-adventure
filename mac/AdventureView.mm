@@ -25,7 +25,6 @@
 #include "PosixUdpTransport.hpp"
 #include "Sys.hpp"
 #include "Transport.hpp"
-#include "YTransport.hpp"
 
 
 
@@ -105,8 +104,9 @@ bool gMute = FALSE;
 
         Transport::Address addr0 = Transport::parseUrl(argv[3]);
         MacRestClient client;
-        GameSetup setup;
-        GameSetup::GameParams params = setup.setup(client, addr0);
+        PosixUdpTransport* transport = new PosixUdpTransport(false);
+        GameSetup setup(client, *transport);
+        GameSetup::GameParams params = setup.setup(argc, argv);
         // TODO: What do we do if we fail to setup a game?
         
         // TODO: Figure out game level
@@ -135,12 +135,11 @@ bool gMute = FALSE;
         
         // Read the command line arguments and setup the communication with the other players
         // MacAdventure <gameLevel> <thisPlayer> <myip>:<myport> <theirip>:<theirport> [<thirdip>:<thirdport>]
+        numPlayers = (argc <= 2 ? 2 : argc-3);
         if (argc <= 2) {
-            numPlayers = 2;
             transport = new PosixUdpTransport();
         } else {
             thisPlayer = atoi(argv[2])-1;
-            numPlayers = argc-3;
             Transport::Address addr0 = Transport::parseUrl(argv[3]);
             Transport::Address addr1 = Transport::parseUrl(argv[4]);
             if (argc <= 5) {

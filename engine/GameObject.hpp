@@ -59,7 +59,7 @@ public:
     int getPKey() const;
     
     inline bool exists() {return objExists;}
-    inline bool setExists(bool inExists) {objExists = inExists;}
+    inline void setExists(bool inExists) {objExists = inExists;}
     
     /**
      * Sets up the object in the room it will start off in.

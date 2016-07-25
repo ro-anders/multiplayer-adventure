@@ -14,6 +14,27 @@ const char* UdpTransport::RECVD_NOTHING = "UA";
 const char* UdpTransport::RECVD_MESSAGE = "UB";
 const char* UdpTransport::RECVD_ACK = "UC";
 
+UdpTransport::UdpTransport(bool inIsTest) :
+Transport(inIsTest),
+myExternalAddr(Address()),
+theirAddrs(NULL),
+myInternalPort(0),
+states(NULL),
+numOtherMachines(0),
+transportNum(0)
+{
+    if (inIsTest) {
+        myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT);
+        theirAddrs = new Address[1];
+        theirAddrs[0] = Address(LOCALHOST_IP, DEFAULT_PORT+1);
+        myInternalPort = DEFAULT_PORT;
+        states = new const char*[1];
+        states[0] = NOT_YET_INITIATED;
+        numOtherMachines = 1;
+    }
+    
+}
+
 
 UdpTransport::UdpTransport() :
 Transport(true),
@@ -65,6 +86,33 @@ UdpTransport::~UdpTransport() {
     delete[] theirAddrs;
     delete[] states;
 }
+
+void UdpTransport::setTransportNum(int inTransportNum) {
+    transportNum = inTransportNum;
+}
+
+void UdpTransport::addOtherPlayer(const Address & theirAddr) {
+    if (numOtherMachines < 2) {
+        Address* oldAddrs = theirAddrs;
+        const char** oldStates = states;
+        
+        ++numOtherMachines;
+        theirAddrs = new Address[numOtherMachines];
+        theirAddrs[numOtherMachines-1]=theirAddr;
+        states = new const char*[numOtherMachines];
+        states[numOtherMachines-1] = NOT_YET_INITIATED;
+        
+        // Copy old data
+        if (numOtherMachines == 2) {
+            theirAddrs[0] = oldAddrs[0];
+            delete[] oldAddrs;
+            states[0] = oldStates[0];
+            delete oldStates;
+        }
+    }
+}
+
+
 
 void UdpTransport::connect() {
     if (getTestSetupNumber() == NOT_YET_DETERMINED) {
@@ -208,6 +256,11 @@ void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage, int ot
         }
     }
 }
+
+int UdpTransport::reservePort() {
+    return -1;
+}
+
 
 
 

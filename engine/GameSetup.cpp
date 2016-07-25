@@ -6,6 +6,7 @@
 #include "json/json-forwards.h"
 #include "RestClient.hpp"
 #include "Sys.hpp"
+#include "UdpTransport.hpp"
 
 GameSetup::GameParams::GameParams() :
 thisPlayerAddress(),
@@ -24,9 +25,19 @@ GameSetup::GameParams& GameSetup::GameParams::operator=(const GameParams& other)
     return *this;
 }
 
-GameSetup::GameParams GameSetup::setup(RestClient& client, Transport::Address myAddress) {
+bool GameSetup::GameParams::ok() {
+    return secondPlayerAddress.isValid();
+}
+
+GameSetup::GameSetup(RestClient& inClient, UdpTransport& inTransport) :
+client(inClient),
+transport(inTransport) {}
+
+GameSetup::GameParams GameSetup::setup(int argc, char** argv) {
     GameParams newParams;
-    
+
+    Transport::Address myAddress = Transport::parseUrl(argv[3]);
+
     Json::Value responseJson;
     // Connect to the client and register a game request.
     char requestContent[200];
@@ -61,6 +72,14 @@ GameSetup::GameParams GameSetup::setup(RestClient& client, Transport::Address my
     return newParams;
 }
 
-bool GameSetup::GameParams::ok() {
-    return secondPlayerAddress.isValid();
+/**
+ * Contact the UDP server and it will tell you what IP and port your UDP packets 
+ * will look like they come from.
+ */
+Transport::Address GameSetup::determinePublicAddress() {
+    // First need to pick which port this game will use for UDP communication.
+    transport.reservePort();
+    
+    // Now send a packet on that port.
+    
 }

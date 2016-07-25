@@ -8,6 +8,7 @@
 #include "Transport.hpp"
 
 class RestClient;
+class UdpTransport;
 
 class GameSetup {
 public:
@@ -32,7 +33,17 @@ public:
         bool ok();
     };
     
-    GameParams setup(RestClient& client, Transport::Address myAddress);
+    GameSetup(RestClient& client, UdpTransport& transport);
+    
+    GameParams setup(int argc, char** argv);
+    
+private:
+    
+    RestClient& client;
+    
+    UdpTransport& transport;
+    
+    Transport::Address determinePublicAddress();
 };
 
 #endif /* GameSetup_hpp */

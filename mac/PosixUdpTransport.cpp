@@ -20,8 +20,14 @@
 
 #include "Sys.hpp"
 
+PosixUdpTransport::PosixUdpTransport(bool isTest) :
+UdpTransport(isTest)
+{
+    setup();
+}
+
 PosixUdpTransport::PosixUdpTransport() :
-  UdpTransport()
+UdpTransport()
 {
     setup();
 }
@@ -43,18 +49,25 @@ PosixUdpTransport::~PosixUdpTransport() {
     if (socketFd > 0) {
         close(socketFd);
     }
+    delete[] remaddrs;
 }
 
 void PosixUdpTransport::setup() {
-    remaddrs = new sockaddr_in[numOtherMachines];
-    for(int ctr=0; ctr<numOtherMachines; ++ctr) {
+    // Prepare (zero out) the blocks holding internet address information.
+    
+    memset((char *) &sender, 0, sizeof(sender));
+
+    // At construction we don't know how manyremote machines there will be, so we just make
+    // space for two.
+    remaddrs = new sockaddr_in[2];
+    for(int ctr=0; ctr<2; ++ctr) {
         memset((char *) &remaddrs[ctr], 0, sizeof(sender));
     }
-    memset((char *) &sender, 0, sizeof(sender));
 }
 
 int PosixUdpTransport::openSocket() {
  
+    // Create the structures that represent the end-points for the other machines
     for(int ctr=0; ctr<numOtherMachines; ++ctr) {
         // TODO: Fix this
         // ip is an ip, not a hostname, but don't know how to convert a
@@ -69,6 +82,7 @@ int PosixUdpTransport::openSocket() {
         printf("Initialized = %s:%d.\n", inet_ntoa(remaddrs[ctr].sin_addr), ntohs(remaddrs[ctr].sin_port));
     }
 
+    // Create the server socket and bind to it
     socketFd = socket(AF_INET, SOCK_DGRAM, 0);
     if (socketFd < 0) {
         Sys::log("ERROR opening socket");
