@@ -60,8 +60,6 @@ protected:
      */
     int writeData(const char* data, int numBytes, int recipient);
     
-    int readData(char* buffer, int bufferLength);
-
 private:
         
     int socketFd; // UDP Socket to send and receive

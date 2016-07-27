@@ -111,7 +111,7 @@ protected:
     /**
      * Pull data off the socket - non-blocking
      */
-    virtual int readData(char* buffer, int bufferLength) = 0;
+    int readData(char* buffer, int bufferLength);
     
 private:
     

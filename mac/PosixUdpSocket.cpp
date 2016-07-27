@@ -1,9 +1,6 @@
-//
-//  PosixUdpTransport.cpp
-//  MacAdventure
-//
 
-#include "PosixUdpTransport.hpp"
+
+#include "PosixUdpSocket.hpp"
 
 // Socket includes
 #include <arpa/inet.h>
@@ -20,43 +17,10 @@
 
 #include "Sys.hpp"
 
-PosixUdpTransport::PosixUdpTransport(bool isTest) :
-UdpTransport(NULL, isTest)
-{
-    setup();
-}
-
-PosixUdpTransport::PosixUdpTransport() :
-UdpTransport(NULL)
-{
-    setup();
-}
-
-PosixUdpTransport::PosixUdpTransport(const Address& inMyExternalAddr,  const Address& inTheirAddr) :
-UdpTransport(NULL, inMyExternalAddr, inTheirAddr)
-{
-    setup();
-}
-
-PosixUdpTransport::PosixUdpTransport(const Address& inMyExternalAddr,  int transportNum,
-                                     const Address& otherAddr1, const Address& otherAddr2) :
-UdpTransport(NULL, inMyExternalAddr, transportNum, otherAddr1, otherAddr2)
-{
-    setup();
-}
-
-PosixUdpTransport::~PosixUdpTransport() {
-    if (socketFd > 0) {
-        close(socketFd);
-    }
-    delete[] remaddrs;
-}
-
-void PosixUdpTransport::setup() {
-    // Prepare (zero out) the blocks holding internet address information.
-    
+PosixUdpSocket::PosixUdpSocket() :
+UdpSocket() {
     memset((char *) &sender, 0, sizeof(sender));
-
+    
     // At construction we don't know how manyremote machines there will be, so we just make
     // space for two.
     remaddrs = new sockaddr_in[2];
@@ -65,8 +29,15 @@ void PosixUdpTransport::setup() {
     }
 }
 
+PosixUdpSocket::~PosixUdpSocket() {
+    if (socketFd > 0) {
+        close(socketFd);
+    }
+    delete[] remaddrs;
+}
+
 int PosixUdpTransport::openSocket() {
- 
+    
     // Create the structures that represent the end-points for the other machines
     for(int ctr=0; ctr<numOtherMachines; ++ctr) {
         // TODO: Fix this
@@ -81,9 +52,9 @@ int PosixUdpTransport::openSocket() {
         remaddrs[ctr].sin_port = htons(theirAddrs[ctr].port());
         printf("Initialized = %s:%d.\n", inet_ntoa(remaddrs[ctr].sin_addr), ntohs(remaddrs[ctr].sin_port));
     }
-
+    
     // Create the server socket and bind to it
-    socketFd = ::socket(AF_INET, SOCK_DGRAM, 0);
+    socketFd = socket(AF_INET, SOCK_DGRAM, 0);
     if (socketFd < 0) {
         Sys::log("ERROR opening socket");
         return TPT_ERROR;
@@ -98,14 +69,14 @@ int PosixUdpTransport::openSocket() {
         // Assume it is because another process is listening and we should instead launch the client
         return Transport::TPT_BUSY;
     }
-
+    
     // Set to non-blocking receive
     fcntl(socketFd, F_SETFL, O_NONBLOCK);
-
+    
     return Transport::TPT_OK;
 }
 
-int PosixUdpTransport::writeData(const char* data, int numBytes, int recipient)
+int PosixUdpSocket::writeData(const char* data, int numBytes, int recipient)
 {
     int numSent = 0; // If sending to multiple machines, we just return what one send reported.
     for(int ctr=0; ctr<numOtherMachines; ++ctr) {
@@ -116,8 +87,8 @@ int PosixUdpTransport::writeData(const char* data, int numBytes, int recipient)
     return numSent;
 }
 
-void PosixUdpTransport::testSockets(const char* myExternalIp, int myExternalPort, const char* theirExternalIp, int theirExternalPort)
-{
-    PosixUdpTransport t(NULL);
-    Transport::testTransport(t);
+int PosixUdpSocket::readData(char *buffer, int bufferLength) {
+    // Receive the next packet
+    int n = recvfrom(socketFd, buffer, bufferLength, 0, NULL, NULL);
+    return n;
 }

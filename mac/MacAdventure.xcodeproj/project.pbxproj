@@ -44,6 +44,8 @@
 		407773D61BF2AF6000454AC5 /* PosixTcpTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 407773D41BF2AF6000454AC5 /* PosixTcpTransport.cpp */; };
 		4084EC8F1BF22AEE00E8F375 /* Adventure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4084EC8B1BF22AEE00E8F375 /* Adventure.cpp */; };
 		4084EC901BF22AEE00E8F375 /* Sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4084EC8D1BF22AEE00E8F375 /* Sync.cpp */; };
+		408582141D46C0BE00A3F2EF /* UdpSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 408582121D46C0BE00A3F2EF /* UdpSocket.cpp */; };
+		408582171D46C1E200A3F2EF /* PosixUdpSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 408582151D46C1E200A3F2EF /* PosixUdpSocket.cpp */; };
 		408E43D11C3C6D8C00E0715B /* Board.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 408E43CF1C3C6D8C00E0715B /* Board.cpp */; };
 		4092E1E21C4E731900B2AEBB /* Map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4092E1E01C4E731900B2AEBB /* Map.cpp */; };
 		40A3CB321C8F6E2800E3AD73 /* TcpTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40A3CB311C8F6E2800E3AD73 /* TcpTransport.cpp */; };
@@ -124,6 +126,10 @@
 		4084EC8B1BF22AEE00E8F375 /* Adventure.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Adventure.cpp; path = ../engine/Adventure.cpp; sourceTree = "<group>"; };
 		4084EC8C1BF22AEE00E8F375 /* Adventure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Adventure.h; path = ../engine/Adventure.h; sourceTree = "<group>"; };
 		4084EC8D1BF22AEE00E8F375 /* Sync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Sync.cpp; path = ../engine/Sync.cpp; sourceTree = "<group>"; };
+		408582121D46C0BE00A3F2EF /* UdpSocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UdpSocket.cpp; path = ../engine/UdpSocket.cpp; sourceTree = "<group>"; };
+		408582131D46C0BE00A3F2EF /* UdpSocket.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = UdpSocket.hpp; path = ../engine/UdpSocket.hpp; sourceTree = "<group>"; };
+		408582151D46C1E200A3F2EF /* PosixUdpSocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PosixUdpSocket.cpp; sourceTree = "<group>"; };
+		408582161D46C1E200A3F2EF /* PosixUdpSocket.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PosixUdpSocket.hpp; sourceTree = "<group>"; };
 		408E43CF1C3C6D8C00E0715B /* Board.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Board.cpp; path = ../engine/Board.cpp; sourceTree = "<group>"; };
 		408E43D01C3C6D8C00E0715B /* Board.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Board.hpp; path = ../engine/Board.hpp; sourceTree = "<group>"; };
 		4092E1E01C4E731900B2AEBB /* Map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Map.cpp; path = ../engine/Map.cpp; sourceTree = "<group>"; };
@@ -278,6 +284,8 @@
 				40E47FAE1BF22BA20052B84E /* AdventureView.mm */,
 				40E47FAF1BF22BA20052B84E /* Controller.h */,
 				40E47FB01BF22BA20052B84E /* Controller.mm */,
+				408582151D46C1E200A3F2EF /* PosixUdpSocket.cpp */,
+				408582161D46C1E200A3F2EF /* PosixUdpSocket.hpp */,
 				407773D41BF2AF6000454AC5 /* PosixTcpTransport.cpp */,
 				407773D51BF2AF6000454AC5 /* PosixTcpTransport.hpp */,
 				40662F351C767ACB00FFC715 /* PosixUdpTransport.cpp */,
@@ -306,6 +314,8 @@
 				40F99C061C1A334B0032B2A2 /* color.h */,
 				406CD1521C0C7C17002477BB /* Dragon.cpp */,
 				406CD1531C0C7C17002477BB /* Dragon.hpp */,
+				401C851C1D195CBA00110952 /* GameSetup.cpp */,
+				401C851D1D195CBA00110952 /* GameSetup.hpp */,
 				40509AA61C05E9750008BACF /* GameObject.cpp */,
 				40509AA71C05E9750008BACF /* GameObject.hpp */,
 				4092E1E01C4E731900B2AEBB /* Map.cpp */,
@@ -314,6 +324,8 @@
 				40F99C041C1A31930032B2A2 /* Portcullis.hpp */,
 				40509AA81C05E9750008BACF /* RemoteAction.cpp */,
 				40509AA91C05E9750008BACF /* RemoteAction.hpp */,
+				401C851F1D1960A100110952 /* RestClient.cpp */,
+				401C85201D1960A100110952 /* RestClient.hpp */,
 				4013C09F1C503FAA00C99342 /* Room.cpp */,
 				4013C0A01C503FAA00C99342 /* Room.hpp */,
 				40663AC41CBD122900A75EE3 /* ScriptedSync.cpp */,
@@ -326,12 +338,10 @@
 				40A3CB2E1C8F6D0B00E3AD73 /* TcpTransport.hpp */,
 				407773D11BF2AC9C00454AC5 /* Transport.cpp */,
 				407773D21BF2AC9C00454AC5 /* Transport.hpp */,
+				408582121D46C0BE00A3F2EF /* UdpSocket.cpp */,
+				408582131D46C0BE00A3F2EF /* UdpSocket.hpp */,
 				40B029DA1C91449200DA27FD /* UdpTransport.cpp */,
 				40B029DB1C91449200DA27FD /* UdpTransport.hpp */,
-				401C851C1D195CBA00110952 /* GameSetup.cpp */,
-				401C851D1D195CBA00110952 /* GameSetup.hpp */,
-				401C851F1D1960A100110952 /* RestClient.cpp */,
-				401C85201D1960A100110952 /* RestClient.hpp */,
 			);
 			name = engine;
 			sourceTree = "<group>";
@@ -425,6 +435,7 @@
 				401C851E1D195CBA00110952 /* GameSetup.cpp in Sources */,
 				40740BAE1C1859730018AE6D /* Bat.cpp in Sources */,
 				401C85211D1960A100110952 /* RestClient.cpp in Sources */,
+				408582141D46C0BE00A3F2EF /* UdpSocket.cpp in Sources */,
 				4084EC8F1BF22AEE00E8F375 /* Adventure.cpp in Sources */,
 				406264921C236DE600154D97 /* args.c in Sources */,
 				4084EC901BF22AEE00E8F375 /* Sync.cpp in Sources */,
@@ -436,6 +447,7 @@
 				40E47FB21BF22BA20052B84E /* Controller.mm in Sources */,
 				406CD1541C0C7C17002477BB /* Dragon.cpp in Sources */,
 				40509AAB1C05E9750008BACF /* GameObject.cpp in Sources */,
+				408582171D46C1E200A3F2EF /* PosixUdpSocket.cpp in Sources */,
 				40509AAA1C05E9750008BACF /* ActionQueue.cpp in Sources */,
 				400319151D1B30F300AEA951 /* jsoncpp.cpp in Sources */,
 				40F99C051C1A31930032B2A2 /* Portcullis.cpp in Sources */,

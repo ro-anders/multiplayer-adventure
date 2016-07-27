@@ -8,14 +8,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Sys.hpp"
+#include "UdpSocket.hpp"
 
 const char* UdpTransport::NOT_YET_INITIATED = "UX";
 const char* UdpTransport::RECVD_NOTHING = "UA";
 const char* UdpTransport::RECVD_MESSAGE = "UB";
 const char* UdpTransport::RECVD_ACK = "UC";
 
-UdpTransport::UdpTransport(bool inIsTest) :
+UdpTransport::UdpTransport(UdpSocket* inSocket, bool inIsTest) :
 Transport(inIsTest),
+socket(inSocket),
 myExternalAddr(Address()),
 theirAddrs(NULL),
 myInternalPort(0),
@@ -36,8 +38,9 @@ transportNum(0)
 }
 
 
-UdpTransport::UdpTransport() :
+UdpTransport::UdpTransport(UdpSocket* inSocket) :
 Transport(true),
+socket(inSocket),
 myExternalAddr(LOCALHOST_IP, DEFAULT_PORT),
 theirAddrs(new Address[1]),
 myInternalPort(DEFAULT_PORT),
@@ -49,8 +52,9 @@ transportNum(0)
     states[0] = NOT_YET_INITIATED;
 }
 
-UdpTransport::UdpTransport(const Address& inMyExternalAddr,  const Address& inTheirAddr) :
+UdpTransport::UdpTransport(UdpSocket* inSocket, const Address& inMyExternalAddr,  const Address& inTheirAddr) :
 Transport(false),
+socket(inSocket),
 myExternalAddr(inMyExternalAddr),
 theirAddrs(new Address[1]),
 // We use the default port internally unless the other side is also on the same machine.
@@ -63,9 +67,10 @@ transportNum(0)
     states[0] = NOT_YET_INITIATED;
 }
 
-UdpTransport::UdpTransport(const Address& inMyExternalAddr,  int inTransportNum,
+UdpTransport::UdpTransport(UdpSocket* inSocket, const Address& inMyExternalAddr,  int inTransportNum,
                            const Address& other1, const Address& other2) :
 Transport(false),
+socket(inSocket),
 myExternalAddr(inMyExternalAddr),
 theirAddrs(new Address[2]),
 // We use the default port internally unless the other machines also on the same machine.
@@ -147,10 +152,14 @@ bool UdpTransport::isConnected() {
 int UdpTransport::getPacket(char* buffer, int bufferLength) {
     if (connected && !hasDataInBuffer()) {
         // Now that setup is done, we can stop buffering data.
-        return readData(buffer, bufferLength);
+        return socket->readData(buffer, bufferLength);
     } else {
         return Transport::getPacket(buffer, bufferLength);
     }
+}
+
+int UdpTransport::readData(char* buffer, int bufferLength) {
+    return socket->readData(buffer, bufferLength);
 }
 
 int UdpTransport::writeData(const char* data, int numBytes) {
@@ -172,7 +181,7 @@ void UdpTransport::punchHole() {
         bool justAcked[2] = {false, false};
     
         // See what messages we have received.
-        int bytes = readData(recvBuffer, READ_BUFFER_LENGTH);
+        int bytes = socket->readData(recvBuffer, READ_BUFFER_LENGTH);
         while (bytes > 0) {
             // This could be non-setup messages, which need to be put in the base class's stream buffer
             // until the setup is complete.
@@ -212,7 +221,7 @@ void UdpTransport::punchHole() {
             }
             
             // Check for more messages.
-            bytes = readData(recvBuffer, READ_BUFFER_LENGTH);
+            bytes = socket->readData(recvBuffer, READ_BUFFER_LENGTH);
         }
         
         // Now send a packet to each other machine.  Don't send if we're not initialized or we're all connected.
