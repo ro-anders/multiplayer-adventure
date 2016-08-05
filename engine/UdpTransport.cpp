@@ -21,98 +21,58 @@ socket(inSocket),
 myExternalAddr(Address()),
 theirAddrs(NULL),
 myInternalPort(0),
-states(NULL),
+states(new const char*[2]), // We always create space for two even though we may only use one.
 numOtherMachines(0),
-transportNum(0)
+transportNum(0),
+remaddrs(new sockaddr_in*[2]) // We always create space for two even though we may only use one.
 {
+    remaddrs[0] = remaddrs[1] = NULL;
     if (inIsTest) {
-        myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT);
-        theirAddrs = new Address[1];
-        theirAddrs[0] = Address(LOCALHOST_IP, DEFAULT_PORT+1);
         myInternalPort = DEFAULT_PORT;
-        states = new const char*[1];
-        states[0] = NOT_YET_INITIATED;
-        numOtherMachines = 1;
     }
     
-}
-
-
-UdpTransport::UdpTransport(UdpSocket* inSocket) :
-Transport(true),
-socket(inSocket),
-myExternalAddr(LOCALHOST_IP, DEFAULT_PORT),
-theirAddrs(new Address[1]),
-myInternalPort(DEFAULT_PORT),
-states(new const char*[1]),
-numOtherMachines(1),
-transportNum(0)
-{
-    theirAddrs[0] = Address(LOCALHOST_IP, DEFAULT_PORT+1);
-    states[0] = NOT_YET_INITIATED;
-}
-
-UdpTransport::UdpTransport(UdpSocket* inSocket, const Address& inMyExternalAddr,  const Address& inTheirAddr) :
-Transport(false),
-socket(inSocket),
-myExternalAddr(inMyExternalAddr),
-theirAddrs(new Address[1]),
-// We use the default port internally unless the other side is also on the same machine.
-myInternalPort(strcmp(inTheirAddr.ip(), LOCALHOST_IP)==0 ? inMyExternalAddr.port() : DEFAULT_PORT),
-states(new const char*[1]),
-numOtherMachines(1),
-transportNum(0)
-{
-    theirAddrs[0] = inTheirAddr;
-    states[0] = NOT_YET_INITIATED;
-}
-
-UdpTransport::UdpTransport(UdpSocket* inSocket, const Address& inMyExternalAddr,  int inTransportNum,
-                           const Address& other1, const Address& other2) :
-Transport(false),
-socket(inSocket),
-myExternalAddr(inMyExternalAddr),
-theirAddrs(new Address[2]),
-// We use the default port internally unless the other machines also on the same machine.
-// We don't yet support having two games on one machine and a third game on a second machine
-myInternalPort((strcmp(other1.ip(), LOCALHOST_IP)==0) && (strcmp(other1.ip(), LOCALHOST_IP)==0) ?
-               inMyExternalAddr.port() : DEFAULT_PORT),
-states(new const char*[1]),
-numOtherMachines(2),
-transportNum(inTransportNum)
-{
-    theirAddrs[0] = other1;
-    theirAddrs[1] = other2;
-    states[0] = NOT_YET_INITIATED;
-    states[1] = NOT_YET_INITIATED;
 }
 
 UdpTransport::~UdpTransport() {
     delete[] theirAddrs;
     delete[] states;
+    if (remaddrs != NULL) {
+        for(int ctr=0; ctr<2; ++ctr) {
+            if (remaddrs[ctr] != NULL) {
+                socket->deleteAddress(remaddrs[ctr]);
+            }
+        }
+        delete[] remaddrs;
+    }
 }
 
 void UdpTransport::setTransportNum(int inTransportNum) {
     transportNum = inTransportNum;
 }
 
+/**
+ * The ip address to tell other machines to use to talk to this machine.
+ */
+void UdpTransport::setExternalAddress(const Address& myExternalAddrIn) {
+    myExternalAddr = myExternalAddrIn;
+}
+
+
+
 void UdpTransport::addOtherPlayer(const Address & theirAddr) {
     if (numOtherMachines < 2) {
         Address* oldAddrs = theirAddrs;
-        const char** oldStates = states;
         
         ++numOtherMachines;
         theirAddrs = new Address[numOtherMachines];
         theirAddrs[numOtherMachines-1]=theirAddr;
-        states = new const char*[numOtherMachines];
         states[numOtherMachines-1] = NOT_YET_INITIATED;
+        remaddrs[numOtherMachines-1] = socket->createAddress(theirAddr);
         
         // Copy old data
         if (numOtherMachines == 2) {
             theirAddrs[0] = oldAddrs[0];
             delete[] oldAddrs;
-            states[0] = oldStates[0];
-            delete oldStates;
         }
     }
 }
@@ -123,10 +83,15 @@ void UdpTransport::connect() {
     if (getTestSetupNumber() == NOT_YET_DETERMINED) {
         // Try the default setup (using DEFAULT_PORT to talk to localhost on DEFAULT_PORT + 1)
         // If that is busy, switch them.
+        // In a test, the only thing setup would be the internal port.  So all other attributes need to be
+        // specified once a port is chosen.
         int busy = openSocket();
-        if (busy == Transport::TPT_BUSY) {
+        if (busy == Transport::TPT_OK) {
+            myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT);
+            addOtherPlayer(Address(LOCALHOST_IP, DEFAULT_PORT+1));
+        } else if (busy == Transport::TPT_BUSY) {
             myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT+1);
-            theirAddrs[0] = Address(LOCALHOST_IP, DEFAULT_PORT);
+            addOtherPlayer(Address(LOCALHOST_IP, DEFAULT_PORT));
             myInternalPort = DEFAULT_PORT+1;
             openSocket();
         }
@@ -139,8 +104,26 @@ void UdpTransport::connect() {
     // We need a big random integer.
     randomNum = Sys::random() * 1000000;
     
+    printf("Attempting to punch hole to other machine.");
     punchHole();
 }
+
+int UdpTransport::openSocket() {
+    
+    // Create the server socket and bind to it
+    int status = socket->bind(myInternalPort);
+
+    if (status == Transport::TPT_OK) {
+        printf("Bound to port %d.\n", myInternalPort);
+        socket->setBlocking(false);
+    } else {
+        printf("Failed to bind to port %d.\n", myInternalPort);
+    }
+    
+    
+    return status;
+}
+
 
 bool UdpTransport::isConnected() {
     if (!connected) {
@@ -163,7 +146,14 @@ int UdpTransport::readData(char* buffer, int bufferLength) {
 }
 
 int UdpTransport::writeData(const char* data, int numBytes) {
-    return writeData(data, numBytes, -1);
+    int leastCharsWritten = 1000000;
+    for(int ctr=0; ctr<numOtherMachines; ++ctr) {
+        int charsWritten = socket->writeData(data, numBytes, remaddrs[ctr]);
+        if (charsWritten < leastCharsWritten) {
+            leastCharsWritten = charsWritten;
+        }
+    }
+    return leastCharsWritten;
 }
 
 

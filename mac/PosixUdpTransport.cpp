@@ -26,24 +26,6 @@ UdpTransport(NULL, isTest)
     setup();
 }
 
-PosixUdpTransport::PosixUdpTransport() :
-UdpTransport(NULL)
-{
-    setup();
-}
-
-PosixUdpTransport::PosixUdpTransport(const Address& inMyExternalAddr,  const Address& inTheirAddr) :
-UdpTransport(NULL, inMyExternalAddr, inTheirAddr)
-{
-    setup();
-}
-
-PosixUdpTransport::PosixUdpTransport(const Address& inMyExternalAddr,  int transportNum,
-                                     const Address& otherAddr1, const Address& otherAddr2) :
-UdpTransport(NULL, inMyExternalAddr, transportNum, otherAddr1, otherAddr2)
-{
-    setup();
-}
 
 PosixUdpTransport::~PosixUdpTransport() {
     if (socketFd > 0) {
@@ -57,7 +39,7 @@ void PosixUdpTransport::setup() {
     
     memset((char *) &sender, 0, sizeof(sender));
 
-    // At construction we don't know how manyremote machines there will be, so we just make
+    // At construction we don't know how many remote machines there will be, so we just make
     // space for two.
     remaddrs = new sockaddr_in[2];
     for(int ctr=0; ctr<2; ++ctr) {

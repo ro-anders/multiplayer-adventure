@@ -21,10 +21,10 @@
 #include "args.h"
 #include "GameSetup.hpp"
 #include "MacRestClient.hpp"
-#include "PosixTcpTransport.hpp"
-#include "PosixUdpTransport.hpp"
+#include "PosixUdpSocket.hpp"
 #include "Sys.hpp"
 #include "Transport.hpp"
+#include "UdpTransport.hpp"
 
 
 
@@ -75,22 +75,23 @@ bool gMute = FALSE;
     char** argv;
     Args_GetArgs(&argc, &argv);
     
+    
     // Test UDP Sockets
     if ((argc >= 2) && (strcmp(argv[1], "test")==0)) {
-        Transport* toTest = NULL;
-        if (argc == 2) {
-            toTest = new PosixUdpTransport();
-        } else {
+        PosixUdpSocket* socket = new PosixUdpSocket();
+        UdpTransport* toTest = new UdpTransport(socket, argc==2);
+        if (argc > 2) {
             Transport::Address addr1 = Transport::parseUrl(argv[2]);
             Transport::Address addr2 = Transport::parseUrl(argv[3]);
-            toTest = new PosixUdpTransport(addr1, addr2);
+            toTest->addOtherPlayer(addr1);
+            toTest->addOtherPlayer(addr2);
         }
         Transport::testTransport(*toTest);
     }
     
     int numPlayers;
     int thisPlayer;
-    Transport* transport;
+    UdpTransport* transport;
     int gameLevel = GAME_MODE_2;
     
     if ((argc >= 2) && (strcmp(argv[1], "script")==0)) {
@@ -104,21 +105,23 @@ bool gMute = FALSE;
 
         Transport::Address addr0 = Transport::parseUrl(argv[3]);
         MacRestClient client;
-        PosixUdpTransport* transport = new PosixUdpTransport(false);
+        
+        PosixUdpSocket* socket = new PosixUdpSocket();
+        transport = new UdpTransport(socket, false);
         GameSetup setup(client, *transport);
         GameSetup::GameParams params = setup.setup(argc, argv);
         // TODO: What do we do if we fail to setup a game?
         
         // TODO: Figure out game level
         gameLevel = GAME_MODE_2;
-        thisPlayer = params.thisPlayer;
         
+        transport->setExternalAddress(addr0);
+        transport->setTransportNum(params.thisPlayer);
+        transport->addOtherPlayer(params.secondPlayerAddress);
+        numPlayers = 2;
         if (params.thirdPlayerAddress.isValid()) {
+            transport->addOtherPlayer(params.thirdPlayerAddress);
             numPlayers = 3;
-            transport = new PosixUdpTransport(addr0, thisPlayer, params.secondPlayerAddress, params.thirdPlayerAddress);
-        } else {
-            numPlayers = 2;
-            transport = new PosixUdpTransport(addr0, params.secondPlayerAddress);
         }
         
         transport->connect();
@@ -135,18 +138,20 @@ bool gMute = FALSE;
         
         // Read the command line arguments and setup the communication with the other players
         // MacAdventure <gameLevel> <thisPlayer> <myip>:<myport> <theirip>:<theirport> [<thirdip>:<thirdport>]
+        PosixUdpSocket* socket = new PosixUdpSocket();
+        transport = new UdpTransport(socket, argc <= 2);
         numPlayers = (argc <= 2 ? 2 : argc-3);
-        if (argc <= 2) {
-            transport = new PosixUdpTransport();
-        } else {
+        if (argc > 2) {
             thisPlayer = atoi(argv[2])-1;
             Transport::Address addr0 = Transport::parseUrl(argv[3]);
+            transport->setExternalAddress(addr0);
+            transport->setTransportNum(thisPlayer);
+            
             Transport::Address addr1 = Transport::parseUrl(argv[4]);
-            if (argc <= 5) {
-                transport = new PosixUdpTransport(addr0, addr1);
-            } else {
+            transport->addOtherPlayer(addr1);
+            if (argc > 5) {
                 Transport::Address addr2 = Transport::parseUrl(argv[5]);
-                transport = new PosixUdpTransport(addr0, thisPlayer, addr1, addr2);
+                transport->addOtherPlayer(addr2);
             }
         }
         transport->connect();

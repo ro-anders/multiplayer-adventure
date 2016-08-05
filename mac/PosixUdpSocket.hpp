@@ -19,16 +19,36 @@ public:
      */
     PosixUdpSocket();
     
-    virtual ~PosixUdpSocket();
+    ~PosixUdpSocket();
     
     
+    /**
+     * Creates an OS specific socket address.
+     */
+    sockaddr_in* createAddress(Transport::Address source);
+    
+    /**
+     * Delete a OS specific socket address.
+     */
+    void deleteAddress(sockaddr_in* socketAddress);
+    
+    /**
+     * Bind to the server socket.
+     */
+    int bind(int port);
+    
+    /**
+     * Whether or not this socket should block.
+     */
+    void setBlocking(bool shouldBlock);
+
     /**
      * Send data on the socket.
      * data - data to send
      * numBytes - number of bytes to send (does not assume data is null terminated)
-     * recipient - the index in the theirAddrs array of the address to send the data.  -1 will send to all addresses.
+     * recipient - the address to send it to
      */
-    int writeData(const char* data, int numBytes, int recipient);
+    int writeData(const char* data, int numBytes, sockaddr_in* recipient);
     
     int readData(char* buffer, int bufferLength);
     

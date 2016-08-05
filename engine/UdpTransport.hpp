@@ -25,32 +25,12 @@ public:
      */
     UdpTransport(UdpSocket* socket, bool isTest);
     
-    /**
-     * Used only for in testing when running two games on one machine.  Attempts to listen first on the
-     * default port and, if that is taken by the other game, on the default port + 1.
-     * socket - an uninitialized socket to handle the passing of UDP packets
-     */
-    UdpTransport(UdpSocket* socket);
-    
-    /**
-     * Connect to another game using UDP.
-     * socket - an uninitialized socket to handle the passing of UDP packets
-     * myExternalAddr - the IP address and port my packets appear to come from
-     * theirIp - the ip and port of the machine to connect to
-     */
-    UdpTransport(UdpSocket* socket, const Address& myExternalAddrconst, const Address & theirAddr);
-    
-    /**
-     * Connect to two other games using UDP.
-     * socket - an uninitialized socket to handle the passing of UDP packets
-     * myExternalAddr - the IP address and port my packets appear to come from
-     * transportNum - the three machines have an order in which they are declared.  This is this machine's placement in that order.
-     * other1 - the ip and port of the first machine to connect to
-     * other2 - the ip and port of the second machine to connect to
-     */
-    UdpTransport(UdpSocket* socket, const Address& myExternalAddrconst, int transportNum, const Address & other1, const Address& other2);
-    
     ~UdpTransport();
+    
+    /**
+     * The ip address to tell other machines to use to talk to this machine.
+     */
+    void setExternalAddress(const Address& myExternalAddr);
     
     /**
      * Set the number this transport uses to identify itself to other transports.
@@ -105,7 +85,7 @@ protected:
     int writeData(const char* data, int numBytes);
     
 
-    virtual int openSocket() = 0;
+    int openSocket();
         
     /**
      * Send data on the socket.
@@ -113,7 +93,7 @@ protected:
      * numBytes - number of bytes to send (does not assume data is null terminated)
      * recipient - the index in the theirAddrs array of the address to send the data.  -1 will send to all addresses.
      */
-    virtual int writeData(const char* data, int numBytes, int recipient) = 0;
+    //virtual int writeData(const char* data, int numBytes, int recipient) = 0;
 
     
 private:
@@ -138,6 +118,10 @@ private:
     
     /** A random number we use to determine test number */
     long randomNum;
+    
+    /** Destinations we are sending to */
+    struct sockaddr_in** remaddrs;
+
     
     /** Look for connection messages from other machines, and send a 
      * connection message to each machine that isn't acknowledged yet */

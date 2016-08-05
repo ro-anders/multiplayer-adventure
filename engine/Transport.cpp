@@ -192,6 +192,7 @@ void Transport::testTransport(Transport& t) {
         Sys::sleep(1000);
     }
     if (t.getTestSetupNumber() == 1) {
+        printf("Test setup.  Sending packets.\n");
         int numSent = 0;
         for(int ctr=0; ctr<NUM_MESSAGES; ++ctr) {
             char message[256];
@@ -209,6 +210,7 @@ void Transport::testTransport(Transport& t) {
         }
         printf("Sent %d messages.  %s.\n", numSent, (numSent == 10 ? "PASS" : "FAIL"));
     } else {
+        printf("Test setup.  Receiving packets.\n");
         int numReceived = 0;
         // We wait a second for the sender to send some stuff
         Sys::sleep(2000);

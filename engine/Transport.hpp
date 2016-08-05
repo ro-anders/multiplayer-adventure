@@ -31,6 +31,11 @@ public:
     static const int DEFAULT_PORT;
     
     static const int NOT_A_TEST;
+
+    /** Return codes from connection methods */
+    static const int TPT_ERROR;
+    static const int TPT_OK;
+    static const int TPT_BUSY;
     
     /**
      * Create a transport. 
@@ -96,11 +101,6 @@ protected:
     
     bool connected;
     
-    /** Return codes from connection methods */
-    static const int TPT_ERROR;
-    static const int TPT_OK;
-    static const int TPT_BUSY;
-    
     static const char* LOCALHOST_IP;
     
     /**
@@ -111,7 +111,7 @@ protected:
     /**
      * Pull data off the socket - non-blocking
      */
-    int readData(char* buffer, int bufferLength);
+    virtual int readData(char* buffer, int bufferLength) = 0;
     
 private:
     
