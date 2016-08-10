@@ -30,7 +30,7 @@ public:
     
     static const int DEFAULT_PORT;
     
-    static const int NOT_A_TEST;
+    static const int NOT_DYNAMIC_SETUP;
 
     /** Return codes from connection methods */
     static const int TPT_ERROR;
@@ -74,9 +74,15 @@ public:
      * Often when testing we want to quickly launch two ends of a socket and let them
      * figure out which one will use which ports and who should be player one vs player two.
      * The will return 0 for player 1 and will return 1 for player 2.  Does not work with three players.
-     * If this transport has not been setup for a quick test, will return NOT_A_TEST.
+     * If this transport has not been setup for a quick test, will return NOT_DYNAMIC_SETUP.
      */
-    int getTestSetupNumber();
+    int getDynamicSetupNumber();
+    
+    /**
+     * Set the number this transport uses to identify itself to other transports.
+     * This number is vestigial when there are only two machines in the game but is used when there are three.
+     */
+    void setTransportNum(int transportNum);
     
     /**
      * Parse an socket address of the form 127.0.0.1:5678 into an ip address and a port.
@@ -95,7 +101,7 @@ protected:
     
     void appendDataToBuffer(const char* data, int dataLength);
     
-    void setTestSetupNumber(int num);
+    void setDynamicSetupNumber(int num);
 
     static const int NOT_YET_DETERMINED;
     
@@ -113,11 +119,17 @@ protected:
      */
     virtual int readData(char* buffer, int bufferLength) = 0;
     
+    /** 0, 1, or 2.  The machines in the game are specified with an ordering consistent across the three games.
+     * This is this machine's place in that ordering, though in just a two player game it is not needed and
+     * will always be 0. */
+    int transportNum;
+    
+
 private:
     
     /** In a test setup, 0 = player 1, 1 = player 2.  Until a 0 or 1 is chosen will be NOT_YET_DETERMINED.
-     * Will be NOT_A_TEST in a non-test setup. */
-    int testSetupNumber;
+     * Will be NOT_DYNAMIC_SETUP in a non-test setup. */
+    int dynamicSetupNumber;
     
     /** Buffer to store data until end of packet is reached. */
     char* streamBuffer;

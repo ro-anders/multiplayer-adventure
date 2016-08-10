@@ -59,18 +59,19 @@ const int Transport::TPT_ERROR = -1;
 const int Transport::TPT_OK = 0;
 const int Transport::TPT_BUSY = 1;
 
-const int Transport::NOT_A_TEST = -1;
+const int Transport::NOT_DYNAMIC_SETUP = -1;
 const int Transport::NOT_YET_DETERMINED = -2;
 
 const char* Transport::LOCALHOST_IP = "127.0.0.1";
 
 
-Transport::Transport(bool inATest) :
-  connected(false) {
+Transport::Transport(bool useDynamicSetup) :
+transportNum(0),
+connected(false) {
     streamBufferSize = 1024;
     streamBuffer = new char[streamBufferSize]; // TODO: Make this more dynamic.
     charsInStreamBuffer = 0;
-    testSetupNumber = (inATest ? NOT_YET_DETERMINED : NOT_A_TEST);
+    dynamicSetupNumber = (useDynamicSetup ? NOT_YET_DETERMINED : NOT_DYNAMIC_SETUP);
 }
 
 Transport::~Transport()
@@ -82,13 +83,16 @@ bool Transport::isConnected() {
     return connected;
 }
 
-int Transport::getTestSetupNumber() {
-    return testSetupNumber;
+int Transport::getDynamicSetupNumber() {
+    return dynamicSetupNumber;
 }
-void Transport::setTestSetupNumber(int newNum) {
-    testSetupNumber = newNum;
+void Transport::setDynamicSetupNumber(int newNum) {
+    dynamicSetupNumber = newNum;
 }
 
+void Transport::setTransportNum(int inTransportNum) {
+    transportNum = inTransportNum;
+}
 
 int Transport::sendPacket(const char* packetData) {
 	int n = writeData(packetData, strlen(packetData)+1); // +1 to include the \0
@@ -185,13 +189,16 @@ void Transport::appendDataToBuffer(const char *data, int dataLength) {
 
 void Transport::testTransport(Transport& t) {
     int NUM_MESSAGES = 10;
-    // If this is a test, make sure test roles are negotiated.
-    t.testSetupNumber = NOT_YET_DETERMINED;
     t.connect();
     while (!t.isConnected()) {
         Sys::sleep(1000);
     }
-    if (t.getTestSetupNumber() == 1) {
+    // Make sure test roles are negotiated.
+    if (t.dynamicSetupNumber != NOT_DYNAMIC_SETUP) {
+        t.setTransportNum(t.dynamicSetupNumber);
+    }
+    
+    if (t.transportNum == 1) {
         printf("Test setup.  Sending packets.\n");
         int numSent = 0;
         for(int ctr=0; ctr<NUM_MESSAGES; ++ctr) {

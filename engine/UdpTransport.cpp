@@ -15,19 +15,18 @@ const char* UdpTransport::RECVD_NOTHING = "UA";
 const char* UdpTransport::RECVD_MESSAGE = "UB";
 const char* UdpTransport::RECVD_ACK = "UC";
 
-UdpTransport::UdpTransport(UdpSocket* inSocket, bool inIsTest) :
-Transport(inIsTest),
+UdpTransport::UdpTransport(UdpSocket* inSocket, bool useDynamicSetup) :
+Transport(useDynamicSetup),
 socket(inSocket),
 myExternalAddr(Address()),
 theirAddrs(NULL),
 myInternalPort(0),
 states(new const char*[2]), // We always create space for two even though we may only use one.
 numOtherMachines(0),
-transportNum(0),
 remaddrs(new sockaddr_in*[2]) // We always create space for two even though we may only use one.
 {
     remaddrs[0] = remaddrs[1] = NULL;
-    if (inIsTest) {
+    if (useDynamicSetup) {
         myInternalPort = DEFAULT_PORT;
     }
     
@@ -46,10 +45,6 @@ UdpTransport::~UdpTransport() {
     }
 }
 
-void UdpTransport::setTransportNum(int inTransportNum) {
-    transportNum = inTransportNum;
-}
-
 /**
  * The ip address to tell other machines to use to talk to this machine.
  */
@@ -57,7 +52,9 @@ void UdpTransport::setExternalAddress(const Address& myExternalAddrIn) {
     myExternalAddr = myExternalAddrIn;
 }
 
-
+void UdpTransport::setInternalPort(int port) {
+    myInternalPort = port;
+}
 
 void UdpTransport::addOtherPlayer(const Address & theirAddr) {
     if (numOtherMachines < 2) {
@@ -80,7 +77,7 @@ void UdpTransport::addOtherPlayer(const Address & theirAddr) {
 
 
 void UdpTransport::connect() {
-    if (getTestSetupNumber() == NOT_YET_DETERMINED) {
+    if (getDynamicSetupNumber() == NOT_YET_DETERMINED) {
         // Try the default setup (using DEFAULT_PORT to talk to localhost on DEFAULT_PORT + 1)
         // If that is busy, switch them.
         // In a test, the only thing setup would be the internal port.  So all other attributes need to be
@@ -203,7 +200,7 @@ void UdpTransport::punchHole() {
                         sprintf(logMsg, "Connected with %s:%d\n", theirAddrs[senderIndex].ip(), theirAddrs[senderIndex].port());
                         Sys::log(logMsg);
                         // If this is a test case, figure out who is player one.
-                        if (getTestSetupNumber() == NOT_YET_DETERMINED) {
+                        if (getDynamicSetupNumber() == NOT_YET_DETERMINED) {
                             compareNumbers(randomNum, recvBuffer, senderIndex);
                         }
                     }
@@ -240,18 +237,18 @@ void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage, int ot
     }
     
     if (myRandomNumber < theirRandomNumber) {
-        setTestSetupNumber(0);
+        setDynamicSetupNumber(0);
     } else if (theirRandomNumber < myRandomNumber) {
-        setTestSetupNumber(1);
+        setDynamicSetupNumber(1);
     } else {
         int ipCmp = strcmp(myExternalAddr.ip(), theirAddrs[otherIndex].ip());
         if (ipCmp < 0) {
-            setTestSetupNumber(0);
+            setDynamicSetupNumber(0);
         } else if (ipCmp > 0) {
-            setTestSetupNumber(1);
+            setDynamicSetupNumber(1);
         } else {
             // If IP's are equal then ports can't be equal.
-            setTestSetupNumber(myExternalAddr.port() < theirAddrs[otherIndex].port() ? 0 : 1);
+            setDynamicSetupNumber(myExternalAddr.port() < theirAddrs[otherIndex].port() ? 0 : 1);
         }
     }
 }

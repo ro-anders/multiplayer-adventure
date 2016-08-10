@@ -23,7 +23,7 @@ public:
      * to figure out how to talk to another test instance running on the same local host with no other
      * information.  Otherwise, more information needs to be dictated before the transport can connect.
      */
-    UdpTransport(UdpSocket* socket, bool isTest);
+    UdpTransport(UdpSocket* socket, bool useDynamicSetup);
     
     ~UdpTransport();
     
@@ -32,11 +32,7 @@ public:
      */
     void setExternalAddress(const Address& myExternalAddr);
     
-    /**
-     * Set the number this transport uses to identify itself to other transports.
-     * This number is vestigial when there are only two machines in the game but is used when there are three.
-     */
-    void setTransportNum(int transportNum);
+    void setInternalPort(int port);
     
     /**
      * Registers another player.  Players needed to be added in the order of their transport number.
@@ -110,11 +106,6 @@ private:
     
     /** An array of the states of the UDP connection (a state is a char*) */
     const char** states;
-    
-    /** 0, 1, or 2.  The machines in the game are specified with an ordering consistent across the three games.
-     * This is this machine's place in that ordering, though in just a two player game it is not needed and
-     * will always be 0. */
-    int transportNum;
     
     /** A random number we use to determine test number */
     long randomNum;

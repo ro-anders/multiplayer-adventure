@@ -31,13 +31,13 @@ TcpTransport::~TcpTransport()
 }
 
 void TcpTransport::connect() {
-    if (getTestSetupNumber() == NOT_YET_DETERMINED) {
+    if (getDynamicSetupNumber() == NOT_YET_DETERMINED) {
         // Try to bind to a port.  If it's busy, assume the other program has bound and try to connect to it.
         int busy = openServerSocket();
         if (busy == TPT_BUSY) {
             openClientSocket();
         }
-        setTestSetupNumber(busy ? 1 : 0);
+        setDynamicSetupNumber(busy ? 1 : 0);
     } else if (ip == NULL) {
         openServerSocket();
     } else {
