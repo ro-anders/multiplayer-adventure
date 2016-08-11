@@ -78,109 +78,20 @@ bool gMute = FALSE;
     PosixUdpSocket* socket = new PosixUdpSocket();
     bool usingDynamicSetup = (argc<=2);
     UdpTransport* xport = new UdpTransport(socket, usingDynamicSetup);
-    bool isConnectTest = false;
-    bool isScripting = false;
-    bool shouldMute = false;
-    int numPlayers;
-    int thisPlayer;
-    int gameLevel = GAME_MODE_2;
-
+    MacRestClient client;
+    GameSetup setup(client, *xport);
+    GameSetup::GameParams params = setup.setup(argc-1, argv+1);
+    // TODO: What do we do if we fail to setup a game?
     
-    
-    if ((argc >= 2) && (strcmp(argv[1], "test")==0)) {
-        // Run a simple UDP socket test and exit.  Can either specify IPs and ports or let it dynamically use ports on localhost
-        // MacAdventure test [<roleNumber(1 for receiver, 2 for sender)> <myport> <otherip>:<otherport>]
-        isConnectTest = true;
-        if (argc > 2) {
-            thisPlayer = atoi(argv[2])-1;
-            xport->setTransportNum(thisPlayer);
-            int myPort = atoi(argv[3]);
-            xport->setInternalPort(myPort);
-            Transport::Address otheraddr = Transport::parseUrl(argv[4]);
-            xport->addOtherPlayer(otheraddr);
-        }
-    } else if ((argc >= 2) && (strcmp(argv[1], "script")==0)) {
-        numPlayers = 2;
-        thisPlayer = (argc == 2 ? 0 : atoi(argv[2])-1);
-        gameLevel = GAME_MODE_SCRIPTING;
-    } else if ((argc >= 2) && (strcmp(argv[1], "broker")==0)){
-        // A server will broker the game but still need some info that we parse from the command line.
-        // MacAdventure broker <gameLevel> <myip>:<myport>
-        
-        Transport::Address addr0 = Transport::parseUrl(argv[3]);
-        MacRestClient client;
-        
-        GameSetup setup(client, *xport);
-        GameSetup::GameParams params = setup.setup(argc, argv);
-        // TODO: What do we do if we fail to setup a game?
-        
-        // TODO: Figure out game level
-        gameLevel = GAME_MODE_2;
-        
-        xport->setExternalAddress(addr0);
-        xport->setTransportNum(params.thisPlayer);
-        xport->addOtherPlayer(params.secondPlayerAddress);
-        numPlayers = 2;
-        if (params.thirdPlayerAddress.isValid()) {
-            xport->addOtherPlayer(params.thirdPlayerAddress);
-            numPlayers = 3;
-        }
-        
-    }else {
-        // Other players' IP information will be specified on the command line.
-        // MacAdventure <gameLevel> <thisPlayer(1-3)> <myinternalport> <theirip>:<theirport> [<thirdip>:<thirdport>]
-        // or
-        // MacAdventure [gameLevel]
-
-        if (argc >= 2) {
-            gameLevel = atoi(argv[1])-1;
-        }
-        
-        numPlayers = (argc <= 2 ? 2 : argc-3);
-        Transport::Address addr1;
-        if (argc > 2) {
-            thisPlayer = atoi(argv[2])-1;
-            xport->setTransportNum(thisPlayer);
-            int myInternalPort = atoi(argv[3]);
-            xport->setInternalPort(myInternalPort);
-            addr1 = Transport::parseUrl(argv[4]);
-            xport->addOtherPlayer(addr1);
-            if (argc > 5) {
-                Transport::Address addr2 = Transport::parseUrl(argv[5]);
-                xport->addOtherPlayer(addr2);
-            }
-        }
-        
-        shouldMute = ((strcmp(addr1.ip(), "127.0.0.1")==0) && (thisPlayer > 0));
-        
-    }
-    
-    Platform_MuteSound(shouldMute);
-
-    if (isConnectTest) {
-        Transport::testTransport(*xport);
-    } else if (isScripting) {
+    if (params.isScripting) {
         delete xport;
         xport = NULL;
-    } else {
-        xport->connect();
-        while (!xport->isConnected()) {
-            Sys::sleep(1000);
-        }
-        
-        int setupNum = xport->getDynamicSetupNumber();
-        if (setupNum != Transport::NOT_DYNAMIC_SETUP) {
-            thisPlayer = setupNum;
-        }
-        
-
     }
-    
-    
+    Platform_MuteSound(params.shouldMute);
 
     if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
     {
-        Adventure_Setup(numPlayers, thisPlayer, xport, gameLevel, 0, 0);
+        Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 0, 0);
         timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
                                                  target: self
                                                selector: @selector(update:)

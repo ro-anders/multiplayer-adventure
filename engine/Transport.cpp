@@ -228,6 +228,8 @@ void Transport::testTransport(Transport& t) {
                 perror("Error receiving packet");
             } else if (charsReceived == 0) {
                 printf("Received no data.\n");
+            } else if (buffer[0] == 'U') {
+                // Part of the UDP setup.  Ignore.
             } else {
                 ++numReceived;
             }
