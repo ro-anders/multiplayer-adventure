@@ -203,7 +203,7 @@ void Transport::testTransport(Transport& t) {
         int numSent = 0;
         for(int ctr=0; ctr<NUM_MESSAGES; ++ctr) {
             char message[256];
-            sprintf(message, "Message %d\0", (ctr+1));
+            sprintf(message, "Message %d%c", ctr+1, '\0');
             int charsSent = t.sendPacket(message);
             if (charsSent <= 0) {
                 perror("Error sending packet");
