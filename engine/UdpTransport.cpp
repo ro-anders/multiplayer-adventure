@@ -77,7 +77,7 @@ void UdpTransport::addOtherPlayer(const Address & theirAddr) {
 
 
 void UdpTransport::connect() {
-    if (getDynamicSetupNumber() == NOT_YET_DETERMINED) {
+    if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
         // Try the default setup (using DEFAULT_PORT to talk to localhost on DEFAULT_PORT + 1)
         // If that is busy, switch them.
         // In a test, the only thing setup would be the internal port.  So all other attributes need to be
@@ -200,7 +200,7 @@ void UdpTransport::punchHole() {
                         sprintf(logMsg, "Connected with %s:%d\n", theirAddrs[senderIndex].ip(), theirAddrs[senderIndex].port());
                         Sys::log(logMsg);
                         // If this is a test case, figure out who is player one.
-                        if (getDynamicSetupNumber() == NOT_YET_DETERMINED) {
+                        if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
                             compareNumbers(randomNum, recvBuffer, senderIndex);
                         }
                     }
@@ -237,18 +237,18 @@ void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage, int ot
     }
     
     if (myRandomNumber < theirRandomNumber) {
-        setDynamicSetupNumber(0);
+        setDynamicPlayerSetupNumber(0);
     } else if (theirRandomNumber < myRandomNumber) {
-        setDynamicSetupNumber(1);
+        setDynamicPlayerSetupNumber(1);
     } else {
         int ipCmp = strcmp(myExternalAddr.ip(), theirAddrs[otherIndex].ip());
         if (ipCmp < 0) {
-            setDynamicSetupNumber(0);
+            setDynamicPlayerSetupNumber(0);
         } else if (ipCmp > 0) {
-            setDynamicSetupNumber(1);
+            setDynamicPlayerSetupNumber(1);
         } else {
             // If IP's are equal then ports can't be equal.
-            setDynamicSetupNumber(myExternalAddr.port() < theirAddrs[otherIndex].port() ? 0 : 1);
+            setDynamicPlayerSetupNumber(myExternalAddr.port() < theirAddrs[otherIndex].port() ? 0 : 1);
         }
     }
 }

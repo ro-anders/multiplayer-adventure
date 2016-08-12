@@ -106,8 +106,8 @@ GameSetup::GameParams GameSetup::setup(int argc, char** argv) {
             Sys::sleep(1000);
         }
         
-        int setupNum = xport.getDynamicSetupNumber();
-        if (setupNum != Transport::NOT_DYNAMIC_SETUP) {
+        int setupNum = xport.getDynamicPlayerSetupNumber();
+        if (setupNum != Transport::NOT_DYNAMIC_PLAYER_SETUP) {
             newParams.thisPlayer = setupNum;
         }
     }

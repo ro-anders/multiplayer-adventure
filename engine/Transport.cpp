@@ -59,8 +59,8 @@ const int Transport::TPT_ERROR = -1;
 const int Transport::TPT_OK = 0;
 const int Transport::TPT_BUSY = 1;
 
-const int Transport::NOT_DYNAMIC_SETUP = -1;
-const int Transport::NOT_YET_DETERMINED = -2;
+const int Transport::NOT_DYNAMIC_PLAYER_SETUP = -1;
+const int Transport::PLAYER_NOT_YET_DETERMINED = -2;
 
 const char* Transport::LOCALHOST_IP = "127.0.0.1";
 
@@ -71,7 +71,7 @@ connected(false) {
     streamBufferSize = 1024;
     streamBuffer = new char[streamBufferSize]; // TODO: Make this more dynamic.
     charsInStreamBuffer = 0;
-    dynamicSetupNumber = (useDynamicSetup ? NOT_YET_DETERMINED : NOT_DYNAMIC_SETUP);
+    dynamicPlayerSetupNumber = (useDynamicSetup ? PLAYER_NOT_YET_DETERMINED : NOT_DYNAMIC_PLAYER_SETUP);
 }
 
 Transport::~Transport()
@@ -83,11 +83,11 @@ bool Transport::isConnected() {
     return connected;
 }
 
-int Transport::getDynamicSetupNumber() {
-    return dynamicSetupNumber;
+int Transport::getDynamicPlayerSetupNumber() {
+    return dynamicPlayerSetupNumber;
 }
-void Transport::setDynamicSetupNumber(int newNum) {
-    dynamicSetupNumber = newNum;
+void Transport::setDynamicPlayerSetupNumber(int newNum) {
+    dynamicPlayerSetupNumber = newNum;
 }
 
 void Transport::setTransportNum(int inTransportNum) {
@@ -194,8 +194,8 @@ void Transport::testTransport(Transport& t) {
         Sys::sleep(1000);
     }
     // Make sure test roles are negotiated.
-    if (t.dynamicSetupNumber != NOT_DYNAMIC_SETUP) {
-        t.setTransportNum(t.dynamicSetupNumber);
+    if (t.dynamicPlayerSetupNumber != NOT_DYNAMIC_PLAYER_SETUP) {
+        t.setTransportNum(t.dynamicPlayerSetupNumber);
     }
     
     if (t.transportNum == 1) {

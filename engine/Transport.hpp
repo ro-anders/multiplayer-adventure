@@ -30,7 +30,7 @@ public:
     
     static const int DEFAULT_PORT;
     
-    static const int NOT_DYNAMIC_SETUP;
+    static const int NOT_DYNAMIC_PLAYER_SETUP;
 
     /** Return codes from connection methods */
     static const int TPT_ERROR;
@@ -72,11 +72,11 @@ public:
     
     /**
      * Often when testing we want to quickly launch two ends of a socket and let them
-     * figure out which one will use which ports and who should be player one vs player two.
+     * figure out who should be player one vs player two.
      * The will return 0 for player 1 and will return 1 for player 2.  Does not work with three players.
-     * If this transport has not been setup for a quick test, will return NOT_DYNAMIC_SETUP.
+     * If this transport has not been setup for a quick test, will return NOT_DYNAMIC_PLAYER_SETUP.
      */
-    int getDynamicSetupNumber();
+    int getDynamicPlayerSetupNumber();
     
     /**
      * Set the number this transport uses to identify itself to other transports.
@@ -101,9 +101,9 @@ protected:
     
     void appendDataToBuffer(const char* data, int dataLength);
     
-    void setDynamicSetupNumber(int num);
+    void setDynamicPlayerSetupNumber(int num);
 
-    static const int NOT_YET_DETERMINED;
+    static const int PLAYER_NOT_YET_DETERMINED;
     
     bool connected;
     
@@ -127,9 +127,9 @@ protected:
 
 private:
     
-    /** In a test setup, 0 = player 1, 1 = player 2.  Until a 0 or 1 is chosen will be NOT_YET_DETERMINED.
-     * Will be NOT_DYNAMIC_SETUP in a non-test setup. */
-    int dynamicSetupNumber;
+    /** In a test setup, 0 = player 1, 1 = player 2.  Until a 0 or 1 is chosen will be PLAYER_NOT_YET_DETERMINED.
+     * Will be NOT_DYNAMIC_PLAYER_SETUP in a non-test setup. */
+    int dynamicPlayerSetupNumber;
     
     /** Buffer to store data until end of packet is reached. */
     char* streamBuffer;
