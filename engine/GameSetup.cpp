@@ -7,6 +7,7 @@
 #include "Adventure.h"
 #include "RestClient.hpp"
 #include "Sys.hpp"
+#include "UdpSocket.hpp"
 #include "UdpTransport.hpp"
 
 const int GameSetup::DEFAULT_GAME_LEVEL = 2;
@@ -118,7 +119,7 @@ GameSetup::GameParams GameSetup::setup(int argc, char** argv) {
 void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, char** argv) {
 
     
-    Transport::Address myAddress = Transport::parseUrl(argv[2]);
+    Transport::Address myAddress = determinePublicAddress();
     
     Json::Value responseJson;
     // Connect to the client and register a game request.
@@ -166,13 +167,33 @@ void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, ch
 }
 
 /**
- * Contact the UDP server and it will tell you what IP and port your UDP packets
+ * Contact the STUN server and it will tell you what IP and port your UDP packets
  * will look like they come from.
  */
 Transport::Address GameSetup::determinePublicAddress() {
+    
+    Transport::Address publicAddress;
+    
     // First need to pick which port this game will use for UDP communication.
-    xport.reservePort();
+    UdpSocket& socket = xport.reservePort();
     
     // Now send a packet on that port.
+    Transport::Address stunServer("127.0.01", 8888);
+    sockaddr_in* stunServerSockAddr = socket.createAddress(stunServer);
+    printf("Sending message to STUN server\n");
+    socket.writeData("Hello", 5, stunServerSockAddr);
     
+    // Now listen on the socket, it should be non-blocking, and get the public IP and port
+    char buffer[256];
+    printf("Listening for STUN server message.\n");
+    int numCharsRead = socket.readData(buffer, 256);
+    if (numCharsRead > 0) {
+        printf("Received \"%s\" from STUN server.", buffer);
+        publicAddress = Transport::parseUrl(buffer);
+    } else {
+        printf("Error %d from STUN server.\n", numCharsRead);
+    }
+    socket.deleteAddress(stunServerSockAddr);
+    
+    return publicAddress;
 }

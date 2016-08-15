@@ -44,7 +44,7 @@ public:
      * This will bind to a port even though it is not yet setup to receive messages from other games.
      * It is used mostly to determine before setup what our port will look like to other machines on the internet.
      */
-    int reservePort();
+    UdpSocket& reservePort();
     
     void connect();
     
@@ -62,6 +62,9 @@ protected:
     Address myExternalAddr;
     
     int myInternalPort;
+    
+    /** Whether the socket has been opened or not. */
+    bool socketBound;
     
     /** Array of the other machines addresses, one for each other machine. */
     Address* theirAddrs;

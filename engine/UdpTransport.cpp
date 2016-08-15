@@ -23,7 +23,8 @@ theirAddrs(NULL),
 myInternalPort(0),
 states(new const char*[2]), // We always create space for two even though we may only use one.
 numOtherMachines(0),
-remaddrs(new sockaddr_in*[2]) // We always create space for two even though we may only use one.
+remaddrs(new sockaddr_in*[2]), // We always create space for two even though we may only use one.
+socketBound(false)
 {
     remaddrs[0] = remaddrs[1] = NULL;
     if (useDynamicSetup) {
@@ -77,24 +78,27 @@ void UdpTransport::addOtherPlayer(const Address & theirAddr) {
 
 
 void UdpTransport::connect() {
-    if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
-        // Try the default setup (using DEFAULT_PORT to talk to localhost on DEFAULT_PORT + 1)
-        // If that is busy, switch them.
-        // In a test, the only thing setup would be the internal port.  So all other attributes need to be
-        // specified once a port is chosen.
-        int busy = openSocket();
-        if (busy == Transport::TPT_OK) {
-            myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT);
-            addOtherPlayer(Address(LOCALHOST_IP, DEFAULT_PORT+1));
-        } else if (busy == Transport::TPT_BUSY) {
-            myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT+1);
-            addOtherPlayer(Address(LOCALHOST_IP, DEFAULT_PORT));
-            myInternalPort = DEFAULT_PORT+1;
-            openSocket();
+    
+    if (!socketBound) {
+        if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
+            // Try the default setup (using DEFAULT_PORT to talk to localhost on DEFAULT_PORT + 1)
+            // If that is busy, switch them.
+            // In a test, the only thing setup would be the internal port.  So all other attributes need to be
+            // specified once a port is chosen.
+            reservePort();
+            if (myInternalPort == DEFAULT_PORT) {
+                myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT);
+                addOtherPlayer(Address(LOCALHOST_IP, DEFAULT_PORT+1));
+            } else {
+                myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT+1);
+                addOtherPlayer(Address(LOCALHOST_IP, DEFAULT_PORT));
+            }
+        } else {
+            reservePort();
         }
-    } else {
-        openSocket();
     }
+    
+    socket->setBlocking(false);
     
     states[0] = RECVD_NOTHING;
     states[1] = (numOtherMachines > 1 ? RECVD_NOTHING : RECVD_ACK);
@@ -105,6 +109,22 @@ void UdpTransport::connect() {
     punchHole();
 }
 
+UdpSocket& UdpTransport::reservePort() {
+    if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
+        // Try the default setup (using DEFAULT_PORT to talk to localhost on DEFAULT_PORT + 1)
+        // If that is busy, switch them.
+        int busy = openSocket();
+        if (busy == Transport::TPT_BUSY) {
+            myInternalPort = DEFAULT_PORT+1;
+            openSocket();
+        }
+    } else {
+        openSocket();
+    }
+    return *socket;
+}
+
+
 int UdpTransport::openSocket() {
     
     // Create the server socket and bind to it
@@ -112,7 +132,7 @@ int UdpTransport::openSocket() {
 
     if (status == Transport::TPT_OK) {
         printf("Bound to port %d.\n", myInternalPort);
-        socket->setBlocking(false);
+        socketBound = true;
     } else {
         printf("Failed to bind to port %d.\n", myInternalPort);
     }
@@ -251,10 +271,6 @@ void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage, int ot
             setDynamicPlayerSetupNumber(myExternalAddr.port() < theirAddrs[otherIndex].port() ? 0 : 1);
         }
     }
-}
-
-int UdpTransport::reservePort() {
-    return -1;
 }
 
 
