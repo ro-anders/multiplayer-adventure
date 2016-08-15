@@ -67,7 +67,7 @@ GameSetup::GameParams GameSetup::setup(int argc, char** argv) {
         newParams.gameLevel = GAME_MODE_SCRIPTING;
     } else if ((argc >= 1) && (strcmp(argv[0], "broker")==0)){
         // A server will broker the game but still need some info that we parse from the command line.
-        // MacAdventure broker <gameLevel> <myip>:<myport>
+        // MacAdventure broker <gameLevel>
         setupBrokeredGame(newParams, argc, argv);
         
     }else {
@@ -118,7 +118,6 @@ GameSetup::GameParams GameSetup::setup(int argc, char** argv) {
 
 void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, char** argv) {
 
-    
     Transport::Address myAddress = determinePublicAddress();
     
     Json::Value responseJson;

@@ -118,6 +118,18 @@ UdpSocket& UdpTransport::reservePort() {
             myInternalPort = DEFAULT_PORT+1;
             openSocket();
         }
+    } else if (myInternalPort == 0) {
+        // Just try to find some port that is open.
+        bool found = false;
+        myInternalPort = DEFAULT_PORT;
+        while (!found) {
+            int busy = openSocket();
+            if (busy == Transport::TPT_BUSY) {
+                ++myInternalPort;
+            } else {
+                found = true;
+            }
+        }
     } else {
         openSocket();
     }
