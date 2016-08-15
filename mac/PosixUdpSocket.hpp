@@ -2,8 +2,6 @@
 #ifndef PosixUdpSocket_hpp
 #define PosixUdpSocket_hpp
 
-#include <stdio.h>
-
 #include <netinet/in.h>
 #include <stdio.h>
 #include "UdpSocket.hpp"
@@ -13,10 +11,6 @@ class PosixUdpSocket: public UdpSocket {
 public:
     
     
-    /**
-     * Used only for in testing when running two games on one machine.  Attempts to listen first on the
-     * default port and, if that is taken by the other game, on the default port + 1.
-     */
     PosixUdpSocket();
     
     ~PosixUdpSocket();

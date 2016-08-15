@@ -25,6 +25,9 @@
     <Filter Include="Header Files\pc">
       <UniqueIdentifier>{00d77920-300f-48f3-b99e-472b6b0cbdae}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\engine\json">
+      <UniqueIdentifier>{e5048f43-adfb-4e74-9f8d-0aaa29bcaaf3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\engine\Ball.cpp">
@@ -63,9 +66,6 @@
     <ClCompile Include="WinAdventure.cpp">
       <Filter>Source Files\pc</Filter>
     </ClCompile>
-    <ClCompile Include="..\engine\YTransport.cpp">
-      <Filter>Source Files\engine</Filter>
-    </ClCompile>
     <ClCompile Include="..\engine\Board.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
@@ -87,10 +87,22 @@
     <ClCompile Include="..\engine\Sys.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
-    <ClCompile Include="WinUdpTransport.cpp">
+    <ClCompile Include="..\engine\ScriptedSync.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\GameSetup.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="WinUdpSocket.cpp">
       <Filter>Source Files\pc</Filter>
     </ClCompile>
-    <ClCompile Include="..\engine\ScriptedSync.cpp">
+    <ClCompile Include="..\engine\jsoncpp.cpp">
+      <Filter>Header Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\RestClient.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\UdpSocket.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
   </ItemGroup>
@@ -140,9 +152,6 @@
     <ClInclude Include="WinAdventure.h">
       <Filter>Header Files\pc</Filter>
     </ClInclude>
-    <ClInclude Include="..\engine\YTransport.hpp">
-      <Filter>Header Files\engine</Filter>
-    </ClInclude>
     <ClInclude Include="..\engine\Board.hpp">
       <Filter>Header Files\engine</Filter>
     </ClInclude>
@@ -164,10 +173,25 @@
     <ClInclude Include="..\engine\Sys.hpp">
       <Filter>Header Files\engine</Filter>
     </ClInclude>
-    <ClInclude Include="WinUdpTransport.h">
+    <ClInclude Include="..\engine\ScriptedSync.hpp">
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\GameSetup.hpp">
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\RestClient.hpp">
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="WinUdpSocket.h">
       <Filter>Header Files\pc</Filter>
     </ClInclude>
-    <ClInclude Include="..\engine\ScriptedSync.hpp">
+    <ClInclude Include="..\engine\json\json.h">
+      <Filter>Header Files\engine\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\json\json-forwards.h">
+      <Filter>Header Files\engine\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\UdpSocket.hpp">
       <Filter>Header Files\engine</Filter>
     </ClInclude>
   </ItemGroup>

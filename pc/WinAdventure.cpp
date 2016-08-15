@@ -21,16 +21,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include "WinTcpTransport.h"
-#include "WinUdpTransport.h"
-#include "..\engine\YTransport.hpp"
 
 
 #define MAX_LOADSTRING 100
 
 #include "..\engine\Adventure.h"
+#include "..\engine\GameSetup.hpp"
 #include "..\engine\Sys.hpp"
-
+#include "..\engine\UdpTransport.hpp"
+#include "..\engine\RestClient.hpp"
+#include "WinUdpSocket.h"
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
@@ -243,83 +243,20 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    CreateOffscreen();
 
-   // Test UDP Sockets
-   if ((argc >= 1) && (strcmp(argv[0], "test") == 0)) {
-	   Transport* toTest = NULL;
-	   if (argc == 1) {
-		   toTest = new WinUdpTransport();
-	   }
-	   else {
-		   Transport::Address addr1 = Transport::parseUrl(argv[2]);
-		   Transport::Address addr2 = Transport::parseUrl(argv[3]);
-		   toTest = new WinUdpTransport(addr1, addr2);
-	   }
-	   Transport::testTransport(*toTest);
+   WinUdpSocket* socket = new WinUdpSocket();
+   bool usingDynamicSetup = (argc <= 2);
+   UdpTransport* xport = new UdpTransport(socket, usingDynamicSetup);
+   GameSetup setup(*((RestClient*)NULL), *xport);
+   GameSetup::GameParams params = setup.setup(argc - 1, argv + 1);
+   // TODO: What do we do if we fail to setup a game?
+
+   if (params.isScripting) {
+	   delete xport;
+	   xport = NULL;
    }
+   Platform_MuteSound(params.shouldMute);
 
-   int numPlayers;
-   int thisPlayer;
-   Transport* transport;
-   int gameLevel = GAME_MODE_1;
-
-   if ((argc >= 1) && (strcmp(argv[0], "script") == 0)) {
-	   numPlayers = 2;
-	   thisPlayer = 0;
-	   gameLevel = GAME_MODE_SCRIPTING;
-	   transport = NULL;
-   } else {
-
-	   if (argc >= 1) {
-		   gameLevel = atoi(argv[0])-1;
-	   }
-
-	   // Read the command line arguments and setup the communication with the other players
-	   // expecting command line args to be <gamenum> <thisPlayerNum> <port|socketaddr> [port2|socketaddr2]
-	   if (argc <= 1) {
-		   numPlayers = 2;
-		   transport = new WinUdpTransport();
-	   }
-	   else {
-		   numPlayers = argc - 2;
-		   thisPlayer = atoi(argv[1]) - 1;
-		   Transport::Address addr0 = Transport::parseUrl(argv[2]);
-		   Transport::Address addr1 = Transport::parseUrl(argv[3]);
-		   if (argc <= 4) {
-			   transport = new WinUdpTransport(addr0, addr1);
-		   }
-		   else {
-			   Transport::Address addr2 = Transport::parseUrl(argv[4]);
-			   transport = new WinUdpTransport(addr0, thisPlayer, addr1, addr2);
-		   }
-	   }
-	   transport->connect();
-
-	   while (!transport->isConnected()) {
-		   Sys::sleep(1000);
-	   }
-
-	   // When running a no-arg test, handle
-	   // determinining player numbers, remapping keys
-	   // to allow both, and muting sound on one.
-	   int testNum = transport->getTestSetupNumber();
-	   if (testNum != Transport::NOT_A_TEST) {
-		   thisPlayer = testNum;
-		   Platform_MuteSound(thisPlayer == 1);
-		   if (thisPlayer == 1) {
-			   // Remap the keys so that one keyboard can do two players
-			   leftKey = 'A'; // A
-			   upKey = 0x57; // W
-			   rightKey = 0x44; // D
-			   downKey = 0x53; // S
-			   dropKey = VK_SPACE;
-			   resetKey = '1';
-		   }
-	   }
-
-   }
-
-
-   Adventure_Setup(numPlayers, thisPlayer, transport, gameLevel, 0, 0);
+   Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 0, 0);
 
    //SetFullscreen(TRUE);
 

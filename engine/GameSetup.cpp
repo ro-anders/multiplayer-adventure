@@ -170,9 +170,13 @@ void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, ch
  * will look like they come from.
  */
 Transport::Address GameSetup::determinePublicAddress() {
-    // First need to pick which port this game will use for UDP communication.
+	Transport::Address publicAddress;
+
+	// First need to pick which port this game will use for UDP communication.
     xport.reservePort();
     
+	// TODO: Send message to STUN server
+
     // Now send a packet on that port.
-    
+	return publicAddress;
 }
