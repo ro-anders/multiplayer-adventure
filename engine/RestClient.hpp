@@ -43,9 +43,9 @@ private:
 class RestClient {
 public:
     
-    virtual int get(const char* path, char* responseBuffer, int bufferLength) = 0;
+    int get(const char* path, char* responseBuffer, int bufferLength);
 
-    virtual int post(const char* path, const char* content, char* responseBuffer, int bufferLength) = 0;
+    int post(const char* path, const char* content, char* responseBuffer, int bufferLength);
     
     /** The name of the REST server that will broker the game. Also doubles as a STUN server (well technically not STUN
      but serves the same role as one). */
@@ -59,5 +59,10 @@ public:
     
 protected:
     
+    int stripOffHeaders(char* buffer, int charsInBuffer);
+    
+    virtual int request(const char* path, const char* message, char* responseBuffer, int bufferLength) = 0;
 
+
+    
 };

@@ -40,18 +40,22 @@ PosixUdpSocket::~PosixUdpSocket() {
 /**
  * Creates an OS specific socket address.
  */
-sockaddr_in* PosixUdpSocket::createAddress(Transport::Address address) {
+sockaddr_in* PosixUdpSocket::createAddress(Transport::Address address, bool dnsLookup) {
     
     sockaddr_in* socketAddr = new sockaddr_in();
     
     // Zero out the memory slot before filling it.
     memset((char *) socketAddr, 0, sizeof(sockaddr_in));
     
-    hostent* hp = gethostbyname(address.ip());
-    bcopy((char *)hp->h_addr,
-          (char *)&socketAddr->sin_addr.s_addr,
-          hp->h_length);
     socketAddr->sin_family = AF_INET;
+    if (dnsLookup) {
+        hostent* hp = gethostbyname(address.ip());
+        bcopy((char *)hp->h_addr,
+              (char *)&socketAddr->sin_addr.s_addr,
+              hp->h_length);
+    } else {
+        socketAddr->sin_addr.s_addr = inet_addr(address.ip());
+    }
     socketAddr->sin_port = htons(address.port());
     return socketAddr;
 }

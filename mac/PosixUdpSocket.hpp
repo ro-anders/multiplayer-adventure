@@ -25,7 +25,7 @@ public:
     /**
      * Creates an OS specific socket address.
      */
-    sockaddr_in* createAddress(Transport::Address source);
+    sockaddr_in* createAddress(Transport::Address source, bool dnsLookup=false);
     
     /**
      * Delete a OS specific socket address.

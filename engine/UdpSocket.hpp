@@ -22,8 +22,11 @@ public:
     /**
      * Creates an OS specific socket address.  Does not affect this socket.
      * Caller is responsible for deleting the sockadd through deleteAddress()
+     * @source an internet address.  If server is a dns name, dnsLookup must be 
+     * set to true.
      */
-    virtual sockaddr_in* createAddress(Transport::Address source) = 0;
+    virtual sockaddr_in* createAddress(Transport::Address source, bool dnsLookup=false) = 0;
+    
     
     /**
      * Delete a OS specific socket address.  Does not affect this socket.
