@@ -17,6 +17,9 @@ public:
     
 private:
     int stripOffHeaders(char* buffer, int charsInBuffer);
+    
+    int request(const char* path, const char* message, char* responseBuffer, int bufferLength);
+
 };
 
 #endif /* MacRestClient_hpp */

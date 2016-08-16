@@ -42,8 +42,22 @@ private:
 
 class RestClient {
 public:
-
+    
     virtual int get(const char* path, char* responseBuffer, int bufferLength) = 0;
 
     virtual int post(const char* path, const char* content, char* responseBuffer, int bufferLength) = 0;
+    
+    /** The name of the REST server that will broker the game. Also doubles as a STUN server (well technically not STUN
+     but serves the same role as one). */
+    static const char* BROKER_SERVER;
+    
+    /** The port to make REST calls to */
+    static const int REST_PORT;
+    
+    /** The port to send UDP messages to to identify public ip */
+    static const int STUN_PORT;
+    
+protected:
+    
+
 };

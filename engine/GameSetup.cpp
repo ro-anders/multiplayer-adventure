@@ -177,7 +177,7 @@ Transport::Address GameSetup::determinePublicAddress() {
     UdpSocket& socket = xport.reservePort();
     
     // Now send a packet on that port.
-    Transport::Address stunServer("127.0.01", 8888);
+    Transport::Address stunServer(client.BROKER_SERVER, client.STUN_PORT);
     sockaddr_in* stunServerSockAddr = socket.createAddress(stunServer);
     printf("Sending message to STUN server\n");
     socket.writeData("Hello", 5, stunServerSockAddr);

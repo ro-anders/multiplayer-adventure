@@ -3,6 +3,11 @@
 
 #include <string.h>
 
+const char* RestClient::BROKER_SERVER = "localhost";
+
+const int RestClient::STUN_PORT = 8888;
+const int RestClient::REST_PORT = 9000;
+
 StringMap::StringMap() :
 numEntries(0),
 spaceAllocated(16) {
