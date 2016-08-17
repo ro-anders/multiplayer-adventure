@@ -105,6 +105,9 @@
     <ClCompile Include="..\engine\UdpSocket.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
+    <ClCompile Include="WinRestClient.cpp">
+      <Filter>Source Files\pc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\engine\ActionQueue.hpp">
@@ -193,6 +196,9 @@
     </ClInclude>
     <ClInclude Include="..\engine\UdpSocket.hpp">
       <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="WinRestClient.h">
+      <Filter>Header Files\pc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

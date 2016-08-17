@@ -110,6 +110,7 @@
     <ClCompile Include="..\engine\UdpTransport.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="WinAdventure.cpp" />
+    <ClCompile Include="WinRestClient.cpp" />
     <ClCompile Include="WinTcpTransport.cpp" />
     <ClCompile Include="WinUdpSocket.cpp" />
   </ItemGroup>
@@ -141,6 +142,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="WinAdventure.h" />
+    <ClInclude Include="WinRestClient.h" />
     <ClInclude Include="WinTcpTransport.h" />
     <ClInclude Include="WinUdpSocket.h" />
   </ItemGroup>

@@ -36,7 +36,7 @@ WinUdpSocket::~WinUdpSocket() {
 /**
 * Creates an OS specific socket address.
 */
-sockaddr_in* WinUdpSocket::createAddress(Transport::Address address) {
+sockaddr_in* WinUdpSocket::createAddress(Transport::Address address, bool dnsLookup) {
 
 	sockaddr_in* socketAddr = new sockaddr_in();
 
@@ -44,7 +44,13 @@ sockaddr_in* WinUdpSocket::createAddress(Transport::Address address) {
 	memset((char *)socketAddr, 0, sizeof(sockaddr_in));
 
 	socketAddr->sin_family = AF_INET;
-	socketAddr->sin_addr.S_un.S_addr = inet_addr(address.ip());
+	if (dnsLookup) {
+		// TODO: DNS Lookup
+		socketAddr->sin_addr.S_un.S_addr = inet_addr(address.ip());
+	}
+	else {
+		socketAddr->sin_addr.S_un.S_addr = inet_addr(address.ip());
+	}
 	socketAddr->sin_port = htons(address.port());
 	printf("Initialized = %s:%d.\n", inet_ntoa(socketAddr->sin_addr), ntohs(socketAddr->sin_port));
 

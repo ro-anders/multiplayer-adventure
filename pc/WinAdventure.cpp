@@ -30,6 +30,7 @@
 #include "..\engine\Sys.hpp"
 #include "..\engine\UdpTransport.hpp"
 #include "..\engine\RestClient.hpp"
+#include "WinRestClient.h"
 #include "WinUdpSocket.h"
 
 // Global Variables:
@@ -246,7 +247,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    WinUdpSocket* socket = new WinUdpSocket();
    bool usingDynamicSetup = (argc <= 2);
    UdpTransport* xport = new UdpTransport(socket, usingDynamicSetup);
-   GameSetup setup(*((RestClient*)NULL), *xport);
+   RestClient* client = new WinRestClient();
+   GameSetup setup(*client, *xport);
    GameSetup::GameParams params = setup.setup(argc - 1, argv + 1);
    // TODO: What do we do if we fail to setup a game?
 

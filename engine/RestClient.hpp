@@ -5,8 +5,6 @@
 
 #include <stdio.h>
 
-#endif /* RestClient_hpp */
-
 
 class RestClient {
 public:
@@ -34,3 +32,6 @@ protected:
 
     
 };
+
+#endif /* RestClient_hpp */
+
