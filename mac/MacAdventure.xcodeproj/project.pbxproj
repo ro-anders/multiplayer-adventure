@@ -35,13 +35,11 @@
 		40509AAB1C05E9750008BACF /* GameObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40509AA61C05E9750008BACF /* GameObject.cpp */; };
 		40509AAC1C05E9750008BACF /* RemoteAction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40509AA81C05E9750008BACF /* RemoteAction.cpp */; };
 		406264921C236DE600154D97 /* args.c in Sources */ = {isa = PBXBuildFile; fileRef = 406264901C236DE600154D97 /* args.c */; };
-		40662F361C767ACB00FFC715 /* PosixUdpTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40662F351C767ACB00FFC715 /* PosixUdpTransport.cpp */; };
 		40663AC61CBD122900A75EE3 /* ScriptedSync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40663AC41CBD122900A75EE3 /* ScriptedSync.cpp */; };
 		406CD1541C0C7C17002477BB /* Dragon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 406CD1521C0C7C17002477BB /* Dragon.cpp */; };
 		4072EC701D0F59950074389A /* MacRestClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4072EC6E1D0F59950074389A /* MacRestClient.cpp */; };
 		40740BAE1C1859730018AE6D /* Bat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40740BAC1C1859730018AE6D /* Bat.cpp */; };
 		407773D31BF2AC9C00454AC5 /* Transport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 407773D11BF2AC9C00454AC5 /* Transport.cpp */; };
-		407773D61BF2AF6000454AC5 /* PosixTcpTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 407773D41BF2AF6000454AC5 /* PosixTcpTransport.cpp */; };
 		4084EC8F1BF22AEE00E8F375 /* Adventure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4084EC8B1BF22AEE00E8F375 /* Adventure.cpp */; };
 		4084EC901BF22AEE00E8F375 /* Sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4084EC8D1BF22AEE00E8F375 /* Sync.cpp */; };
 		408582141D46C0BE00A3F2EF /* UdpSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 408582121D46C0BE00A3F2EF /* UdpSocket.cpp */; };
@@ -109,8 +107,6 @@
 		40509AA91C05E9750008BACF /* RemoteAction.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = RemoteAction.hpp; path = ../engine/RemoteAction.hpp; sourceTree = "<group>"; };
 		406264901C236DE600154D97 /* args.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = args.c; sourceTree = "<group>"; };
 		406264911C236DE600154D97 /* args.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = args.h; sourceTree = "<group>"; };
-		40662F341C767A7C00FFC715 /* PosixUdpTransport.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PosixUdpTransport.hpp; sourceTree = "<group>"; };
-		40662F351C767ACB00FFC715 /* PosixUdpTransport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PosixUdpTransport.cpp; sourceTree = "<group>"; };
 		40663AC41CBD122900A75EE3 /* ScriptedSync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ScriptedSync.cpp; path = ../engine/ScriptedSync.cpp; sourceTree = "<group>"; };
 		40663AC51CBD122900A75EE3 /* ScriptedSync.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ScriptedSync.hpp; path = ../engine/ScriptedSync.hpp; sourceTree = "<group>"; };
 		406CD1521C0C7C17002477BB /* Dragon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Dragon.cpp; path = ../engine/Dragon.cpp; sourceTree = "<group>"; };
@@ -121,8 +117,6 @@
 		40740BAD1C1859730018AE6D /* Bat.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Bat.hpp; path = ../engine/Bat.hpp; sourceTree = "<group>"; };
 		407773D11BF2AC9C00454AC5 /* Transport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = Transport.cpp; path = ../engine/Transport.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		407773D21BF2AC9C00454AC5 /* Transport.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; name = Transport.hpp; path = ../engine/Transport.hpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
-		407773D41BF2AF6000454AC5 /* PosixTcpTransport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PosixTcpTransport.cpp; sourceTree = "<group>"; };
-		407773D51BF2AF6000454AC5 /* PosixTcpTransport.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PosixTcpTransport.hpp; sourceTree = "<group>"; };
 		4084EC8B1BF22AEE00E8F375 /* Adventure.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Adventure.cpp; path = ../engine/Adventure.cpp; sourceTree = "<group>"; };
 		4084EC8C1BF22AEE00E8F375 /* Adventure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Adventure.h; path = ../engine/Adventure.h; sourceTree = "<group>"; };
 		4084EC8D1BF22AEE00E8F375 /* Sync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Sync.cpp; path = ../engine/Sync.cpp; sourceTree = "<group>"; };
@@ -286,10 +280,6 @@
 				40E47FB01BF22BA20052B84E /* Controller.mm */,
 				408582151D46C1E200A3F2EF /* PosixUdpSocket.cpp */,
 				408582161D46C1E200A3F2EF /* PosixUdpSocket.hpp */,
-				407773D41BF2AF6000454AC5 /* PosixTcpTransport.cpp */,
-				407773D51BF2AF6000454AC5 /* PosixTcpTransport.hpp */,
-				40662F351C767ACB00FFC715 /* PosixUdpTransport.cpp */,
-				40662F341C767A7C00FFC715 /* PosixUdpTransport.hpp */,
 				406264901C236DE600154D97 /* args.c */,
 				406264911C236DE600154D97 /* args.h */,
 				40B345F81C25A2B4001EE63C /* args.m */,
@@ -432,7 +422,6 @@
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
 				407773D31BF2AC9C00454AC5 /* Transport.cpp in Sources */,
 				4013C0A11C503FAA00C99342 /* Room.cpp in Sources */,
-				407773D61BF2AF6000454AC5 /* PosixTcpTransport.cpp in Sources */,
 				401C851E1D195CBA00110952 /* GameSetup.cpp in Sources */,
 				40740BAE1C1859730018AE6D /* Bat.cpp in Sources */,
 				401C85211D1960A100110952 /* RestClient.cpp in Sources */,
@@ -454,7 +443,6 @@
 				40F99C051C1A31930032B2A2 /* Portcullis.cpp in Sources */,
 				40509AAC1C05E9750008BACF /* RemoteAction.cpp in Sources */,
 				40B029DD1C91449200DA27FD /* UdpTransport.cpp in Sources */,
-				40662F361C767ACB00FFC715 /* PosixUdpTransport.cpp in Sources */,
 				40B345F91C25A2B4001EE63C /* args.m in Sources */,
 				40663AC61CBD122900A75EE3 /* ScriptedSync.cpp in Sources */,
 				40E47FB11BF22BA20052B84E /* AdventureView.mm in Sources */,
