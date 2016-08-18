@@ -28,7 +28,7 @@ public:
         bool shouldMute; // Whether other games are running on the same machine (usually only for dev and testing) and this game should mute itself
         int numberPlayers; // How many players are in the game
         int thisPlayer; // Which player this game is playing.
-        int gameLevel; // Which board this game will be
+        int gameLevel; // Which game to play (refer to GAME_MODE_ enum)
         bool isScripting; // Whether this is a real game or just executing/authoring a script
         
         GameParams();

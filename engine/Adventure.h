@@ -21,6 +21,16 @@
 
 // Game funtions
 class Transport;
+
+/**
+ * Setup the game.
+ * numPlayers - 2 or 3 players
+ * thisPlayer - which player this is.  0-2.
+ * transport - the transport to use to talk to other games
+ * gameNum - which game/map to play (-1 = scripting, 0-2 = atari games 1-3, 3 = gauntlet)
+ * initialLeftDiff - initial value of left difficulty switch (0 = A, 1 = B)
+ * initialRightDiff - initial value of right difficulty switch (0 = A, 1 = B)
+ */
 void Adventure_Setup(int numPlayers, int thisPlayer, Transport* transport, int gameNum, int initialLeftDiff, int initialRightDiff);
 void Adventure_Run();
 
@@ -52,5 +62,5 @@ float Platform_Random();
 #define GAME_MODE_1  0
 #define GAME_MODE_2  1
 #define GAME_MODE_3  2
-#define GAME_MODE_GAUNTLET  4
+#define GAME_MODE_GAUNTLET  3
 
