@@ -67,7 +67,7 @@ GameSetup::GameParams GameSetup::setup(int argc, char** argv) {
         newParams.gameLevel = GAME_MODE_SCRIPTING;
     } else if ((argc >= 1) && (strcmp(argv[0], "broker")==0)){
         // A server will broker the game but still need some info that we parse from the command line.
-        // MacAdventure broker <gameLevel (1-3,4)>
+        // MacAdventure broker <gameLevel (1-3,4)> <desiredPlayers (2-3)>
         setupBrokeredGame(newParams, argc, argv);
         
     }else {
@@ -119,13 +119,16 @@ GameSetup::GameParams GameSetup::setup(int argc, char** argv) {
 void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, char** argv) {
 
     newParams.gameLevel = atoi(argv[1])-1;
+    int desiredPlayers = (atoi(argv[2]) <= 2 ? 2 : 3);
+    int sysTime = Sys::systemTime();
 
     Transport::Address myAddress = determinePublicAddress();
     
     Json::Value responseJson;
     // Connect to the client and register a game request.
     char requestContent[200];
-    sprintf(requestContent, "{\"ip1\": \"%s\",\"port1\": %d, \"gameToPlay\": %d}", myAddress.ip(), myAddress.port(), newParams.gameLevel);
+    sprintf(requestContent, "{\"ip1\": \"%s\",\"port1\": %d, \"sessionId\": %d, \"gameToPlay\": %d, \"desiredPlayers\": %d}",
+            myAddress.ip(), myAddress.port(), sysTime, newParams.gameLevel, desiredPlayers);
     char response[1000];
     bool gotResponse = false;
     
@@ -142,27 +145,32 @@ void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, ch
         }
     }
     
+    // Expecting response of the form:
+    // {"gameParams":{
+    //   "numPlayers":2, "thisPlayer":1, "gameToPlay":0,
+    //   "otherPlayers":[
+    //    {"ip1":"127.0.0.1", "port1":5678, "sessionId":"1471662312", "gameToPlay":0, "desiredPlayers":2},
+    //    {"ip1":"127.0.0.1", "port1":5679, "sessionId":"1471662320", "gameToPlay":0, "desiredPlayers":2}
+    //   ]}
+    // }
     Json::Value gameParams = responseJson["gameParams"];
     newParams.numberPlayers = gameParams["numPlayers"].asInt();
     newParams.thisPlayer = gameParams["thisPlayer"].asInt();
     newParams.gameLevel = gameParams["gameToPlay"].asInt();
-    Json::Value otherPlayer = gameParams["otherPlayer"];
-    const char* ip = otherPlayer["ip1"].asCString();
-    int port = otherPlayer["port1"].asInt();
+    Json::Value otherPlayers = gameParams["otherPlayers"];
+    int numOtherPlayers = otherPlayers.size();
+    for(int ctr=0; ctr<numOtherPlayers; ++ctr) {
+        Json::Value otherPlayer = otherPlayers[ctr];
+        const char* ip = otherPlayer["ip1"].asCString();
+        int port = otherPlayer["port1"].asInt();
+        Transport::Address otherPlayerAddr(ip, port);
+        std::cout << "Adding player " << otherPlayerAddr.ip() << ":" << otherPlayerAddr.port() << std::endl;
+        xport.addOtherPlayer(otherPlayerAddr);
+    }
     
-    Transport::Address secondPlayer(ip, port);
-    std::cout << "Got second player " << secondPlayer.ip() << ":" << secondPlayer.port() << std::endl;
-        
     xport.setExternalAddress(myAddress);
     xport.setTransportNum(newParams.thisPlayer);
-    xport.addOtherPlayer(secondPlayer);
-    newParams.numberPlayers = 2;
-    // TODO: Broker third player
-    Transport::Address thirdPlayer;
-    if (thirdPlayer.isValid()) {
-        xport.addOtherPlayer(thirdPlayer);
-        newParams.numberPlayers = 3;
-    }
+    newParams.numberPlayers = numOtherPlayers;
 }
 
 /**
