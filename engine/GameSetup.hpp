@@ -54,7 +54,7 @@ private:
     
     UdpTransport& xport;
     
-    Transport::Address determinePublicAddress();
+    Transport::Address determinePublicAddress(Transport::Address stunServer);
 };
 
 #endif /* GameSetup_hpp */

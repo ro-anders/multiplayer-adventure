@@ -67,7 +67,7 @@ GameSetup::GameParams GameSetup::setup(int argc, char** argv) {
         newParams.gameLevel = GAME_MODE_SCRIPTING;
     } else if ((argc >= 1) && (strcmp(argv[0], "broker")==0)){
         // A server will broker the game but still need some info that we parse from the command line.
-        // MacAdventure broker <gameLevel (1-3,4)> <desiredPlayers (2-3)>
+        // MacAdventure broker <gameLevel (1-3,4)> <desiredPlayers (2-3)> [stunserver:stunport]
         setupBrokeredGame(newParams, argc, argv);
         
     }else {
@@ -122,7 +122,11 @@ void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, ch
     int desiredPlayers = (atoi(argv[2]) <= 2 ? 2 : 3);
     int sysTime = Sys::systemTime();
 
-    Transport::Address myAddress = determinePublicAddress();
+    Transport::Address stunServer(client.BROKER_SERVER, client.STUN_PORT);
+    if (argc > 3) {
+        stunServer = Transport::parseUrl(argv[3]);
+    }
+    Transport::Address myAddress = determinePublicAddress(stunServer);
     
     Json::Value responseJson;
     // Connect to the client and register a game request.
@@ -170,14 +174,13 @@ void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, ch
     
     xport.setExternalAddress(myAddress);
     xport.setTransportNum(newParams.thisPlayer);
-    newParams.numberPlayers = numOtherPlayers;
 }
 
 /**
  * Contact the STUN server and it will tell you what IP and port your UDP packets
  * will look like they come from.
  */
-Transport::Address GameSetup::determinePublicAddress() {
+Transport::Address GameSetup::determinePublicAddress(Transport::Address stunServer) {
 
     Transport::Address publicAddress;
     
@@ -185,7 +188,6 @@ Transport::Address GameSetup::determinePublicAddress() {
     UdpSocket& socket = xport.reservePort();
     
     // Now send a packet on that port.
-    Transport::Address stunServer(client.BROKER_SERVER, client.STUN_PORT);
     sockaddr_in* stunServerSockAddr = socket.createAddress(stunServer, true);
     Sys::log("Sending message to STUN server\n");
     socket.writeData("Hello", 5, stunServerSockAddr);
