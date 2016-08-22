@@ -249,7 +249,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    UdpTransport* xport = new UdpTransport(socket, usingDynamicSetup);
    RestClient* client = new WinRestClient();
    GameSetup setup(*client, *xport);
-   GameSetup::GameParams params = setup.setup(argc - 1, argv + 1);
+   GameSetup::GameParams params = setup.setup(argc, argv);
    // TODO: What do we do if we fail to setup a game?
 
    if (params.isScripting) {

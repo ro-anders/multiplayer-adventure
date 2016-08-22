@@ -25,7 +25,7 @@ Transport::Address::~Address() {
 
 Transport::Address& Transport::Address::operator=(const Transport::Address &other) {
     char* tmp = copyIp(other._ip);
-    delete _ip;
+    delete[] _ip;
     _ip = tmp;
     _port = other._port;
     return *this;
