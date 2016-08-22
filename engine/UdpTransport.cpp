@@ -8,86 +8,151 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Sys.hpp"
+#include "UdpSocket.hpp"
 
 const char* UdpTransport::NOT_YET_INITIATED = "UX";
 const char* UdpTransport::RECVD_NOTHING = "UA";
 const char* UdpTransport::RECVD_MESSAGE = "UB";
 const char* UdpTransport::RECVD_ACK = "UC";
 
-
-UdpTransport::UdpTransport() :
-Transport(true),
-myExternalAddr(LOCALHOST_IP, DEFAULT_PORT),
-theirAddrs(new Address[1]),
-myInternalPort(DEFAULT_PORT),
-states(new const char*[1]),
-numOtherMachines(1),
-transportNum(0)
+UdpTransport::UdpTransport(UdpSocket* inSocket, bool useDynamicSetup) :
+Transport(useDynamicSetup),
+socket(inSocket),
+myExternalAddr(Address()),
+theirAddrs(NULL),
+myInternalPort(0),
+states(new const char*[2]), // We always create space for two even though we may only use one.
+numOtherMachines(0),
+remaddrs(new sockaddr_in*[2]), // We always create space for two even though we may only use one.
+socketBound(false)
 {
-    theirAddrs[0] = Address(LOCALHOST_IP, DEFAULT_PORT+1);
-    states[0] = NOT_YET_INITIATED;
-}
-
-UdpTransport::UdpTransport(const Address& inMyExternalAddr,  const Address& inTheirAddr) :
-Transport(false),
-myExternalAddr(inMyExternalAddr),
-theirAddrs(new Address[1]),
-// We use the default port internally unless the other side is also on the same machine.
-myInternalPort(strcmp(inTheirAddr.ip(), LOCALHOST_IP)==0 ? inMyExternalAddr.port() : DEFAULT_PORT),
-states(new const char*[1]),
-numOtherMachines(1),
-transportNum(0)
-{
-    theirAddrs[0] = inTheirAddr;
-    states[0] = NOT_YET_INITIATED;
-}
-
-UdpTransport::UdpTransport(const Address& inMyExternalAddr,  int inTransportNum,
-                           const Address& other1, const Address& other2) :
-Transport(false),
-myExternalAddr(inMyExternalAddr),
-theirAddrs(new Address[2]),
-// We use the default port internally unless the other machines also on the same machine.
-// We don't yet support having two games on one machine and a third game on a second machine
-myInternalPort((strcmp(other1.ip(), LOCALHOST_IP)==0) && (strcmp(other1.ip(), LOCALHOST_IP)==0) ?
-               inMyExternalAddr.port() : DEFAULT_PORT),
-states(new const char*[1]),
-numOtherMachines(2),
-transportNum(inTransportNum)
-{
-    theirAddrs[0] = other1;
-    theirAddrs[1] = other2;
-    states[0] = NOT_YET_INITIATED;
-    states[1] = NOT_YET_INITIATED;
+    remaddrs[0] = remaddrs[1] = NULL;
+    if (useDynamicSetup) {
+        myInternalPort = DEFAULT_PORT;
+    }
+    
 }
 
 UdpTransport::~UdpTransport() {
     delete[] theirAddrs;
     delete[] states;
+    if (remaddrs != NULL) {
+        for(int ctr=0; ctr<2; ++ctr) {
+            if (remaddrs[ctr] != NULL) {
+                socket->deleteAddress(remaddrs[ctr]);
+            }
+        }
+        delete[] remaddrs;
+    }
 }
 
-void UdpTransport::connect() {
-    if (getTestSetupNumber() == NOT_YET_DETERMINED) {
-        // Try the default setup (using DEFAULT_PORT to talk to localhost on DEFAULT_PORT + 1)
-        // If that is busy, switch them.
-        int busy = openSocket();
-        if (busy == Transport::TPT_BUSY) {
-            myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT+1);
-            theirAddrs[0] = Address(LOCALHOST_IP, DEFAULT_PORT);
-            myInternalPort = DEFAULT_PORT+1;
-            openSocket();
+/**
+ * The ip address to tell other machines to use to talk to this machine.
+ */
+void UdpTransport::setExternalAddress(const Address& myExternalAddrIn) {
+    myExternalAddr = myExternalAddrIn;
+}
+
+void UdpTransport::setInternalPort(int port) {
+    myInternalPort = port;
+}
+
+void UdpTransport::addOtherPlayer(const Address & theirAddr) {
+    if (numOtherMachines < 2) {
+        Address* oldAddrs = theirAddrs;
+        
+        ++numOtherMachines;
+        theirAddrs = new Address[numOtherMachines];
+        theirAddrs[numOtherMachines-1]=theirAddr;
+        states[numOtherMachines-1] = NOT_YET_INITIATED;
+        remaddrs[numOtherMachines-1] = socket->createAddress(theirAddr);
+        
+        // Copy old data
+        if (numOtherMachines == 2) {
+            theirAddrs[0] = oldAddrs[0];
+            delete[] oldAddrs;
         }
-    } else {
-        openSocket();
     }
+}
+
+
+
+void UdpTransport::connect() {
+    
+    if (!socketBound) {
+        if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
+            // Try the default setup (using DEFAULT_PORT to talk to localhost on DEFAULT_PORT + 1)
+            // If that is busy, switch them.
+            // In a test, the only thing setup would be the internal port.  So all other attributes need to be
+            // specified once a port is chosen.
+            reservePort();
+            if (myInternalPort == DEFAULT_PORT) {
+                myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT);
+                addOtherPlayer(Address(LOCALHOST_IP, DEFAULT_PORT+1));
+            } else {
+                myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT+1);
+                addOtherPlayer(Address(LOCALHOST_IP, DEFAULT_PORT));
+            }
+        } else {
+            reservePort();
+        }
+    }
+    
+    socket->setBlocking(false);
     
     states[0] = RECVD_NOTHING;
     states[1] = (numOtherMachines > 1 ? RECVD_NOTHING : RECVD_ACK);
     // We need a big random integer.
     randomNum = Sys::random() * 1000000;
     
+    printf("Attempting to punch hole to other machine.");
     punchHole();
 }
+
+UdpSocket& UdpTransport::reservePort() {
+    if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
+        // Try the default setup (using DEFAULT_PORT to talk to localhost on DEFAULT_PORT + 1)
+        // If that is busy, switch them.
+        int busy = openSocket();
+        if (busy == Transport::TPT_BUSY) {
+            myInternalPort = DEFAULT_PORT+1;
+            openSocket();
+        }
+    } else if (myInternalPort == 0) {
+        // Just try to find some port that is open.
+        bool found = false;
+        myInternalPort = DEFAULT_PORT;
+        while (!found) {
+            int busy = openSocket();
+            if (busy == Transport::TPT_BUSY) {
+                ++myInternalPort;
+            } else {
+                found = true;
+            }
+        }
+    } else {
+        openSocket();
+    }
+    return *socket;
+}
+
+
+int UdpTransport::openSocket() {
+    
+    // Create the server socket and bind to it
+    int status = socket->bind(myInternalPort);
+
+    if (status == Transport::TPT_OK) {
+        printf("Bound to port %d.\n", myInternalPort);
+        socketBound = true;
+    } else {
+        printf("Failed to bind to port %d.\n", myInternalPort);
+    }
+    
+    
+    return status;
+}
+
 
 bool UdpTransport::isConnected() {
     if (!connected) {
@@ -99,14 +164,25 @@ bool UdpTransport::isConnected() {
 int UdpTransport::getPacket(char* buffer, int bufferLength) {
     if (connected && !hasDataInBuffer()) {
         // Now that setup is done, we can stop buffering data.
-        return readData(buffer, bufferLength);
+        return socket->readData(buffer, bufferLength);
     } else {
         return Transport::getPacket(buffer, bufferLength);
     }
 }
 
+int UdpTransport::readData(char* buffer, int bufferLength) {
+    return socket->readData(buffer, bufferLength);
+}
+
 int UdpTransport::writeData(const char* data, int numBytes) {
-    return writeData(data, numBytes, -1);
+    int leastCharsWritten = 1000000;
+    for(int ctr=0; ctr<numOtherMachines; ++ctr) {
+        int charsWritten = socket->writeData(data, numBytes, remaddrs[ctr]);
+        if (charsWritten < leastCharsWritten) {
+            leastCharsWritten = charsWritten;
+        }
+    }
+    return leastCharsWritten;
 }
 
 
@@ -124,7 +200,7 @@ void UdpTransport::punchHole() {
         bool justAcked[2] = {false, false};
     
         // See what messages we have received.
-        int bytes = readData(recvBuffer, READ_BUFFER_LENGTH);
+        int bytes = socket->readData(recvBuffer, READ_BUFFER_LENGTH);
         while (bytes > 0) {
             // This could be non-setup messages, which need to be put in the base class's stream buffer
             // until the setup is complete.
@@ -156,7 +232,7 @@ void UdpTransport::punchHole() {
                         sprintf(logMsg, "Connected with %s:%d\n", theirAddrs[senderIndex].ip(), theirAddrs[senderIndex].port());
                         Sys::log(logMsg);
                         // If this is a test case, figure out who is player one.
-                        if (getTestSetupNumber() == NOT_YET_DETERMINED) {
+                        if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
                             compareNumbers(randomNum, recvBuffer, senderIndex);
                         }
                     }
@@ -164,7 +240,7 @@ void UdpTransport::punchHole() {
             }
             
             // Check for more messages.
-            bytes = readData(recvBuffer, READ_BUFFER_LENGTH);
+            bytes = socket->readData(recvBuffer, READ_BUFFER_LENGTH);
         }
         
         // Now send a packet to each other machine.  Don't send if we're not initialized or we're all connected.
@@ -193,21 +269,22 @@ void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage, int ot
     }
     
     if (myRandomNumber < theirRandomNumber) {
-        setTestSetupNumber(0);
+        setDynamicPlayerSetupNumber(0);
     } else if (theirRandomNumber < myRandomNumber) {
-        setTestSetupNumber(1);
+        setDynamicPlayerSetupNumber(1);
     } else {
         int ipCmp = strcmp(myExternalAddr.ip(), theirAddrs[otherIndex].ip());
         if (ipCmp < 0) {
-            setTestSetupNumber(0);
+            setDynamicPlayerSetupNumber(0);
         } else if (ipCmp > 0) {
-            setTestSetupNumber(1);
+            setDynamicPlayerSetupNumber(1);
         } else {
             // If IP's are equal then ports can't be equal.
-            setTestSetupNumber(myExternalAddr.port() < theirAddrs[otherIndex].port() ? 0 : 1);
+            setDynamicPlayerSetupNumber(myExternalAddr.port() < theirAddrs[otherIndex].port() ? 0 : 1);
         }
     }
 }
+
 
 
 

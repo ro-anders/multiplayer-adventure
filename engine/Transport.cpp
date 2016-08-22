@@ -25,7 +25,7 @@ Transport::Address::~Address() {
 
 Transport::Address& Transport::Address::operator=(const Transport::Address &other) {
     char* tmp = copyIp(other._ip);
-    delete _ip;
+    delete[] _ip;
     _ip = tmp;
     _port = other._port;
     return *this;
@@ -43,6 +43,10 @@ int Transport::Address::port() const {
     return _port;
 }
 
+bool Transport::Address::isValid() const {
+    return (_port > 0);
+}
+
 char* Transport::Address::copyIp(const char* inIp) {
     char* newIp = new char[strlen(inIp)+1];
     strcpy(newIp, inIp);
@@ -55,18 +59,19 @@ const int Transport::TPT_ERROR = -1;
 const int Transport::TPT_OK = 0;
 const int Transport::TPT_BUSY = 1;
 
-const int Transport::NOT_A_TEST = -1;
-const int Transport::NOT_YET_DETERMINED = -2;
+const int Transport::NOT_DYNAMIC_PLAYER_SETUP = -1;
+const int Transport::PLAYER_NOT_YET_DETERMINED = -2;
 
 const char* Transport::LOCALHOST_IP = "127.0.0.1";
 
 
-Transport::Transport(bool inATest) :
-  connected(false) {
+Transport::Transport(bool useDynamicSetup) :
+transportNum(0),
+connected(false) {
     streamBufferSize = 1024;
     streamBuffer = new char[streamBufferSize]; // TODO: Make this more dynamic.
     charsInStreamBuffer = 0;
-    testSetupNumber = (inATest ? NOT_YET_DETERMINED : NOT_A_TEST);
+    dynamicPlayerSetupNumber = (useDynamicSetup ? PLAYER_NOT_YET_DETERMINED : NOT_DYNAMIC_PLAYER_SETUP);
 }
 
 Transport::~Transport()
@@ -78,13 +83,16 @@ bool Transport::isConnected() {
     return connected;
 }
 
-int Transport::getTestSetupNumber() {
-    return testSetupNumber;
+int Transport::getDynamicPlayerSetupNumber() {
+    return dynamicPlayerSetupNumber;
 }
-void Transport::setTestSetupNumber(int newNum) {
-    testSetupNumber = newNum;
+void Transport::setDynamicPlayerSetupNumber(int newNum) {
+    dynamicPlayerSetupNumber = newNum;
 }
 
+void Transport::setTransportNum(int inTransportNum) {
+    transportNum = inTransportNum;
+}
 
 int Transport::sendPacket(const char* packetData) {
 	int n = writeData(packetData, strlen(packetData)+1); // +1 to include the \0
@@ -181,17 +189,21 @@ void Transport::appendDataToBuffer(const char *data, int dataLength) {
 
 void Transport::testTransport(Transport& t) {
     int NUM_MESSAGES = 10;
-    // If this is a test, make sure test roles are negotiated.
-    t.testSetupNumber = NOT_YET_DETERMINED;
     t.connect();
     while (!t.isConnected()) {
         Sys::sleep(1000);
     }
-    if (t.getTestSetupNumber() == 1) {
+    // Make sure test roles are negotiated.
+    if (t.dynamicPlayerSetupNumber != NOT_DYNAMIC_PLAYER_SETUP) {
+        t.setTransportNum(t.dynamicPlayerSetupNumber);
+    }
+    
+    if (t.transportNum == 1) {
+        printf("Test setup.  Sending packets.\n");
         int numSent = 0;
         for(int ctr=0; ctr<NUM_MESSAGES; ++ctr) {
             char message[256];
-            sprintf(message, "Message %d\0", (ctr+1));
+            sprintf(message, "Message %d%c", ctr+1, '\0');
             int charsSent = t.sendPacket(message);
             if (charsSent <= 0) {
                 perror("Error sending packet");
@@ -205,6 +217,7 @@ void Transport::testTransport(Transport& t) {
         }
         printf("Sent %d messages.  %s.\n", numSent, (numSent == 10 ? "PASS" : "FAIL"));
     } else {
+        printf("Test setup.  Receiving packets.\n");
         int numReceived = 0;
         // We wait a second for the sender to send some stuff
         Sys::sleep(2000);
@@ -215,6 +228,8 @@ void Transport::testTransport(Transport& t) {
                 perror("Error receiving packet");
             } else if (charsReceived == 0) {
                 printf("Received no data.\n");
+            } else if (buffer[0] == 'U') {
+                // Part of the UDP setup.  Ignore.
             } else {
                 ++numReceived;
             }
