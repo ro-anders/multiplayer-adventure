@@ -7,6 +7,7 @@ To Do
 
 To Check
 --------
+- Make sure you see the winner's screen even if currently eaten by a dragon
 - Bridge placement looked slightly off to other player
 - Looked like other player wasn't carrying an object when he was - seen this several times
 - Green dragon ate player 1.  Player 2 reset and now didn't see green dragon.
