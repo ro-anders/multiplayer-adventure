@@ -464,14 +464,17 @@ static const byte game2Objects [] =
     OBJECT_YELLOWDRAGON, RED_MAZE_4, 0x50, 0x20, 0x00, 3, 3, // Yellow Dragon
     OBJECT_GREENDRAGON, BLUE_MAZE_5, 0x50, 0x20, 0x00, 3, 3, // Green Dragon
     OBJECT_SWORD, GOLD_CASTLE, 0x20, 0x20, 0x00, 0x00, 0x00, // Sword
-    OBJECT_BRIDGE, WHITE_MAZE_3, 0x40, 0x40, 0x00, 0x00, 0x00, // Bridge
-    OBJECT_YELLOWKEY, WHITE_MAZE_2, 0x20, 0x40, 0x00, 0x00, 0x00, // Yellow Key
+    //OBJECT_BRIDGE, WHITE_MAZE_3, 0x40, 0x40, 0x00, 0x00, 0x00, // Bridge
+    OBJECT_BRIDGE, MAIN_HALL_RIGHT, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
+    //OBJECT_YELLOWKEY, WHITE_MAZE_2, 0x20, 0x40, 0x00, 0x00, 0x00, // Yellow Key
+    OBJECT_YELLOWKEY, MAIN_HALL_RIGHT, 0x20, 0x40, 0x00, 0x00, 0x00, // Yellow Key
     OBJECT_COPPERKEY, COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
     OBJECT_JADEKEY, JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
     OBJECT_WHITEKEY, BLUE_MAZE_3, 0x20, 0x40, 0x00, 0x00, 0x00, // White Key
     OBJECT_BLACKKEY, RED_MAZE_4, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
     OBJECT_BAT, MAIN_HALL_CENTER, 0x20, 0x20, 0x00, 0, -3, // Bat
-    OBJECT_DOT, BLACK_MAZE_3, 0x45, 0x12, 0x00, 0x00, 0x00, // Dot
+    //OBJECT_DOT, BLACK_MAZE_3, 0x45, 0x12, 0x00, 0x00, 0x00, // Dot
+    OBJECT_DOT, MAIN_HALL_RIGHT, 0x45, 0x12, 0x00, 0x00, 0x00, // Dot
     OBJECT_CHALISE, BLACK_MAZE_2, 0x30, 0x20, 0x00, 0x00, 0x00, // Challise
     OBJECT_MAGNET, SOUTHWEST_ROOM, 0x80, 0x20, 0x00, 0x00, 0x00, // Magnet
     0xff,0,0,0,0,0,0
@@ -1258,11 +1261,23 @@ void BallMovement(BALL* ball) {
         {
             // Wrap the ball to the bottom of the screen
             ball->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
-            ball->previousY = ball->y;
 
             // Set the new room
             const ROOM* currentRoom = roomDefs[ball->room];
-            ball->room = currentRoom->roomUp;
+            int roomUp = currentRoom->roomUp;
+            
+            if (CollisionCheckBallWithWalls(roomUp, tempX, ball->y))
+            {
+                // We've hit a wall on the next screen
+                ball->hitY = true;
+            } else {
+                ball->room = roomUp;
+                ball->previousY = ball->y;
+            }
+            if (isCurrentPlayer) {
+                // We display the new room even if we hit a collision and don't update ball->room
+                displayedRoomIndex = roomUp;
+            }
         }
         else if (ball->y < 0x0D*2)
         {
@@ -1279,6 +1294,9 @@ void BallMovement(BALL* ball) {
 					ball->previousY = ball->y;
 
 					ball->room = port->room;
+                    if (isCurrentPlayer) {
+                        displayedRoomIndex = port->room;
+                    }
                     // If we were locked in the castle, open the portcullis.
                     if (port->state == Portcullis::CLOSED_STATE) {
                         port->openFromInside();
@@ -1303,15 +1321,16 @@ void BallMovement(BALL* ball) {
                 {
                     // We've hit a wall on the next screen
                     ball->hitY = true;
-					if (isCurrentPlayer) {
-						displayedRoomIndex = roomDown;
-					}
                 }
                 else
                 {
                     // Set the new room
                     ball->y = newY;
                     ball->room = roomDown;
+                }
+                if (isCurrentPlayer) {
+                    // We display the new room even if we hit a collision and don't update ball->room
+                    displayedRoomIndex = roomDown;
                 }
             }
         }
@@ -1321,7 +1340,8 @@ void BallMovement(BALL* ball) {
         // carryable objects.  Is this ok?
         int hitObject = CollisionCheckBallWithAllObjects(ball);
         bool crossingBridge = CrossingBridge(ball->room, tempX, ball->y, ball);
-        bool hitWall = crossingBridge ? false : CollisionCheckBallWithWalls(ball->room, tempX, ball->y);
+        int roomToCheck = (isCurrentPlayer ? displayedRoomIndex : ball->room);
+        bool hitWall = crossingBridge ? false : CollisionCheckBallWithWalls(roomToCheck, tempX, ball->y);
         if (hitWall || (hitObject > OBJECT_NONE))
         {
             // Hit a wall or non-carryable object
@@ -1348,32 +1368,48 @@ void BallMovement(BALL* ball) {
             // Wrap the ball to the left side of the screen
             ball->x = 5;
 
-            // Is it room #3 (Right to secret room)
-            if (ball->room == 0x3)
-            {
-                // Set room to secret room
-                ball->room = 0x1e;
+            // Figure out the room to the right (which might be the secret room)
+            int roomRight = (ball->room == MAIN_HALL_RIGHT ? ROBINETT_ROOM :
+                             roomDefs[ball->room]->roomRight);
+            
+            if (CollisionCheckBallWithWalls(roomRight, ball->x, tempY)) {
+                // We've hit a wall on the next screen
+                ball->hitX = true;
+            } else {
+                ball->room = roomRight;
+                ball->previousX = ball->x;
             }
-            else
-            {
-                // Set the new room
-                const ROOM* currentRoom = roomDefs[ball->room];
-                ball->room = currentRoom->roomRight;
+            if (isCurrentPlayer) {
+                // We display the new room even if we hit a collision and don't update ball->room
+                displayedRoomIndex = roomRight;
             }
+            
         }
         else if (ball->x < 4)
         {
             // Wrap the ball to the right side of the screen
             ball->x = ADVENTURE_SCREEN_WIDTH-5;
 
-            // Set the new room
-            const ROOM* currentRoom = roomDefs[ball->room];
-            ball->room = currentRoom->roomLeft;
+            // Figure out the room to the left
+            int roomLeft = roomDefs[ball->room]->roomLeft;
+            
+            if (CollisionCheckBallWithWalls(roomLeft, ball->x, tempY)) {
+                // We've hit a wall on the next screen
+                ball->hitX = true;
+            } else {
+                ball->room = roomLeft;
+                ball->previousX = ball->x;
+            }
+            if (isCurrentPlayer) {
+                // We display the new room even if we hit a collision and don't update ball->room
+                displayedRoomIndex = roomLeft;
+            }
         }
         // Collision check the ball with the new Y coordinate against walls and objects
         // For collisions with objects, we only care about hitting non-carryable objects at this point
         int hitObject = CollisionCheckBallWithAllObjects(ball);
-        int hitWall = CollisionCheckBallWithWalls(ball->room, ball->x, tempY);
+        int roomToCheck = (isCurrentPlayer ? displayedRoomIndex : ball->room);
+        int hitWall = CollisionCheckBallWithWalls(roomToCheck, ball->x, tempY);
         if (hitWall || (hitObject > OBJECT_NONE))
         {
             // Hit a wall or non-carryable object
