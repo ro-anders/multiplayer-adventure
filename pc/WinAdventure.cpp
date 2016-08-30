@@ -258,7 +258,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    }
    Platform_MuteSound(params.shouldMute);
 
-   Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 0, 0);
+   Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 1, 1);
 
    //SetFullscreen(TRUE);
 

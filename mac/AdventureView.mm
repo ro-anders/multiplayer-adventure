@@ -91,7 +91,7 @@ bool gMute = FALSE;
 
     if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
     {
-        Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 0, 0);
+        Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 1, 1);
         timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
                                                  target: self
                                                selector: @selector(update:)
