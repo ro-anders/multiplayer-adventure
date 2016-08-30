@@ -2169,11 +2169,11 @@ bool CollisionCheckBallWithWalls(int room, int x, int y)
     const int cell_width = 8;
     const int cell_height = 32;
 
-    if ((currentRoom->flags & ROOMFLAG_LEFTTHINWALL) && ((x-(4+4)) < 0x0D*2))
+    if ((currentRoom->flags & ROOMFLAG_LEFTTHINWALL) && ((x-(4+4)) < 0x0D*2) && ((x+4) > 0x0D*2))
     {
         hitWall = true;
     }
-    if ((currentRoom->flags & ROOMFLAG_RIGHTTHINWALL) && ((x+4) > 0x96*2))
+    if ((currentRoom->flags & ROOMFLAG_RIGHTTHINWALL) && ((x+4) > 0x96*2) && ((x-(4+4) < 0x96*2)))
     {
         // If the dot is in this room, allow passage through the wall into the Easter Egg room
         if (board[OBJECT_DOT]->room != room)
