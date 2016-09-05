@@ -80,6 +80,7 @@ static bool CollisionCheckBallWithWalls(int room, int x, int y);
 static int CollisionCheckBallWithAllObjects(BALL* ball);
 static int CollisionCheckBallWithObjects(BALL* ball, Board::ObjIter& iter);
 static bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, int height);
+static bool CollisionCheckBallWithEverything(BALL* ball, int room, int x, int y, bool allowBridge, int* hitObject);
 void handleSetupMessages();
 void randomizeRoomObjects();
 static void ResetPlayers();
@@ -131,10 +132,9 @@ static bool joystickDisabled = false;
 // It is a bitwise or of each game option
 static int gameOptions = 0;
 
-static int displayedRoomIndex = 0;                                   // index of current (displayed) room
-
 static int winFlashTimer=0;
-static int winningRoom=-1; // The room number of the castle of the winning player.
+static int winningRoom=-1; // The room number of the castle of the winning player.  -1 if the game is not won yet.
+static int displayWinningRoom = false; // At the end of the game we show the player who won.
 
 static int flashColorHue=0;
 static int flashColorLum=0;
@@ -673,14 +673,13 @@ void ResetPlayers() {
 
 void ResetPlayer(BALL* ball) {
     ball->room = ball->homeGate->room;                 // Put us at our home castle
+    ball->displayedRoom = ball->room;
     ball->x = 0x50*2;                  //
     ball->y = 0x20*2;                  //
     ball->previousX = ball->x;
     ball->previousY = ball->y;
     ball->linkedObject = OBJECT_NONE;  // Not carrying anything
     ball->setGlowing(false);
-    
-    displayedRoomIndex = objectBall->room;
     
     // Make the bat want something right away
     // I guess the bat is reset just like the dragons are reset.
@@ -795,8 +794,8 @@ void Adventure_Run()
                 board[OBJECT_NUMBER]->state = displayNum;
 
                 // Display the room and objects
-                displayedRoomIndex = 0;
                 objectBall->room = 0;
+                objectBall->displayedRoom = 0;
                 objectBall->x = 0;
                 objectBall->y = 0;
                 PrintDisplay();
@@ -807,10 +806,6 @@ void Adventure_Run()
             // Has someone won the game.
             if (checkWonGame())
             {
-                // Once we win the game it doesn't update the room, so make sure we're looking
-                // at the inside of the castle
-                displayedRoomIndex = objectBall->room;
-                
                 WinGame(objectBall->room);
                 PlayerWinAction* won = new PlayerWinAction(objectBall->room);
                 sync->BroadcastAction(won);
@@ -893,7 +888,7 @@ void Adventure_Run()
                     // Move and deal with the dragons
                     for(int dragonCtr=0; dragonCtr<numDragons; ++dragonCtr) {
                         Dragon* dragon = dragons[dragonCtr];
-                        RemoteAction* dragonAction = dragon->move(&displayedRoomIndex);
+                        RemoteAction* dragonAction = dragon->move(&objectBall->displayedRoom);
                         if (dragonAction != NULL) {
                             sync->BroadcastAction(dragonAction);
                         }
@@ -925,7 +920,7 @@ void Adventure_Run()
             if (winFlashTimer > 0) {
                 --winFlashTimer;
             } else {
-                displayedRoomIndex = winningRoom;
+                displayWinningRoom = true;
             }
 
             // Display the room and objects
@@ -1244,9 +1239,7 @@ void BallMovement(BALL* ball) {
     ball->previousY = ball->y;
 
     ball->hitObject = OBJECT_NONE;
-	if (isCurrentPlayer) {
-		displayedRoomIndex = ball->room;
-	}
+    ball->displayedRoom = ball->room;
 
     // Move the ball on the Y axis
 	ball->y += ball->vely;
@@ -1263,7 +1256,7 @@ void BallMovement(BALL* ball) {
             const ROOM* currentRoom = roomDefs[ball->room];
             int roomUp = currentRoom->roomUp;
             
-            if (CollisionCheckBallWithWalls(roomUp, tempX, ball->y))
+            if (CollisionCheckBallWithEverything(ball, roomUp, tempX, ball->y, true, NULL))
             {
                 // We've hit a wall on the next screen
                 ball->hitY = true;
@@ -1271,10 +1264,8 @@ void BallMovement(BALL* ball) {
                 ball->room = roomUp;
                 ball->previousY = ball->y;
             }
-            if (isCurrentPlayer) {
-                // We display the new room even if we hit a collision and don't update ball->room
-                displayedRoomIndex = roomUp;
-            }
+            // Ball is displayed in new room even if we hit a collision and don't update ball->room
+            ball->displayedRoom = roomUp;
         }
         else if (ball->y < 0x0D*2)
         {
@@ -1291,9 +1282,7 @@ void BallMovement(BALL* ball) {
 					ball->previousY = ball->y;
 
 					ball->room = port->room;
-                    if (isCurrentPlayer) {
-                        displayedRoomIndex = port->room;
-                    }
+                    ball->displayedRoom = ball->room;
                     // If we were locked in the castle, open the portcullis.
                     if (port->state == Portcullis::CLOSED_STATE) {
                         port->openFromInside();
@@ -1314,7 +1303,7 @@ void BallMovement(BALL* ball) {
                 const ROOM* currentRoom = roomDefs[ball->room];
                 int roomDown = currentRoom->roomDown;
 
-                if (CollisionCheckBallWithWalls(roomDown, tempX, newY))
+                if (CollisionCheckBallWithEverything(ball, roomDown, tempX, newY, true, NULL))
                 {
                     // We've hit a wall on the next screen
                     ball->hitY = true;
@@ -1325,21 +1314,15 @@ void BallMovement(BALL* ball) {
                     ball->y = newY;
                     ball->room = roomDown;
                 }
-                if (isCurrentPlayer) {
-                    // We display the new room even if we hit a collision and don't update ball->room
-                    displayedRoomIndex = roomDown;
-                }
+                // Ball is displayed in new room even if we hit a collision and don't update ball->room
+                ball->displayedRoom = roomDown;
             }
         }
         // Collision check the ball with the new Y coordinate against walls and objects
-        // For collisions with objects, we only care about hitting non-carryable objects at this point
-        // TODO: Says we only care about non-carryable object but making no attempt to ignore
-        // carryable objects.  Is this ok?
-        int hitObject = CollisionCheckBallWithAllObjects(ball);
-        bool crossingBridge = CrossingBridge(ball->room, tempX, ball->y, ball);
-        int roomToCheck = (isCurrentPlayer ? displayedRoomIndex : ball->room);
-        bool hitWall = crossingBridge ? false : CollisionCheckBallWithWalls(roomToCheck, tempX, ball->y);
-        if (hitWall || (hitObject > OBJECT_NONE))
+        int hitObject = OBJECT_NONE;
+        int roomToCheck = ball->displayedRoom;
+        int hitSomething = CollisionCheckBallWithEverything(ball, roomToCheck, tempX, ball->y, true, &hitObject);
+        if (hitSomething)
         {
             // Hit a wall or non-carryable object
             ball->hitY = true;
@@ -1369,17 +1352,15 @@ void BallMovement(BALL* ball) {
             int roomRight = (ball->room == MAIN_HALL_RIGHT ? ROBINETT_ROOM :
                              roomDefs[ball->room]->roomRight);
             
-            if (CollisionCheckBallWithWalls(roomRight, ball->x, tempY)) {
+            if (CollisionCheckBallWithEverything(ball, roomRight, ball->x, tempY, false, NULL)) {
                 // We've hit a wall on the next screen
                 ball->hitX = true;
             } else {
                 ball->room = roomRight;
                 ball->previousX = ball->x;
             }
-            if (isCurrentPlayer) {
-                // We display the new room even if we hit a collision and don't update ball->room
-                displayedRoomIndex = roomRight;
-            }
+            // Ball is displayed in new room even if we hit a collision and don't update ball->room
+            ball->displayedRoom = roomRight;
             
         }
         else if (ball->x < 4)
@@ -1390,24 +1371,22 @@ void BallMovement(BALL* ball) {
             // Figure out the room to the left
             int roomLeft = roomDefs[ball->room]->roomLeft;
             
-            if (CollisionCheckBallWithWalls(roomLeft, ball->x, tempY)) {
+            if (CollisionCheckBallWithEverything(ball, roomLeft, ball->x, tempY, false, NULL)) {
                 // We've hit a wall on the next screen
                 ball->hitX = true;
             } else {
                 ball->room = roomLeft;
                 ball->previousX = ball->x;
             }
-            if (isCurrentPlayer) {
-                // We display the new room even if we hit a collision and don't update ball->room
-                displayedRoomIndex = roomLeft;
-            }
+            // Ball is displayed in new room even if we hit a collision and don't update ball->room
+            ball->displayedRoom = roomLeft;
         }
         // Collision check the ball with the new Y coordinate against walls and objects
         // For collisions with objects, we only care about hitting non-carryable objects at this point
-        int hitObject = CollisionCheckBallWithAllObjects(ball);
-        int roomToCheck = (isCurrentPlayer ? displayedRoomIndex : ball->room);
-        int hitWall = CollisionCheckBallWithWalls(roomToCheck, ball->x, tempY);
-        if (hitWall || (hitObject > OBJECT_NONE))
+        int hitObject = OBJECT_NONE;
+        int roomToCheck = ball->displayedRoom;
+        int hitSomething = CollisionCheckBallWithEverything(ball, roomToCheck, ball->x, tempY, false, &hitObject);
+        if (hitSomething)
         {
             // Hit a wall or non-carryable object
             ball->hitX = true;
@@ -1420,6 +1399,28 @@ void BallMovement(BALL* ball) {
     }
 
 }
+
+// Check if the ball would be hitting anything (wall, object, ...)
+// ball - the ball to check
+// room - the room in which to check
+// x - the x position to check
+// y - the y position to check
+// allowBridge - if moving vertically, the bridge can allow you to not collide into a wall
+// hitObject - if we hit an object, will set this reference to the object we hit.  If NULL, will not try to set it.
+//
+static bool CollisionCheckBallWithEverything(BALL* ball, int checkRoom, int checkX, int checkY, bool allowBridge, int* hitObjectOut) {
+    int hitObject = CollisionCheckBallWithAllObjects(ball);
+    bool hitWall = false;
+    if (hitObject == OBJECT_NONE) {
+        bool crossingBridge = allowBridge && CrossingBridge(checkRoom, checkX, checkY, ball);
+        hitWall = !crossingBridge && CollisionCheckBallWithWalls(checkRoom, checkX, checkY);
+    }
+    if (hitObjectOut != NULL) {
+        *hitObjectOut = hitObject;
+    }
+    return hitWall || (hitObject > OBJECT_NONE);
+}
+
 
 void OtherBallMovement() {
 	for (int i = 0; i < numPlayers; ++i) {
@@ -1610,7 +1611,7 @@ void MoveGroundObject()
 void PrintDisplay()
 {
     // get the playfield data
-    int displayedRoom = displayedRoomIndex;
+    int displayedRoom = (displayWinningRoom ? winningRoom : objectBall->displayedRoom);
     const ROOM* currentRoom = roomDefs[displayedRoom];
     const byte* roomData = currentRoom->graphicsData;
 
@@ -1688,11 +1689,11 @@ void PrintDisplay()
     //
     // Draw the balls
     //
-    COLOR defaultColor = colorTable[roomDefs[displayedRoomIndex]->color];
+    COLOR defaultColor = colorTable[roomDefs[displayedRoom]->color];
 
 	for (int i = 0; i < numPlayers; ++i) {
         BALL* player = gameBoard->getPlayer(i);
-		if (objectBall->room == player->room) {
+		if (player->displayedRoom == displayedRoom) {
             COLOR ballColor = (player->isGlowing() ? GetFlashColor() : defaultColor);
 			DrawBall(gameBoard->getPlayer(i), ballColor);
 		}

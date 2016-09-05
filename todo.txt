@@ -1,33 +1,30 @@
 To Do
 -----
-- Win screen showing castle will only show two objects and often randomly displays the other players even if they weren't there to start
 - Hold a key beneath you and just step into a castle.  Key appears at top of outside of castle.  Should appear right below gate (when gate is open)
-- Going right of Robinett room puts you in the main hall center - should be behind the bar of main hall left
-- Moving into a room that is immediately blocked by a wall should flicker and, when you stop moving kick you back to the previous room
+- When player holds an object, other players see it held in a different position
+- FIXED - Win screen often randomly displays the other players even if they weren't there to start
+- FIXED - Sometimes when you unlock and enter castle the gate locks behind you.  Has to do with other machines seeing player touch the key to the castle and sending a lock event.
 
 To Check
 --------
 - Make sure you see the winner's screen even if currently eaten by a dragon
-- Bridge placement looked slightly off to other player
 - Looked like other player wasn't carrying an object when he was - seen this several times
 - Green dragon ate player 1.  Player 2 reset and now didn't see green dragon.
 - Right arrow key seemed to get stuck.
-- Too often unlock and enter castle and leave the gate locked behind you.  Seems to be repeatable if a third object in the castle room.
-  Reproduced once.  Player entered a castle with key behind him.  Looks like everything went well in his world, key never touched the gate and 
-  gate never changed state.  On the other player the key touched the gate and the gate started to close but no event was sent since 
-  other player was not in the same room.  When first player entered castle gate was not forced open because in other world they don't enter
-  castles but instead just sent a player move event that they are now in the castle.
-  Attempted to fix by having game move all players to the inside of the castle without waiting for a move event.  See if that worked.
 
 Original Disparities
 --------------------
 - Win screen only shows two objects in room
 - Objects aren't occluded by the wall in the catacombs
 - Ball doesn't make pyramid as it drags along the bottom wall
-- If a dragon bites and you then leave the room, the dragon should continue along the direction it was heading before it bit you.  Right now it just stays still.
-- Chalice touch gate doesn't trigger win
+- Peeking into other room should show flickering ball on both sides of room, right now shows only on one side
+- Peeking up or down into a room with dragons should cause the dragons to chase you.
+- HACKED - Chalice touch gate doesn't trigger win
   (work around in mine wins, but doesn't have same behavior where too many objects in room obscures touch)
-- Can't escape dragon by running left 
+- HACKED - Can't escape dragon by running left 
   (work around in mine allows left but then doesn't allow up and right)
-- Bat sometimes gets stuck picking up object (fixed in mine & original branch)
+- FIXED - If a dragon bites and you then leave the room, the dragon should continue along the direction it was heading before it bit you.  Right now it just stays still.
+- FIXED - Bat sometimes gets stuck picking up object
+- FIXED - Moving into a room that is immediately blocked by a wall should cause you to flicker and, when you stop moving kick you back to the previous room
+- FIXED - Going right of Robinett room puts you in the main hall center - should be behind the bar of main hall left
 

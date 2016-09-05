@@ -12,6 +12,7 @@ class BALL
 public:
     int playerNum;              // 0-2.  Which player this is.
     int room;                   // room
+    int displayedRoom;          // occassionally ball will appear in room other than it is in (usually using bridge across rooms)
     int x;                      // x position
     int y;                      // y position
     int previousX;              // previous x position
