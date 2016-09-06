@@ -38,11 +38,14 @@ int OBJECT::getPKey() const {
     return pkey;
 }
 
-void OBJECT::init(int inRoom, int inX, int inY) {
+void OBJECT::init(int inRoom, int inX, int inY, int inState, int inMoveX, int inMoveY) {
     room = inRoom;
     x = inX;
     y = inY;
     objExists = true;
+    state = inState;
+    movementX = inMoveX;
+    movementY = inMoveY;
 }
 
 void OBJECT::setPrivateToPlayer(int player) {

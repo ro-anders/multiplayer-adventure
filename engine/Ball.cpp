@@ -41,32 +41,6 @@ static const byte ballGfxTwo[] =
     0xFF 				   // XXXXXXXX
 };
 
-static const byte ballGfxX[] =
-{
-    8,
-    0xFF,				   // XXXXXXXX
-    0xBD,				   // X XXXX X
-    0xDB,				   // XX XX XX
-    0xE7,				   // XXX  XXX
-    0xE7,				   // XXX  XXX
-    0xDB,				   // XX XX XX
-    0xBD,				   // X XXXX X
-    0xFF 				   // XXXXXXXX
-};
-
-static const byte ballGfxPlus[] =
-{
-    8,
-    0xFF,				   // XXXXXXXX
-    0xE7,				   // XXX  XXX
-    0xE7,				   // XXX  XXX
-    0x81,				   // X      X
-    0x81,				   // X      X
-    0xE7,				   // XXX  XXX
-    0xE7,				   // XXX  XXX
-    0xFF 				   // XXXXXXXX
-};
-
 
 BALL::BALL(int inPlayerNum, Portcullis* inHomeGate) :
     playerNum(inPlayerNum),

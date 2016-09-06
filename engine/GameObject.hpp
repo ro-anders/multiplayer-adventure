@@ -27,8 +27,6 @@ public:
     int room;                   // room
     int x;                      // x position
     int y;                      // y position
-    int movementX;              // horizontal movement
-    int movementY;              // vertical movement
     int size;                   // size (used for bridge and surround)
     bool displayed;             // flag indicating object was displayed (when more than maxDisplayableObjects for instance)
     char* label;                // a short, unique name for the object
@@ -39,6 +37,11 @@ public:
                RandomizedLocations inRandomPlacement=OPEN_OR_IN_CASTLE, int inSize=0);
     
     virtual ~OBJECT();
+    
+    int getMovementX() {return movementX;}
+    void setMovementX(int moveX) {movementX = moveX;}
+    int getMovementY() {return movementY;}
+    void setMovementY(int moveY) {movementY = moveY;}
     
     void setBoard(Board* newBoard, int newPKey);
     
@@ -64,14 +67,17 @@ public:
     /**
      * Sets up the object in the room it will start off in.
      */
-    void init(int room, int x, int y);
+    virtual void init(int room, int x, int y, int state=0, int movementX=0, int movementY=0);
     
 protected:
 
     bool objExists;             // Whether the object is active in this game.  Starts out false until init() called.
     Board* board;               // The board on which this object has been placed.
     OBJECT* lookupObject(int objectKey);
-    
+
+    int movementX;              // horizontal movement
+    int movementY;              // vertical movement
+
     /** For private magnets. */
     int privateToPlayer = -1;
     

@@ -10,7 +10,7 @@
 #include "UdpSocket.hpp"
 #include "UdpTransport.hpp"
 
-const int GameSetup::DEFAULT_GAME_LEVEL = GAME_MODE_2;
+const int GameSetup::DEFAULT_GAME_LEVEL = GAME_MODE_1;
 
 GameSetup::GameParams::GameParams() :
 shouldMute(false),

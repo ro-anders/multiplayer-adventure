@@ -606,7 +606,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     // Setup the number.  Unlike other objects we need to position the number immediately.
     OBJECT* number = new OBJECT("number", objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, OBJECT::FIXED_LOCATION);
     gameBoard->addObject(OBJECT_NUMBER, number);
-    number->init(0x00, 0x50, 0x40);
+    number->init(NUMBER_ROOM, 0x50, 0x40);
 
     // Setup the rest of the objects
     gameBoard->addObject(OBJECT_YELLOW_PORT, ports[0]);
@@ -940,8 +940,8 @@ void SetupRoomObjects()
     Board::ObjIter iter = gameBoard->getObjects();
     while (iter.hasNext()) {
         OBJECT* object = iter.next();
-        object->movementX = 0;
-        object->movementY = 0;
+        object->setMovementX(0);
+        object->setMovementY(0);
     }
     
     // Set to no carried objects
@@ -972,10 +972,7 @@ void SetupRoomObjects()
         signed char movementY = *(p++);
 
         OBJECT* toInit = board[object];
-        toInit->init(room, xpos, ypos);
-        toInit->state = state;
-        toInit->movementX = movementX;
-        toInit->movementY = movementY;
+        toInit->init(room, xpos, ypos, state, movementX, movementY);
     };
     
     // Hide the jade key if only 2 player
@@ -1221,7 +1218,6 @@ void ThisBallMovement()
 }
 
 void BallMovement(BALL* ball) {
-	bool isCurrentPlayer = (ball == objectBall);
     // store the existing ball location
     int tempX = ball->x;
     int tempY = ball->y;
@@ -1442,30 +1438,9 @@ void SyncDragons() {
         if (next->typeCode == DragonStateAction::CODE) {
             DragonStateAction* nextState = (DragonStateAction*)next;
             Dragon* dragon = dragons[nextState->dragonNum];
-            if (nextState->newState == Dragon::EATEN) {
-                // Set the State to 01 (eaten)
-                dragon->eaten = gameBoard->getPlayer(nextState->sender);
-                dragon->state = Dragon::EATEN;
-                // Play the sound
-                Platform_MakeSound(SOUND_EATEN, volumeAtDistance(dragon->room));
-            } else if (nextState->newState == Dragon::DEAD) {
-                // We ignore die actions if the dragon has already eaten somebody.
-                if (dragon->state != Dragon::EATEN) {
-                    dragon->state = Dragon::DEAD;
-                    dragon->movementX = 0;
-                    dragon->movementY = 0;
-                    // Play the sound
-                    Platform_MakeSound(SOUND_DRAGONDIE, volumeAtDistance(dragon->room));
-                }
-            }
-            else if (nextState->newState == Dragon::ROAR) {
-                // We ignore roar actions if we are already in an eaten state or dead state
-                if ((dragon->state != Dragon::EATEN) && (dragon->state != Dragon::DEAD)) {
-                    dragon->roar(nextState->posx, nextState->posy);
-                    // Play the sound
-                    Platform_MakeSound(SOUND_ROAR, volumeAtDistance(dragon->room));
-                }
-            }
+            // If something causes a sound, we need to know how far away it is.
+            int volume = volumeAtDistance(dragon->room);
+            dragon->syncAction(nextState, volume);
         } else {
             // If we are in the same room as the dragon and are closer to it than the reporting player,
             // then we ignore reports and trust our internal state.
@@ -1477,12 +1452,7 @@ void SyncDragons() {
                 ((dragon->room != objectBall->room) ||
                 (objectBall->distanceTo(dragon->x, dragon->y) > nextMove->distance))) {
                 
-                dragon->room = nextMove->room;
-                dragon->x = nextMove->posx;
-                dragon->y = nextMove->posy;
-                dragon->movementX = nextMove->velx;
-                dragon->movementY = nextMove->vely;
-                
+                    dragon->syncAction(nextMove);
             }
         }
         delete next;
@@ -1548,8 +1518,8 @@ void MoveGroundObject()
         OBJECT* object = iter.next();
 
         // Apply movement
-        object->x += object->movementX;
-        object->y += object->movementY;
+        object->x += object->getMovementX();
+        object->y += object->getMovementY();
 
         // Check and Deal with Up
         if (object->y > 0x6A)

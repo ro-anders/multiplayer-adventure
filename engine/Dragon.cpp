@@ -105,6 +105,15 @@ Dragon::~Dragon() {
     
 }
 
+/**
+ * Override the OBJECT::init to also set the dragon's previous velocities.
+ */
+void Dragon::init(int inRoom, int inX, int inY, int inState, int inMoveX, int inMoveY) {
+    OBJECT::init(inRoom, inX, inY, inState, inMoveX, inMoveY);
+    prevMovementX = inMoveX;
+    prevMovementY = inMoveY;
+}
+
 void Dragon::setRunFromSword(bool willRunFromSword) {
 	runFromSword = willRunFromSword;
 }
@@ -141,6 +150,55 @@ void Dragon::setDifficulty(Dragon::Difficulty newDifficulty) {
 
 bool Dragon::hasEatenCurrentPlayer() {
 	return (state == Dragon::EATEN) && (eaten == board->getCurrentPlayer());
+}
+
+void Dragon::syncAction(DragonStateAction* action, int volume) {
+    if (action->newState == Dragon::EATEN) {
+        
+        BALL* playerEaten = board->getPlayer(action->sender);
+        // Ignore duplicates
+        if (eaten != playerEaten) {
+            // Set the State to 01 (eaten)
+            eaten = playerEaten;
+            state = Dragon::EATEN;
+            movementX = 0;
+            movementY = 0;
+            // Play the sound
+            Platform_MakeSound(SOUND_EATEN, volume);
+        }
+    } else if (action->newState == Dragon::DEAD) {
+        // We ignore die actions if the dragon has already eaten somebody or if it's a duplicate.
+        if ((state != Dragon::EATEN) && (state != Dragon::DEAD)) {
+            state = DEAD;
+            movementX = 0;
+            movementY = 0;
+            // Keep the previous movement untouched.
+            // Play the sound
+            Platform_MakeSound(SOUND_DRAGONDIE, volume);
+        }
+    }
+    else if (action->newState == Dragon::ROAR) {
+        // We ignore roar actions if we are already in an eaten state or dead state
+        if ((state != Dragon::EATEN) && (state != Dragon::DEAD)) {
+            roar(action->posx, action->posy);
+            // Play the sound
+            Platform_MakeSound(SOUND_ROAR, volume);
+        }
+    }
+}
+
+void Dragon::syncAction(DragonMoveAction* action) {
+    room = action->room;
+    x = action->posx;
+    y = action->posy;
+    movementX = action->velx;
+    if (movementX != 0) {
+        prevMovementX = movementX;
+    }
+    movementY = action->vely;
+    if (movementY != 0) {
+        prevMovementY = movementY;
+    }
 }
 
 RemoteAction* Dragon::move(int* displayedRoomIndex)

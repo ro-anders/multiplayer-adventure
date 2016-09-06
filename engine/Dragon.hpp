@@ -6,6 +6,8 @@
 #include "GameObject.hpp"
 
 class BALL;
+class DragonMoveAction;
+class DragonStateAction;
 class RemoteAction;
 
 class Dragon: public OBJECT {
@@ -47,6 +49,20 @@ public:
     
     static void setDifficulty(Difficulty newDifficulty);
     
+    /**
+     * Incorporate a state change from another machine into this dragon's state.
+     * action - the state change message
+     * volume - given how far this dragon is from this player, how loud would any
+     *          sound be
+     */
+    void syncAction(DragonStateAction* action, int volume);
+
+    /**
+     * Incorporate a move action from another machine into this dragon's state.
+     * action - the move message
+     */
+    void syncAction(DragonMoveAction* action);
+    
 	/**
 	* Move the dragon this turn.
 	* matrix - The dragon list of things he runs from, goes after, or guards
@@ -57,10 +73,15 @@ public:
     RemoteAction* move(int* displayedRoomIndex);
     
 	void roar(int atX, int atY);
-
+    
 	int dragonNumber;
 
 	bool hasEatenCurrentPlayer();
+
+    /**
+     * Sets up the dragon in the room it will start off in.  Overrides the OBJECT::init to also handle dragon internal state.
+     */
+    void init(int room, int x, int y, int state, int movementX, int movementY);
 
     
 private:
