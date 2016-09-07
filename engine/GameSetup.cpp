@@ -44,8 +44,9 @@ client(inClient),
 xport(inTransport) {}
 
 GameSetup::GameParams GameSetup::setup(int argc, char** argv) {
+    checkExpirationDate();
+    
     GameParams newParams;
-
     bool isConnectTest = false;
 
     if ((argc >= 1) && (strcmp(argv[0], "test")==0)) {
@@ -211,4 +212,14 @@ Transport::Address GameSetup::determinePublicAddress(Transport::Address stunServ
     socket.deleteAddress(stunServerSockAddr);
     
     return publicAddress;
+}
+
+void GameSetup::checkExpirationDate() {
+    const int EXPIRATION_DATE = -1;
+    long time = Sys::systemTime();
+    if ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE)) {
+        Sys::log("Beta Release has expired.");
+        exit(-1);
+    }
+        
 }

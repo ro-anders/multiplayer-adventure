@@ -49,6 +49,8 @@ public:
 private:
 
     void setupBrokeredGame(GameSetup::GameParams& newParams, int argc, char** argv);
+    
+    void checkExpirationDate();
 
     RestClient& client;
     

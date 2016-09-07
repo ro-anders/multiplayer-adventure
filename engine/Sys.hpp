@@ -7,14 +7,26 @@
 class Sys {
 public:
 
+    /**
+     * Return a random number between 0 inclusive and 1 exclusive
+     */
 	static float random();
 
+    /**
+     * Wait for the specified number of milliseconds 
+     */
 	static void sleep(int milliseconds);
 
+    /**
+     * Log the given message.
+     */
 	static void log(const char* message);
 
+    /**
+     * Return number of milliseconds since 1970.
+     */
 	static long systemTime();
-
+    
 private:
 
 	static bool randomized;
