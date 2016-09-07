@@ -7,8 +7,7 @@ To Do
 
 To Check
 --------
-- Make sure you see the winner's screen even if currently eaten by a dragon
-- Dragon's pre-bite direction not properly synced across players 
+- Dragon's pre-bite direction not properly synced across players (would be good to have bite and die events carry a previous direction)
 - Looked like other player wasn't carrying an object when he was - seen this several times
 - Green dragon ate player 1.  Player 2 reset and now didn't see green dragon.
 - Right arrow key seemed to get stuck.
