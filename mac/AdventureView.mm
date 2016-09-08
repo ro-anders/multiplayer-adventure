@@ -39,6 +39,9 @@ CGContextRef gDC = NULL;
 
 unsigned char mKeyMap = 0;
 
+// Flag to ignore key up events so that we can lock keys
+bool lockKeys = false;
+
 #define KEY_LEFT	0x01
 #define KEY_UP		0x02
 #define KEY_RIGHT	0x04
@@ -188,6 +191,9 @@ bool gMute = FALSE;
     unsigned short key = [theEvent keyCode];
     switch(key)
     {
+        case 51: // delete
+            lockKeys = true;
+            break;
         case 0x7e: //up
             mKeyMap |= KEY_UP;
             break;
@@ -215,29 +221,33 @@ bool gMute = FALSE;
 - (void) keyUp:(NSEvent *) theEvent
 {
     unsigned short key = [theEvent keyCode];
-    switch(key)
-    {
-        case 0x7e: //up
-            mKeyMap &= ~KEY_UP;
-            break;
-        case 0x7d: //down
-            mKeyMap &= ~KEY_DOWN;
-            break;
-        case 0x7b: //left
-            mKeyMap &= ~KEY_LEFT;
-            break;
-        case 0x7c: //right
-            mKeyMap &= ~KEY_RIGHT;
-            break;
-        case 0x31: //fire
-            mKeyMap &= ~KEY_FIRE;
-            break;
-        case 0x12: //reset
-            mKeyMap &= ~KEY_RESET;
-            break;
-        case 0x13: //select
-            mKeyMap &= ~KEY_SELECT;
-            break;
+    if (key == 51) { // delete
+        lockKeys = false;
+    } else if (!lockKeys) {
+        switch(key)
+        {
+            case 0x7e: //up
+                mKeyMap &= ~KEY_UP;
+                break;
+            case 0x7d: //down
+                mKeyMap &= ~KEY_DOWN;
+                break;
+            case 0x7b: //left
+                mKeyMap &= ~KEY_LEFT;
+                break;
+            case 0x7c: //right
+                mKeyMap &= ~KEY_RIGHT;
+                break;
+            case 0x31: //fire
+                mKeyMap &= ~KEY_FIRE;
+                break;
+            case 0x12: //reset
+                mKeyMap &= ~KEY_RESET;
+                break;
+            case 0x13: //select
+                mKeyMap &= ~KEY_SELECT;
+                break;
+        }
     }
 }
 

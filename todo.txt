@@ -1,7 +1,7 @@
 To Do
 -----
 - Hold a key beneath you and just step into a castle.  Key appears at top of outside of castle.  Should appear right below gate (when gate is open)
-- When player holds an object, other players see it held in a different position
+- FIXED - When player holds an object, other players see it held in a different position
 - FIXED - Win screen often randomly displays the other players even if they weren't there to start
 - FIXED - Sometimes when you unlock and enter castle the gate locks behind you.  Has to do with other machines seeing player touch the key to the castle and sending a lock event.
 
