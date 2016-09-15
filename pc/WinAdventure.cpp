@@ -606,6 +606,13 @@ float Platform_Random()
     return (float)rand() / RAND_MAX;
 }
 
+void Platform_DisplayStatus(const char* message, int duration) {
+    // TODO: Implement
+}
+
+
+
+
 
 
 
