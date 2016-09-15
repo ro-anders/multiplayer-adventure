@@ -36,8 +36,11 @@ short GetKeyState(unsigned short k);
 float gGfxScaler = 2.0f;
 byte* gPixelBucket = NULL;
 CGContextRef gDC = NULL;
+AdventureView* gAdvView = NULL;
 
 unsigned char mKeyMap = 0;
+
+time_t mDisplayStatusExpiration = -1;
 
 // Flag to ignore key up events so that we can lock keys
 bool lockKeys = false;
@@ -129,11 +132,32 @@ bool gMute = FALSE;
 
 - (IBAction)update:(id)sender
 {
+    gAdvView = self;
+    
+    if (mDisplayStatusExpiration >= 0) {
+        time_t currentTime = time(NULL);
+        if (currentTime > mDisplayStatusExpiration) {
+            printf("Dismissing status message");
+           [mStatusMessage setHidden:YES];
+            mDisplayStatusExpiration = -1;
+        }
+    }
+    
     // Run a frame of the game
     Adventure_Run();
     
+    
+    
     // Display it
     [self setNeedsDisplay:YES];
+}
+
+-(void)displayStatus:(const char*)message :(int)duration
+{
+    NSString *nsstring = [NSString stringWithUTF8String:message];
+    [mStatusMessage setStringValue:nsstring];
+    [mStatusMessage setHidden:NO];
+    mDisplayStatusExpiration = time(NULL) + duration;
 }
 
 - (BOOL)acceptsFirstResponder
@@ -413,6 +437,10 @@ float Platform_Random()
     float val = ((float)r/32767.0f);
     val = (val + 1) / 2;
     return val;
+}
+
+void Platform_DisplayStatus(const char* message, int duration) {
+    [gAdvView displayStatus:message :duration];
 }
 
 

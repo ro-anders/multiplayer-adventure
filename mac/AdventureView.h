@@ -19,9 +19,12 @@
 @interface AdventureView : NSView
 {
     NSTimer *timer;
+    IBOutlet NSTextField *mStatusMessage;
 }
 
 - (IBAction)update:(id)sender;
+
+- (void)displayStatus:(const char*)message :(int)msDuration;
 
 
 @end

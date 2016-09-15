@@ -1,5 +1,7 @@
 To Do
 -----
+- Grab an object with someone else in the room and other person picks it up
+  Start Game 1 and have player 2 go to gold castle and grab gold key.  On player 1's game, player 2 gets key.  On player 2's game, player 1 get's key.
 - Hold a key beneath you and just step into a castle.  Key appears at top of outside of castle.  Should appear right below gate (when gate is open)
 - FIXED - When player holds an object, other players see it held in a different position
 - FIXED - Win screen often randomly displays the other players even if they weren't there to start
