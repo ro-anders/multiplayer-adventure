@@ -8,6 +8,8 @@
 #include <windows.h>
 #else
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/time.h>
 #endif
 // Use static initialization to make sure the random number generator is randomized.
 bool Sys::randomized = Sys::seedRandom();
@@ -34,7 +36,14 @@ void Sys::log(const char* message) {
 }
 
 long Sys::systemTime() {
+#ifdef WIN32
 	return time(NULL);
+#else 
+    static timeval timeval;
+    gettimeofday(&timeval, NULL);
+    long milliseconds = timeval.tv_sec*1000 + timeval.tv_usec/1000;
+    return milliseconds;
+#endif
 }
 
 bool Sys::seedRandom() {
