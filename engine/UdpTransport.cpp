@@ -185,6 +185,11 @@ int UdpTransport::writeData(const char* data, int numBytes) {
     return leastCharsWritten;
 }
 
+int UdpTransport::writeData(const char* data, int numBytes, int recipient) {
+    int charsWritten = socket->writeData(data, numBytes, remaddrs[recipient]);
+    return charsWritten;
+}
+
 
 void UdpTransport::punchHole() {
     
@@ -248,7 +253,7 @@ void UdpTransport::punchHole() {
         for(int ctr=0; ctr<numOtherMachines; ++ctr) {
             if (justAcked[ctr] || ((states[ctr] != NOT_YET_INITIATED) && (states[ctr] != RECVD_ACK))) {
                 sprintf(sendBuffer, "%s%d%ld", states[ctr], transportNum, randomNum);
-                sendPacket(sendBuffer);
+                writeData(sendBuffer, strlen(sendBuffer)+1, ctr);
             }
         }
     }

@@ -137,7 +137,6 @@ bool gMute = FALSE;
     if (mDisplayStatusExpiration >= 0) {
         time_t currentTime = time(NULL);
         if (currentTime > mDisplayStatusExpiration) {
-            printf("Dismissing status message");
            [mStatusMessage setHidden:YES];
             mDisplayStatusExpiration = -1;
         }

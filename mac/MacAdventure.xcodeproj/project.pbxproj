@@ -46,7 +46,6 @@
 		408582171D46C1E200A3F2EF /* PosixUdpSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 408582151D46C1E200A3F2EF /* PosixUdpSocket.cpp */; };
 		408E43D11C3C6D8C00E0715B /* Board.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 408E43CF1C3C6D8C00E0715B /* Board.cpp */; };
 		4092E1E21C4E731900B2AEBB /* Map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4092E1E01C4E731900B2AEBB /* Map.cpp */; };
-		40A3CB321C8F6E2800E3AD73 /* TcpTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40A3CB311C8F6E2800E3AD73 /* TcpTransport.cpp */; };
 		40B029DC1C91449200DA27FD /* Sys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40B029D81C91449200DA27FD /* Sys.cpp */; };
 		40B029DD1C91449200DA27FD /* UdpTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40B029DA1C91449200DA27FD /* UdpTransport.cpp */; };
 		40B345F91C25A2B4001EE63C /* args.m in Sources */ = {isa = PBXBuildFile; fileRef = 40B345F81C25A2B4001EE63C /* args.m */; };
@@ -128,8 +127,6 @@
 		408E43D01C3C6D8C00E0715B /* Board.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Board.hpp; path = ../engine/Board.hpp; sourceTree = "<group>"; };
 		4092E1E01C4E731900B2AEBB /* Map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Map.cpp; path = ../engine/Map.cpp; sourceTree = "<group>"; };
 		4092E1E11C4E731900B2AEBB /* Map.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Map.hpp; path = ../engine/Map.hpp; sourceTree = "<group>"; };
-		40A3CB2E1C8F6D0B00E3AD73 /* TcpTransport.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = TcpTransport.hpp; path = ../engine/TcpTransport.hpp; sourceTree = "<group>"; };
-		40A3CB311C8F6E2800E3AD73 /* TcpTransport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = TcpTransport.cpp; path = ../engine/TcpTransport.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		40B029D81C91449200DA27FD /* Sys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Sys.cpp; path = ../engine/Sys.cpp; sourceTree = "<group>"; };
 		40B029D91C91449200DA27FD /* Sys.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Sys.hpp; path = ../engine/Sys.hpp; sourceTree = "<group>"; };
 		40B029DA1C91449200DA27FD /* UdpTransport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = UdpTransport.cpp; path = ../engine/UdpTransport.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
@@ -324,8 +321,6 @@
 				4084EC8D1BF22AEE00E8F375 /* Sync.cpp */,
 				40B029D81C91449200DA27FD /* Sys.cpp */,
 				40B029D91C91449200DA27FD /* Sys.hpp */,
-				40A3CB311C8F6E2800E3AD73 /* TcpTransport.cpp */,
-				40A3CB2E1C8F6D0B00E3AD73 /* TcpTransport.hpp */,
 				407773D11BF2AC9C00454AC5 /* Transport.cpp */,
 				407773D21BF2AC9C00454AC5 /* Transport.hpp */,
 				408582121D46C0BE00A3F2EF /* UdpSocket.cpp */,
@@ -431,7 +426,6 @@
 				4084EC901BF22AEE00E8F375 /* Sync.cpp in Sources */,
 				40B029DC1C91449200DA27FD /* Sys.cpp in Sources */,
 				403DA0921C20C722002FF18B /* Ball.cpp in Sources */,
-				40A3CB321C8F6E2800E3AD73 /* TcpTransport.cpp in Sources */,
 				4092E1E21C4E731900B2AEBB /* Map.cpp in Sources */,
 				4072EC701D0F59950074389A /* MacRestClient.cpp in Sources */,
 				40E47FB21BF22BA20052B84E /* Controller.mm in Sources */,

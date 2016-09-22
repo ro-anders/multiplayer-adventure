@@ -61,7 +61,7 @@ public:
      * Send a packet to a client.  Assumes the packet is \0 terminated.
      * Returns the number of bytes sent.
      */
-    virtual int sendPacket(const char* packetData);
+    int sendPacket(const char* packetData);
     
     /**
      * Polls the client for a message.  If found fills the buffer with the message

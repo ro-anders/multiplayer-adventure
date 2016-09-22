@@ -92,7 +92,7 @@ protected:
      * numBytes - number of bytes to send (does not assume data is null terminated)
      * recipient - the index in the theirAddrs array of the address to send the data.  -1 will send to all addresses.
      */
-    //virtual int writeData(const char* data, int numBytes, int recipient) = 0;
+    int writeData(const char* data, int numBytes, int recipient);
 
     
 private:

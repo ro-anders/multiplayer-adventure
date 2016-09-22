@@ -101,10 +101,10 @@ int Transport::sendPacket(const char* packetData) {
 	}
 	else {
         // TODO: Clean this up
-        //char message[1000];
-        //sprintf(message, "Sent \"%s\"", packetData);
-		//Sys::log(message);
-	}
+        char message[1000];
+        sprintf(message, "Sent \"%s\"", packetData);
+		Sys::log(message);
+    }
 	return n;
 }
 
