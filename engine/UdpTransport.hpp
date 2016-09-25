@@ -29,8 +29,12 @@ public:
     
     /**
      * The ip address to tell other machines to use to talk to this machine.
+     * myExternalAddr - the address
+     * ignoreInternal - if true, will only tell others this external address, if
+     * false, will also determine what IPs this machine is using and include those
+     * as possibilities.
      */
-    void setExternalAddress(const Address& myExternalAddr);
+    void setExternalAddress(const Address& myExternalAddr, bool ignoreInternal);
     
     void setInternalPort(int port);
     
@@ -39,6 +43,14 @@ public:
      * If adding more than two will silently fail.
      */
     void addOtherPlayer(const Address & theirAdddr);
+    
+    /**
+     * Registers another player. Players needed to be added in the order of their transport number.
+     * If adding more than two will silently fail.
+     * addresses - all the addresses the player may use
+     * numAddresses - number of addresses in the addresses list
+     */
+    void addOtherPlayer(const Address * addresses, int numAddresses);
     
     /**
      * This will bind to a port even though it is not yet setup to receive messages from other games.
@@ -57,50 +69,45 @@ public:
     int getPacket(char* buffer, int bufferLength);
     
     
-protected:
-    
-    Address myExternalAddr;
-    
-    int myInternalPort;
-    
-    /** Whether the socket has been opened or not. */
-    bool socketBound;
-    
-    /** Array of the other machines addresses, one for each other machine. */
-    Address* theirAddrs;
-    
-    /** Whether comminicating with one or two other machines */
-    int numOtherMachines;
-    
-    /**
-     * Pull data off the socket - non-blocking
-     */
-    int readData(char* buffer, int bufferLength);
-
-    /**
-     * Send data on the socket.  If connected to multiple machines, will send
-     * data to both machines.
-     */
-    int writeData(const char* data, int numBytes);
-    
-
-    int openSocket();
-        
-    /**
-     * Send data on the socket.
-     * data - data to send
-     * numBytes - number of bytes to send (does not assume data is null terminated)
-     * recipient - the index in the theirAddrs array of the address to send the data.  -1 will send to all addresses.
-     */
-    int writeData(const char* data, int numBytes, int recipient);
-
-    
 private:
     
     static const char* NOT_YET_INITIATED;
     static const char* RECVD_NOTHING;
     static const char* RECVD_MESSAGE;
     static const char* RECVD_ACK;
+    
+
+    Address myExternalAddr;
+    
+    int myInternalPort;
+    
+    /** Whether to send internal addresses to other machiines or only send the external address.
+        Brokered games will include internal addresses.  Explicit peer-to-peer will not. */
+    bool includeInternalAddrs;
+    
+    /** IP addresses that this machine's NIC is using. */
+    char** internalIps;
+    
+    /** Number ips in internalIps list */
+    int numInternalIps;
+    
+    /** Whether the socket has been opened or not. */
+    bool socketBound;
+    
+    class Client {
+    public:
+        int numPossibleAddrs;
+        Address* possibleAddrs;
+        Address address;
+        Client();
+        ~Client();
+    };
+    
+    /** Array of the other machines addresses, one for each other machine. */
+    Client* otherMachines;
+    
+    /** Whether comminicating with one or two other machines */
+    int numOtherMachines;
     
     /**
      * All OS specific communication is encapsulated by the socket class.
@@ -117,11 +124,40 @@ private:
     struct sockaddr_in** remaddrs;
 
     
-    /** Look for connection messages from other machines, and send a 
+    /**
+     * Pull data off the socket - non-blocking
+     */
+    int readData(char* buffer, int bufferLength);
+    
+    /**
+     * Send data on the socket.  If connected to multiple machines, will send
+     * data to both machines.
+     */
+    int writeData(const char* data, int numBytes);
+    
+    
+    int openSocket();
+    
+    /**
+     * Send data on the socket.
+     * data - data to send
+     * numBytes - number of bytes to send (does not assume data is null terminated)
+     * recipient - the index in the theirAddrs array of the address to send the data.  -1 will send to all addresses.
+     */
+    int writeData(const char* data, int numBytes, int recipient);
+
+    /** Look for connection messages from other machines, and send a
      * connection message to each machine that isn't acknowledged yet */
     void punchHole();
     
     void compareNumbers(int myRandomNumber, char* theirMessage, int otherIndex);
+    
+    /**
+     * Deduce all the IPs that this machine is using and populate the internalIps list.
+     * externalAddress - an external IP/port that maps to this machine but wouldn't be deducible,
+     *                   pass in an empty address to not include an external address in the list
+     */
+    void determineThisMachineIPs(Address externalAddress);
     
     
 };

@@ -15,14 +15,27 @@ const char* UdpTransport::RECVD_NOTHING = "UA";
 const char* UdpTransport::RECVD_MESSAGE = "UB";
 const char* UdpTransport::RECVD_ACK = "UC";
 
+
+UdpTransport::Client::Client() :
+numPossibleAddrs(0),
+possibleAddrs(NULL) {}
+
+UdpTransport::Client::~Client() {
+    if (possibleAddrs != NULL) {
+        delete[] possibleAddrs;
+    }
+}
+
 UdpTransport::UdpTransport(UdpSocket* inSocket, bool useDynamicSetup) :
 Transport(useDynamicSetup),
 socket(inSocket),
 myExternalAddr(Address()),
-theirAddrs(NULL),
+otherMachines(new Client[2]), // We always create space for two even though we may only use one.
 myInternalPort(0),
 states(new const char*[2]), // We always create space for two even though we may only use one.
 numOtherMachines(0),
+internalIps(NULL),
+numInternalIps(0),
 remaddrs(new sockaddr_in*[2]), // We always create space for two even though we may only use one.
 socketBound(false)
 {
@@ -34,7 +47,11 @@ socketBound(false)
 }
 
 UdpTransport::~UdpTransport() {
-    delete[] theirAddrs;
+    for(int ctr=0; ctr<numInternalIps; ++ctr) {
+        delete[] internalIps[ctr];
+    }
+    delete[] internalIps;
+    delete[] otherMachines;
     delete[] states;
     if (remaddrs != NULL) {
         for(int ctr=0; ctr<2; ++ctr) {
@@ -49,32 +66,35 @@ UdpTransport::~UdpTransport() {
 /**
  * The ip address to tell other machines to use to talk to this machine.
  */
-void UdpTransport::setExternalAddress(const Address& myExternalAddrIn) {
+void UdpTransport::setExternalAddress(const Address& myExternalAddrIn, bool includeInternalAddrsIn) {
     myExternalAddr = myExternalAddrIn;
+    includeInternalAddrs = includeInternalAddrsIn;
+    
 }
 
 void UdpTransport::setInternalPort(int port) {
     myInternalPort = port;
 }
 
-void UdpTransport::addOtherPlayer(const Address & theirAddr) {
-    if (numOtherMachines < 2) {
-        Address* oldAddrs = theirAddrs;
-        
-        ++numOtherMachines;
-        theirAddrs = new Address[numOtherMachines];
-        theirAddrs[numOtherMachines-1]=theirAddr;
-        states[numOtherMachines-1] = NOT_YET_INITIATED;
-        remaddrs[numOtherMachines-1] = socket->createAddress(theirAddr);
-        
-        // Copy old data
-        if (numOtherMachines == 2) {
-            theirAddrs[0] = oldAddrs[0];
-            delete[] oldAddrs;
-        }
-    }
+void UdpTransport::addOtherPlayer(const Transport::Address &theirAdddr) {
+    addOtherPlayer(&theirAdddr, 1);
 }
 
+void UdpTransport::addOtherPlayer(const Address * addresses, int numAddresses) {
+    if (numOtherMachines < 2) {
+        ++numOtherMachines;
+
+        // We only set the possible addresses.  We let the hole punching determine which of those to use.
+        otherMachines[numOtherMachines-1].possibleAddrs = new Address[numAddresses];
+        for(int ctr=0; ctr<numAddresses; ++ctr) {
+            otherMachines[numOtherMachines-1].possibleAddrs[ctr] = addresses[ctr];
+        }
+        
+
+        states[numOtherMachines-1] = NOT_YET_INITIATED;
+        remaddrs[numOtherMachines-1] = socket->createAddress(theirAddr);
+    }
+}
 
 
 void UdpTransport::connect() {
