@@ -662,7 +662,6 @@ void addAllRoomsToPort(Portcullis* port, int firstRoom, int lastRoom) {
 }
 
 void ResetPlayers() {
-    Platform_DisplayStatus("Go!", 5);
     for(int ctr=0; ctr<gameBoard->getNumPlayers(); ++ctr) {
         ResetPlayer(gameBoard->getPlayer(ctr));
     }
