@@ -104,14 +104,12 @@
     <ClCompile Include="..\engine\ScriptedSync.cpp" />
     <ClCompile Include="..\engine\Sync.cpp" />
     <ClCompile Include="..\engine\Sys.cpp" />
-    <ClCompile Include="..\engine\TcpTransport.cpp" />
     <ClCompile Include="..\engine\Transport.cpp" />
     <ClCompile Include="..\engine\UdpSocket.cpp" />
     <ClCompile Include="..\engine\UdpTransport.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="WinAdventure.cpp" />
     <ClCompile Include="WinRestClient.cpp" />
-    <ClCompile Include="WinTcpTransport.cpp" />
     <ClCompile Include="WinUdpSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -135,7 +133,6 @@
     <ClInclude Include="..\engine\ScriptedSync.hpp" />
     <ClInclude Include="..\engine\Sync.hpp" />
     <ClInclude Include="..\engine\Sys.hpp" />
-    <ClInclude Include="..\engine\TcpTransport.hpp" />
     <ClInclude Include="..\engine\Transport.hpp" />
     <ClInclude Include="..\engine\UdpSocket.hpp" />
     <ClInclude Include="..\engine\UdpTransport.hpp" />
@@ -143,7 +140,6 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="WinAdventure.h" />
     <ClInclude Include="WinRestClient.h" />
-    <ClInclude Include="WinTcpTransport.h" />
     <ClInclude Include="WinUdpSocket.h" />
   </ItemGroup>
   <ItemGroup>
