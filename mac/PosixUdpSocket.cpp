@@ -107,7 +107,6 @@ void PosixUdpSocket::setBlocking(bool isBlocking) {
  */
 int PosixUdpSocket::writeData(const char* data, int numBytes, sockaddr_in* recipient)
 {
-    printf("Sending packet to other machine on port %d\n", ntohs(recipient->sin_port));
     int numSent = sendto(socketFd, data, numBytes, 0, (struct sockaddr *)recipient, sizeof(sockaddr_in));
     return numSent;
 }

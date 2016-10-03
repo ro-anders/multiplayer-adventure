@@ -1159,10 +1159,13 @@ void ReactToCollision(BALL* ball) {
 		{
 			int diffX = ball->x - ball->previousX;
 			ball->linkedObjectX += diffX / 2;
-            // Adjusting how we hold an object is broadcast to other players as a pickup action
-            PlayerPickupAction* action = new PlayerPickupAction(ball->hitObject,
-                objectBall->linkedObjectX, objectBall->linkedObjectY, OBJECT_NONE, 0, 0, 0);
-            sync->BroadcastAction(action);
+            if (ball == objectBall) {
+                // If this is adjusting how the current player holds an object,
+                // we broadcast to other players as a pickup action
+                PlayerPickupAction* action = new PlayerPickupAction(ball->hitObject,
+                    objectBall->linkedObjectX, objectBall->linkedObjectY, OBJECT_NONE, 0, 0, 0);
+                sync->BroadcastAction(action);
+            }
 		}
 
 		ball->x = ball->previousX;
@@ -1174,10 +1177,13 @@ void ReactToCollision(BALL* ball) {
 		{
 			int diffY = ball->y - ball->previousY;
 			ball->linkedObjectY += diffY / 2;
-            // Adjusting how we hold an object is broadcast to other players as a pickup action
-            PlayerPickupAction* action = new PlayerPickupAction(ball->hitObject,
+            if (ball == objectBall) {
+                // If this is adjusting how the current player holds an object,
+                // we broadcast to other players as a pickup action
+                PlayerPickupAction* action = new PlayerPickupAction(ball->hitObject,
                     objectBall->linkedObjectX, objectBall->linkedObjectY, OBJECT_NONE, 0, 0, 0);
-            sync->BroadcastAction(action);
+                sync->BroadcastAction(action);
+            }
 		}
 
 		ball->y = ball->previousY;
