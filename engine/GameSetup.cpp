@@ -215,7 +215,7 @@ Transport::Address GameSetup::determinePublicAddress(Transport::Address stunServ
 }
 
 void GameSetup::checkExpirationDate() {
-    const int EXPIRATION_DATE = -1;
+    const long EXPIRATION_DATE = 1477972800000;
     long time = Sys::systemTime();
     if ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE)) {
         Sys::log("Beta Release has expired.");

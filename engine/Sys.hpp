@@ -23,6 +23,11 @@ public:
 	static void log(const char* message);
 
     /**
+     * Log the given message.
+     */
+    static void consoleLog(const char* message);
+    
+    /**
      * Return number of milliseconds since 1970.
      */
 	static long systemTime();

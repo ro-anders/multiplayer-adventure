@@ -1,5 +1,7 @@
 #pragma once
 
+#include "stdio.h"
+
 /**
  * A bare bones logger class for sending messages either to the console or a log file.
  */
@@ -87,6 +89,9 @@ private:
 	/** How many characters are in the buffer. */
 	int charsInBuffer;
 
+    /** File descriptor for log file. */
+    ::FILE* logFile;
+    
 	/**
 	 * Constructor.  Don't call directly.  Use setup().
 	 */

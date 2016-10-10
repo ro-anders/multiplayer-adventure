@@ -20,6 +20,7 @@
 #include "Adventure.h"
 #include "args.h"
 #include "GameSetup.hpp"
+#include "Logger.hpp"
 #include "MacRestClient.hpp"
 #include "PosixUdpSocket.hpp"
 #include "Sys.hpp"
@@ -75,6 +76,9 @@ bool gMute = FALSE;
     gettimeofday(&time, NULL);
     long millis = (time.tv_sec * 1000) + (time.tv_usec / 1000);
     srandom(millis);
+    
+    // Setup logging
+    Logger::setup(Logger::FILE, Logger::INFO);
     
     // Expecting args: gameLevel playerNum sockAddress1 sockAddress2
     int argc;

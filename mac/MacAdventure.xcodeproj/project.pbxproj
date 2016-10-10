@@ -49,6 +49,7 @@
 		40B029DC1C91449200DA27FD /* Sys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40B029D81C91449200DA27FD /* Sys.cpp */; };
 		40B029DD1C91449200DA27FD /* UdpTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40B029DA1C91449200DA27FD /* UdpTransport.cpp */; };
 		40B345F91C25A2B4001EE63C /* args.m in Sources */ = {isa = PBXBuildFile; fileRef = 40B345F81C25A2B4001EE63C /* args.m */; };
+		40D4564E1DAB25E400D052CB /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40D4564C1DAB25E400D052CB /* Logger.cpp */; };
 		40E47FB11BF22BA20052B84E /* AdventureView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40E47FAE1BF22BA20052B84E /* AdventureView.mm */; };
 		40E47FB21BF22BA20052B84E /* Controller.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40E47FB01BF22BA20052B84E /* Controller.mm */; };
 		40F99C051C1A31930032B2A2 /* Portcullis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40F99C031C1A31930032B2A2 /* Portcullis.cpp */; };
@@ -133,6 +134,8 @@
 		40B029DB1C91449200DA27FD /* UdpTransport.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = UdpTransport.hpp; path = ../engine/UdpTransport.hpp; sourceTree = "<group>"; };
 		40B345F81C25A2B4001EE63C /* args.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = args.m; sourceTree = "<group>"; };
 		40D0F81B1C356A360096980F /* adventure_sys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = adventure_sys.h; path = ../engine/adventure_sys.h; sourceTree = "<group>"; };
+		40D4564C1DAB25E400D052CB /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Logger.cpp; path = ../engine/Logger.cpp; sourceTree = "<group>"; };
+		40D4564D1DAB25E400D052CB /* Logger.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Logger.hpp; path = ../engine/Logger.hpp; sourceTree = "<group>"; };
 		40E47FAD1BF22BA20052B84E /* AdventureView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AdventureView.h; sourceTree = "<group>"; };
 		40E47FAE1BF22BA20052B84E /* AdventureView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = AdventureView.mm; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		40E47FAF1BF22BA20052B84E /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Controller.h; sourceTree = "<group>"; };
@@ -305,6 +308,8 @@
 				401C851D1D195CBA00110952 /* GameSetup.hpp */,
 				40509AA61C05E9750008BACF /* GameObject.cpp */,
 				40509AA71C05E9750008BACF /* GameObject.hpp */,
+				40D4564C1DAB25E400D052CB /* Logger.cpp */,
+				40D4564D1DAB25E400D052CB /* Logger.hpp */,
 				4092E1E01C4E731900B2AEBB /* Map.cpp */,
 				4092E1E11C4E731900B2AEBB /* Map.hpp */,
 				40F99C031C1A31930032B2A2 /* Portcullis.cpp */,
@@ -428,6 +433,7 @@
 				403DA0921C20C722002FF18B /* Ball.cpp in Sources */,
 				4092E1E21C4E731900B2AEBB /* Map.cpp in Sources */,
 				4072EC701D0F59950074389A /* MacRestClient.cpp in Sources */,
+				40D4564E1DAB25E400D052CB /* Logger.cpp in Sources */,
 				40E47FB21BF22BA20052B84E /* Controller.mm in Sources */,
 				406CD1541C0C7C17002477BB /* Dragon.cpp in Sources */,
 				40509AAB1C05E9750008BACF /* GameObject.cpp in Sources */,

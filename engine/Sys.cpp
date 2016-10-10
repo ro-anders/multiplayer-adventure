@@ -28,10 +28,18 @@ void Sys::sleep(int milliseconds) {
 
 void Sys::log(const char* message) {
 #ifdef WIN32
-	OutputDebugString(message);
-	OutputDebugString("\n");
+    OutputDebugString(message);
+    OutputDebugString("\n");
 #else
     printf("%s\n", message);
+#endif
+}
+
+void Sys::consoleLog(const char* message) {
+#ifdef WIN32
+    OutputDebugString(message);
+#else
+    printf("%s", message);
 #endif
 }
 

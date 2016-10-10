@@ -15,6 +15,7 @@
 #include <unistd.h>
 // End socket includes
 
+#include "Logger.hpp"
 #include "Sys.hpp"
 #include "Transport.hpp"
 
@@ -82,7 +83,7 @@ int PosixUdpSocket::bind(int myInternalPort) {
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     serv_addr.sin_port = htons(myInternalPort);
-    printf("Opening socket on port %d\n", ntohs(serv_addr.sin_port));
+    Logger::log() << "Opening socket on port " << ntohs(serv_addr.sin_port) << Logger::EOM;
     if (::bind(socketFd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
         // Assume it is because another process is listening and we should instead launch the client
         return Transport::TPT_BUSY;

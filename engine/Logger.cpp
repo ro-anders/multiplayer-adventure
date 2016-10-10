@@ -2,9 +2,10 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "Sys.hpp"
 
 /* Instantiate the singleton instance the end of log message. */
-const Logger::EndOfLogMessage Logger::EOM;
+const Logger::EndOfLogMessage Logger::EOM = {};
 
 /* Set all the static constants */
 const int Logger::OFF = 0;
@@ -125,11 +126,21 @@ Logger::Logger(int inDestination) :
 	destination(inDestination),
 	buffer(new char[1024]),
 	bufferSize(1024),
-	charsInBuffer(0)
+	charsInBuffer(0),
+    logFile(NULL)
 {
 	buffer[0] = '\0';
+    
+    if (destination == FILE) {
+        logFile = fopen("adventure.log", "a");
+    }
 }
 
 void Logger::sendMessage(const char* message) {
-	// TODO: Implement
+    if (destination == CONSOLE) {
+        Sys::consoleLog(message);
+    } else if (destination == FILE) {
+        fprintf(logFile, "%s", message);
+        fflush(logFile);
+    }
 }

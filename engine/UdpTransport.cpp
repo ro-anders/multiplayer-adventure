@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include "Logger.hpp"
 #include "Sys.hpp"
 #include "UdpSocket.hpp"
 
@@ -105,7 +106,7 @@ void UdpTransport::connect() {
     // We need a big random integer.
     randomNum = Sys::random() * 1000000;
     
-    printf("Attempting to punch hole to other machine.");
+    Logger::log("Attempting to punch hole to other machine.");
     punchHole();
 }
 
@@ -143,7 +144,7 @@ int UdpTransport::openSocket() {
     int status = socket->bind(myInternalPort);
 
     if (status == Transport::TPT_OK) {
-        printf("Bound to port %d.\n", myInternalPort);
+        Logger::log() << "Bound to port " << myInternalPort << Logger::EOM;
         socketBound = true;
     } else {
         printf("Failed to bind to port %d.\n", myInternalPort);
