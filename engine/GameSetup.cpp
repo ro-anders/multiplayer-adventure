@@ -5,6 +5,7 @@
 #include "json/json.h"
 #include "json/json-forwards.h"
 #include "Adventure.h"
+#include "Logger.hpp"
 #include "RestClient.hpp"
 #include "Sys.hpp"
 #include "UdpSocket.hpp"
@@ -190,24 +191,20 @@ Transport::Address GameSetup::determinePublicAddress(Transport::Address stunServ
     
     // Now send a packet on that port.
     sockaddr_in* stunServerSockAddr = socket.createAddress(stunServer, true);
-    Sys::log("Sending message to STUN server\n");
+    Logger::log("Sending message to STUN server");
     socket.writeData("Hello", 5, stunServerSockAddr);
     
     // Now listen on the socket, it should be non-blocking, and get the public IP and port
     char buffer[256];
-    Sys::log("Listening for STUN server message.\n");
+    Logger::log("Listening for STUN server message.");
     int numCharsRead = socket.readData(buffer, 256);
     if (numCharsRead > 0) {
 		// Throw a null on the end to terminate the string
 		buffer[numCharsRead] = '\0';
-		char logMessage[512];
-        sprintf(logMessage, "Received \"%s\" from STUN server.", buffer);
-		Sys::log(logMessage);
+        Logger::log() << "Received \"" << buffer << "\" from STUN server." << Logger::EOM;
         publicAddress = Transport::parseUrl(buffer);
     } else {
-		char errorMessage[128];
-		sprintf(errorMessage, "Error %d from STUN server.\n", numCharsRead);
-		Sys::log(errorMessage);
+        Logger::logError() << "Error " << numCharsRead << " from STUN server." << Logger::EOM;
     }
     socket.deleteAddress(stunServerSockAddr);
     
@@ -218,7 +215,7 @@ void GameSetup::checkExpirationDate() {
     const long EXPIRATION_DATE = 1477972800000;
     long time = Sys::systemTime();
     if ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE)) {
-        Sys::log("Beta Release has expired.");
+        Logger::logError("Beta Release has expired.");
         exit(-1);
     }
         

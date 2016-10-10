@@ -16,7 +16,6 @@
 // End socket includes
 
 #include "Logger.hpp"
-#include "Sys.hpp"
 #include "Transport.hpp"
 
 PosixUdpSocket::PosixUdpSocket() :
@@ -75,7 +74,7 @@ int PosixUdpSocket::bind(int myInternalPort) {
     // Create the server socket and bind to it
     socketFd = socket(AF_INET, SOCK_DGRAM, 0);
     if (socketFd < 0) {
-        Sys::log("ERROR opening socket");
+        Logger::logError("ERROR opening socket");
         return Transport::TPT_ERROR;
     }
     struct sockaddr_in serv_addr;

@@ -214,8 +214,8 @@ void UdpTransport::punchHole() {
                 appendDataToBuffer(recvBuffer, bytes);
             } else {
                 if (bytes != 10) {
-                    Sys::log("Read packet of unexpected length.");
-                    printf("Message=%s.  Bytes read=%d.\n", recvBuffer, bytes);
+                    Logger::logError() << "Read packet of unexpected length.\n" <<
+                    "Message=" << recvBuffer << ".  Bytes read=" << bytes << Logger::EOM;
                 }
                 // Figure out the sender.  The third character will be the machine number.
                 char senderChar = recvBuffer[2];
@@ -234,9 +234,8 @@ void UdpTransport::punchHole() {
                         states[senderIndex] = RECVD_ACK;
                         justAcked[senderIndex] = true;
                         connected = states[1-senderIndex] == RECVD_ACK;
-                        char logMsg[1000];
-                        sprintf(logMsg, "Connected with %s:%d\n", theirAddrs[senderIndex].ip(), theirAddrs[senderIndex].port());
-                        Sys::log(logMsg);
+                        Logger::log() << "Connected with " << theirAddrs[senderIndex].ip() << ":" <<
+                          theirAddrs[senderIndex].port() << Logger::EOM;
                         // If this is a test case, figure out who is player one.
                         if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
                             compareNumbers(randomNum, recvBuffer, senderIndex);
@@ -270,8 +269,8 @@ void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage, int ot
     char temp1, temp2, temp3;
     int parsed = sscanf(theirMessage, "%c%c%c%ld", &temp1, &temp2, &temp3, &theirRandomNumber);
     if (parsed < 3) {
-		Sys::log("Parsed packet of unexpected length.");
-        printf("Message=%s.  Number=%ld.  Parsed=%d.\n", theirMessage, theirRandomNumber, parsed);
+		Logger::logError() << "Parsed packet of unexpected length." <<
+        "Message=" << theirMessage << ".  Number=" << theirRandomNumber << ".  Parsed=" << parsed << Logger::EOM;
     }
     
     if (myRandomNumber < theirRandomNumber) {

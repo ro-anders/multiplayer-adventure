@@ -20,11 +20,6 @@ public:
     /**
      * Log the given message.
      */
-	static void log(const char* message);
-
-    /**
-     * Log the given message.
-     */
     static void consoleLog(const char* message);
     
     /**

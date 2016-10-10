@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include "Logger.hpp"
 #include "Sys.hpp"
 
 Transport::Address::Address() :
@@ -97,13 +98,10 @@ void Transport::setTransportNum(int inTransportNum) {
 int Transport::sendPacket(const char* packetData) {
 	int n = writeData(packetData, strlen(packetData)+1); // +1 to include the \0
 	if (n < 0) {
-		Sys::log("ERROR writing to socket");
+		Logger::logError("ERROR writing to socket");
 	}
 	else {
-//        // TODO: Clean this up
-//        char message[1000];
-//        sprintf(message, "Sent \"%s\"", packetData);
-//		Sys::log(message);
+        // Logger::log() << "Sent \"" << packetData << "\"" << Logger:EOM;
     }
 	return n;
 }
@@ -123,7 +121,7 @@ int Transport::getPacket(char* buffer, int bufferLength) {
         
         // Detect if we've run out of buffer.
         if ((delimeterIndex < 0) && (charsInStreamBuffer >= streamBufferSize)) {
-			Sys::log("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
+			Logger::logError("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
             streamBuffer[streamBufferSize-1] = '\0';
             delimeterIndex = streamBufferSize-1;
         }
@@ -147,7 +145,7 @@ int Transport::getPacket(char* buffer, int bufferLength) {
     
     int charsInPacket = 0;
     if (hitError) {
-		Sys::log("ERROR reading from socket");
+		Logger::logError("ERROR reading from socket");
     } else if (ranOutOfData) {
         charsInPacket = 0;
         buffer[0] = '\0';
@@ -155,7 +153,7 @@ int Transport::getPacket(char* buffer, int bufferLength) {
         // Copy the data into the passed in buffer.
         charsInPacket = delimeterIndex; // We don't copy the delimeter
         if (delimeterIndex >= bufferLength) {
-			Sys::log("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
+			Logger::logError("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
             charsInPacket = bufferLength-1;
         }
         memcpy(buffer, streamBuffer, charsInPacket * sizeof(char));
@@ -164,9 +162,7 @@ int Transport::getPacket(char* buffer, int bufferLength) {
         // Remove the characters from the stream buffer
         memmove(streamBuffer, streamBuffer+delimeterIndex+1, (charsInStreamBuffer-delimeterIndex-1)*sizeof(char));
         charsInStreamBuffer = charsInStreamBuffer-delimeterIndex-1;
-		char logMessage[1000];
-        sprintf(logMessage, "Received message: \"%s\"",buffer);
-		Sys::log(logMessage);
+        Logger::log() << "Received message: \"" << buffer << "\"" << Logger::EOM;
     }
     
     return (hitError ? hitError : charsInPacket);
@@ -176,7 +172,7 @@ void Transport::appendDataToBuffer(const char *data, int dataLength) {
     // TODO: Should really resize buffer rather than truncate.
     bool truncating = false;
     if (charsInStreamBuffer + dataLength > streamBufferSize) {
-        Sys::log("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
+        Logger::logError("ERROR reading from socket.  Packet too big for buffer.  Truncating.");
         dataLength = streamBufferSize-charsInStreamBuffer;
         truncating = true;
     }

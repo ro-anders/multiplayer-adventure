@@ -78,7 +78,7 @@ bool gMute = FALSE;
     srandom(millis);
     
     // Setup logging
-    Logger::setup(Logger::FILE, Logger::INFO);
+    Logger::setup(Logger::CONSOLE, Logger::INFO);
     
     // Expecting args: gameLevel playerNum sockAddress1 sockAddress2
     int argc;
