@@ -9,6 +9,7 @@
 #include <sys/types.h>
 // End socket includes
 
+#include "..\engine\Logger.hpp"
 #include "..\engine\Sys.hpp"
 #include "..\engine\Transport.hpp"
 
@@ -73,18 +74,14 @@ int WinUdpSocket::bind(int myInternalPort) {
 	WSADATA wsaData;
 	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResult != 0) {
-		char errorMessage[2000];
-		sprintf(errorMessage, "WSAStartup failed with error: %d\n", iResult);
-		Sys::log(errorMessage);
+		Logger::logError() << "WSAStartup failed with error: " << iResult << Logger::EOM;
 		return Transport::TPT_ERROR;
 	}
 
 	// Create the server socket and bind to it
 	if ((socketFd = ::socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET)
 	{
-		char errorMessage[2000];
-		sprintf(errorMessage, "Could not create socket : %d", WSAGetLastError());
-		Sys::log(errorMessage);
+		Logger::logError() << "Could not create socket: " << WSAGetLastError() << Logger::EOM;
 		return Transport::TPT_ERROR;
 	}
 
@@ -110,9 +107,7 @@ void WinUdpSocket::setBlocking(bool isBlocking) {
 		u_long nbflag = 1;
 		int iResult = ioctlsocket(socketFd, FIONBIO, &nbflag);
 		if (iResult != 0) {
-			char errorMessage[2000];
-			sprintf(errorMessage, "ioctlsocket failed with error: %d\n", WSAGetLastError());
-			Sys::log(errorMessage);
+			Logger::logError() << "ioctlsocket failed with error: " << WSAGetLastError() << Logger::EOM;
 		}
 	}
 }

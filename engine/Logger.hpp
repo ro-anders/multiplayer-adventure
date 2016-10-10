@@ -22,7 +22,7 @@ public:
 	static const int FILE;
 
 	/* The two possible levels of log messages. */
-	static const int ERROR;
+	static const int ERR;
 	static const int INFO;
 
 	~Logger();

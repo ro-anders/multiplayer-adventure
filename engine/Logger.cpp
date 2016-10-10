@@ -11,7 +11,7 @@ const Logger::EndOfLogMessage Logger::EOM = {};
 const int Logger::OFF = 0;
 const int Logger::CONSOLE = 1;
 const int Logger::FILE =2;
-const int Logger::ERROR = 500;
+const int Logger::ERR = 500;
 const int Logger::INFO = 400;
 
 Logger::~Logger() {
