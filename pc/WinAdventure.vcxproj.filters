@@ -102,6 +102,9 @@
     <ClCompile Include="WinRestClient.cpp">
       <Filter>Source Files\pc</Filter>
     </ClCompile>
+    <ClCompile Include="..\engine\Logger.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\engine\ActionQueue.hpp">
@@ -187,6 +190,9 @@
     </ClInclude>
     <ClInclude Include="WinRestClient.h">
       <Filter>Header Files\pc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\Logger.hpp">
+      <Filter>Header Files\engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

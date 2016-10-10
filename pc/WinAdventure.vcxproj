@@ -72,7 +72,7 @@
     <ClCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
@@ -96,6 +96,7 @@
     <ClCompile Include="..\engine\GameObject.cpp" />
     <ClCompile Include="..\engine\GameSetup.cpp" />
     <ClCompile Include="..\engine\jsoncpp.cpp" />
+    <ClCompile Include="..\engine\Logger.cpp" />
     <ClCompile Include="..\engine\Map.cpp" />
     <ClCompile Include="..\engine\Portcullis.cpp" />
     <ClCompile Include="..\engine\RemoteAction.cpp" />
@@ -125,6 +126,7 @@
     <ClInclude Include="..\engine\GameSetup.hpp" />
     <ClInclude Include="..\engine\json\json-forwards.h" />
     <ClInclude Include="..\engine\json\json.h" />
+    <ClInclude Include="..\engine\Logger.hpp" />
     <ClInclude Include="..\engine\Map.hpp" />
     <ClInclude Include="..\engine\Portcullis.hpp" />
     <ClInclude Include="..\engine\RemoteAction.hpp" />
