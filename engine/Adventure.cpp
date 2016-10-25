@@ -31,6 +31,7 @@
 #include "Bat.hpp"
 #include "Dragon.hpp"
 #include "GameObject.hpp"
+#include "Logger.hpp"
 #include "Map.hpp"
 #include "Portcullis.hpp"
 #include "Room.hpp"
@@ -79,6 +80,7 @@ static bool CrossingBridge(int room, int x, int y, BALL* ball);
 static bool CollisionCheckBallWithWalls(int room, int x, int y);
 static int CollisionCheckBallWithAllObjects(BALL* ball);
 static int CollisionCheckBallWithObjects(BALL* ball, Board::ObjIter& iter);
+static bool CollisionCheckBallWithObject(BALL* ball, const OBJECT* object);
 static bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, int height);
 static bool CollisionCheckBallWithEverything(BALL* ball, int room, int x, int y, bool allowBridge, int* hitObject);
 void handleSetupMessages();
@@ -435,7 +437,8 @@ static const byte game1Objects [] =
     OBJECT_YELLOWDRAGON, MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00, // Yellow Dragon
     OBJECT_GREENDRAGON, SOUTHEAST_ROOM, 0x50, 0x20, 0x00, 0x00, 0x00, // Green Dragon
     OBJECT_SWORD, GOLD_FOYER, 0x20, 0x20, 0x00, 0x00, 0x00, // Sword
-    OBJECT_BRIDGE, BLUE_MAZE_5, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
+    //OBJECT_BRIDGE, BLUE_MAZE_5, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
+    OBJECT_BRIDGE, MAIN_HALL_CENTER, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
     OBJECT_YELLOWKEY, GOLD_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Yellow Key
     OBJECT_COPPERKEY, COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
     OBJECT_JADEKEY, JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Jade Key
@@ -651,7 +654,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     // because we may be broadcasting randomized locations to other machines
     SetupRoomObjects();
     
-    printf("Player %d setup.\n", thisPlayer);
+    Logger::log() << "Player " << thisPlayer << " setup." << Logger::EOM;
 }
 
 void addAllRoomsToPort(Portcullis* port, int firstRoom, int lastRoom) {
@@ -838,10 +841,13 @@ void Adventure_Run()
                     if (!objectBall->hitX && !objectBall->hitY)
                     {
                         // Make sure stuff we are carrying stays out of our way
-                        // TODO: Why are we checking collision with all objects if all
-                        // we care about is the one we are carrying?
-                        int hitObject = CollisionCheckBallWithAllObjects(objectBall);
-                        if ((hitObject > OBJECT_NONE) && (hitObject == objectBall->linkedObject))
+                        // TODO: Why do we have to check here AND in reactToCollision?  Most of the time
+                        // reactToCollision handles this, but every now and then this code is
+                        // triggered.
+                        OBJECT* carriedObject = board.getObject(objectBall->linkedObject);
+                        bool hasHitCarriedObject = (carriedObject != NULL) &&
+                            CollisionCheckBallWithObject(objectBall, carriedObject);
+                        if (hasHitCarriedObject)
                         {
                             int diffX = objectBall->x - objectBall->previousX;
                             objectBall->linkedObjectX += diffX/2;
@@ -850,7 +856,7 @@ void Adventure_Run()
                             objectBall->linkedObjectY += diffY/2;
                             
                             // Adjusting how we hold an object is broadcast to other players as a pickup action
-                            PlayerPickupAction* action = new PlayerPickupAction(hitObject,
+                            PlayerPickupAction* action = new PlayerPickupAction(objectBall->linkedObject,
                                 objectBall->linkedObjectX, objectBall->linkedObjectY, OBJECT_NONE, 0, 0, 0);
                             sync->BroadcastAction(action);
                             
@@ -1066,12 +1072,17 @@ void randomizeRoomObjects() {
         }
     }
     
+    // Print out where everything was randomized to
+    // Only for debugging - keep commented out
+#if 0
     for(int objCtr=0; objCtr < numObjects; ++objCtr) {
         OBJECT* nextObj = gameBoard->getObject(objCtr);
         if (nextObj->randomPlacement != OBJECT::FIXED_LOCATION) {
             printf("%s placed in %s.\n", nextObj->label, gameMap->getRoom(nextObj->room)->label);
         }
     }
+#endif
+    
 }
 
 /**
@@ -1154,10 +1165,9 @@ void WinGame(int winRoom) {
 void ReactToCollision(BALL* ball) {
 	if (ball->hitX)
 	{
-		// TODO: Don't think we're doing this right
 		if ((ball->hitObject > OBJECT_NONE) && (ball->hitObject == ball->linkedObject))
 		{
-			int diffX = ball->x - ball->previousX;
+			int diffX = ball->velx;
 			ball->linkedObjectX += diffX / 2;
             if (ball == objectBall) {
                 // If this is adjusting how the current player holds an object,
@@ -1175,7 +1185,7 @@ void ReactToCollision(BALL* ball) {
 	{
 		if ((ball->hitObject > OBJECT_NONE) && (ball->hitObject == ball->linkedObject))
 		{
-			int diffY = ball->y - ball->previousY;
+			int diffY = ball->vely;
 			ball->linkedObjectY += diffY / 2;
             if (ball == objectBall) {
                 // If this is adjusting how the current player holds an object,
@@ -2232,11 +2242,19 @@ static bool CrossingBridge(int room, int x, int y, BALL* ball)
     return false;
 }
 
+/**
+ * Checks if ball is colliding with any other object.  Returns first object it finds or OBJECT_NONE
+ * if no collisions.
+ */
 static int CollisionCheckBallWithAllObjects(BALL* ball) {
     Board::ObjIter iter = gameBoard->getObjects();
     return CollisionCheckBallWithObjects(ball, iter);
 }
 
+/**
+ * Checks if ball is colliding with any of the objects in the iterable collection.
+ * Returns first object it finds or OBJECT_NONE if no collisions.
+ */
 static int CollisionCheckBallWithObjects(BALL* ball, Board::ObjIter& iter)
 {
     // Go through all the objects
@@ -2244,17 +2262,25 @@ static int CollisionCheckBallWithObjects(BALL* ball, Board::ObjIter& iter)
     {
         // If this object is in the current room and can be picked up, check it against the ball
         const OBJECT* object = iter.next();
-        if (object->displayed && object->isTangibleTo(thisPlayer) && (ball->room == object->room))
+        if (CollisionCheckBallWithObject(ball, object))
         {
-            if (CollisionCheckObject(object, ball->x-4,(ball->y-1), 8, 8))
-            {
-                // return the index of the object
                 return object->getPKey();
-            }
         }
     }
 
     return OBJECT_NONE;
+}
+
+/**
+ * Checks if ball is colliding with object.
+ */
+static bool CollisionCheckBallWithObject(BALL* ball, const OBJECT* object)
+{
+    bool collision = (object->displayed &&
+                      object->isTangibleTo(thisPlayer) &&
+                      (ball->room == object->room) &&
+                      (CollisionCheckObject(object, ball->x-4,(ball->y-1), 8, 8)) ? true : false);
+    return collision;
 }
 
 // Checks an object for collision against the specified rectangle

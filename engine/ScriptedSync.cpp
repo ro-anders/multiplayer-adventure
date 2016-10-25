@@ -105,6 +105,10 @@ bool ScriptedSync::parseCommand(int* frame, char* buffer) {
         *frame  = -1;
         buffer[0] = '\0';
         std::cout << "Failed to parse command line." << std::endl;
+        char segment[40];
+        strncpy(segment, buffer, 39);
+        segment[39] = '\0';
+        std::cout << '"' << segment << '"' << std::endl;
     }
     return endOfInput;
 }

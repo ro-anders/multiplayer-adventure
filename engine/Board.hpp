@@ -65,9 +65,9 @@ public:
     
     void addObject(int pkey, OBJECT* object);
     
-    inline OBJECT* getObject(int pkey) {return objects[pkey];}
+    inline OBJECT* getObject(int pkey) {return (pkey > OBJECT_NONE ? objects[pkey] : NULL);}
     
-    inline OBJECT* operator[](int pkey) {return objects[pkey];}
+    inline OBJECT* operator[](int pkey) {return (pkey > OBJECT_NONE ? objects[pkey] : NULL);}
     
     /**
      * Get the number of objects on the board.
