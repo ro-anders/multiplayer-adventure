@@ -1291,8 +1291,8 @@ void BallMovement(BALL* ball) {
                 Portcullis* port = ports[portalCtr];
 				if (ball->room == port->insideRoom)
 				{
-					ball->x = 0xA0;
-					ball->y = 0x2C * 2;
+                    ball->x = Portcullis::EXIT_X;
+                    ball->y = Portcullis::EXIT_Y;
 
 					ball->previousX = ball->x;
 					ball->previousY = ball->y;
@@ -1501,8 +1501,7 @@ void MoveCarriedObjects()
     MoveGroundObject();
 }
 
-void MoveGroundObject()
-{
+void moveBallIntoCastle() {
     for(int ctr=0; ctr<numPlayers; ++ctr) {
         BALL* nextBall = gameBoard->getPlayer(ctr);
         // Handle balls going into the castles
@@ -1534,6 +1533,11 @@ void MoveGroundObject()
             }
         }
     }
+}
+
+void MoveGroundObject()
+{
+    moveBallIntoCastle();
     
     // Move any objects that need moving, and wrap objects from room to room
     Board::ObjIter iter = board.getMovableObjects();
