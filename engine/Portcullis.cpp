@@ -108,7 +108,7 @@ const int Portcullis::OPEN_STATE=0;
 const int Portcullis::CLOSED_STATE=12;
 
 const int Portcullis::EXIT_X = 0xA0;
-const int Portcullis::EXIT_Y = 0x2C * 2;
+const int Portcullis::EXIT_Y = 0x58;
 const int Portcullis::PORT_X = 0x4d;
 const int Portcullis::PORT_Y = 0x31;
 

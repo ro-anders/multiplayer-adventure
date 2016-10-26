@@ -437,8 +437,7 @@ static const byte game1Objects [] =
     OBJECT_YELLOWDRAGON, MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00, // Yellow Dragon
     OBJECT_GREENDRAGON, SOUTHEAST_ROOM, 0x50, 0x20, 0x00, 0x00, 0x00, // Green Dragon
     OBJECT_SWORD, GOLD_FOYER, 0x20, 0x20, 0x00, 0x00, 0x00, // Sword
-    //OBJECT_BRIDGE, BLUE_MAZE_5, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
-    OBJECT_BRIDGE, MAIN_HALL_CENTER, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
+    OBJECT_BRIDGE, BLUE_MAZE_5, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
     OBJECT_YELLOWKEY, GOLD_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Yellow Key
     OBJECT_COPPERKEY, COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
     OBJECT_JADEKEY, JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Jade Key
@@ -1571,7 +1570,8 @@ void MoveGroundObject()
             for (int ctr=0; (ctr < numPorts) && (!leftCastle); ++ctr) {
                 if (object->room == ports[ctr]->insideRoom)
                 {
-                    object->y = 0x5C;
+                    object->x = Portcullis::EXIT_X/2;
+                    object->y = Portcullis::EXIT_Y/2;
                     object->room = ports[ctr]->room;
                     // TODO: Do we need to broadcast leaving the castle?  Seems there might be quite a jump.
                     leftCastle = true;
