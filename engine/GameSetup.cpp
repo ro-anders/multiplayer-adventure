@@ -122,7 +122,7 @@ void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, ch
 
     newParams.gameLevel = atoi(argv[1])-1;
     int desiredPlayers = (atoi(argv[2]) <= 2 ? 2 : 3);
-    int sysTime = Sys::systemTime();
+    int sessionId = Sys::random() * 10000000;
 
     Transport::Address stunServer(client.BROKER_SERVER, client.STUN_PORT);
     if (argc > 3) {
@@ -134,7 +134,7 @@ void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, ch
     // Connect to the client and register a game request.
     char requestContent[200];
     sprintf(requestContent, "{\"ip1\": \"%s\",\"port1\": %d, \"sessionId\": %d, \"gameToPlay\": %d, \"desiredPlayers\": %d}",
-            myAddress.ip(), myAddress.port(), sysTime, newParams.gameLevel, desiredPlayers);
+            myAddress.ip(), myAddress.port(), sessionId, newParams.gameLevel, desiredPlayers);
     char response[1000];
     bool gotResponse = false;
     
@@ -212,8 +212,8 @@ Transport::Address GameSetup::determinePublicAddress(Transport::Address stunServ
 }
 
 void GameSetup::checkExpirationDate() {
-    const long EXPIRATION_DATE = 1477972800000;
-    long time = Sys::systemTime();
+    const long EXPIRATION_DATE = 20161101;
+    long time = Sys::today();
     if ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE)) {
         Logger::logError("Beta Release has expired.");
         exit(-1);

@@ -1,5 +1,6 @@
 To Do
 -----
+- Seems to be some fatal exception on exiting.  Not critical since we're exiting, but a little disturbing.
 - Sometimes when you unlock and enter castle the gate locks behind you.  Has to do with other machines seeing player touch the key to the castle and sending a lock event.
   Unlock a castle.  Hold the key above you and touch the open gate.  As it closes it will bring you into the castle.  Other players will see the castle open, but you will
   see the castle closed.
