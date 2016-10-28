@@ -27,6 +27,7 @@
 
 #include "..\engine\Adventure.h"
 #include "..\engine\GameSetup.hpp"
+#include "..\engine\Logger.hpp"
 #include "..\engine\Sys.hpp"
 #include "..\engine\UdpTransport.hpp"
 #include "..\engine\RestClient.hpp"
@@ -104,11 +105,9 @@ void parseCommandLine(LPTSTR lpCmdLine) {
 	}
 
 	char logMessage[1000];
-	sprintf(logMessage, "Parsed %d arguments\n", argc);
-	OutputDebugString(logMessage);
+	Logger::log() << "Parsed " << argc << " arguments." << Logger::EOM;
 	for (int ctr2 = 0; ctr2 < argc; ++ctr2) {
-		sprintf(logMessage, "Arg %d = %s\n", (ctr2+1), argv[ctr2]);
-		OutputDebugString(logMessage);
+		Logger::log() << "Arg " << (ctr2 + 1) << " = " << argv[ctr2] << Logger::EOM;
 	}
 }
 
@@ -118,6 +117,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
                      int       nCmdShow)
 {
     // TODO: Place code here.
+	Logger::setup(Logger::FILE, Logger::INFO);
     MSG msg;
     HACCEL hAccelTable;
 
