@@ -212,6 +212,12 @@ Transport::Address GameSetup::determinePublicAddress(Transport::Address stunServ
 }
 
 void GameSetup::checkExpirationDate() {
+    
+    // Quick test of the runTime function
+    long startTime = Sys::runTime();
+    Sys::sleep(542);
+    long endTime = Sys::runTime();
+    Logger::log() << startTime << " - " << endTime << " = " << (endTime-startTime) << Logger::EOM;
     const long EXPIRATION_DATE = 20161101;
     long time = Sys::today();
     if ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE)) {
