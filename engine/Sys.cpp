@@ -64,7 +64,7 @@ long Sys::runTime() {
     
     long currentTime;
 #ifdef WIN32
-    currentTime = time(NULL);
+	return GetTickCount64();
 #else
     static timeval timeval;
     gettimeofday(&timeval, NULL);
@@ -76,22 +76,7 @@ long Sys::runTime() {
 
 
 
-long Sys::systemTime() {
-#ifdef WIN32
-	return time(NULL);
-#else 
-    static timeval timeval;
-    gettimeofday(&timeval, NULL);
-    long milliseconds = timeval.tv_sec*1000 + timeval.tv_usec/1000;
-    return milliseconds;
-#endif
-}
-
 bool Sys::seedRandom() {
-#ifdef WIN32
 	srand((unsigned)time(NULL));
-#else
-	srand(systemTime());
-#endif
 	return true;
 }

@@ -33,10 +33,6 @@ public:
      */
     static long runTime();
     
-    /**
-     * Return number of milliseconds since 1970.
-     */
-	static long systemTime();
     
 private:
 
