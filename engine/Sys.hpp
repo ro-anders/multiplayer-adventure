@@ -22,6 +22,17 @@ public:
      */
     static void consoleLog(const char* message);
     
+    /** 
+     * Return today's date in the form of 20161031.
+     */
+    static long today();
+    
+    /**
+     * Number of milliseconds since this game was started.  Note, this
+     * is really only useful looking at the time between two calls of this.
+     */
+    static long runTime();
+    
     /**
      * Return number of milliseconds since 1970.
      */
@@ -30,8 +41,11 @@ public:
 private:
 
 	static bool randomized;
+    
+    static long startOfProgramTime;
 
 	static bool seedRandom();
+    
 };
 
 #endif /* Sys_hpp */

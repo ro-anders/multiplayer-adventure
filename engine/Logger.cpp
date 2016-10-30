@@ -94,8 +94,7 @@ Logger& Logger::operator<<(long number) {
 */
 Logger& Logger::operator<<(EndOfLogMessage end) {
 	if (destination != OFF) {
-		buffer[charsInBuffer] = '\n';
-		buffer[charsInBuffer + 1] = '\0';
+		buffer[charsInBuffer] = '\0';
 		sendMessage(buffer);
 	}
 	charsInBuffer = 0;
@@ -139,8 +138,9 @@ Logger::Logger(int inDestination) :
 void Logger::sendMessage(const char* message) {
     if (destination == CONSOLE) {
         Sys::consoleLog(message);
+        Sys::consoleLog("\n");
     } else if (destination == FILE) {
-        fprintf(logFile, "%s", message);
+        fprintf(logFile, "%s\n", message);
         fflush(logFile);
     }
 }
