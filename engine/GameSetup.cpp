@@ -218,7 +218,7 @@ void GameSetup::checkExpirationDate() {
     Sys::sleep(542);
     long endTime = Sys::runTime();
     Logger::log() << startTime << " - " << endTime << " = " << (endTime-startTime) << Logger::EOM;
-    const long EXPIRATION_DATE = 20161101;
+    const long EXPIRATION_DATE = 20161130;
     long time = Sys::today();
     if ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE)) {
         Logger::logError("Beta Release has expired.");
