@@ -1926,7 +1926,7 @@ void MoveBat()
         // Enlarge the bat extent by 7 pixels for the proximity checks below
         // (doing the bat once is faster than doing each object and the results are the same)
         batX-=7;
-        batY-=7;
+        batY+=7;
         batW+=7*2;
         batH+=7*2;
         
