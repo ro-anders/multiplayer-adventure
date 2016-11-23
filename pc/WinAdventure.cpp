@@ -607,7 +607,13 @@ float Platform_Random()
 }
 
 void Platform_DisplayStatus(const char* message, int duration) {
-    // TODO: Implement
+	static const char* title = "";
+	int msgboxID = MessageBox(
+		NULL,
+		(LPCSTR)message,
+		(LPCSTR)title,
+		MB_ICONWARNING | MB_OK | MB_DEFBUTTON2
+	);
 }
 
 
