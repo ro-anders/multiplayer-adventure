@@ -59,6 +59,7 @@ int ScriptedSync::pullNextPacket(char* buffer, int bufferLength) {
 /**
  * Read off stdin.  Expecting a line of the form:
  * Send "DM 12 12 12 46 23" on frame #256\n
+ * Any line that begins with a '#' is considered a comment and is ignored.
  */
 bool ScriptedSync::parseCommand(int* frame, char* buffer) {
     const int LOOKING_FOR_QUOTE = 0;
@@ -75,7 +76,10 @@ bool ScriptedSync::parseCommand(int* frame, char* buffer) {
         if (c == '\n') {
             state = DONE;
         } else if (state == LOOKING_FOR_QUOTE) {
-            if (c == '.') {
+            if (c == '#') {
+                // Comment.  Throw the rest of the line out.
+                state = LOOKING_FOR_EOLN;
+            } else if (c == '.') {
                 state = DONE;
                 endOfInput = true;
             } else if (c == '"') {
