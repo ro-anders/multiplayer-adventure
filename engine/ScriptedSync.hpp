@@ -38,7 +38,7 @@ private:
     
     void addCommand(int frame, const char* commandStr);
     
-    bool parseCommand(int* frame, char* buffer);
+    bool parseCommand(int* frame, char* buffer, int line);
 
     void makeMoreSpace();
 

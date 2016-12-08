@@ -19,9 +19,9 @@ commandList(new const char*[STARTING_LIST_SIZE])
     bool done = false;
     char buffer[1000];
     std::cin >> std::noskipws;
-    while (!done) {
+    for (int line=1; !done; ++line) {
         int frame = -1;
-        done = parseCommand(&frame, buffer);
+        done = parseCommand(&frame, buffer, line);
         if (!done && (frame >= 0)) {
             addCommand(frame, buffer);
         }
@@ -59,9 +59,10 @@ int ScriptedSync::pullNextPacket(char* buffer, int bufferLength) {
 /**
  * Read off stdin.  Expecting a line of the form:
  * Send "DM 12 12 12 46 23" on frame #256\n
- * Any line that begins with a '#' is considered a comment and is ignored.
+ * Any line that begins with a '$' is considered a comment and is ignored.
  */
-bool ScriptedSync::parseCommand(int* frame, char* buffer) {
+bool ScriptedSync::parseCommand(int* frame, char* buffer, int line) {
+    const char COMMENT_CHAR = '$';
     const int LOOKING_FOR_QUOTE = 0;
     const int READING_COMMAND = 1;
     const int LOOKING_FOR_NUMBER = 2;
@@ -76,7 +77,7 @@ bool ScriptedSync::parseCommand(int* frame, char* buffer) {
         if (c == '\n') {
             state = DONE;
         } else if (state == LOOKING_FOR_QUOTE) {
-            if (c == '#') {
+            if (c == COMMENT_CHAR) {
                 // Comment.  Throw the rest of the line out.
                 state = LOOKING_FOR_EOLN;
             } else if (c == '.') {
@@ -99,20 +100,23 @@ bool ScriptedSync::parseCommand(int* frame, char* buffer) {
             }
         }
     }
-    if ((bufferCtr > 0) && (*frame > 0)) {
-        // Success.  Make sure the buffer is null terminated.
-        buffer[bufferCtr] = '\0';
-        //std::cout << "Parsed command \"" << buffer << "\" at frame#" << *frame << std::endl;
-
-    } else {
-        // Something went wrong.  Don't pass back any data.
-        *frame  = -1;
-        buffer[0] = '\0';
-        std::cout << "Failed to parse command line." << std::endl;
-        char segment[40];
-        strncpy(segment, buffer, 39);
-        segment[39] = '\0';
-        std::cout << '"' << segment << '"' << std::endl;
+    
+    if (bufferCtr > 0) {
+        if (*frame > 0) {
+            // Success.  Make sure the buffer is null terminated.
+            buffer[bufferCtr] = '\0';
+            //std::cout << "Parsed command \"" << buffer << "\" at frame#" << *frame << std::endl;
+            
+        } else {
+            // Something went wrong.  Don't pass back any data.
+            *frame  = -1;
+            buffer[0] = '\0';
+            std::cout << "Failed to parse command at line " << line << "." << std::endl;
+            char segment[40];
+            strncpy(segment, buffer, 39);
+            segment[39] = '\0';
+            std::cout << '"' << segment << '"' << std::endl;
+        }
     }
     return endOfInput;
 }
