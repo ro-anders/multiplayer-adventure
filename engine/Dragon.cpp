@@ -130,12 +130,13 @@ int Dragon::timerExpired() {
     return (timer <= 0);
 }
 
-void Dragon::roar(int atX, int atY) {
+void Dragon::roar(int atRoom, int atX, int atY) {
     state = ROAR;
     
     resetTimer();
     
     // Set the dragon's position to the same as the ball
+    room = atRoom;
     x = atX+1; // Added one to get over disparity between C++ port and original atari game - not the best solution
     y = atY;
     
@@ -161,6 +162,9 @@ void Dragon::syncAction(DragonStateAction* action, int volume) {
             // Set the State to 01 (eaten)
             eaten = playerEaten;
             state = Dragon::EATEN;
+            room = action->room;
+            x = action->posx;
+            y = action->posy;
             movementX = 0;
             movementY = 0;
             // Play the sound
@@ -170,6 +174,9 @@ void Dragon::syncAction(DragonStateAction* action, int volume) {
         // We ignore die actions if the dragon has already eaten somebody or if it's a duplicate.
         if ((state != Dragon::EATEN) && (state != Dragon::DEAD)) {
             state = DEAD;
+            room = action->room;
+            x = action->posx;
+            y = action->posy;
             movementX = 0;
             movementY = 0;
             // Keep the previous movement untouched.
@@ -180,7 +187,7 @@ void Dragon::syncAction(DragonStateAction* action, int volume) {
     else if (action->newState == Dragon::ROAR) {
         // We ignore roar actions if we are already in an eaten state or dead state
         if ((state != Dragon::EATEN) && (state != Dragon::DEAD)) {
-            roar(action->posx, action->posy);
+            roar(action->room, action->posx, action->posy);
             // Play the sound
             Platform_MakeSound(SOUND_ROAR, volume);
         }
@@ -212,7 +219,7 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
         if ((objectBall->room == dragon->room) &&
             board->CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-4), 8, 8))
         {
-            dragon->roar(objectBall->x/2, objectBall->y/2);
+            dragon->roar(objectBall->room, objectBall->x/2, objectBall->y/2);
             
             // Notify others
             actionTaken = new DragonStateAction(dragon->dragonNumber, Dragon::ROAR, dragon->room, dragon->x, dragon->y);

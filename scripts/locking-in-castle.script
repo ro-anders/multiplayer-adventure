@@ -1,0 +1,48 @@
+$ Dragons come alive
+
+$ Hide  bat 
+Send "BM 0 32 14 87 0 1 1" on frame #213
+
+$ Place dead dragons
+Sent "DS 0 0 1 6 92 96" on frame #250
+Sent "DS 0 1 1 6 49 70" on frame #250
+Sent "DS 0 2 1 6 39 33" on frame #250
+
+$ Player 1 opens the gate and enters
+Sent "PM 0 13 160 160 0 6" on frame #352
+Sent "PP 0 15 -1 7 -1 0 0 0" on frame #352
+Sent "PM 0 15 160 54 0 0" on frame #397
+Sent "PM 0 15 166 48 6 0" on frame #466
+Sent "PM 0 15 190 48 0 0" on frame #481
+Sent "PP 0 -1 0 0 15 15 94 31" on frame #494
+Sent "PM 0 15 184 48 -6 0" on frame #502
+Sent "PM 0 15 154 48 0 0" on frame #520
+Sent "PM 0 15 154 54 0 6" on frame #523
+Sent "GS 0 3 0 1" on frame #544
+Sent "PM 0 26 154 30 0 6" on frame #544
+Sent "PM 0 26 154 72 0 0" on frame #565
+
+$ Player 2 locks the gate and leaves
+Sent "PM 1 13 160 148 0 6" on frame #565
+Sent "PM 1 15 166 48 6 6" on frame #607
+Sent "PM 1 15 172 48 6 0" on frame #610
+Sent "PM 1 15 190 54 0 6" on frame #622
+Sent "PP 1 15 -1 1 -1 0 0 0" on frame #626
+Sent "PP 1 15 -1 1 -1 0 0 0" on frame #626
+Sent "PP 1 15 -1 4 -1 0 0 0" on frame #626
+Sent "PM 1 15 184 54 -6 0" on frame #628
+Sent "PM 1 15 160 60 0 6" on frame #643
+Sent "PP 1 15 -1 4 -1 0 0 0" on frame #644
+Sent "PP 1 15 -1 7 -1 0 0 0" on frame #644
+Sent "GS 1 3 1 1" on frame #656
+Sent "PM 1 15 160 78 0 0" on frame #658
+Sent "PM 1 15 160 72 0 -6" on frame #673
+
+$ Setting up a shot with white castle and no players
+$ Do this by using bridge
+Sent "PP 1 11 -4 29 -1 0 0 0" on frame #253
+Sent "PP 1 -1 0 0 11 13 102 103" on frame #256
+Sent "PM 1 13 237 154 0 6" on frame #700
+
+
+.

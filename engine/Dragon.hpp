@@ -72,7 +72,7 @@ public:
 	*/
     RemoteAction* move(int* displayedRoomIndex);
     
-	void roar(int atX, int atY);
+	void roar(int atRoom, int atX, int atY);
     
 	int dragonNumber;
 

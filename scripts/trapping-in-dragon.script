@@ -1,0 +1,39 @@
+$ Trapping player 2 in the dragon
+
+$ Hide two dragons and bat
+Send "DM 0 0 80 32 2 2 0 77" on frame #213
+Send "DM 0 0 80 32 2 2 1 77" on frame #213
+Send "BM 0 32 14 87 0 1 1" on frame #213
+
+$ Place dead rhindle
+Sent "DS 0 2 1 8 35 33" on frame #250
+
+$ Start players off with key and lance
+Sent "PP 0 16 -12 2 -1 0 0 0" on frame #260
+Sent "PP 1 10 -12 2 -1 0 0 0" on frame #260
+$ When running as player one uncomment this
+$Sent "PP 1 10 12 2 -1 0 0 0" on frame #260
+
+
+
+Sent "PM 0 8 153 54 -6 0" on frame #270
+Sent "PM 1 8 193 54 0 0" on frame #270
+Sent "PM 1 8 187 54 -6 0" on frame #286
+Sent "PM 1 8 79 54 0 0" on frame #367
+Sent "PM 1 8 73 54 -6 0" on frame #370
+Sent "PM 1 8 79 54 0 0" on frame #373
+Sent "PM 1 8 79 54 6 0" on frame #376
+Sent "PM 1 8 79 54 0 0" on frame #412
+Sent "PM 1 8 73 54 -6 0" on frame #415
+Sent "PM 1 8 79 54 0 0" on frame #442
+Sent "PM 1 8 79 54 6 0" on frame #448
+Sent "PM 1 8 79 54 0 0" on frame #487
+$ When running as player one uncomment this
+$Sent "PP 1 10 -12 2 -1 0 0 0" on frame #487
+
+Sent "PP 0 -1 0 0 16 7 126 29" on frame #452
+Sent "PM 0 7 285 54 6 0" on frame #475
+Sent "PP 0 10 7 2 -1 0 0 0" on frame #515
+Sent "PM 0 8 53 54 -6 0" on frame #515
+
+.
