@@ -1,13 +1,16 @@
 $ Hide the dragons and bat
+Sent "PR 0" on frame #210
+Sent "PR 1" on frame #215
+
 Send "DM 0 0 80 32 2 2 0 77" on frame #128
 Send "DM 0 0 80 32 2 2 1 77" on frame #128
 Send "DM 0 0 80 32 2 2 2 77" on frame #128
-Send "BM 0 34 14 87 0 1 1" on frame #128
-$ Hide the sword and white key
+Send "BM 0 32 14 87 0 1 1" on frame #128
+$ Move the sword, hide the white key
 Sent "PP 0 10 -6 3 -1 0 0 0" on frame #129
 Sent "PP 0 -1 0 0 10 6 56 35" on frame #130
 Sent "PP 0 15 -6 3 -1 0 0 0" on frame #131
-Sent "PP 0 -1 0 0 15 2 32 65" on frame #132
+Sent "PP 0 -1 0 0 15 29 32 65" on frame #132
 
 $ Traversing blue maze
 Sent "PM 0 4 291  48 6 0" on frame #570

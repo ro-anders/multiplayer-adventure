@@ -1,4 +1,6 @@
-$ Dragons come alive
+$ Trying to lock a player in the castle
+Sent "PR 0" on frame #210
+Sent "PR 1" on frame #215
 
 $ Hide  bat 
 Send "BM 0 32 14 87 0 1 1" on frame #213

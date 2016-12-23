@@ -1,4 +1,7 @@
 # Hiding black key near black castle
+Sent "PR 0" on frame #210
+Sent "PR 1" on frame #215
+
 # Hide the dragons
 Send "DM 0 0 80 32 2 2 0 77" on frame #213
 Send "DM 0 0 80 32 2 2 1 77" on frame #213

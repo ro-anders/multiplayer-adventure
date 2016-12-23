@@ -1,57 +1,34 @@
-# Stealing bridge in white castle 
-# Hide the dragons and bat
-Send "DM 0 7 80 46 0 0 2 77" on frame #128
+$ Stealing bridge in white castle 
+Sent "PR 0" on frame #210
+Sent "PR 1" on frame #215
+
+$ Hide the dragons and bat
+Send "DM 0 0 80 46 0 0 2 77" on frame #128
 Send "DM 0 0 80 32 2 2 0 77" on frame #128
 Send "DM 0 0 80 32 2 2 1 77" on frame #128
-Send "BM 0 34 14 87 0 1 1" on frame #128
-# Open the white castle
-Send "GS 0 1 13 1" on frame #213
-# Start at white castle
-Send "PM 0 15 51 108 0 0" on frame #250
-Send "PM 1 15 201 48 0 0" on frame #250
-Send "PP 0 11 -25 23 -1 0 0 0" on frame #300
-Send "PP 0 11 -25 23 -1 0 0 0" on frame #305
-n frame #364
-Send "PM 0 15 51 108 0 0" on frame #370
-Send "PM 0 15 51 102 0 -6" on frame #529
-Send "PM 0 15 51 78 0 0" on frame #544
-Send "PM 0 15 57 78 6 0" on frame #547
-Send "PM 0 15 93 72 6 -6" on frame #565
-Send "PM 0 15 87 66 0 -6" on frame #568
-Send "PM 0 15 87 42 0 0" on frame #586
-Send "PM 0 15 93 42 6 0" on frame #589
-Send "PM 0 15 159 48 6 6" on frame #622
-Send "PM 0 15 159 54 0 6" on frame #625
-Send "GS 0 1 0 1" on frame #646
-Send "PM 0 26 159 30 0 6" on frame #646
-Send "PM 0 26 159 48 0 0" on frame #658
-Send "PM 0 26 159 54 0 6" on frame #727
-Send "PM 0 26 153 180 -6 6" on frame #790
-Send "PM 0 26 135 210 0 6" on frame #805
-Send "PM 0 24 135 48 0 0" on frame #820
-Send "PM 0 24 141 48 6 0" on frame #832
-Send "PM 0 24 141 48 0 0" on frame #835
-Send "PM 0 24 147 48 6 0" on frame #853
-Send "PM 0 24 147 48 0 0" on frame #856
-Send "PP 0 -1 0 0 11 24 48 53" on frame #899
-Send "PM 0 24 141 48 -6 0" on frame #913
-Send "PM 0 24 135 48 0 0" on frame #919
-Send "PM 0 24 135 54 0 6" on frame #946
-Send "PM 0 24 135 108 0 0" on frame #976
-Send "PM 0 24 135 114 0 6" on frame #994
-Send "PM 0 24 135 144 0 0" on frame #1012
-# P2 steals bridge
-Send "PP 1 20 -6 6 -1 0 0 0" on frame #657
-Send "PM 1 15 201 54 0 6" on frame #835
-Send "PM 1 15 201 54 0 0" on frame #844
-Send "PM 1 15 195 54 -6 0" on frame #883
-Send "PM 1 15 159 54 0 0" on frame #904
-Send "PM 1 15 159 60 0 6" on frame #919
-Send "GS 1 1 0 1" on frame #937
-Send "PM 1 26 159 30 0 6" on frame #937
-Send "PM 1 26 159 54 0 0" on frame #952
-Send "PM 1 26 165 54 6 0" on frame #979
-Send "PM 1 26 177 54 0 0" on frame #988
-Send "PM 1 26 177 60 0 6" on frame #1027
-Send "PM 1 24 177 30 0 0" on frame #1108
+Send "BM 0 32 14 87 0 1 1" on frame #128
+
+$ Start with bridge
+Send "PP 0 11 -25 27 -1 0 0 0" on frame #255
+
+$ Place bridge
+Send "PM 0 2 100 100 0 0" on frame #244
+Send "PM 0 26 159 36 0 0" on frame #250
+Send "PM 0 26 159 42 0 6" on frame #310
+Sent "PM 0 26 153 120 -6 6" on frame #349
+Sent "PM 0 26 147 132 0 6" on frame #355
+Send "PM 0 24 147 48 0 0" on frame #412
+Send "PP 0 -1 0 0 11 24 48 53" on frame #431
+
+$ Go through bridge
+Send "PM 0 24 141 48 -6 0" on frame #445
+Send "PM 0 24 135 54 0 6" on frame #451
+Send "PM 0 24 135 138 0 -6" on frame #499
+Sent "PM 0 24 135 108 0 0" on frame #604
+
+$ P2 steals bridge
+Send "PP 1 20 -6 6 -1 0 0 0" on frame #250
+Send "PM 1 2 150 100 0 0" on frame #244
+Send "PM 1 26 177 120 0 6" on frame #421
+Send "PM 1 24 177 30 0 0" on frame #472
 .

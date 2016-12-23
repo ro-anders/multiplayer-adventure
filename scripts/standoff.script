@@ -1,4 +1,6 @@
 $ Standoff against bat w/ dragon 
+Sent "PR 0" on frame #190
+Sent "PR 1" on frame #195
 
 $ Hide Other Dragons
 Send "DM 0 0 80 32 2 2 0 77" on frame #128

@@ -1,5 +1,21 @@
 $ Dump dragon on other player
 
+$ Get rid of the lance, keys, and bridge
+Send "PP 0 10 -2 -4 -1 0 0 0" on frame #140
+Send "PP 0 -1 0 0 10 29 104 26" on frame #141
+Send "PP 0 15 -2 -4 -1 0 0 0" on frame #142
+Send "PP 0 -1 0 0 15 29 104 26" on frame #143
+Send "PP 0 16 -2 -4 -1 0 0 0" on frame #142
+Send "PP 0 -1 0 0 16 29 104 26" on frame #143
+Send "PP 1 12 -2 -4 -1 0 0 0" on frame #144
+Send "PP 1 -1 0 0 12 29 104 26" on frame #145
+Send "PP 0 11 -2 -4 -1 0 0 0" on frame #146
+Send "PP 0 -1 0 0 11 29 104 26" on frame #147
+
+$ Make sure dragon alive
+Sent "PR 0" on frame #210
+Sent "PR 1" on frame #215
+
 $ Hide the dragons and bat
 Send "DM 0 0 80 32 2 2 0 77" on frame #153
 Send "DM 0 0 80 32 2 2 1 77" on frame #153
@@ -14,6 +30,7 @@ Sent "PM 1 2 279 124 -6 6" on frame #295
 Sent "PM 1 2 273 136 0 6" on frame #301
 Sent "PM 1 2 279 142 6 6" on frame #304
 Sent "PM 0 2 153 136 -6 0" on frame #340
+Sent "PM 0 1 177 136 0 0" on frame #484
 
 
 
