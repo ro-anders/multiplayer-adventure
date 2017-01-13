@@ -578,6 +578,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     
     Dragon::Difficulty difficulty = (gameMode == GAME_MODE_1 ? (initialLeftDiff == DIFFICULTY_B ?  Dragon::TRIVIAL : Dragon::EASY) :
                                      (initialLeftDiff == DIFFICULTY_B ? Dragon::MODERATE : Dragon::HARD));
+    if (gameMode == GAME_MODE_SCRIPTING) difficulty = Dragon::EASY;
     Dragon::setDifficulty(difficulty);
     dragons = new Dragon*[numDragons];
     dragons[0] = new Dragon( "yorgle", 0, COLOR_YELLOW, 2, yellowDragonMatrix);

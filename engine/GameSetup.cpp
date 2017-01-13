@@ -64,7 +64,7 @@ GameSetup::GameParams GameSetup::setup(int argc, char** argv) {
         }
     } else if ((argc >= 1) && (strcmp(argv[0], "script")==0)) {
         newParams.isScripting = true;
-        newParams.numberPlayers = 2;
+        newParams.numberPlayers = 3;
         newParams.thisPlayer = (argc == 1 ? 0 : atoi(argv[1])-1);
         newParams.gameLevel = GAME_MODE_SCRIPTING;
     } else if ((argc >= 1) && (strcmp(argv[0], "broker")==0)){
@@ -213,7 +213,7 @@ Transport::Address GameSetup::determinePublicAddress(Transport::Address stunServ
 
 void GameSetup::checkExpirationDate() {
     
-    const long EXPIRATION_DATE = 20161231;
+    const long EXPIRATION_DATE = 20170131;
     long time = Sys::today();
     if ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE)) {
         Logger::logError("Beta Release has expired.");
