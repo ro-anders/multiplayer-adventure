@@ -227,6 +227,8 @@ void UdpTransport::punchHole() {
                 if (senderIndex >= 0) {
                     if (states[senderIndex] == RECVD_NOTHING) {
                         states[senderIndex] = RECVD_MESSAGE;
+                        Logger::log() << "Received message from " << theirAddrs[senderIndex].ip() << ":" <<
+                        theirAddrs[senderIndex].port() << ".  Waiting for ack." << Logger::EOM;
                     }
                     // See if they have received ours and this is the first time we have seen them receive ours
                     if ((recvBuffer[1] != RECVD_NOTHING[1]) && (states[senderIndex] != RECVD_ACK)) {
