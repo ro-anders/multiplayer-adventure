@@ -222,25 +222,29 @@ void UdpTransport::punchHole() {
                 // Two machine games don't need this so the number is always 0.
                 // Three machine games need to map a 0, 1, or 2 to their array of machines 0 or 1.
                 int senderInt = senderChar - '0';
-                int senderIndex = (senderInt <= transportNum ? senderInt : senderInt-1);
-                
-                if (senderIndex >= 0) {
-                    if (states[senderIndex] == RECVD_NOTHING) {
-                        states[senderIndex] = RECVD_MESSAGE;
-                        Logger::log() << "Received message from " << theirAddrs[senderIndex].ip() << ":" <<
-                        theirAddrs[senderIndex].port() << ".  Waiting for ack." << Logger::EOM;
-                    }
-                    // See if they have received ours and this is the first time we have seen them receive ours
-                    if ((recvBuffer[1] != RECVD_NOTHING[1]) && (states[senderIndex] != RECVD_ACK)) {
-                        // They have received our message, and now we have received their's.  So ACK.
-                        states[senderIndex] = RECVD_ACK;
-                        justAcked[senderIndex] = true;
-                        connected = states[1-senderIndex] == RECVD_ACK;
-                        Logger::log() << "Connected with " << theirAddrs[senderIndex].ip() << ":" <<
-                          theirAddrs[senderIndex].port() << Logger::EOM;
-                        // If this is a test case, figure out who is player one.
-                        if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
-                            compareNumbers(randomNum, recvBuffer, senderIndex);
+                if (senderInt == transportNum) {
+                    Logger::logError("Received UDP setup message trying to acquire same slot as this game.");
+                } else {
+                    int senderIndex = (senderInt <= transportNum ? senderInt : senderInt-1);
+                    
+                    if (senderIndex >= 0) {
+                        if (states[senderIndex] == RECVD_NOTHING) {
+                            states[senderIndex] = RECVD_MESSAGE;
+                            Logger::log() << "Received message from " << theirAddrs[senderIndex].ip() << ":" <<
+                            theirAddrs[senderIndex].port() << ".  Waiting for ack." << Logger::EOM;
+                        }
+                        // See if they have received ours and this is the first time we have seen them receive ours
+                        if ((recvBuffer[1] != RECVD_NOTHING[1]) && (states[senderIndex] != RECVD_ACK)) {
+                            // They have received our message, and now we have received their's.  So ACK.
+                            states[senderIndex] = RECVD_ACK;
+                            justAcked[senderIndex] = true;
+                            connected = states[1-senderIndex] == RECVD_ACK;
+                            Logger::log() << "Connected with " << theirAddrs[senderIndex].ip() << ":" <<
+                            theirAddrs[senderIndex].port() << Logger::EOM;
+                            // If this is a test case, figure out who is player one.
+                            if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
+                                compareNumbers(randomNum, recvBuffer, senderIndex);
+                            }
                         }
                     }
                 }
@@ -254,7 +258,7 @@ void UdpTransport::punchHole() {
         // Note, we may look all connected, but if we just got acknowledged we need to send one more message.
         for(int ctr=0; ctr<numOtherMachines; ++ctr) {
             if (justAcked[ctr] || ((states[ctr] != NOT_YET_INITIATED) && (states[ctr] != RECVD_ACK))) {
-                sprintf(sendBuffer, "%s%d%ld", states[ctr], transportNum, randomNum);
+                sprintf(sendBuffer, "%s%d%06ld", states[ctr], transportNum, randomNum);
                 writeData(sendBuffer, strlen(sendBuffer)+1, ctr);
             }
         }
