@@ -254,7 +254,7 @@ void UdpTransport::punchHole() {
         // Note, we may look all connected, but if we just got acknowledged we need to send one more message.
         for(int ctr=0; ctr<numOtherMachines; ++ctr) {
             if (justAcked[ctr] || ((states[ctr] != NOT_YET_INITIATED) && (states[ctr] != RECVD_ACK))) {
-                sprintf(sendBuffer, "%s%d%ld", states[ctr], transportNum, randomNum);
+                sprintf(sendBuffer, "%s%d%06ld", states[ctr], transportNum, randomNum);
                 writeData(sendBuffer, strlen(sendBuffer)+1, ctr);
             }
         }
