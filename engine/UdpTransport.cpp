@@ -222,7 +222,7 @@ void UdpTransport::punchHole() {
                 // Two machine games don't need this so the number is always 0.
                 // Three machine games need to map a 0, 1, or 2 to their array of machines 0 or 1.
                 int senderInt = senderChar - '0';
-                if (senderInt == transportNum) {
+                if ((senderInt == transportNum) && (getDynamicPlayerSetupNumber() == NOT_DYNAMIC_PLAYER_SETUP)) {
                     Logger::logError("Received UDP setup message trying to acquire same slot as this game.");
                 } else {
                     int senderIndex = (senderInt <= transportNum ? senderInt : senderInt-1);
