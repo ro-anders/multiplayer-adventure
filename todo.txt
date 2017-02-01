@@ -4,6 +4,7 @@ To Do
 - Sometimes when you unlock and enter castle the gate locks behind you.  Has to do with other machines seeing player touch the key to the castle and sending a lock event.
   Unlock a castle.  Hold the key above you and touch the open gate.  As it closes it will bring you into the castle.  Other players will see the castle open, but you will
   see the castle closed.
+- Make key controls the same for Mac and PC
 - FIXED - Grab an object with someone else in the room and other person picks it up
 - FIXED - Hold a key beneath you and just step into a castle.  Key appears at top of outside of castle.  Should appear right below gate (when gate is open)
 - FIXED - When player holds an object, other players see it held in a different position
@@ -22,6 +23,7 @@ Original Disparities
 - Objects aren't occluded by the wall in the catacombs
 - Ball doesn't make pyramid as it drags along the bottom wall
 - Peeking into other room should show flickering ball on both sides of room, right now shows only on one side
+- If you run diagonally into the point of a corner you can get stuck on the corner.  Original behavior is you always go the vertical direction.
 - Peeking up or down into a room with dragons should cause the dragons to chase you.
 - HACKED - Chalice touch gate doesn't trigger win
   (work around in mine wins, but doesn't have same behavior where too many objects in room obscures touch)
