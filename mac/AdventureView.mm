@@ -52,7 +52,6 @@ bool lockKeys = false;
 #define KEY_DOWN	0x08
 #define KEY_FIRE	0x10
 #define KEY_RESET	0x20
-#define KEY_SELECT	0x40
 
 bool gLeftDifficulty = TRUE;	// true = dragons pause before eating you
 bool gRightDifficulty = TRUE;	// true = dragons run from the sword
@@ -219,29 +218,26 @@ bool gMute = FALSE;
     unsigned short key = [theEvent keyCode];
     switch(key)
     {
-        case 51: // delete
+        case 0x33: // delete
             lockKeys = true;
             break;
-        case 0x7e: //up
+        case 0x7e: //up arrow
             mKeyMap |= KEY_UP;
             break;
-        case 0x7d: //down
+        case 0x7d: //down arrow
             mKeyMap |= KEY_DOWN;
             break;
-        case 0x7b: //left
+        case 0x7b: //left arrow
             mKeyMap |= KEY_LEFT;
             break;
-        case 0x7c: //right
+        case 0x7c: //right arrow
             mKeyMap |= KEY_RIGHT;
             break;
-        case 0x31: //fire
+        case 0x31: //space bar
             mKeyMap |= KEY_FIRE;
             break;
-        case 0x12: //reset
+        case 0x24: //return
             mKeyMap |= KEY_RESET;
-            break;
-        case 0x13: //select
-            mKeyMap |= KEY_SELECT;
             break;
     }
 }
@@ -249,31 +245,28 @@ bool gMute = FALSE;
 - (void) keyUp:(NSEvent *) theEvent
 {
     unsigned short key = [theEvent keyCode];
-    if (key == 51) { // delete
+    if (key == 0x33) { // delete
         lockKeys = false;
     } else if (!lockKeys) {
         switch(key)
         {
-            case 0x7e: //up
+            case 0x7e: //up arrow
                 mKeyMap &= ~KEY_UP;
                 break;
-            case 0x7d: //down
+            case 0x7d: //down arrow
                 mKeyMap &= ~KEY_DOWN;
                 break;
-            case 0x7b: //left
+            case 0x7b: //left arrow
                 mKeyMap &= ~KEY_LEFT;
                 break;
-            case 0x7c: //right
+            case 0x7c: //right arrow
                 mKeyMap &= ~KEY_RIGHT;
                 break;
-            case 0x31: //fire
+            case 0x31: //space bar
                 mKeyMap &= ~KEY_FIRE;
                 break;
-            case 0x12: //reset
+            case 0x24: //return
                 mKeyMap &= ~KEY_RESET;
-                break;
-            case 0x13: //select
-                mKeyMap &= ~KEY_SELECT;
                 break;
         }
     }
