@@ -38,7 +38,7 @@ Let's say the gold player has IP address 192.168.1.11 and copper has 192.168.1.1
 
 For Mac it would be ./MacAdventure instead of WinAdventure.exe.
 
-The 5001,5002,5003 is specifying a "port" for the computer to listen on.  It can actually be any number as long as its uniquer.
+The 5001,5002,5003 is specifying a "port" for the computer to listen on.  It can actually be any number as long as its unique.
 
 If only two players are playing omit the final argument.
 
@@ -47,8 +47,8 @@ If players are not on the same local network peer-to-peer setup is more difficul
 Let's say player3 in the example above is out on the internet, and it appears to other machines as 300.300.300.300.  Let's say player1 and player2 both appear as 100.100.100.100.  
 
 The commands to type are:
-*player1 -> WinAdventure.exe 2 1 5001 192.168.1.12:5002 300.300.300.300:5003
-*plater2 -> WinAdventure.exe 2 2 5002 192.168.1.11:5001 300.300.300.300:5002
-*player3 -> WinAdventure.exe 2 3 5003 100.100.100.100:5001 100.100.100.100:5003
+* player1 -> WinAdventure.exe 2 1 5001 192.168.1.12:5002 300.300.300.300:5003
+* player2 -> WinAdventure.exe 2 2 5002 192.168.1.11:5001 300.300.300.300:5002
+* player3 -> WinAdventure.exe 2 3 5003 100.100.100.100:5001 100.100.100.100:5003
 
  
