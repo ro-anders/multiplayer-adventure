@@ -130,6 +130,7 @@ static int gameMode = 0;
 static bool joystickDisabled = false;
 
 #define GAMEOPTION_PRIVATE_MAGNETS  1
+#define GAMEOPTION_UNLOCK_GATES_FROM_INSIDE 2
 // This holds all the switches for whether to turn on or off different game options
 // It is a bitwise or of each game option
 static int gameOptions = 0;
@@ -1285,11 +1286,13 @@ void BallMovement(BALL* ball) {
         }
         else if (ball->y < 0x0D*2)
         {
+            bool canUnlockFromInside = (gameOptions & GAMEOPTION_UNLOCK_GATES_FROM_INSIDE);
             // Handle the ball leaving a castle.
 			bool leftCastle = false;
 			for (int portalCtr = 0; !leftCastle && (portalCtr < numPorts); ++portalCtr) {
                 Portcullis* port = ports[portalCtr];
-				if (ball->room == port->insideRoom)
+				if ((ball->room == port->insideRoom) &&
+                    ((port->state != Portcullis::CLOSED_STATE) || canUnlockFromInside))
 				{
                     ball->x = Portcullis::EXIT_X;
                     ball->y = Portcullis::EXIT_Y;
@@ -1300,7 +1303,7 @@ void BallMovement(BALL* ball) {
 					ball->room = port->room;
                     ball->displayedRoom = ball->room;
                     // If we were locked in the castle, open the portcullis.
-                    if (port->state == Portcullis::CLOSED_STATE) {
+                    if (port->state == Portcullis::CLOSED_STATE && canUnlockFromInside) {
                         port->openFromInside();
                         PortcullisStateAction* gateAction = new PortcullisStateAction(port->getPKey(), port->state, port->allowsEntry);
                         sync->BroadcastAction(gateAction);
