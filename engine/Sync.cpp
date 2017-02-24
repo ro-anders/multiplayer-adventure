@@ -124,7 +124,7 @@ void Sync::handlePlayerWinMessage(const char* message) {
 }
 
 void Sync::handleMazeSetupObjectMessage(const char* message) {
-    MapSetupObjectAction* nextAction = new MapSetupObjectAction();
+    ObjectMoveAction* nextAction = new ObjectMoveAction();
     nextAction->deserialize(receiveBuffer);
     mazeSetupActions.enQ(nextAction);
 }
@@ -279,10 +279,10 @@ PlayerWinAction* Sync::GetGameWon() {
     return next;
 }
 
-MapSetupObjectAction* Sync::GetNextSetupAction() {
-    MapSetupObjectAction* next = NULL;
+ObjectMoveAction* Sync::GetNextSetupAction() {
+    ObjectMoveAction* next = NULL;
     if (!mazeSetupActions.isEmpty()) {
-        next = (MapSetupObjectAction*)mazeSetupActions.deQ();
+        next = (ObjectMoveAction*)mazeSetupActions.deQ();
     }
     return next;
     

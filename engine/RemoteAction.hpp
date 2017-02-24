@@ -165,7 +165,7 @@ public:
     
     PortcullisStateAction();
     
-    PortcullisStateAction(int portPkey, int newState, bool allowsEntry  );
+    PortcullisStateAction(int portPkey, int newState, bool allowsEntry);
     
     ~PortcullisStateAction();
     
@@ -216,10 +216,10 @@ public:
 };
 
 /**
- * This is used in level 3.  One client randomly assigns the objects and then communicates the positions to the
- * other clients.
+ * This places an object.  It is used when an object touches a gate and in level 3 when one client randomly assigns the objects 
+ * and then communicates the positions to the other clients.  It can be used to move the dragons and bat, too.
  */
-class MapSetupObjectAction: public RemoteAction {
+class ObjectMoveAction: public RemoteAction {
 public:
     int object;
     int room;
@@ -228,11 +228,11 @@ public:
     
     static const char* CODE;
     
-    MapSetupObjectAction();
+    ObjectMoveAction();
     
-    MapSetupObjectAction(int inObject, int inRoom, int x, int y);
+    ObjectMoveAction(int inObject, int inRoom, int x, int y);
     
-    ~MapSetupObjectAction();
+    ~ObjectMoveAction();
     
     int serialize(char* buffer, int bufferLength);
     

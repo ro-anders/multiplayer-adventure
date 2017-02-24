@@ -13,11 +13,7 @@
 // Original game written by Warren Robinett. Warren, you rock.
 //
 
-#define ADVENTURE_SCREEN_WIDTH              320
-#define ADVENTURE_SCREEN_HEIGHT             192
-#define ADVENTURE_OVERSCAN                  16
-#define ADVENTURE_TOTAL_SCREEN_HEIGHT       (ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN)
-#define ADVENTURE_FPS                       58
+#include "adventure_sys.h"
 
 // Game funtions
 class Transport;

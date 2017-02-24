@@ -1066,7 +1066,7 @@ void randomizeRoomObjects() {
                 
                 if (ok) {
                     nextObj->room = randomKey;
-                    MapSetupObjectAction* action = new MapSetupObjectAction(objCtr, randomKey, nextObj->x, nextObj->y);
+                    ObjectMoveAction* action = new ObjectMoveAction(objCtr, randomKey, nextObj->x, nextObj->y);
                     sync->BroadcastAction(action);
                 }
             }
@@ -1090,7 +1090,7 @@ void randomizeRoomObjects() {
  * If this was a randomized game, look for another game to define where the objects are placed.
  */
 void handleSetupMessages() {
-    MapSetupObjectAction* nextMsg = sync->GetNextSetupAction();
+    ObjectMoveAction* nextMsg = sync->GetNextSetupAction();
     while (nextMsg != NULL) {
         OBJECT* toSetup = board[nextMsg->object];
         toSetup->room = nextMsg->room;
@@ -1264,10 +1264,10 @@ void BallMovement(BALL* ball) {
     if (!eaten)
     {
         // Wrap rooms in Y if necessary
-        if (ball->y > (ADVENTURE_OVERSCAN + ADVENTURE_SCREEN_HEIGHT) + 6)
+        if (ball->y > TOP_EDGE)
         {
             // Wrap the ball to the bottom of the screen
-            ball->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
+            ball->y = ENTER_AT_BOTTOM;
 
             // Set the new room
             const ROOM* currentRoom = roomDefs[ball->room];
@@ -1284,7 +1284,7 @@ void BallMovement(BALL* ball) {
             // Ball is displayed in new room even if we hit a collision and don't update ball->room
             ball->displayedRoom = roomUp;
         }
-        else if (ball->y < 0x0D*2)
+        else if (ball->y < BOTTOM_EDGE)
         {
             bool canUnlockFromInside = (gameOptions & GAMEOPTION_UNLOCK_GATES_FROM_INSIDE);
             // Handle the ball leaving a castle.
@@ -1317,7 +1317,7 @@ void BallMovement(BALL* ball) {
             {
                 // Just lookup the next room down and switch to that room
                 // Wrap the ball to the top of the screen
-                int newY = (ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN);
+                int newY = ENTER_AT_TOP;
 
                 const ROOM* currentRoom = roomDefs[ball->room];
                 int roomDown = currentRoom->roomDown;
@@ -1362,10 +1362,10 @@ void BallMovement(BALL* ball) {
     if (!eaten)
     {
         // Wrap rooms in X if necessary
-        if (ball->x >= (ADVENTURE_SCREEN_WIDTH-4))
+        if (ball->x >= RIGHT_EDGE)
         {
             // Wrap the ball to the left side of the screen
-            ball->x = 5;
+            ball->x = ENTER_AT_LEFT;
 
             // Figure out the room to the right (which might be the secret room)
             int roomRight = (ball->room == MAIN_HALL_RIGHT ? ROBINETT_ROOM :
@@ -1382,10 +1382,10 @@ void BallMovement(BALL* ball) {
             ball->displayedRoom = roomRight;
             
         }
-        else if (ball->x < 4)
+        else if (ball->x < LEFT_EDGE)
         {
             // Wrap the ball to the right side of the screen
-            ball->x = ADVENTURE_SCREEN_WIDTH-5;
+            ball->x = ENTER_AT_RIGHT;
 
             // Figure out the room to the left
             int roomLeft = roomDefs[ball->room]->roomLeft;
@@ -1513,7 +1513,7 @@ void moveBallIntoCastle() {
             if (nextBall->room == nextPort->room && nextPort->allowsEntry && CollisionCheckObject(nextPort, (nextBall->x-4), (nextBall->y-1), 8, 8))
             {
                 nextBall->room = nextPort->insideRoom;
-                nextBall->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
+                nextBall->y = ENTER_AT_BOTTOM;
                 nextBall->previousY = nextBall->y;
                 // make sure it stays unlocked in case we are walking in with the key
                 nextPort->forceOpen();
@@ -1870,15 +1870,19 @@ void Portals()
             seen = (gameBoard->getPlayer(ctr)->room == port->room);
         }
         if (seen) {
-            PortcullisStateAction* gateAction = port->checkInteraction();
+            // Check if a key unlocks the gate
+            PortcullisStateAction* gateAction = port->checkKeyInteraction();
             if (gateAction != NULL) {
-                // If we are in the same room as the portcullis, broadcast any state change
-                if (objectBall->room == port->room) {
-                    sync->BroadcastAction(gateAction);
-                } else {
-                    printf("Not broadcasting.  Player in %s.  Gate in %s.\n", gameMap->getRoom(objectBall->room)->label,
-                           gameMap->getRoom(port->room)->label);
-                    delete gateAction;
+                sync->BroadcastAction(gateAction);
+            }
+            
+            // Check if anything runs into the gate
+            Board::ObjIter iter = board.getMovableObjects();
+            while (iter.hasNext()) {
+                OBJECT* next = iter.next();
+                ObjectMoveAction* reaction = port->checkObjectEnters(next);
+                if (reaction != NULL) {
+                    sync->BroadcastAction(reaction);
                 }
             }
         }

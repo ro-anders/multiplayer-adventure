@@ -333,22 +333,23 @@ void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int
         
         int bufferWidth = ADVENTURE_SCREEN_WIDTH*gGfxScaler;
         int bufferHeight = ADVENTURE_SCREEN_HEIGHT*gGfxScaler;
+        int bufferOverscan = ADVENTURE_OVERSCAN*gGfxScaler;
         
         for (int cy=0; cy<height; cy++)
         {
             // The game expects a bottom up buffer, so we flip the orientation here.
             // Also, the game actually draws more than would show on a TV screen, hence the adjustment for overscan
             
-            int py = ((ADVENTURE_SCREEN_HEIGHT*gGfxScaler) - (y + cy)) + (ADVENTURE_OVERSCAN*gGfxScaler);
+            int py = (bufferHeight - (y + cy)) + bufferOverscan;
             
-            if ((py >= 0) && (py < (ADVENTURE_SCREEN_HEIGHT*gGfxScaler)))
+            if ((py >= 0) && (py < bufferHeight))
             {
                 for (int cx=0; cx<width; cx++)
                 {
                     int px = cx + x;
-                    byte* p = &gPixelBucket[(unsigned int)((py*(ADVENTURE_SCREEN_WIDTH*gGfxScaler)) + px) * 4];
+                    byte* p = &gPixelBucket[(unsigned int)((py*bufferWidth) + px) * 4];
                     
-                    if ((px >= 0) && (px < (ADVENTURE_SCREEN_WIDTH*gGfxScaler)))
+                    if ((px >= 0) && (px < bufferWidth))
                     {
                         p++;	// skip alpha
                         *(p++) = r & 0xff;

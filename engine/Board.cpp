@@ -108,10 +108,6 @@ void Board::addObject(int pkey, OBJECT* object) {
     object->setBoard(this, pkey);
 }
 
-int Board::getNumPlayers() {
-    return numPlayers;
-}
-
 void Board::addPlayer(BALL *newPlayer, bool isCurrent) {
     players[numPlayers] = newPlayer;
     if (isCurrent) {

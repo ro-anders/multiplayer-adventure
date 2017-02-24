@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 
+#include "adventure_sys.h"
 #include "GameObject.hpp"
 
 class BALL;
@@ -13,6 +14,19 @@ class BALL;
 #define PLAYFIELD_VRES      20
 #define CLOCKS_HSYNC        2
 #define CLOCKS_VSYNC        4
+
+// The position you appear when you enter at the edge of the screen.
+#define ENTER_AT_TOP      ADVENTURE_OVERSCAN + ADVENTURE_SCREEN_HEIGHT
+#define ENTER_AT_BOTTOM    ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2
+#define ENTER_AT_RIGHT      ADVENTURE_SCREEN_WIDTH-5
+#define ENTER_AT_LEFT       5
+
+
+// The limit as to how close a ball can get to the edge
+#define TOP_EDGE        ADVENTURE_OVERSCAN + ADVENTURE_SCREEN_HEIGHT + 6
+#define BOTTOM_EDGE     0x0D*2
+#define RIGHT_EDGE      ADVENTURE_SCREEN_WIDTH-4
+#define LEFT_EDGE       4
 
 #define OBJECT_BALL			(-2)
 enum
@@ -85,7 +99,7 @@ public:
     bool static HitTestRects(int ax, int ay, int awidth, int aheight,
                              int bx, int by, int bwidth, int bheight);
     
-    int getNumPlayers();
+    inline int getNumPlayers() {return numPlayers;}
     
     void addPlayer(BALL* newPlayer, bool isCurrent);
     

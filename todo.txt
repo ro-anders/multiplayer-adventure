@@ -30,6 +30,7 @@ Original Disparities
   (work around in mine wins, but doesn't have same behavior where too many objects in room obscures touch)
 - HACKED - Can't escape dragon by running left 
   (work around in mine allows left but then doesn't allow up and right)
+- FIXED - An unheld object (including bats and dragons) that touches an open gate while someone is watching should go into the castle - but it doesn't. 
 - FIXED - If a dragon bites and you then leave the room, the dragon should continue along the direction it was heading before it bit you.  Right now it just stays still.
 - FIXED - Bat sometimes gets stuck picking up object
 - FIXED - Moving into a room that is immediately blocked by a wall should cause you to flicker and, when you stop moving kick you back to the previous room
