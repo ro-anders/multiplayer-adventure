@@ -59,6 +59,7 @@ void ReactToCollision(BALL* ball);
 static void BallMovement(BALL* ball);
 static void ThisBallMovement();
 static void OtherBallMovement();
+static void moveBallIntoCastle();
 static void MoveCarriedObjects();
 static void MoveGroundObject();
 static void PrintDisplay();
@@ -1489,6 +1490,11 @@ void SyncDragons() {
 
 void MoveCarriedObjects()
 {
+    // RCA: moveBallIntoCastle originally was called after we moved the carried objects, but
+    // this created too many problems with the ball being in the castle and the key being
+    // still outside the castle.  So I moved it to before.
+    moveBallIntoCastle();
+
     for(int ctr=0; ctr<numPlayers; ++ctr) {
         BALL* nextBall = gameBoard->getPlayer(ctr);
         if (nextBall->linkedObject != OBJECT_NONE)
@@ -1540,8 +1546,6 @@ void moveBallIntoCastle() {
 
 void MoveGroundObject()
 {
-    moveBallIntoCastle();
-    
     // Move any objects that need moving, and wrap objects from room to room
     Board::ObjIter iter = board.getMovableObjects();
     while (iter.hasNext()) {
