@@ -68,7 +68,6 @@ static void OthersPickupPutdown();
 static void Surround();
 static void Portals();
 static void SyncDragons();
-static void MoveDragon(Dragon* dragon, const int* matrix, int speed);
 static void Magnet();
 
 // My helper functions

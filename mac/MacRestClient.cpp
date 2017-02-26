@@ -143,20 +143,7 @@ void MacRestClient::mimicServer() {
     while (!done) {
         int n = read(socketFd, buffer, BUFFER_LENGTH);
         for(int ctr=0; ctr<n; ++ctr) {
-            if (true) {
-                std::cout << buffer[ctr];
-            } else {
-                if (buffer[ctr] == ' ') {
-                    std::cout << '-';
-                }
-                else if (((buffer[ctr]<'a') || (buffer[ctr]>'z')) &&
-                         ((buffer[ctr]<'A') || (buffer[ctr]>'Z'))&&
-                         ((buffer[ctr]<'0') || (buffer[ctr]>'9'))) {
-                    std::cout << '<' << (int)buffer[ctr] << '>';
-                } else {
-                    std::cout << buffer[ctr];
-                }
-            }
+            std::cout << buffer[ctr];
         }
     }
     std::cout << '"' << std::endl;
