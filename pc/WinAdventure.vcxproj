@@ -13,6 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{733AE2B9-26C8-468E-A45D-E8A3DCF87CF4}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+    <ProjectName>H2HAdventure</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">

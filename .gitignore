@@ -15,5 +15,5 @@ xcschememanagement.plist
 
 pc/ipch/WINADVENTURE-905bcbbf/WINADVENTURE-658880a2.ipch
 pc/adventure.log
-pc/WinAdventure.VC.db
-pc/WinAdventure.VC.VC.opendb
+pc/*Adventure*.VC.db
+pc/*Adventure*.VC.VC.opendb
