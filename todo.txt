@@ -2,6 +2,7 @@ To Do
 -----
 - Mac runs too slow in full screen mode.  Speed up or disable full screen mode.
 - When player holds an object, other players see it held in a different position
+- When castle is locked objects are still wrapped from bottom of entrance room to opening of castle
 - FIXED - Make key controls the same for Mac and PC
 - FIXED - Grab an object with someone else in the room and other person picks it up
 - FIXED - Hold a key beneath you and just step into a castle.  Key appears at top of outside of castle.  Should appear right below gate (when gate is open)

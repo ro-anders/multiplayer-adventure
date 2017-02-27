@@ -2,6 +2,7 @@
 #include "Board.hpp"
 
 #include "Ball.hpp"
+#include "Bat.hpp"
 #include "GameObject.hpp"
 
 Board::ObjIter::ObjIter() :
@@ -304,6 +305,21 @@ bool Board::CollisionCheckObject(const OBJECT* object, int x, int y, int width, 
     }
     
     return false;
+}
+
+int Board::getPlayerHoldingObject(OBJECT* object) {
+    int heldBy = -1;
+    int objectPkey = object->getPKey();
+    for(int ctr=0; (ctr < numPlayers) && (heldBy < 0); ++ctr) {
+        BALL* nextPlayer = players[ctr];
+        // Have to check if player is holding key or player is holding bat holding key
+        if ((nextPlayer->linkedObject == objectPkey) ||
+            ((nextPlayer->linkedObject == OBJECT_BAT) && (((Bat*)objects[OBJECT_BAT])->linkedObject == objectPkey))) {
+            
+            heldBy = ctr;
+        }
+    }
+    return heldBy;
 }
 
 

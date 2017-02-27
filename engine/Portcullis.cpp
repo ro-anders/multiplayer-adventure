@@ -194,19 +194,7 @@ PortcullisStateAction*  Portcullis::checkKeyInteraction() {
         state++;
         allowsEntry = true; // Either the gate is now opening and active or now closing but still active
         
-        // We need to know who, if anyone, is holding the key
-        int heldBy = -1;
-        int numPlayers = board->getNumPlayers();
-        int keyPkey = key->getPKey();
-        for(int ctr=0; (ctr < numPlayers) && (heldBy < 0); ++ctr) {
-            BALL* nextPlayer = board->getPlayer(ctr);
-            // Have to check if player is holding key or player is holding bat holding key
-            if ((nextPlayer->linkedObject == keyPkey) ||
-                ((nextPlayer->linkedObject == OBJECT_BAT) && (((Bat*)board->getObject(OBJECT_BAT))->linkedObject == keyPkey))) {
-
-                heldBy = ctr;
-            }
-        }
+        int heldBy = board->getPlayerHoldingObject(key);
         
         // Unless someone else is unlocking the castle we broadcast the event
         // So broadcast if we are holding the key or if no one is holding the key and we are in the same room
@@ -217,6 +205,10 @@ PortcullisStateAction*  Portcullis::checkKeyInteraction() {
             gateAction = new PortcullisStateAction(getPKey(), state, allowsEntry);
         }
     }
+    // Note that if the key is not being held by anyone then the gate behaves slightly differently
+    // A shutting gate will become an opening gate.
+    // TODO: Handle moving gate touches key not being held
+    
     return gateAction;
 }
 

@@ -115,6 +115,9 @@ public:
     // On the 2600 this is done in hardware by the Player/Missile collision registers
     bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, int height);
 
+    // Returns the player number of whoever is holding an object (holding the bat holding the
+    // object counts).  Returns -1 if no one is holding the object.
+    int getPlayerHoldingObject(OBJECT* object);
 
 private:
     
