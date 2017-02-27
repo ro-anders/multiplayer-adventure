@@ -189,25 +189,45 @@ ObjectMoveAction* Portcullis::checkObjectEnters(OBJECT* object) {
 
 PortcullisStateAction*  Portcullis::checkKeyInteraction() {
     PortcullisStateAction* gateAction = NULL;
-    if ((state == OPEN_STATE || state == CLOSED_STATE) && checkKeyTouch(key)) {
-        // Toggle the port state
-        state++;
-        allowsEntry = true; // Either the gate is now opening and active or now closing but still active
+    
+    // We only change the state of the castle gate if we are in the room.  Otherwise we wait for
+    // another player to notify us of the state change.
+    BALL* thisPlayer = board->getCurrentPlayer();
+    if ((thisPlayer->room == this->room) && checkKeyTouch(key)) {
         
         int heldBy = board->getPlayerHoldingObject(key);
+        bool stateChange = false;
         
-        // Unless someone else is unlocking the castle we broadcast the event
-        // So broadcast if we are holding the key or if no one is holding the key and we are in the same room
-        BALL* thisPlayer = board->getCurrentPlayer();
-        if ((heldBy == thisPlayer->playerNum) ||
-            ((heldBy < 0) && (thisPlayer->room == room))) {
+        // If the gate is closed, we open the gate
+        if (state == CLOSED_STATE) {
+            state++;
+            allowsEntry = true;
+            stateChange = true;
+        }
+        // If the gate is in the process of closing, we do nothing unless the key
+        // isn't held by anyone then we open the gate to prevent the key from being locked inside
+        else if ((state > OPEN_STATE) && (state < CLOSED_STATE) && (heldBy < 0)) {
+            state += CLOSED_STATE;
+            allowsEntry = true;
+            stateChange = true;
+        }
+        // If the gate is open, we only close it if the key is held by someone
+        else if ((state == OPEN_STATE) && (heldBy >= 0)) {
+            // Toggle the port state
+            state++;
+            allowsEntry = true; // The gate is now closing but still active
+            stateChange = true;
+        }
+        
+        if (stateChange) {
+            // Broadcast a state change if we are holding the key or if no one is holding the key and we
+            // are a witness
+            if ((heldBy == thisPlayer->playerNum) || ((heldBy < 0) && (thisPlayer->room == room))) {
+                gateAction = new PortcullisStateAction(getPKey(), state, allowsEntry);
+            }
             
-            gateAction = new PortcullisStateAction(getPKey(), state, allowsEntry);
         }
     }
-    // Note that if the key is not being held by anyone then the gate behaves slightly differently
-    // A shutting gate will become an opening gate.
-    // TODO: Handle moving gate touches key not being held
     
     return gateAction;
 }
