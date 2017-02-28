@@ -1744,6 +1744,33 @@ void MoveGroundObject()
             object->x = 0x03;
             object->room = AdjustRoomLevel(roomDefs[object->room].roomRight);
         }
+        
+        // RCA
+        // Check and Deal with objects running into a gate.
+        // Objects that are held shouldn't go in the gate (held by either you or bat)
+        if ((objectBall.linkedObject != i) && (objectDefs[OBJECT_BAT].linkedObject != i)) {
+            if (object->room == port1->room &&
+                port1->state != 0x0C &&
+                CollisionCheckObjectObject(port1, object))
+            {
+                object->room = entryRoomOffsets[OBJECT_PORT1];
+                object->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
+            }
+            else if (object->room == port2->room &&
+                     port2->state != 0x0C &&
+                     CollisionCheckObjectObject(port2, object))
+            {
+                object->room = entryRoomOffsets[OBJECT_PORT2];
+                object->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
+            }
+            else if (object->room == port3->room &&
+                     port3->state != 0x0C &&
+                     CollisionCheckObjectObject(port3, object))
+            {
+                object->room = entryRoomOffsets[OBJECT_PORT2];
+                object->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
+            }
+        }
 
         // Move the linked object
         if (object->linkedObject > OBJECT_NONE)
