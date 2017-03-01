@@ -1767,7 +1767,7 @@ void MoveGroundObject()
                      port3->state != 0x0C &&
                      CollisionCheckObjectObject(port3, object))
             {
-                object->room = entryRoomOffsets[OBJECT_PORT2];
+                object->room = entryRoomOffsets[OBJECT_PORT3];
                 object->y = ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN-2;
             }
         }
