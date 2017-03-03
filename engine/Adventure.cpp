@@ -1575,7 +1575,7 @@ void MoveGroundObject()
             // Handle object leaving the castles
             bool leftCastle = false;
             for (int ctr=0; (ctr < numPorts) && (!leftCastle); ++ctr) {
-                if (object->room == ports[ctr]->insideRoom)
+                if ((object->room == ports[ctr]->insideRoom) && (ports[ctr]->allowsEntry))
                 {
                     object->x = Portcullis::EXIT_X/2;
                     object->y = Portcullis::EXIT_Y/2;
