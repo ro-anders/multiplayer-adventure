@@ -1716,19 +1716,19 @@ void MoveGroundObject()
         if (object->y < 0x0D)
         {
             // Handle object leaving the castles
-            if (object->room == entryRoomOffsets[OBJECT_PORT1])
+            if (object->room == entryRoomOffsets[OBJECT_PORT1] && port1->state != 0x0C)
             {
                 object->x = 0x50;
                 object->y = 0x2C;
                 object->room = AdjustRoomLevel(castleRoomOffsets[OBJECT_PORT1]);
             }
-            else if (object->room == entryRoomOffsets[OBJECT_PORT2])
+            else if (object->room == entryRoomOffsets[OBJECT_PORT2] && port2->state != 0x0C)
             {            
                 object->x = 0x50;
                 object->y = 0x2C;
                 object->room = AdjustRoomLevel(castleRoomOffsets[OBJECT_PORT2]);
             }
-            else if (object->room == entryRoomOffsets[OBJECT_PORT3])
+            else if (object->room == entryRoomOffsets[OBJECT_PORT3] && port3->state != 0x0C)
             {            
                 object->x = 0x50;
                 object->y = 0x2C;
