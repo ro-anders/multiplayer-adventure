@@ -3,15 +3,15 @@ Head-on-head internet version of Atari's classic Adventure
 
 Two or three players in the same maze, each with their own home castle.  First one to bring the chalice back to their home castle wins.
 
-Aside from multiplayer aspect, as close as possible reproduction to the original Atari Adventure.
+Aside from multiplayer aspect, as close as possible reproduction of the original Atari Adventure.
 
 ## To Build
-**On Mac**, open the project file mac/MacAdventure.xcodeproj using XCode.
+**On Mac**, open the project file mac/H2HAdventure.xcodeproj using XCode.
 
-**On Windows**, build the project file pc/WinAdventure.vcxproj using Visual Studio.
+**On Windows**, build the project file pc/H2HAdventure.sln using Visual Studio.
 
 ## To Run
-If you downloaded the executable, MacAdventure.app.zip, you must first unpack the zip file by clicking on it, which will create the MacAdventure.app file.
+If you downloaded the executable, H2HAdventure.app.zip, you must first unpack the zip file by clicking on it, which will create the H2HAdventure.app file.
 
 You **CANNOT** run the game simply by double clicking the exe or app file.  This beta version requires command line flags and so must be run from a command line.
 * First argument is "broker" which means to ask a broker out on the internet to setup the game
@@ -19,8 +19,8 @@ You **CANNOT** run the game simply by double clicking the exe or app file.  This
 * Third argument is the number of players that will be connecting, 2 or 3.
 
 For example, playing game 2 with 3 players:
-* **On Windows**: WinAdventure.exe broker 2 3
-* **On Mac**: first "cd MacAdventure.app/Contents/MacOS" then "./MacAdventure broker 2 3"
+* **On Windows**: H2HAdventure.exe broker 2 3
+* **On Mac**: first "cd H2HAdventure.app/Contents/MacOS" then "./H2HAdventure broker 2 3"
 
 NOTE: This doesn't work on a local area network.  This assumes these are two machines out on the internet.  If two machines are on the same network, (i.e. both on the same wifi) they will not be able to see each other, and the more complicated peer-to-peer setup must be used.
 
@@ -32,11 +32,11 @@ You also need to agree who will be player 1 (starts at gold castle), player 2 (s
 Finally you need to agree on which game you will play, 1, 2, or 3.
 
 Let's say the gold player has IP address 192.168.1.11 and copper has 192.168.1.12 and jade has 192.168.1.13 and they are going to play game 2.  They need to type:
-* player1 -> WinAdventure.exe 2 1 5001 192.168.1.12:5002 192.168.1.13:5003
-* player2 -> WinAdventure.exe 2 2 5002 192.168.1.11:5001 192.168.1.13:5003
-* player3 -> WinAdventure.exe 2 3 5003 192.168.1.11:5001 192.168.1.12:5002
+* player1 -> H2HAdventure.exe 2 1 5001 192.168.1.12:5002 192.168.1.13:5003
+* player2 -> H2HAdventure.exe 2 2 5002 192.168.1.11:5001 192.168.1.13:5003
+* player3 -> H2HAdventure.exe 2 3 5003 192.168.1.11:5001 192.168.1.12:5002
 
-For Mac it would be ./MacAdventure instead of WinAdventure.exe.
+For Mac it would be ./H2HAdventure instead of H2HAdventure.exe.
 
 The 5001,5002,5003 is specifying a "port" for the computer to listen on.  It can actually be any number as long as its unique.
 
@@ -47,8 +47,8 @@ If players are not on the same local network peer-to-peer setup is more difficul
 Let's say player3 in the example above is out on the internet, and it appears to other machines as 300.300.300.300.  Let's say player1 and player2 both appear as 100.100.100.100.  
 
 The commands to type are:
-* player1 -> WinAdventure.exe 2 1 5001 192.168.1.12:5002 300.300.300.300:5003
-* player2 -> WinAdventure.exe 2 2 5002 192.168.1.11:5001 300.300.300.300:5003
-* player3 -> WinAdventure.exe 2 3 5003 100.100.100.100:5001 100.100.100.100:5002
+* player1 -> H2HAdventure.exe 2 1 5001 192.168.1.12:5002 300.300.300.300:5003
+* player2 -> H2HAdventure.exe 2 2 5002 192.168.1.11:5001 300.300.300.300:5003
+* player3 -> H2HAdventure.exe 2 3 5003 100.100.100.100:5001 100.100.100.100:5002
 
  
