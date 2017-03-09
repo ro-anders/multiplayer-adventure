@@ -32,10 +32,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib"
-				OutputFile="$(OutDir)/WinAdventure.exe"
+				OutputFile="$(OutDir)/H2HAdventure.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)/WinAdventure.pdb"
+				ProgramDatabaseFile="$(OutDir)/H2HAdventure.pdb"
 				SubSystem="2"
 				TargetMachine="1"/>
 			<Tool
@@ -78,7 +78,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="winmm.lib"
-				OutputFile="$(OutDir)/WinAdventure.exe"
+				OutputFile="$(OutDir)/H2HAdventure.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
