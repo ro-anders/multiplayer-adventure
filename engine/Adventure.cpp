@@ -1185,6 +1185,10 @@ void ReactToCollisionX(BALL* ball) {
             }
 		}
 
+        if ((ball->room != ball->previousRoom) && (ABS(ball->x - ball->previousX) > ABS(ball->velx))) {
+            // We switched rooms, kick them back
+            ball->room = ball->previousRoom;
+        }
 		ball->x = ball->previousX;
         ball->hit = CollisionCheckBallWithEverything(ball, ball->room, ball->x, ball->y, true, &ball->hitObject);
 	}
@@ -1209,8 +1213,23 @@ void ReactToCollisionY(BALL* ball) {
         // We put y back to the last y, but if we are moving diagonally, we
         // put x back to the new x value which we had reverted last phase and try again.
         // if new x and old y is still a collision we revert at the beginning of the next phase
+        if ((ball->room != ball->previousRoom) && (ABS(ball->y - ball->previousY) > ABS(ball->vely))) {
+            // We switched rooms, kick them back
+            ball->room = ball->previousRoom;
+        }
         ball->y = ball->previousY;
         ball->x += ball->velx;
+        // Need to check if new X takes us to new room (again)
+        // TODO: Got to be a better way
+        if (ball->x >= RIGHT_EDGE) {
+            ball->x = ENTER_AT_LEFT;
+            ball->room = (ball->room == MAIN_HALL_RIGHT ? ROBINETT_ROOM :
+                          roomDefs[ball->room]->roomRight);
+        } else if (ball->x < LEFT_EDGE) {
+            ball->x = ENTER_AT_RIGHT;
+            ball->room = roomDefs[ball->room]->roomLeft;
+        }
+        
         ball->hit = CollisionCheckBallWithEverything(ball, ball->room, ball->x, ball->y, true, &ball->hitObject);
 	}
 }
