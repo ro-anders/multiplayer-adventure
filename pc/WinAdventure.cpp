@@ -43,7 +43,7 @@ int leftKey = VK_LEFT;
 int rightKey = VK_RIGHT;
 int upKey = VK_UP;
 int downKey = VK_DOWN;
-int dropKey = VK_RCONTROL;
+int dropKey = VK_SPACE;
 int resetKey = VK_RETURN;
 
 int argc = 0;
@@ -523,7 +523,7 @@ void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* 
     if (up) *up = GetAsyncKeyState(upKey) & 0x8000;
     if (right) *right = GetAsyncKeyState(rightKey) & 0x8000;
     if (down) *down = GetAsyncKeyState(downKey) & 0x8000;
-    if (fire) *fire = (GetAsyncKeyState(dropKey) & 0x8000) || (GetAsyncKeyState(VK_LCONTROL) & 0x8000);
+    if (fire) *fire = GetAsyncKeyState(dropKey) & 0x8000;
 }
 
 void Platform_ReadConsoleSwitches(bool* reset)

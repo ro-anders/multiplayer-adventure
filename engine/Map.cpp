@@ -389,13 +389,13 @@ void Map::defaultRooms() {
     addRoom(BLUE_MAZE_1, new ROOM(roomGfxBlueMazeEntry, ROOMFLAG_NONE, COLOR_BLUE,                      // 0x08
                                   0x05,0x07,0x01,0x07, "Blue Maze 1"));
     addRoom(WHITE_MAZE_2, new ROOM(roomGfxMazeMiddle, ROOMFLAG_NONE, COLOR_LTGRAY,                      // 0x09
-                                   0x0A,0x0A,0x0B,0x0A, "White Maze 1"));
+                                   WHITE_MAZE_1,WHITE_MAZE_1,WHITE_MAZE_3,WHITE_MAZE_1, "White Maze 2"));
     addRoom(WHITE_MAZE_1, new ROOM(roomGfxMazeEntry, ROOMFLAG_NONE, COLOR_LTGRAY,                       // 0x0A
-                                   0x03,0x09,0x09,0x09, "White Maze 2"));
+                                   MAIN_HALL_RIGHT,WHITE_MAZE_2,WHITE_MAZE_2,WHITE_MAZE_2, "White Maze 1"));
     addRoom(WHITE_MAZE_3, new ROOM(roomGfxMazeSide, ROOMFLAG_NONE, COLOR_LTGRAY,                        // 0x0B
-                                   0x09,0x0C,0x1C,0x0D, "White Maze 3"));
+                                   WHITE_MAZE_2,SOUTH_HALL_RIGHT,COPPER_CASTLE,SOUTH_HALL_LEFT, "White Maze 3"));
     addRoom(SOUTH_HALL_RIGHT, new ROOM(roomGfxSideCorridor, ROOMFLAG_RIGHTTHINWALL, COLOR_LTCYAN,       // 0x0C
-                                       COPPER_CASTLE, MAIN_HALL_LEFT,SOUTHEAST_ROOM, WHITE_MAZE_3, "South Hall RIGHT"));
+                                       COPPER_CASTLE, SOUTH_HALL_LEFT,SOUTHEAST_ROOM, WHITE_MAZE_3, "South Hall Right"));
     addRoom(SOUTH_HALL_LEFT, new ROOM(roomGfxSideCorridor, ROOMFLAG_LEFTTHINWALL, COLOR_DKGREEN,        // 0x0D
                                       0x0F,0x0B,0x0E,0x0C, "South Hall Left"));                         // 0x0E
     addRoom(SOUTHWEST_ROOM, new ROOM(roomGfxTopEntryRoom, ROOMFLAG_NONE, COLOR_CYAN,
@@ -471,7 +471,9 @@ void Map::ConfigureMaze(int numPlayers, int gameMapLayout) {
         roomDefs[MAIN_HALL_RIGHT]->graphicsData = roomGfxLeftOfName;
         roomDefs[MAIN_HALL_RIGHT]->roomUp = BLUE_MAZE_3;
         roomDefs[COPPER_CASTLE]->roomDown = SOUTH_HALL_RIGHT;
-        // TODO: Change up, left, and right of COPPER_CASTLE
+        roomDefs[COPPER_CASTLE]->roomUp = SOUTHEAST_ROOM;
+        roomDefs[COPPER_CASTLE]->roomRight = BLUE_MAZE_4;
+        roomDefs[COPPER_CASTLE]->roomLeft = BLUE_MAZE_1;
         
         // Put the Black Maze in the Black Castle
         roomDefs[BLACK_FOYER]->roomUp = BLACK_MAZE_ENTRY;
