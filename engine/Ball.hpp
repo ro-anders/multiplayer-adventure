@@ -12,6 +12,7 @@ class BALL
 public:
     int playerNum;              // 0-2.  Which player this is.
     int room;                   // room
+    int previousRoom;
     int displayedRoom;          // occassionally ball will appear in room other than it is in (usually using bridge across rooms)
     int x;                      // x position
     int y;                      // y position
@@ -22,8 +23,7 @@ public:
     int linkedObject;           // index of linked (carried) object
     int linkedObjectX;          // X value representing the offset from the ball to the object being carried
     int linkedObjectY;          // Y value representing the offset from the ball to the object being carried
-    bool hitX;                  // the ball hit something on the X axis
-    bool hitY;                  // the ball hit something on the Y axis
+    bool hit;                  // the ball hit something
     int hitObject;              // the object that the ball hit
     const byte* gfxData;		// graphics data for ball
     Portcullis* homeGate;       // The gate of the castle you start at
