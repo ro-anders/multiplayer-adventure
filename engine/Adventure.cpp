@@ -1170,26 +1170,27 @@ void WinGame(int winRoom) {
 }
 
 void ReactToCollisionX(BALL* ball) {
-	if ((ball->hit) && (ball->velx != 0))
-	{
-		if ((ball->hitObject > OBJECT_NONE) && (ball->hitObject == ball->linkedObject))
-		{
-			int diffX = ball->velx;
-			ball->linkedObjectX += diffX / 2;
-            if (ball == objectBall) {
-                // If this is adjusting how the current player holds an object,
-                // we broadcast to other players as a pickup action
-                PlayerPickupAction* action = new PlayerPickupAction(ball->hitObject,
-                    objectBall->linkedObjectX, objectBall->linkedObjectY, OBJECT_NONE, 0, 0, 0);
-                sync->BroadcastAction(action);
+	if (ball->hit) {
+        if (ball->velx != 0) {
+            if ((ball->hitObject > OBJECT_NONE) && (ball->hitObject == ball->linkedObject)) {
+                int diffX = ball->velx;
+                ball->linkedObjectX += diffX / 2;
+                if (ball == objectBall) {
+                    // If this is adjusting how the current player holds an object,
+                    // we broadcast to other players as a pickup action
+                    PlayerPickupAction* action = new PlayerPickupAction(ball->hitObject,
+                        objectBall->linkedObjectX, objectBall->linkedObjectY, OBJECT_NONE, 0, 0, 0);
+                    sync->BroadcastAction(action);
+                }
             }
-		}
-
-        if ((ball->room != ball->previousRoom) && (ABS(ball->x - ball->previousX) > ABS(ball->velx))) {
-            // We switched rooms, kick them back
-            ball->room = ball->previousRoom;
+            
+            if ((ball->room != ball->previousRoom) && (ABS(ball->x - ball->previousX) > ABS(ball->velx))) {
+                // We switched rooms, kick them back
+                ball->room = ball->previousRoom;
+            }
+            ball->x = ball->previousX;
         }
-		ball->x = ball->previousX;
+        // Try recompute hit allowing for the bridge.
         ball->hit = CollisionCheckBallWithEverything(ball, ball->room, ball->x, ball->y, true, &ball->hitObject);
 	}
 }
@@ -1220,24 +1221,23 @@ void ReactToCollisionY(BALL* ball) {
         ball->y = ball->previousY;
         ball->x += ball->velx;
         // Need to check if new X takes us to new room (again)
-        // TODO: Got to be a better way
         if (ball->x >= RIGHT_EDGE) {
             ball->x = ENTER_AT_LEFT;
-            ball->room = (ball->room == MAIN_HALL_RIGHT ? ROBINETT_ROOM :
-                          roomDefs[ball->room]->roomRight);
+            ball->room = ball->displayedRoom; // The displayed room hasn't changed
         } else if (ball->x < LEFT_EDGE) {
             ball->x = ENTER_AT_RIGHT;
-            ball->room = roomDefs[ball->room]->roomLeft;
+            ball->room = ball->displayedRoom;
         }
         
-        ball->hit = CollisionCheckBallWithEverything(ball, ball->room, ball->x, ball->y, true, &ball->hitObject);
+        ball->hit = CollisionCheckBallWithEverything(ball, ball->displayedRoom, ball->x, ball->y, false, &ball->hitObject);
 	}
 }
 
 void ThisBallMovement()
 {
 	// Read the joystick and translate into a velocity
-	bool velocityChanged = false;
+    int prevVelX = objectBall->velx;
+    int prevVelY = objectBall->vely;
     // If we are scripting, we don't ever look at the joystick or change the velocity here.
     if (!joystickDisabled) {
         int newVelY = 0;
@@ -1249,7 +1249,6 @@ void ThisBallMovement()
         else if (joyDown) {
             newVelY = -6;
         }
-        velocityChanged = (objectBall->vely != newVelY);
         objectBall->vely = newVelY;
         
         int newVelX = 0;
@@ -1261,13 +1260,12 @@ void ThisBallMovement()
         else if (joyLeft) {
             newVelX = -6;
         }
-        velocityChanged = velocityChanged || (objectBall->velx != newVelX);
         objectBall->velx = newVelX;
     }
     
 	BallMovement(objectBall);
 
-	if (velocityChanged) {
+	if (!joystickDisabled && ((objectBall->velx != prevVelX) || (objectBall->vely != prevVelY))) {
         // TODO: Do we want to be constantly allocating space?
         PlayerMoveAction* moveAction = new PlayerMoveAction(objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
         sync->BroadcastAction(moveAction);
@@ -1294,7 +1292,6 @@ void BallMovement(BALL* ball) {
     
     ball->hit = eaten;
     ball->hitObject = OBJECT_NONE;
-    ball->displayedRoom = ball->room;
 
     // Move the ball
     ball->x += ball->velx;
@@ -1324,7 +1321,6 @@ void BallMovement(BALL* ball) {
                 ball->previousY = ball->y;
                 
                 ball->room = port->room;
-                ball->displayedRoom = ball->room;
                 // If we were locked in the castle, open the portcullis.
                 if (port->state == Portcullis::CLOSED_STATE && canUnlockFromInside) {
                     port->openFromInside();
@@ -1345,19 +1341,31 @@ void BallMovement(BALL* ball) {
     }
     
     if (ball->x >= RIGHT_EDGE) {
+        // Can't diagonally switch rooms.  If trying, only allow changing rooms vertically
+        if (ball->room != ball->previousRoom) {
+            ball->x = ball->previousX;
+            ball->velx = 0;
+        } else {
             // Wrap the ball to the left side of the next screen
             ball->x = ENTER_AT_LEFT;
 
             // Figure out the room to the right (which might be the secret room)
             ball->room = (ball->room == MAIN_HALL_RIGHT ? ROBINETT_ROOM :
                              roomDefs[ball->room]->roomRight);
+        }
     } else if (ball->x < LEFT_EDGE) {
+        // Can't diagonally switch rooms.  If trying, only allow changing rooms vertically
+        if (ball->room != ball->previousRoom) {
+            ball->x = ball->previousX;
+            ball->velx = 0;
+        } else {
             ball->x = ENTER_AT_RIGHT;
             ball->room = roomDefs[ball->room]->roomLeft;
+        }
     }
 
     // Collision check the ball in its new coordinates against walls and objects
-    ball->hit = CollisionCheckBallWithEverything(ball, ball->room, ball->x, ball->y, true, &ball->hitObject);
+    ball->hit = CollisionCheckBallWithEverything(ball, ball->room, ball->x, ball->y, false, &ball->hitObject);
     
     ball->displayedRoom = ball->room;
 
