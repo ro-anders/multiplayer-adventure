@@ -50,6 +50,7 @@ enum
     JADE_FOYER=0x20,
     COPPER_CASTLE=0x21,
     COPPER_FOYER=0x22
+    
 };
 
 class Map {
