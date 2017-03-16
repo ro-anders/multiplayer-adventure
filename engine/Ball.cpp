@@ -45,8 +45,6 @@ static const byte ballGfxTwo[] =
 BALL::BALL(int inPlayerNum, Portcullis* inHomeGate) :
     playerNum(inPlayerNum),
     room(0),
-    previousRoom(0),
-    displayedRoom(0),
     x(0),
     y(0),
     previousX(0),
@@ -56,7 +54,8 @@ BALL::BALL(int inPlayerNum, Portcullis* inHomeGate) :
     linkedObject(-1), // TODO: This should be OBJECT_NONE
     linkedObjectX(0),
     linkedObjectY(0),
-    hit(false),
+    hitX(false),
+    hitY(false),
     hitObject(-1), // TODO: This should be OBJECT_NONE
     gfxData((playerNum == 0 ? ballGfxSolid : (playerNum == 1 ? ballGfxOne : ballGfxTwo))),
     homeGate(inHomeGate),

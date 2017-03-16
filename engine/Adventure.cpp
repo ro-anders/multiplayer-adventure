@@ -55,8 +55,7 @@
 
 // Functions from original game
 static void SetupRoomObjects();
-void ReactToCollisionX(BALL* ball);
-void ReactToCollisionY(BALL* ball);
+void ReactToCollision(BALL* ball);
 static void BallMovement(BALL* ball);
 static void ThisBallMovement();
 static void OtherBallMovement();
@@ -840,7 +839,7 @@ void Adventure_Run()
                     PickupPutdown();
 
                     // Check ball collisions
-                    if (!objectBall->hit)
+                    if (!objectBall->hitX && !objectBall->hitY)
                     {
                         // Make sure stuff we are carrying stays out of our way
                         // TODO: Why do we have to check here AND in reactToCollision?  Most of the time
@@ -865,7 +864,7 @@ void Adventure_Run()
                         }
                     }
 					for (int i = 0; i < numPlayers; ++i) {
-                        ReactToCollisionX(gameBoard->getPlayer(i));
+                        ReactToCollision(gameBoard->getPlayer(i));
 					}
 
                     // Increment the last object drawn
@@ -905,11 +904,6 @@ void Adventure_Run()
 
                         }
                     }
-                    
-                    for (int i = 0; i < numPlayers; ++i) {
-                        ReactToCollisionY(gameBoard->getPlayer(i));
-                    }
-                    
 
                     // Deal with the magnet
                     Magnet();
@@ -1169,34 +1163,26 @@ void WinGame(int winRoom) {
     Platform_MakeSound(SOUND_WON, MAX_VOLUME);
 }
 
-void ReactToCollisionX(BALL* ball) {
-	if (ball->hit) {
-        if (ball->velx != 0) {
-            if ((ball->hitObject > OBJECT_NONE) && (ball->hitObject == ball->linkedObject)) {
-                int diffX = ball->velx;
-                ball->linkedObjectX += diffX / 2;
-                if (ball == objectBall) {
-                    // If this is adjusting how the current player holds an object,
-                    // we broadcast to other players as a pickup action
-                    PlayerPickupAction* action = new PlayerPickupAction(ball->hitObject,
-                        objectBall->linkedObjectX, objectBall->linkedObjectY, OBJECT_NONE, 0, 0, 0);
-                    sync->BroadcastAction(action);
-                }
+void ReactToCollision(BALL* ball) {
+	if (ball->hitX)
+	{
+		if ((ball->hitObject > OBJECT_NONE) && (ball->hitObject == ball->linkedObject))
+		{
+			int diffX = ball->velx;
+			ball->linkedObjectX += diffX / 2;
+            if (ball == objectBall) {
+                // If this is adjusting how the current player holds an object,
+                // we broadcast to other players as a pickup action
+                PlayerPickupAction* action = new PlayerPickupAction(ball->hitObject,
+                    objectBall->linkedObjectX, objectBall->linkedObjectY, OBJECT_NONE, 0, 0, 0);
+                sync->BroadcastAction(action);
             }
-            
-            if ((ball->room != ball->previousRoom) && (ABS(ball->x - ball->previousX) > ABS(ball->velx))) {
-                // We switched rooms, kick them back
-                ball->room = ball->previousRoom;
-            }
-            ball->x = ball->previousX;
-        }
-        // Try recompute hit allowing for the bridge.
-        ball->hit = CollisionCheckBallWithEverything(ball, ball->room, ball->x, ball->y, true, &ball->hitObject);
-	}
-}
+		}
 
-void ReactToCollisionY(BALL* ball) {
-	if ((ball->hit) && (ball->vely != 0))
+		ball->x = ball->previousX;
+		ball->hitX = false;
+	}
+	if (ball->hitY)
 	{
 		if ((ball->hitObject > OBJECT_NONE) && (ball->hitObject == ball->linkedObject))
 		{
@@ -1211,33 +1197,15 @@ void ReactToCollisionY(BALL* ball) {
             }
 		}
 
-        // We put y back to the last y, but if we are moving diagonally, we
-        // put x back to the new x value which we had reverted last phase and try again.
-        // if new x and old y is still a collision we revert at the beginning of the next phase
-        if ((ball->room != ball->previousRoom) && (ABS(ball->y - ball->previousY) > ABS(ball->vely))) {
-            // We switched rooms, kick them back
-            ball->room = ball->previousRoom;
-        }
-        ball->y = ball->previousY;
-        ball->x += ball->velx;
-        // Need to check if new X takes us to new room (again)
-        if (ball->x >= RIGHT_EDGE) {
-            ball->x = ENTER_AT_LEFT;
-            ball->room = ball->displayedRoom; // The displayed room hasn't changed
-        } else if (ball->x < LEFT_EDGE) {
-            ball->x = ENTER_AT_RIGHT;
-            ball->room = ball->displayedRoom;
-        }
-        
-        ball->hit = CollisionCheckBallWithEverything(ball, ball->displayedRoom, ball->x, ball->y, false, &ball->hitObject);
+		ball->y = ball->previousY;
+		ball->hitY = false;
 	}
 }
 
 void ThisBallMovement()
 {
 	// Read the joystick and translate into a velocity
-    int prevVelX = objectBall->velx;
-    int prevVelY = objectBall->vely;
+	bool velocityChanged = false;
     // If we are scripting, we don't ever look at the joystick or change the velocity here.
     if (!joystickDisabled) {
         int newVelY = 0;
@@ -1249,6 +1217,7 @@ void ThisBallMovement()
         else if (joyDown) {
             newVelY = -6;
         }
+        velocityChanged = (objectBall->vely != newVelY);
         objectBall->vely = newVelY;
         
         int newVelX = 0;
@@ -1260,12 +1229,13 @@ void ThisBallMovement()
         else if (joyLeft) {
             newVelX = -6;
         }
+        velocityChanged = velocityChanged || (objectBall->velx != newVelX);
         objectBall->velx = newVelX;
     }
     
 	BallMovement(objectBall);
 
-	if (!joystickDisabled && ((objectBall->velx != prevVelX) || (objectBall->vely != prevVelY))) {
+	if (velocityChanged) {
         // TODO: Do we want to be constantly allocating space?
         PlayerMoveAction* moveAction = new PlayerMoveAction(objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
         sync->BroadcastAction(moveAction);
@@ -1273,101 +1243,179 @@ void ThisBallMovement()
 }
 
 void BallMovement(BALL* ball) {
-
+    // store the existing ball location
+    int tempX = ball->x;
+    int tempY = ball->y;
+    
     bool eaten = false;
     for(int ctr=0; ctr<numDragons && !eaten; ++ctr) {
         eaten = (dragons[ctr]->eaten == ball);
     }
 
-    // Save the last, non-colliding position
-    if (ball->hit) {
-        ball->x = ball->previousX;
-        ball->y = ball->previousY;
-        ball->room = ball->previousRoom;
-    } else {
-        ball->previousX = ball->x;
-        ball->previousY = ball->y;
-        ball->previousRoom = ball->room;
-    }
-    
-    ball->hit = eaten;
+    // mark the existing Y location as the previous Y location
+    ball->previousY = ball->y;
+
     ball->hitObject = OBJECT_NONE;
+    ball->displayedRoom = ball->room;
 
-    // Move the ball
-    ball->x += ball->velx;
+    // Move the ball on the Y axis
 	ball->y += ball->vely;
-    
 
-    // Wrap rooms in Y if necessary
-    if (ball->y > TOP_EDGE)
+    if (!eaten)
     {
-        ball->y = ENTER_AT_BOTTOM;
-        ball->room = roomDefs[ball->room]->roomUp;
-    }
-    else if (ball->y < BOTTOM_EDGE)
-    {
-        // Handle the ball leaving a castle.
-        bool canUnlockFromInside = (gameOptions & GAMEOPTION_UNLOCK_GATES_FROM_INSIDE);
-        bool leftCastle = false;
-        for (int portalCtr = 0; !leftCastle && (portalCtr < numPorts); ++portalCtr) {
-            Portcullis* port = ports[portalCtr];
-            if ((ball->room == port->insideRoom) &&
-                ((port->state != Portcullis::CLOSED_STATE) || canUnlockFromInside))
+        // Wrap rooms in Y if necessary
+        if (ball->y > TOP_EDGE)
+        {
+            // Wrap the ball to the bottom of the screen
+            ball->y = ENTER_AT_BOTTOM;
+
+            // Set the new room
+            const ROOM* currentRoom = roomDefs[ball->room];
+            int roomUp = currentRoom->roomUp;
+            
+            if (CollisionCheckBallWithEverything(ball, roomUp, tempX, ball->y, true, NULL))
             {
-                ball->x = Portcullis::EXIT_X;
-                ball->y = Portcullis::EXIT_Y;
-                
-                ball->previousX = ball->x;
+                // We've hit a wall on the next screen
+                ball->hitY = true;
+            } else {
+                ball->room = roomUp;
                 ball->previousY = ball->y;
-                
-                ball->room = port->room;
-                // If we were locked in the castle, open the portcullis.
-                if (port->state == Portcullis::CLOSED_STATE && canUnlockFromInside) {
-                    port->openFromInside();
-                    PortcullisStateAction* gateAction = new PortcullisStateAction(port->getPKey(), port->state, port->allowsEntry);
-                    sync->BroadcastAction(gateAction);
-                    
+            }
+            // Ball is displayed in new room even if we hit a collision and don't update ball->room
+            ball->displayedRoom = roomUp;
+        }
+        else if (ball->y < BOTTOM_EDGE)
+        {
+            bool canUnlockFromInside = (gameOptions & GAMEOPTION_UNLOCK_GATES_FROM_INSIDE);
+            // Handle the ball leaving a castle.
+			bool leftCastle = false;
+			for (int portalCtr = 0; !leftCastle && (portalCtr < numPorts); ++portalCtr) {
+                Portcullis* port = ports[portalCtr];
+				if ((ball->room == port->insideRoom) &&
+                    ((port->state != Portcullis::CLOSED_STATE) || canUnlockFromInside))
+				{
+                    ball->x = Portcullis::EXIT_X;
+                    ball->y = Portcullis::EXIT_Y;
+
+					ball->previousX = ball->x;
+					ball->previousY = ball->y;
+
+					ball->room = port->room;
+                    ball->displayedRoom = ball->room;
+                    // If we were locked in the castle, open the portcullis.
+                    if (port->state == Portcullis::CLOSED_STATE && canUnlockFromInside) {
+                        port->openFromInside();
+                        PortcullisStateAction* gateAction = new PortcullisStateAction(port->getPKey(), port->state, port->allowsEntry);
+                        sync->BroadcastAction(gateAction);
+
+                    }
+					leftCastle = true;
+				}
+			}
+
+			if (!leftCastle)
+            {
+                // Just lookup the next room down and switch to that room
+                // Wrap the ball to the top of the screen
+                int newY = ENTER_AT_TOP;
+
+                const ROOM* currentRoom = roomDefs[ball->room];
+                int roomDown = currentRoom->roomDown;
+
+                if (CollisionCheckBallWithEverything(ball, roomDown, tempX, newY, true, NULL))
+                {
+                    // We've hit a wall on the next screen
+                    ball->hitY = true;
                 }
-                leftCastle = true;
+                else
+                {
+                    // Set the new room
+                    ball->y = newY;
+                    ball->room = roomDown;
+                }
+                // Ball is displayed in new room even if we hit a collision and don't update ball->room
+                ball->displayedRoom = roomDown;
             }
         }
-        
-        if (!leftCastle)
+        // Collision check the ball with the new Y coordinate against walls and objects
+        int hitObject = OBJECT_NONE;
+        int roomToCheck = ball->displayedRoom;
+        int hitSomething = CollisionCheckBallWithEverything(ball, roomToCheck, tempX, ball->y, true, &hitObject);
+        if (hitSomething)
         {
-            // Wrap the ball to the top of the next screen
-            ball->y = ENTER_AT_TOP;
-            ball->room = roomDefs[ball->room]->roomDown;
+            // Hit a wall or non-carryable object
+            ball->hitY = true;
+            ball->hitObject = hitObject;
         }
     }
-    
-    if (ball->x >= RIGHT_EDGE) {
-        // Can't diagonally switch rooms.  If trying, only allow changing rooms vertically
-        if (ball->room != ball->previousRoom) {
-            ball->x = ball->previousX;
-            ball->velx = 0;
-        } else {
-            // Wrap the ball to the left side of the next screen
+    else
+    {
+        ball->hitY = true;
+    }
+
+    // mark the existing X location as the previous X location
+    ball->previousX = ball->x;
+
+    // Move the ball on the X axis
+	ball->x += ball->velx;
+
+    if (!eaten)
+    {
+        // Wrap rooms in X if necessary
+        if (ball->x >= RIGHT_EDGE)
+        {
+            // Wrap the ball to the left side of the screen
             ball->x = ENTER_AT_LEFT;
 
             // Figure out the room to the right (which might be the secret room)
-            ball->room = (ball->room == MAIN_HALL_RIGHT ? ROBINETT_ROOM :
+            int roomRight = (ball->room == MAIN_HALL_RIGHT ? ROBINETT_ROOM :
                              roomDefs[ball->room]->roomRight);
+            
+            if (CollisionCheckBallWithEverything(ball, roomRight, ball->x, tempY, false, NULL)) {
+                // We've hit a wall on the next screen
+                ball->hitX = true;
+            } else {
+                ball->room = roomRight;
+                ball->previousX = ball->x;
+            }
+            // Ball is displayed in new room even if we hit a collision and don't update ball->room
+            ball->displayedRoom = roomRight;
+            
         }
-    } else if (ball->x < LEFT_EDGE) {
-        // Can't diagonally switch rooms.  If trying, only allow changing rooms vertically
-        if (ball->room != ball->previousRoom) {
-            ball->x = ball->previousX;
-            ball->velx = 0;
-        } else {
+        else if (ball->x < LEFT_EDGE)
+        {
+            // Wrap the ball to the right side of the screen
             ball->x = ENTER_AT_RIGHT;
-            ball->room = roomDefs[ball->room]->roomLeft;
+
+            // Figure out the room to the left
+            int roomLeft = roomDefs[ball->room]->roomLeft;
+            
+            if (CollisionCheckBallWithEverything(ball, roomLeft, ball->x, tempY, false, NULL)) {
+                // We've hit a wall on the next screen
+                ball->hitX = true;
+            } else {
+                ball->room = roomLeft;
+                ball->previousX = ball->x;
+            }
+            // Ball is displayed in new room even if we hit a collision and don't update ball->room
+            ball->displayedRoom = roomLeft;
+        }
+        // Collision check the ball with the new Y coordinate against walls and objects
+        // For collisions with objects, we only care about hitting non-carryable objects at this point
+        int hitObject = OBJECT_NONE;
+        int roomToCheck = ball->displayedRoom;
+        int hitSomething = CollisionCheckBallWithEverything(ball, roomToCheck, ball->x, tempY, false, &hitObject);
+        if (hitSomething)
+        {
+            // Hit a wall or non-carryable object
+            ball->hitX = true;
+            ball->hitObject = hitObject;
         }
     }
-
-    // Collision check the ball in its new coordinates against walls and objects
-    ball->hit = CollisionCheckBallWithEverything(ball, ball->room, ball->x, ball->y, false, &ball->hitObject);
-    
-    ball->displayedRoom = ball->room;
+    else
+    {
+        ball->hitX = true;
+    }
 
 }
 
