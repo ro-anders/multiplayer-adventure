@@ -46,6 +46,17 @@ long Sys::today() {
     return datenum;
 }
 
+const char* Sys::datetime() {
+    static char string[32];
+    
+    time_t epochSeconds = time(0);
+    struct tm* now = localtime(&epochSeconds);
+    sprintf(string, "%d/%d/%d-%d:%02d:%02d", now->tm_year+1900, now->tm_mon+1,
+            now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
+    return string;
+}
+
+
 /**
  * Number of milliseconds since this game was started.  Note, this
  * is really only useful looking at the time between two calls of this.

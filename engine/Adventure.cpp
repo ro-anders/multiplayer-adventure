@@ -656,7 +656,7 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     // because we may be broadcasting randomized locations to other machines
     SetupRoomObjects();
     
-    Logger::log() << "Player " << thisPlayer << " setup." << Logger::EOM;
+    Logger::log() << "Player " << thisPlayer << " starting game at " << Sys::datetime() << "." << Logger::EOM;
 }
 
 void addAllRoomsToPort(Portcullis* port, int firstRoom, int lastRoom) {

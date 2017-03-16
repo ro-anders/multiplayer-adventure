@@ -78,7 +78,7 @@ bool gMute = FALSE;
     
     // Setup logging
     Logger::setup(Logger::CONSOLE, Logger::INFO);
-    Logger::log("Logging setup.");
+    Logger::log() << "Logging setup at " << Sys::datetime() << "." << Logger::EOM;
     
     // Expecting args: gameLevel playerNum sockAddress1 sockAddress2
     int argc;

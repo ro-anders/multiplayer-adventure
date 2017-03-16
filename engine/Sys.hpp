@@ -28,6 +28,13 @@ public:
     static long today();
     
     /**
+     * Return timestamp of form 2017/3/14-01:59:26.
+     * Caller does not need to delete the string when done, but the
+     * string contents may change with each call.
+     */
+    static const char* datetime();
+    
+    /**
      * Number of milliseconds since this game was started.  Note, this
      * is really only useful looking at the time between two calls of this.
      */
