@@ -61,7 +61,7 @@ public:
     
     int getPKey() const;
     
-    inline bool exists() {return objExists;}
+    inline bool exists() const {return objExists;}
     inline void setExists(bool inExists) {objExists = inExists;}
     
     /**

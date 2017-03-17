@@ -266,7 +266,7 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
                 if ((fleeObject > OBJECT_NONE) && (fleeObjectPtr != dragon))
                 {
                     // get the object it is fleeing
-                    if (fleeObjectPtr->room == dragon->room)
+                    if ((fleeObjectPtr->room == dragon->room) && (fleeObjectPtr->exists()))
                     {
                         seekDir = -1;
                         seekX = fleeObjectPtr->x;
