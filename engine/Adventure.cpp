@@ -674,6 +674,7 @@ void ResetPlayers() {
 
 void ResetPlayer(BALL* ball) {
     ball->room = ball->homeGate->room;                 // Put us at our home castle
+    ball->previousRoom = ball->room;
     ball->displayedRoom = ball->room;
     ball->x = 0x50*2;                  //
     ball->y = 0x20*2;                  //
@@ -796,9 +797,12 @@ void Adventure_Run()
 
                 // Display the room and objects
                 objectBall->room = 0;
+                objectBall->previousRoom = 0;
                 objectBall->displayedRoom = 0;
                 objectBall->x = 0;
                 objectBall->y = 0;
+                objectBall->previousX = 0;
+                objectBall->previousY = 0;
                 PrintDisplay();
             }
         }
@@ -1321,6 +1325,7 @@ void BallMovement(BALL* ball) {
                 ball->previousY = ball->y;
                 
                 ball->room = port->room;
+                ball->previousRoom = ball->room;
                 // If we were locked in the castle, open the portcullis.
                 if (port->state == Portcullis::CLOSED_STATE && canUnlockFromInside) {
                     port->openFromInside();
@@ -1401,8 +1406,12 @@ void OtherBallMovement() {
             PlayerMoveAction* movement = sync->GetLatestBallSync(i);
             if (movement != 0x0) {
                 nextPayer->room = movement->room;
+                nextPayer->previousRoom = movement->room;
+                nextPayer->displayedRoom = movement->room;
                 nextPayer->x = movement->posx;
+                nextPayer->previousX = movement->posx-movement->velx;
                 nextPayer->y = movement->posy;
+                nextPayer->previousY = movement->posy-movement->vely;
                 nextPayer->velx = movement->velx;
                 nextPayer->vely = movement->vely;
             }
@@ -1470,6 +1479,8 @@ void moveBallIntoCastle() {
             if (nextBall->room == nextPort->room && nextPort->allowsEntry && CollisionCheckObject(nextPort, (nextBall->x-4), (nextBall->y-1), 8, 8))
             {
                 nextBall->room = nextPort->insideRoom;
+                nextBall->previousRoom = nextBall->room;
+                nextBall->displayedRoom = nextBall->room;
                 nextBall->y = ENTER_AT_BOTTOM;
                 nextBall->previousY = nextBall->y;
                 // make sure it stays unlocked in case we are walking in with the key

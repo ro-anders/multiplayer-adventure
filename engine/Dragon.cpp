@@ -351,8 +351,12 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
     {
         // Eaten
         dragon->eaten->room = dragon->room;
+        dragon->eaten->previousRoom = dragon->room;
+        dragon->eaten->displayedRoom = dragon->room;
         dragon->eaten->x = (dragon->x + 3) * 2;
+        dragon->eaten->previousX = dragon->eaten->x;
         dragon->eaten->y = (dragon->y - 10) * 2;
+        dragon->eaten->previousY = dragon->eaten->y;
         dragon->movementX = 0;
         dragon->movementY = 0;
         if (objectBall == dragon->eaten) {
