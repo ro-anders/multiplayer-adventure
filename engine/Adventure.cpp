@@ -583,8 +583,8 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     if (gameMode == GAME_MODE_SCRIPTING) difficulty = Dragon::EASY;
     Dragon::setDifficulty(difficulty);
     dragons = new Dragon*[numDragons];
-    dragons[0] = new Dragon( "yorgle", 0, COLOR_YELLOW, 2, yellowDragonMatrix);
-    dragons[1] = new Dragon("grindle", 1, COLOR_LIMEGREEN, 2, greenDragonMatrix);
+    dragons[0] = new Dragon("grindle", 1, COLOR_LIMEGREEN, 2, greenDragonMatrix);
+    dragons[1] = new Dragon( "yorgle", 0, COLOR_YELLOW, 2, yellowDragonMatrix);
     dragons[2] = new Dragon("rhindle", 2, COLOR_RED, 3, redDragonMatrix);
     bat = new Bat(COLOR_BLACK);
 
@@ -894,7 +894,7 @@ void Adventure_Run()
                 else if (gameState == GAMESTATE_ACTIVE_3)
                 {
                     // Move and deal with the dragons
-                    for(int dragonCtr=numDragons-1; dragonCtr>=0; --dragonCtr) {
+                    for(int dragonCtr=0; dragonCtr<numDragons; ++dragonCtr) {
                         Dragon* dragon = dragons[dragonCtr];
                         RemoteAction* dragonAction = dragon->move(&objectBall->displayedRoom);
                         if (dragonAction != NULL) {
