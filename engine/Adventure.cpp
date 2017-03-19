@@ -894,7 +894,7 @@ void Adventure_Run()
                 else if (gameState == GAMESTATE_ACTIVE_3)
                 {
                     // Move and deal with the dragons
-                    for(int dragonCtr=0; dragonCtr<numDragons; ++dragonCtr) {
+                    for(int dragonCtr=numDragons-1; dragonCtr>=0; --dragonCtr) {
                         Dragon* dragon = dragons[dragonCtr];
                         RemoteAction* dragonAction = dragon->move(&objectBall->displayedRoom);
                         if (dragonAction != NULL) {
