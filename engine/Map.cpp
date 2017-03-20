@@ -474,6 +474,8 @@ void Map::ConfigureMaze(int numPlayers, int gameMapLayout) {
         roomDefs[COPPER_CASTLE]->roomUp = SOUTHEAST_ROOM;
         roomDefs[COPPER_CASTLE]->roomRight = BLUE_MAZE_4;
         roomDefs[COPPER_CASTLE]->roomLeft = BLUE_MAZE_1;
+        roomDefs[BLACK_CASTLE]->roomLeft = COPPER_CASTLE;
+        roomDefs[BLACK_CASTLE]->roomRight = COPPER_CASTLE;
         
         // Put the Black Maze in the Black Castle
         roomDefs[BLACK_FOYER]->roomUp = BLACK_MAZE_ENTRY;

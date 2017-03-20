@@ -1881,7 +1881,7 @@ void Magnet()
     {
         // Look for items in the magnet matrix that are in the same room as the magnet
         OBJECT* object = board[magnetMatrix[i]];
-        if ((magnetMatrix[i] != objectBall->linkedObject) && (object->room == magnet->room))
+        if ((magnetMatrix[i] != objectBall->linkedObject) && (object->room == magnet->room) && (object->exists()))
         {
             // horizontal axis
             if (object->x < magnet->x)
