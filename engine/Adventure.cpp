@@ -583,8 +583,8 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     if (gameMode == GAME_MODE_SCRIPTING) difficulty = Dragon::EASY;
     Dragon::setDifficulty(difficulty);
     dragons = new Dragon*[numDragons];
-    dragons[0] = new Dragon("grindle", 1, COLOR_LIMEGREEN, 2, greenDragonMatrix);
-    dragons[1] = new Dragon( "yorgle", 0, COLOR_YELLOW, 2, yellowDragonMatrix);
+    dragons[0] = new Dragon("grindle", 0, COLOR_LIMEGREEN, 2, greenDragonMatrix);
+    dragons[1] = new Dragon( "yorgle", 1, COLOR_YELLOW, 2, yellowDragonMatrix);
     dragons[2] = new Dragon("rhindle", 2, COLOR_RED, 3, redDragonMatrix);
     bat = new Bat(COLOR_BLACK);
 
@@ -1515,8 +1515,10 @@ void MoveGroundObject()
         OBJECT* object = iter.next();
 
         // Apply movement
-        object->x += object->getMovementX();
-        object->y += object->getMovementY();
+        if ((object->gfxData != Dragon::gfxData) || (object->state == 0)) {
+            object->x += object->getMovementX();
+            object->y += object->getMovementY();
+        }
 
         // Check and Deal with Up
         if (object->y > 0x6A)
