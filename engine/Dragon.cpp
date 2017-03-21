@@ -159,7 +159,7 @@ void Dragon::syncAction(DragonStateAction* action, int volume) {
         BALL* playerEaten = board->getPlayer(action->sender);
         // Ignore duplicates
         if (eaten != playerEaten) {
-            // Set the State to 01 (eaten)
+            // Set the State to 02 (eaten)
             eaten = playerEaten;
             state = Dragon::EATEN;
             room = action->room;
@@ -374,6 +374,10 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
                 // Set the State to 01 (eaten)
                 dragon->eaten = objectBall;
                 dragon->state = Dragon::EATEN;
+                // Move the dragon up so that eating never causes the ball to shift screens
+                if (objectBall->y < 48) {
+                    dragon->y = 24;
+                }
                 
                 // Notify others
                 actionTaken = new DragonStateAction(dragon->dragonNumber, Dragon::EATEN, dragon->room, dragon->x, dragon->y);                

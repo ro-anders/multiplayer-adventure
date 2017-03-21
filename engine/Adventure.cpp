@@ -621,8 +621,8 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
     gameBoard->addObject(OBJECT_BLACK_PORT, ports[2]);
     gameBoard->addObject(OBJECT_NAME, new OBJECT("easter egg message", objectGfxAuthor, 0, 0, COLOR_FLASH, OBJECT::FIXED_LOCATION));
     gameBoard->addObject(OBJECT_REDDRAGON, dragons[2]);
-    gameBoard->addObject(OBJECT_YELLOWDRAGON,dragons[0]);
-    gameBoard->addObject(OBJECT_GREENDRAGON, dragons[1]);
+    gameBoard->addObject(OBJECT_YELLOWDRAGON,dragons[1]);
+    gameBoard->addObject(OBJECT_GREENDRAGON, dragons[0]);
     gameBoard->addObject(OBJECT_SWORD, new OBJECT("sword", objectGfxSword, 0, 0, COLOR_YELLOW));
     gameBoard->addObject(OBJECT_BRIDGE, new OBJECT("bridge", objectGfxBridge, 0, 0, COLOR_PURPLE,
                                                    OBJECT::OPEN_OR_IN_CASTLE, 0x07));
