@@ -19,7 +19,7 @@ static const byte dragonStates [] =
     0,2,0,1
 };
 
-static const byte objectGfxDrag [] =
+const byte Dragon::gfxData [] =
 {
     // Object #6 : State #00 : Graphic
     20,
@@ -91,7 +91,7 @@ static const byte objectGfxDrag [] =
 int Dragon::dragonResetTime = Dragon::TRIVIAL;
 
 Dragon::Dragon(const char* label, int inNumber, int inColor, int inSpeed, const int* chaseMatrix):
-    OBJECT(label, objectGfxDrag, dragonStates, 0, inColor),
+OBJECT(label, Dragon::gfxData, dragonStates, 0, inColor),
     dragonNumber(inNumber),
     speed(inSpeed),
     matrix(chaseMatrix),
@@ -110,8 +110,6 @@ Dragon::~Dragon() {
  */
 void Dragon::init(int inRoom, int inX, int inY, int inState, int inMoveX, int inMoveY) {
     OBJECT::init(inRoom, inX, inY, inState, inMoveX, inMoveY);
-    prevMovementX = inMoveX;
-    prevMovementY = inMoveY;
 }
 
 void Dragon::setRunFromSword(bool willRunFromSword) {
@@ -139,10 +137,6 @@ void Dragon::roar(int atRoom, int atX, int atY) {
     room = atRoom;
     x = atX+1; // Added one to get over disparity between C++ port and original atari game - not the best solution
     y = atY;
-    
-    movementX = 0;
-    movementY = 0;
-    
 }
 
 void Dragon::setDifficulty(Dragon::Difficulty newDifficulty) {
@@ -165,8 +159,8 @@ void Dragon::syncAction(DragonStateAction* action, int volume) {
             room = action->room;
             x = action->posx;
             y = action->posy;
-            movementX = 0;
-            movementY = 0;
+            movementX = action->velx;
+            movementY = action->vely;
             // Play the sound
             Platform_MakeSound(SOUND_EATEN, volume);
         }
@@ -177,9 +171,8 @@ void Dragon::syncAction(DragonStateAction* action, int volume) {
             room = action->room;
             x = action->posx;
             y = action->posy;
-            movementX = 0;
-            movementY = 0;
-            // Keep the previous movement untouched.
+            movementX = action->velx;
+            movementY = action->vely;
             // Play the sound
             Platform_MakeSound(SOUND_DRAGONDIE, volume);
         }
@@ -188,6 +181,8 @@ void Dragon::syncAction(DragonStateAction* action, int volume) {
         // We ignore roar actions if we are already in an eaten state or dead state
         if ((state != Dragon::EATEN) && (state != Dragon::DEAD)) {
             roar(action->room, action->posx, action->posy);
+            movementX = action->velx;
+            movementY = action->vely;
             // Play the sound
             Platform_MakeSound(SOUND_ROAR, volume);
         }
@@ -199,13 +194,7 @@ void Dragon::syncAction(DragonMoveAction* action) {
     x = action->posx;
     y = action->posy;
     movementX = action->velx;
-    if (movementX != 0) {
-        prevMovementX = movementX;
-    }
     movementY = action->vely;
-    if (movementY != 0) {
-        prevMovementY = movementY;
-    }
 }
 
 RemoteAction* Dragon::move(int* displayedRoomIndex)
@@ -222,7 +211,8 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
             dragon->roar(objectBall->room, objectBall->x/2, objectBall->y/2);
             
             // Notify others
-            actionTaken = new DragonStateAction(dragon->dragonNumber, Dragon::ROAR, dragon->room, dragon->x, dragon->y);
+            actionTaken = new DragonStateAction(dragon->dragonNumber, Dragon::ROAR, dragon->room, dragon->x, dragon->y,
+                                                dragon->movementX, dragon->movementY);
                         
             // Play the sound
             Platform_MakeSound(SOUND_ROAR, MAX_VOLUME);
@@ -233,11 +223,10 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
         {
             // Set the State to 01 (Dead)
             dragon->state = Dragon::DEAD;
-            dragon->movementX = 0;
-            dragon->movementY = 0;
             
             // Notify others
-            actionTaken = new DragonStateAction(dragon->dragonNumber, Dragon::DEAD, dragon->room, dragon->x, dragon->y);
+            actionTaken = new DragonStateAction(dragon->dragonNumber, Dragon::DEAD, dragon->room, dragon->x, dragon->y,
+                                                dragon->movementX, dragon->movementY);
             
             // Play the sound
             Platform_MakeSound(SOUND_DRAGONDIE, MAX_VOLUME);
@@ -245,11 +234,6 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
         
         if (dragon->state == Dragon::STALKING)
         {
-            // If nothing is around the dragon to move him, keep going in
-            // previous direction.
-            dragon->movementX = dragon->prevMovementX;
-            dragon->movementY = dragon->prevMovementY;
-            
             // Go through the dragon's object matrix
             // Difficulty switch determines flee or don't flee from sword
             const int* matrixP = (runFromSword ? matrix : matrix+2);
@@ -336,8 +320,6 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
                     }
                     dragon->movementX = newMovementX;
                     dragon->movementY = newMovementY;
-                    dragon->prevMovementX = newMovementX;
-                    dragon->prevMovementY = newMovementY;
                     
                     // Found something - we're done
                     return actionTaken;
@@ -357,8 +339,6 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
         dragon->eaten->previousX = dragon->eaten->x;
         dragon->eaten->y = (dragon->y - 10) * 2;
         dragon->eaten->previousY = dragon->eaten->y;
-        dragon->movementX = 0;
-        dragon->movementY = 0;
         if (objectBall == dragon->eaten) {
             *displayedRoomIndex = dragon->room;
         }
@@ -380,7 +360,8 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
                 }
                 
                 // Notify others
-                actionTaken = new DragonStateAction(dragon->dragonNumber, Dragon::EATEN, dragon->room, dragon->x, dragon->y);                
+                actionTaken = new DragonStateAction(dragon->dragonNumber, Dragon::EATEN, dragon->room,
+                                                    dragon->x, dragon->y, dragon->movementX, dragon->movementY);
                 
                 // Play the sound
                 Platform_MakeSound(SOUND_EATEN, MAX_VOLUME);

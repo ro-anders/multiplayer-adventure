@@ -140,12 +140,14 @@ public:
     int room;
     int posx;
     int posy;
+    int velx;
+    int vely;
     
     static const char* CODE;
     
     DragonStateAction();
     
-    DragonStateAction(int inDragonNum, int inState, int inRoom, int inPosx, int inPosy);
+    DragonStateAction(int inDragonNum, int inState, int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
     
     ~DragonStateAction();
     
