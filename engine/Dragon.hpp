@@ -27,6 +27,8 @@ public:
 
 	static bool runFromSword;
     
+    static const byte gfxData[];
+    
     BALL* eaten;
     int eatenX;
     int eatenY;
@@ -106,12 +108,6 @@ private:
 
 	int timerExpired();
     
-    /**
-     * When a dragon stops (i.e. to roar) it needs to remember it's previous velocity.
-     */
-    int prevMovementX;
-    int prevMovementY;
-
 	BALL* closestBall(int room, int x, int y);
 
 };
