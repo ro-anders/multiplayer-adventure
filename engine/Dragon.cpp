@@ -197,7 +197,7 @@ void Dragon::syncAction(DragonMoveAction* action) {
     movementY = action->vely;
 }
 
-RemoteAction* Dragon::move(int* displayedRoomIndex)
+RemoteAction* Dragon::move()
 {
 	RemoteAction* actionTaken = NULL;
     Dragon* dragon = this;
@@ -334,14 +334,10 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
         // Eaten
         dragon->eaten->room = dragon->room;
         dragon->eaten->previousRoom = dragon->room;
-        dragon->eaten->displayedRoom = dragon->room;
         dragon->eaten->x = (dragon->x + 3) * 2;
         dragon->eaten->previousX = dragon->eaten->x;
         dragon->eaten->y = (dragon->y - 10) * 2;
         dragon->eaten->previousY = dragon->eaten->y;
-        if (objectBall == dragon->eaten) {
-            *displayedRoomIndex = dragon->room;
-        }
     }
     else if (dragon->state == Dragon::ROAR)
     {

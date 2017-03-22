@@ -896,7 +896,7 @@ void Adventure_Run()
                     // Move and deal with the dragons
                     for(int dragonCtr=0; dragonCtr<numDragons; ++dragonCtr) {
                         Dragon* dragon = dragons[dragonCtr];
-                        RemoteAction* dragonAction = dragon->move(&objectBall->displayedRoom);
+                        RemoteAction* dragonAction = dragon->move();
                         if (dragonAction != NULL) {
                             sync->BroadcastAction(dragonAction);
                         }
@@ -1232,7 +1232,7 @@ void ReactToCollisionY(BALL* ball) {
             ball->x = ENTER_AT_RIGHT;
             ball->room = ball->displayedRoom;
         }
-        
+
         ball->hit = CollisionCheckBallWithEverything(ball, ball->displayedRoom, ball->x, ball->y, false, &ball->hitObject);
 	}
 }

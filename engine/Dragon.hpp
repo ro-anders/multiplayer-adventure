@@ -69,10 +69,8 @@ public:
 	* Move the dragon this turn.
 	* matrix - The dragon list of things he runs from, goes after, or guards
 	* speed - the dragon's speed
-	* displayedRoomIndex - if the dragon eats the current player, the dragon controls what room is displayed
-	* and needs to update the displayedRoomIndex
 	*/
-    RemoteAction* move(int* displayedRoomIndex);
+    RemoteAction* move();
     
 	void roar(int atRoom, int atX, int atY);
     
