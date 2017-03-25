@@ -50,6 +50,10 @@ private:
 
     void setupBrokeredGame(GameSetup::GameParams& newParams, int argc, char** argv);
     
+    void setupP2PGame(GameSetup::GameParams& newParams, int argc, char** argv);
+    
+    void setupSelfGame(GameSetup::GameParams& newParams, int argc, char** argv);
+
     void checkExpirationDate();
 
     RestClient& client;

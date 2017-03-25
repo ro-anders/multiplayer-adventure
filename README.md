@@ -32,9 +32,9 @@ You also need to agree who will be player 1 (starts at gold castle), player 2 (s
 Finally you need to agree on which game you will play, 1, 2, or 3.
 
 Let's say the gold player has IP address 192.168.1.11 and copper has 192.168.1.12 and jade has 192.168.1.13 and they are going to play game 2.  They need to type:
-* player1 -> H2HAdventure.exe 2 1 5001 192.168.1.12:5002 192.168.1.13:5003
-* player2 -> H2HAdventure.exe 2 2 5002 192.168.1.11:5001 192.168.1.13:5003
-* player3 -> H2HAdventure.exe 2 3 5003 192.168.1.11:5001 192.168.1.12:5002
+* player1 -> H2HAdventure.exe p2p 2 1 5001 192.168.1.12:5002 192.168.1.13:5003
+* player2 -> H2HAdventure.exe p2p 2 2 5002 192.168.1.11:5001 192.168.1.13:5003
+* player3 -> H2HAdventure.exe p2p 2 3 5003 192.168.1.11:5001 192.168.1.12:5002
 
 For Mac it would be ./H2HAdventure instead of H2HAdventure.exe.
 
@@ -47,8 +47,8 @@ If players are not on the same local network peer-to-peer setup is more difficul
 Let's say player3 in the example above is out on the internet, and it appears to other machines as 300.300.300.300.  Let's say player1 and player2 both appear as 100.100.100.100.  
 
 The commands to type are:
-* player1 -> H2HAdventure.exe 2 1 5001 192.168.1.12:5002 300.300.300.300:5003
-* player2 -> H2HAdventure.exe 2 2 5002 192.168.1.11:5001 300.300.300.300:5003
-* player3 -> H2HAdventure.exe 2 3 5003 100.100.100.100:5001 100.100.100.100:5002
+* player1 -> H2HAdventure.exe p2p 2 1 5001 192.168.1.12:5002 300.300.300.300:5003
+* player2 -> H2HAdventure.exe p2p 2 2 5002 192.168.1.11:5001 300.300.300.300:5003
+* player3 -> H2HAdventure.exe p2p 2 3 5003 100.100.100.100:5001 100.100.100.100:5002
 
  
