@@ -219,7 +219,9 @@ RemoteAction* Dragon::move()
         }
         
         // Has the Sword hit the Dragon?
-        if (board->CollisionCheckObjectObject(dragon, board->getObject(OBJECT_SWORD)))
+        // Note, you have to be in the same room for a dragon to die on the sword
+        if ((objectBall->room == dragon->room) &&
+            (board->CollisionCheckObjectObject(dragon, board->getObject(OBJECT_SWORD))))
         {
             // Set the State to 01 (Dead)
             dragon->state = Dragon::DEAD;
