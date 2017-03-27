@@ -2158,7 +2158,9 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
         }
 
         // Has the Sword hit the Dragon?
-        if (CollisionCheckObjectObject(dragon, &objectDefs[OBJECT_SWORD]))
+        // Note: You have to be in the same room for the dragon to die on the sword
+        if ((objectBall.room == dragon->room) &&
+            (CollisionCheckObjectObject(dragon, &objectDefs[OBJECT_SWORD])))
         {
             // Set the State to 01 (Dead)
             dragon->state = 1;
@@ -2285,6 +2287,9 @@ void MoveDragon(OBJECT* dragon, const int* matrix, int speed, int* timer)
                 // Set the State to 01 (eaten)
                 dragon->linkedObject = OBJECT_BALL;
                 dragon->state = 2;
+                if (objectBall.y < 48) {
+                    dragon->y = 24;
+                }
 
                 // Play the sound
                 Platform_MakeSound(SOUND_EATEN);
