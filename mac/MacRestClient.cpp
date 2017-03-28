@@ -14,6 +14,7 @@
 // End socket includes
 #include <iostream>
 
+#include "Logger.hpp"
 #include "Sys.hpp"
 
 int MacRestClient::request(const char* path, const char* message, char* responseBuffer, int bufferLength) {
@@ -27,12 +28,12 @@ int MacRestClient::request(const char* path, const char* message, char* response
     
     int socketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFd < 0) {
-        Sys::log("ERROR opening http socket");
+        Logger::logError("ERROR opening http socket");
         return -1;
     }
     server = gethostbyname(BROKER_SERVER);
     if (server == NULL) {
-        Sys::log("ERROR, no such http host\n");
+        Logger::logError("ERROR, no such http host\n");
         return -2;
     }
     bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -43,7 +44,7 @@ int MacRestClient::request(const char* path, const char* message, char* response
     serv_addr.sin_port = htons(REST_PORT);
     n = ::connect(socketFd,(struct sockaddr *) &serv_addr,sizeof(serv_addr));
     if (n < 0) {
-        Sys::log("ERROR making http connecting");
+        Logger::logError("ERROR making http connecting");
         return -3;
     }
     
@@ -53,11 +54,11 @@ int MacRestClient::request(const char* path, const char* message, char* response
     int messageLen = strlen(message);
     n = write(socketFd, message, messageLen);
     if (n < 0) {
-        Sys::log("ERROR sending http request");
+        Logger::logError("ERROR sending http request");
         return -4;
     } else if (n<messageLen) {
         // TODO: Is this a fatal error?
-        Sys::log("ERROR http request only partially sent");
+        Logger::logError("ERROR http request only partially sent");
     }
     
     printf("Reading http response\n");
@@ -73,14 +74,14 @@ int MacRestClient::request(const char* path, const char* message, char* response
         if (charsRead <= 0) {
             keepGoing = false;
             if (charsInBuffer == 0) {
-                Sys::log("Error reading http response");
+                Logger::logError("Error reading http response");
                 return -5;
             }
         } else {
             charsInBuffer += charsRead;
             if (charsInBuffer >= bufferLength) {
-                Sys::log("ERROR http response too big.  Truncated.");
-                Sys::log(responseBuffer);
+                Logger::logError("ERROR http response too big.  Truncated.");
+                Logger::logError(responseBuffer);
                 keepGoing = false;
             }
         }
@@ -108,7 +109,7 @@ void MacRestClient::mimicServer() {
     
     int serverSocketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocketFd < 0) {
-        Sys::log("ERROR opening socket");
+        Logger::logError("ERROR opening socket");
         return;
     }
     
@@ -119,7 +120,7 @@ void MacRestClient::mimicServer() {
     serv_addr.sin_port = htons(port);
     if (bind(serverSocketFd, (struct sockaddr *) &serv_addr,
              sizeof(serv_addr)) < 0) {
-        Sys::log("ERROR port already in use");
+        Logger::logError("ERROR port already in use");
         return;
     }
     
@@ -131,7 +132,7 @@ void MacRestClient::mimicServer() {
                       (struct sockaddr *) &cli_addr,
                       &clilen);
     if (socketFd < 0) {
-        Sys::log("ERROR on accept");
+        Logger::logError("ERROR on accept");
         return;
     }
 
@@ -142,20 +143,7 @@ void MacRestClient::mimicServer() {
     while (!done) {
         int n = read(socketFd, buffer, BUFFER_LENGTH);
         for(int ctr=0; ctr<n; ++ctr) {
-            if (true) {
-                std::cout << buffer[ctr];
-            } else {
-                if (buffer[ctr] == ' ') {
-                    std::cout << '-';
-                }
-                else if (((buffer[ctr]<'a') || (buffer[ctr]>'z')) &&
-                         ((buffer[ctr]<'A') || (buffer[ctr]>'Z'))&&
-                         ((buffer[ctr]<'0') || (buffer[ctr]>'9'))) {
-                    std::cout << '<' << (int)buffer[ctr] << '>';
-                } else {
-                    std::cout << buffer[ctr];
-                }
-            }
+            std::cout << buffer[ctr];
         }
     }
     std::cout << '"' << std::endl;

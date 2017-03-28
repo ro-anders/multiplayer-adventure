@@ -27,6 +27,8 @@ public:
 
 	static bool runFromSword;
     
+    static const byte gfxData[];
+    
     BALL* eaten;
     int eatenX;
     int eatenY;
@@ -67,12 +69,10 @@ public:
 	* Move the dragon this turn.
 	* matrix - The dragon list of things he runs from, goes after, or guards
 	* speed - the dragon's speed
-	* displayedRoomIndex - if the dragon eats the current player, the dragon controls what room is displayed
-	* and needs to update the displayedRoomIndex
 	*/
-    RemoteAction* move(int* displayedRoomIndex);
+    RemoteAction* move();
     
-	void roar(int atX, int atY);
+	void roar(int atRoom, int atX, int atY);
     
 	int dragonNumber;
 
@@ -106,12 +106,6 @@ private:
 
 	int timerExpired();
     
-    /**
-     * When a dragon stops (i.e. to roar) it needs to remember it's previous velocity.
-     */
-    int prevMovementX;
-    int prevMovementY;
-
 	BALL* closestBall(int room, int x, int y);
 
 };

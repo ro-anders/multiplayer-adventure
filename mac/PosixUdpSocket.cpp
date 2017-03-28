@@ -15,7 +15,7 @@
 #include <unistd.h>
 // End socket includes
 
-#include "Sys.hpp"
+#include "Logger.hpp"
 #include "Transport.hpp"
 
 PosixUdpSocket::PosixUdpSocket() :
@@ -74,7 +74,7 @@ int PosixUdpSocket::bind(int myInternalPort) {
     // Create the server socket and bind to it
     socketFd = socket(AF_INET, SOCK_DGRAM, 0);
     if (socketFd < 0) {
-        Sys::log("ERROR opening socket");
+        Logger::logError("ERROR opening socket");
         return Transport::TPT_ERROR;
     }
     struct sockaddr_in serv_addr;
@@ -82,7 +82,7 @@ int PosixUdpSocket::bind(int myInternalPort) {
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     serv_addr.sin_port = htons(myInternalPort);
-    printf("Opening socket on port %d\n", ntohs(serv_addr.sin_port));
+    Logger::log() << "Opening socket on port " << ntohs(serv_addr.sin_port) << Logger::EOM;
     if (::bind(socketFd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
         // Assume it is because another process is listening and we should instead launch the client
         return Transport::TPT_BUSY;
@@ -107,7 +107,6 @@ void PosixUdpSocket::setBlocking(bool isBlocking) {
  */
 int PosixUdpSocket::writeData(const char* data, int numBytes, sockaddr_in* recipient)
 {
-    printf("Sending packet to other machine on port %d\n", ntohs(recipient->sin_port));
     int numSent = sendto(socketFd, data, numBytes, 0, (struct sockaddr *)recipient, sizeof(sockaddr_in));
     return numSent;
 }

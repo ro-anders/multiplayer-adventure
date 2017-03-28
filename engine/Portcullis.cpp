@@ -1,7 +1,10 @@
 
 #include "Portcullis.hpp"
 
+#include "Adventure.h"
 #include "color.h"
+#include "Ball.hpp"
+#include "Bat.hpp"
 #include "Board.hpp"
 #include "Map.hpp"
 #include "RemoteAction.hpp"
@@ -108,7 +111,7 @@ const int Portcullis::OPEN_STATE=0;
 const int Portcullis::CLOSED_STATE=12;
 
 const int Portcullis::EXIT_X = 0xA0;
-const int Portcullis::EXIT_Y = 0x2C * 2;
+const int Portcullis::EXIT_Y = 0x58;
 const int Portcullis::PORT_X = 0x4d;
 const int Portcullis::PORT_Y = 0x31;
 
@@ -158,15 +161,74 @@ void Portcullis::moveOneTurn() {
     }
 }
 
-PortcullisStateAction*  Portcullis::checkInteraction() {
-    PortcullisStateAction* gateAction = NULL;
-    if ((state == OPEN_STATE || state == CLOSED_STATE) && checkKeyTouch(key)) {
-        // Toggle the port state
-        state++;
-        allowsEntry = true; // Either the gate is now opening and active or now closing but still active
-        // If we are in the same room, broadcast the state change
-        gateAction = new PortcullisStateAction(getPKey(), state, allowsEntry);
+ObjectMoveAction* Portcullis::checkObjectEnters(OBJECT* object) {
+    // Gate must be open and someone else must be in the room to witness (objects don't go through gates if no one
+    // is in the room).  Object must be in room, touching gate, and not held by anyone.
+    
+    // For efficiency, we've computed whether someone is in the room to witness before we ever make this call, so we don't
+    // need to check it again.
+    
+    ObjectMoveAction* newAction = NULL;
+    if ((object->room == this->room) && this->allowsEntry) {
+        bool held = false;
+        int numPlayers = this->board->getNumPlayers();
+        for(int ctr=0; !held && (ctr<numPlayers); ++ctr) {
+            held = (this->board->getPlayer(ctr)->linkedObject == object->getPKey());
+        }
+    
+        if (!held && board->CollisionCheckObjectObject(this, object)) {
+            object->room = this->insideRoom;
+            object->y = ENTER_AT_BOTTOM;
+            // We only generate an event if we are in the room.
+            newAction = new ObjectMoveAction(object->getPKey(), object->room, object->x, object->y);
+        }
     }
+    
+    return newAction;
+}
+
+PortcullisStateAction*  Portcullis::checkKeyInteraction() {
+    PortcullisStateAction* gateAction = NULL;
+    
+    // We only change the state of the castle gate if we are in the room.  Otherwise we wait for
+    // another player to notify us of the state change.
+    BALL* thisPlayer = board->getCurrentPlayer();
+    if ((thisPlayer->room == this->room) && checkKeyTouch(key)) {
+        
+        int heldBy = board->getPlayerHoldingObject(key);
+        bool stateChange = false;
+        
+        // If the gate is closed, we open the gate
+        if (state == CLOSED_STATE) {
+            state++;
+            allowsEntry = true;
+            stateChange = true;
+        }
+        // If the gate is in the process of closing, we do nothing unless the key
+        // isn't held by anyone then we open the gate to prevent the key from being locked inside
+        else if ((state > OPEN_STATE) && (state < CLOSED_STATE) && (heldBy < 0)) {
+            state += CLOSED_STATE;
+            allowsEntry = true;
+            stateChange = true;
+        }
+        // If the gate is open, we only close it if the key is held by someone
+        else if ((state == OPEN_STATE) && (heldBy >= 0)) {
+            // Toggle the port state
+            state++;
+            allowsEntry = true; // The gate is now closing but still active
+            stateChange = true;
+        }
+        
+        if (stateChange) {
+            // Broadcast a state change if we are holding the key or if no one is holding the key and we
+            // are a witness
+            if ((heldBy == thisPlayer->playerNum) || ((heldBy < 0) && (thisPlayer->room == room))) {
+                gateAction = new PortcullisStateAction(getPKey(), state, allowsEntry);
+            }
+            
+        }
+    }
+    
     return gateAction;
 }
 

@@ -220,13 +220,16 @@ const char* DragonStateAction::CODE = "DS";
 DragonStateAction::DragonStateAction() :
 RemoteAction(CODE) {}
 
-DragonStateAction::DragonStateAction(int inDragonNum, int inState, int inRoom, int inPosx, int inPosy) :
+DragonStateAction::DragonStateAction(int inDragonNum, int inState,
+                                     int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
 RemoteAction(CODE),
 dragonNum(inDragonNum),
 newState(inState),
 room(inRoom),
 posx(inPosx),
-posy(inPosy)
+posy(inPosy),
+velx(inVelx),
+vely(inVely)
 {}
 
 DragonStateAction::~DragonStateAction() {}
@@ -234,15 +237,15 @@ DragonStateAction::~DragonStateAction() {}
 int DragonStateAction::serialize(char* buffer, int bufferLength) {
     // TODO - Right now we are ignoring bufferLength
     // TODO - Reuse base class serialize
-    int numChars = sprintf(buffer, "DS %d %d %d %d %d %d",
-                           sender, dragonNum, newState, room, posx, posy);
+    int numChars = sprintf(buffer, "DS %d %d %d %d %d %d %d %d",
+                           sender, dragonNum, newState, room, posx, posy, velx, vely);
     return numChars;
 }
 
 void DragonStateAction::deserialize(const char *message) {
     char type[8];
-    sscanf(message, "%s %d %d %d %d %d %d",
-           type, &sender, &dragonNum, &newState, &room, &posx, &posy);
+    sscanf(message, "%s %d %d %d %d %d %d %d %d",
+           type, &sender, &dragonNum, &newState, &room, &posx, &posy, &velx, &vely);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -347,15 +350,15 @@ void BatPickupAction::deserialize(const char *message) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //
-// MapSetupObjectAction
+// ObjectMoveAction
 //
 
-const char* MapSetupObjectAction::CODE = "MO";
+const char* ObjectMoveAction::CODE = "MO";
 
-MapSetupObjectAction::MapSetupObjectAction() :
+ObjectMoveAction::ObjectMoveAction() :
 RemoteAction(CODE) {}
 
-MapSetupObjectAction::MapSetupObjectAction(int inObject, int inRoom, int inX, int inY) :
+ObjectMoveAction::ObjectMoveAction(int inObject, int inRoom, int inX, int inY) :
 RemoteAction(CODE),
 object(inObject),
 room(inRoom),
@@ -363,17 +366,17 @@ x(inX),
 y(inY)
 {}
 
-MapSetupObjectAction::~MapSetupObjectAction() {}
+ObjectMoveAction::~ObjectMoveAction() {}
 
 
-int MapSetupObjectAction::serialize(char* buffer, int bufferLength) {
+int ObjectMoveAction::serialize(char* buffer, int bufferLength) {
     // TODO - Right now we are ignoring bufferLength
     // TODO - Reuse base class serialize
     int numChars = sprintf(buffer, "MO %d %d %d %d %d", sender, object, room, x, y);
     return numChars;
 }
 
-void MapSetupObjectAction::deserialize(const char *message) {
+void ObjectMoveAction::deserialize(const char *message) {
     char type[8];
     sscanf(message, "%s %d %d %d %d %d", type, &sender, &object, &room, &x, &y);
 }

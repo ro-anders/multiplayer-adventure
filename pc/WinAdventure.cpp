@@ -27,6 +27,7 @@
 
 #include "..\engine\Adventure.h"
 #include "..\engine\GameSetup.hpp"
+#include "..\engine\Logger.hpp"
 #include "..\engine\Sys.hpp"
 #include "..\engine\UdpTransport.hpp"
 #include "..\engine\RestClient.hpp"
@@ -42,7 +43,7 @@ int leftKey = VK_LEFT;
 int rightKey = VK_RIGHT;
 int upKey = VK_UP;
 int downKey = VK_DOWN;
-int dropKey = VK_RCONTROL;
+int dropKey = VK_SPACE;
 int resetKey = VK_RETURN;
 
 int argc = 0;
@@ -104,11 +105,9 @@ void parseCommandLine(LPTSTR lpCmdLine) {
 	}
 
 	char logMessage[1000];
-	sprintf(logMessage, "Parsed %d arguments\n", argc);
-	OutputDebugString(logMessage);
+	Logger::log() << "Parsed " << argc << " arguments." << Logger::EOM;
 	for (int ctr2 = 0; ctr2 < argc; ++ctr2) {
-		sprintf(logMessage, "Arg %d = %s\n", (ctr2+1), argv[ctr2]);
-		OutputDebugString(logMessage);
+		Logger::log() << "Arg " << (ctr2 + 1) << " = " << argv[ctr2] << Logger::EOM;
 	}
 }
 
@@ -118,6 +117,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
                      int       nCmdShow)
 {
     // TODO: Place code here.
+	Logger::setup(Logger::FILE, Logger::INFO);
     MSG msg;
     HACCEL hAccelTable;
 
@@ -523,7 +523,7 @@ void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* 
     if (up) *up = GetAsyncKeyState(upKey) & 0x8000;
     if (right) *right = GetAsyncKeyState(rightKey) & 0x8000;
     if (down) *down = GetAsyncKeyState(downKey) & 0x8000;
-    if (fire) *fire = (GetAsyncKeyState(dropKey) & 0x8000) || (GetAsyncKeyState(VK_LCONTROL) & 0x8000);
+    if (fire) *fire = GetAsyncKeyState(dropKey) & 0x8000;
 }
 
 void Platform_ReadConsoleSwitches(bool* reset)
@@ -607,7 +607,13 @@ float Platform_Random()
 }
 
 void Platform_DisplayStatus(const char* message, int duration) {
-    // TODO: Implement
+	static const char* title = "";
+	int msgboxID = MessageBox(
+		NULL,
+		(LPCSTR)message,
+		(LPCSTR)title,
+		MB_ICONWARNING | MB_OK | MB_DEFBUTTON2
+	);
 }
 
 

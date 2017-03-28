@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include "Logger.hpp"
 #include "Sys.hpp"
 #include "UdpSocket.hpp"
 
@@ -125,7 +126,7 @@ void UdpTransport::connect() {
     // We need a big random integer.
     randomNum = Sys::random() * 1000000;
     
-    printf("Attempting to punch hole to other machine.");
+    Logger::log("Attempting to punch hole to other machine.");
     punchHole();
 }
 
@@ -163,7 +164,7 @@ int UdpTransport::openSocket() {
     int status = socket->bind(myInternalPort);
 
     if (status == Transport::TPT_OK) {
-        printf("Bound to port %d.\n", myInternalPort);
+        Logger::log() << "Bound to port " << myInternalPort << Logger::EOM;
         socketBound = true;
     } else {
         printf("Failed to bind to port %d.\n", myInternalPort);
@@ -233,32 +234,37 @@ void UdpTransport::punchHole() {
                 appendDataToBuffer(recvBuffer, bytes);
             } else {
                 if (bytes != 10) {
-                    Sys::log("Read packet of unexpected length.");
-                    printf("Message=%s.  Bytes read=%d.\n", recvBuffer, bytes);
+                    Logger::logError() << "Read packet of unexpected length.\n" <<
+                    "Message=" << recvBuffer << ".  Bytes read=" << bytes << Logger::EOM;
                 }
                 // Figure out the sender.  The third character will be the machine number.
                 char senderChar = recvBuffer[2];
                 // Two machine games don't need this so the number is always 0.
                 // Three machine games need to map a 0, 1, or 2 to their array of machines 0 or 1.
                 int senderInt = senderChar - '0';
-                int senderIndex = (senderInt <= transportNum ? senderInt : senderInt-1);
-                
-                if (senderIndex >= 0) {
-                    if (states[senderIndex] == RECVD_NOTHING) {
-                        states[senderIndex] = RECVD_MESSAGE;
-                    }
-                    // See if they have received ours and this is the first time we have seen them receive ours
-                    if ((recvBuffer[1] != RECVD_NOTHING[1]) && (states[senderIndex] != RECVD_ACK)) {
-                        // They have received our message, and now we have received their's.  So ACK.
-                        states[senderIndex] = RECVD_ACK;
-                        justAcked[senderIndex] = true;
-                        connected = states[1-senderIndex] == RECVD_ACK;
-                        char logMsg[1000];
-                        sprintf(logMsg, "Connected with %s:%d\n", theirAddrs[senderIndex].ip(), theirAddrs[senderIndex].port());
-                        Sys::log(logMsg);
-                        // If this is a test case, figure out who is player one.
-                        if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
-                            compareNumbers(randomNum, recvBuffer, senderIndex);
+                if ((senderInt == transportNum) && (getDynamicPlayerSetupNumber() == NOT_DYNAMIC_PLAYER_SETUP)) {
+                    Logger::logError("Received UDP setup message trying to acquire same slot as this game.");
+                } else {
+                    int senderIndex = (senderInt <= transportNum ? senderInt : senderInt-1);
+                    
+                    if (senderIndex >= 0) {
+                        if (states[senderIndex] == RECVD_NOTHING) {
+                            states[senderIndex] = RECVD_MESSAGE;
+                            Logger::log() << "Received message from " << theirAddrs[senderIndex].ip() << ":" <<
+                            theirAddrs[senderIndex].port() << ".  Waiting for ack." << Logger::EOM;
+                        }
+                        // See if they have received ours and this is the first time we have seen them receive ours
+                        if ((recvBuffer[1] != RECVD_NOTHING[1]) && (states[senderIndex] != RECVD_ACK)) {
+                            // They have received our message, and now we have received their's.  So ACK.
+                            states[senderIndex] = RECVD_ACK;
+                            justAcked[senderIndex] = true;
+                            connected = states[1-senderIndex] == RECVD_ACK;
+                            Logger::log() << "Connected with " << theirAddrs[senderIndex].ip() << ":" <<
+                            theirAddrs[senderIndex].port() << Logger::EOM;
+                            // If this is a test case, figure out who is player one.
+                            if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
+                                compareNumbers(randomNum, recvBuffer, senderIndex);
+                            }
                         }
                     }
                 }
@@ -272,7 +278,7 @@ void UdpTransport::punchHole() {
         // Note, we may look all connected, but if we just got acknowledged we need to send one more message.
         for(int ctr=0; ctr<numOtherMachines; ++ctr) {
             if (justAcked[ctr] || ((states[ctr] != NOT_YET_INITIATED) && (states[ctr] != RECVD_ACK))) {
-                sprintf(sendBuffer, "%s%d%ld", states[ctr], transportNum, randomNum);
+                sprintf(sendBuffer, "%s%d%06ld", states[ctr], transportNum, randomNum);
                 writeData(sendBuffer, strlen(sendBuffer)+1, ctr);
             }
         }
@@ -289,8 +295,8 @@ void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage, int ot
     char temp1, temp2, temp3;
     int parsed = sscanf(theirMessage, "%c%c%c%ld", &temp1, &temp2, &temp3, &theirRandomNumber);
     if (parsed < 3) {
-		Sys::log("Parsed packet of unexpected length.");
-        printf("Message=%s.  Number=%ld.  Parsed=%d.\n", theirMessage, theirRandomNumber, parsed);
+		Logger::logError() << "Parsed packet of unexpected length." <<
+        "Message=" << theirMessage << ".  Number=" << theirRandomNumber << ".  Parsed=" << parsed << Logger::EOM;
     }
     
     if (myRandomNumber < theirRandomNumber) {

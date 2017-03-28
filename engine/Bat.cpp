@@ -97,7 +97,7 @@ void Bat::moveOneTurn(Sync* sync, BALL* objectBall)
         {
             // Get the object it is seeking
             const OBJECT* seekObject = lookupObject(*matrixP);
-            if ((seekObject->room == room) && (linkedObject != *matrixP))
+            if ((seekObject->room == room) && (linkedObject != *matrixP) && (seekObject->exists()))
             {
                 int seekX = seekObject->x;
                 int seekY = seekObject->y;

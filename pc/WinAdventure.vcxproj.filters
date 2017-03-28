@@ -75,12 +75,6 @@
     <ClCompile Include="..\engine\Room.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
-    <ClCompile Include="WinTcpTransport.cpp">
-      <Filter>Source Files\pc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\engine\TcpTransport.cpp">
-      <Filter>Source Files\engine</Filter>
-    </ClCompile>
     <ClCompile Include="..\engine\UdpTransport.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
@@ -107,6 +101,9 @@
     </ClCompile>
     <ClCompile Include="WinRestClient.cpp">
       <Filter>Source Files\pc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\Logger.cpp">
+      <Filter>Source Files\engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -164,12 +161,6 @@
     <ClInclude Include="..\engine\Room.hpp">
       <Filter>Header Files\engine</Filter>
     </ClInclude>
-    <ClInclude Include="WinTcpTransport.h">
-      <Filter>Header Files\pc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\engine\TcpTransport.hpp">
-      <Filter>Header Files\engine</Filter>
-    </ClInclude>
     <ClInclude Include="..\engine\UdpTransport.hpp">
       <Filter>Header Files\engine</Filter>
     </ClInclude>
@@ -199,6 +190,9 @@
     </ClInclude>
     <ClInclude Include="WinRestClient.h">
       <Filter>Header Files\pc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\engine\Logger.hpp">
+      <Filter>Header Files\engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

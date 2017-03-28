@@ -14,6 +14,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include "..\engine\Logger.hpp"
 #include "..\engine\Sys.hpp"
 
 // Need to link with Ws2_32.lib
@@ -25,7 +26,7 @@ int WinRestClient::request(const char* path, const char* message, char* response
 	sprintf(portStr, "%d", REST_PORT);
 
 	// Open the HTTP connnection to the server
-	Sys::log("Opening client socket\n");
+	Logger::log("Opening client socket");
 	WSADATA wsaData;
 	SOCKET ClientSocket = INVALID_SOCKET;
 
@@ -33,13 +34,11 @@ int WinRestClient::request(const char* path, const char* message, char* response
 		*ptr = NULL,
 		hints;
 	int iResult;
-	char errorMessage[2000];
 
 	// Initialize Winsock
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResult != 0) {
-		sprintf(errorMessage, "WSAStartup failed with error: %d\n", iResult);
-		Sys::log(errorMessage);
+		Logger::logError() << "WSAStartup failed with error: " << iResult << Logger::EOM;
 		return 1;
 	}
 
@@ -57,8 +56,7 @@ int WinRestClient::request(const char* path, const char* message, char* response
 	// Resolve the server address and port
 	iResult = getaddrinfo(BROKER_SERVER, portStr, &hints, &result);
 	if (iResult != 0) {
-		sprintf(errorMessage, "getaddrinfo failed with error: %d\n", iResult);
-		Sys::log(errorMessage);
+		Logger::logError() << "getaddrinfo failed with error: " << iResult << Logger::EOM;
 		WSACleanup();
 		return -2;
 	}
@@ -70,8 +68,7 @@ int WinRestClient::request(const char* path, const char* message, char* response
 		ClientSocket = socket(ptr->ai_family, ptr->ai_socktype,
 			ptr->ai_protocol);
 		if (ClientSocket == INVALID_SOCKET) {
-			sprintf(errorMessage, "socket failed with error: %ld\n", WSAGetLastError());
-			Sys::log(errorMessage);
+			Logger::logError() << "socket failed with error: " << WSAGetLastError() << Logger::EOM;
 			WSACleanup();
 			return -3;
 		}
@@ -89,27 +86,26 @@ int WinRestClient::request(const char* path, const char* message, char* response
 	freeaddrinfo(result);
 
 	if (ClientSocket == INVALID_SOCKET) {
-		Sys::log("Unable to connect to server!\n");
+		Logger::logError("Unable to connect to server!\n");
 		WSACleanup();
 		return -3;
 	}
 
-	sprintf(errorMessage, "Sending http request:\n%s\n", message);
-	Sys::log(errorMessage);
+	Logger::log() << "Sending http request:\n" << message << Logger::EOM;
 
 	// Send the HTTP request
 	int messageLen = strlen(message);
 	iResult = send(ClientSocket, message, messageLen, 0);
 	if (iResult < 0) {
-		Sys::log("ERROR sending http request");
+		Logger::logError("ERROR sending http request");
 		return -4;
 	}
 	else if (iResult<messageLen) {
 		// TODO: Is this a fatal error?
-		Sys::log("ERROR http request only partially sent");
+		Logger::logError("ERROR http request only partially sent");
 	}
 
-	Sys::log("Reading http response\n");
+	Logger::log("Reading http response\n");
 
 	// Read the HTTP response
 	int charsInBuffer = 0;
@@ -122,15 +118,15 @@ int WinRestClient::request(const char* path, const char* message, char* response
 		if (charsRead <= 0) {
 			keepGoing = false;
 			if (charsInBuffer == 0) {
-				Sys::log("Error reading http response");
+				Logger::logError("Error reading http response");
 				return -5;
 			}
 		}
 		else {
 			charsInBuffer += charsRead;
 			if (charsInBuffer >= bufferLength) {
-				Sys::log("ERROR http response too big.  Truncated.");
-				Sys::log(responseBuffer);
+				Logger::logError("ERROR http response too big.  Truncated.");
+				Logger::logError(responseBuffer);
 				keepGoing = false;
 			}
 		}
@@ -138,8 +134,7 @@ int WinRestClient::request(const char* path, const char* message, char* response
 		u_long nbflag = 1;
 		iResult = ioctlsocket(ClientSocket, FIONBIO, &nbflag);
 		if (iResult != 0) {
-			sprintf(errorMessage, "ioctlsocket failed with error: %d\n", WSAGetLastError());
-			Sys::log(errorMessage);
+			Logger::logError() << "ioctlsocket failed with error: " << WSAGetLastError() << Logger::EOM;
 			WSACleanup();
 			return -6;
 		}

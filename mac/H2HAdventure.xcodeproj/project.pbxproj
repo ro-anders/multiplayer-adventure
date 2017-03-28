@@ -49,6 +49,7 @@
 		40B029DC1C91449200DA27FD /* Sys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40B029D81C91449200DA27FD /* Sys.cpp */; };
 		40B029DD1C91449200DA27FD /* UdpTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40B029DA1C91449200DA27FD /* UdpTransport.cpp */; };
 		40B345F91C25A2B4001EE63C /* args.m in Sources */ = {isa = PBXBuildFile; fileRef = 40B345F81C25A2B4001EE63C /* args.m */; };
+		40D4564E1DAB25E400D052CB /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40D4564C1DAB25E400D052CB /* Logger.cpp */; };
 		40E47FB11BF22BA20052B84E /* AdventureView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40E47FAE1BF22BA20052B84E /* AdventureView.mm */; };
 		40E47FB21BF22BA20052B84E /* Controller.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40E47FB01BF22BA20052B84E /* Controller.mm */; };
 		40F99C051C1A31930032B2A2 /* Portcullis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40F99C031C1A31930032B2A2 /* Portcullis.cpp */; };
@@ -56,7 +57,7 @@
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
-		D009FDD20BCA0A64007C5A37 /* MacAdventureIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = D009FDD10BCA0A64007C5A37 /* MacAdventureIcon.icns */; };
+		D009FDD20BCA0A64007C5A37 /* H2HAdventureIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = D009FDD10BCA0A64007C5A37 /* H2HAdventureIcon.icns */; };
 		D06FE00F0BC856BF005633CA /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D06FE00E0BC856BF005633CA /* Carbon.framework */; };
 /* End PBXBuildFile section */
 
@@ -133,6 +134,8 @@
 		40B029DB1C91449200DA27FD /* UdpTransport.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = UdpTransport.hpp; path = ../engine/UdpTransport.hpp; sourceTree = "<group>"; };
 		40B345F81C25A2B4001EE63C /* args.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = args.m; sourceTree = "<group>"; };
 		40D0F81B1C356A360096980F /* adventure_sys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = adventure_sys.h; path = ../engine/adventure_sys.h; sourceTree = "<group>"; };
+		40D4564C1DAB25E400D052CB /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Logger.cpp; path = ../engine/Logger.cpp; sourceTree = "<group>"; };
+		40D4564D1DAB25E400D052CB /* Logger.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Logger.hpp; path = ../engine/Logger.hpp; sourceTree = "<group>"; };
 		40E47FAD1BF22BA20052B84E /* AdventureView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AdventureView.h; sourceTree = "<group>"; };
 		40E47FAE1BF22BA20052B84E /* AdventureView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = AdventureView.mm; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		40E47FAF1BF22BA20052B84E /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Controller.h; sourceTree = "<group>"; };
@@ -142,8 +145,8 @@
 		40F99C041C1A31930032B2A2 /* Portcullis.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Portcullis.hpp; path = ../engine/Portcullis.hpp; sourceTree = "<group>"; };
 		40F99C061C1A334B0032B2A2 /* color.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = color.h; path = ../engine/color.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* MacAdventure.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacAdventure.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		D009FDD10BCA0A64007C5A37 /* MacAdventureIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MacAdventureIcon.icns; sourceTree = "<group>"; };
+		8D1107320486CEB800E47090 /* H2HAdventure.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = H2HAdventure.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D009FDD10BCA0A64007C5A37 /* H2HAdventureIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = H2HAdventureIcon.icns; sourceTree = "<group>"; };
 		D06FE00E0BC856BF005633CA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -189,7 +192,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* MacAdventure.app */,
+				8D1107320486CEB800E47090 /* H2HAdventure.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -239,7 +242,7 @@
 				4036B30C1CB87D080024439C /* roar_near.wav */,
 				403175341C49C6010051B60C /* roar.wav */,
 				403175351C49C6010051B60C /* won.wav */,
-				D009FDD10BCA0A64007C5A37 /* MacAdventureIcon.icns */,
+				D009FDD10BCA0A64007C5A37 /* H2HAdventureIcon.icns */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
 				29B97318FDCFA39411CA2CEA /* MainMenu.nib */,
@@ -305,6 +308,8 @@
 				401C851D1D195CBA00110952 /* GameSetup.hpp */,
 				40509AA61C05E9750008BACF /* GameObject.cpp */,
 				40509AA71C05E9750008BACF /* GameObject.hpp */,
+				40D4564C1DAB25E400D052CB /* Logger.cpp */,
+				40D4564D1DAB25E400D052CB /* Logger.hpp */,
 				4092E1E01C4E731900B2AEBB /* Map.cpp */,
 				4092E1E11C4E731900B2AEBB /* Map.hpp */,
 				40F99C031C1A31930032B2A2 /* Portcullis.cpp */,
@@ -334,9 +339,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8D1107260486CEB800E47090 /* MacAdventure */ = {
+		8D1107260486CEB800E47090 /* H2HAdventure */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "MacAdventure" */;
+			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "H2HAdventure" */;
 			buildPhases = (
 				8D1107290486CEB800E47090 /* Resources */,
 				8D11072C0486CEB800E47090 /* Sources */,
@@ -346,10 +351,10 @@
 			);
 			dependencies = (
 			);
-			name = MacAdventure;
+			name = H2HAdventure;
 			productInstallPath = "$(HOME)/Applications";
 			productName = MacAdventure;
-			productReference = 8D1107320486CEB800E47090 /* MacAdventure.app */;
+			productReference = 8D1107320486CEB800E47090 /* H2HAdventure.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -358,9 +363,9 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 			};
-			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "MacAdventure" */;
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "H2HAdventure" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -371,7 +376,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8D1107260486CEB800E47090 /* MacAdventure */,
+				8D1107260486CEB800E47090 /* H2HAdventure */,
 			);
 		};
 /* End PBXProject section */
@@ -402,7 +407,7 @@
 				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
 				4036B30D1CB87D080024439C /* dragondie_far.wav in Resources */,
 				4036B3141CB87D080024439C /* pickup_near.wav in Resources */,
-				D009FDD20BCA0A64007C5A37 /* MacAdventureIcon.icns in Resources */,
+				D009FDD20BCA0A64007C5A37 /* H2HAdventureIcon.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -428,6 +433,7 @@
 				403DA0921C20C722002FF18B /* Ball.cpp in Sources */,
 				4092E1E21C4E731900B2AEBB /* Map.cpp in Sources */,
 				4072EC701D0F59950074389A /* MacRestClient.cpp in Sources */,
+				40D4564E1DAB25E400D052CB /* Logger.cpp in Sources */,
 				40E47FB21BF22BA20052B84E /* Controller.mm in Sources */,
 				406CD1541C0C7C17002477BB /* Dragon.cpp in Sources */,
 				40509AAB1C05E9750008BACF /* GameObject.cpp in Sources */,
@@ -477,7 +483,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.MacAdventure;
-				PRODUCT_NAME = MacAdventure;
+				PRODUCT_NAME = H2HAdventure;
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};
@@ -494,7 +500,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.MacAdventure;
-				PRODUCT_NAME = MacAdventure;
+				PRODUCT_NAME = H2HAdventure;
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};
@@ -503,8 +509,23 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				ONLY_ACTIVE_ARCH = YES;
@@ -516,9 +537,24 @@
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_UNROLL_LOOPS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PREBINDING = NO;
@@ -529,7 +565,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "MacAdventure" */ = {
+		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "H2HAdventure" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4B08A954540054247B /* Debug */,
@@ -538,7 +574,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "MacAdventure" */ = {
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "H2HAdventure" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,

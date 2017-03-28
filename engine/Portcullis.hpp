@@ -9,6 +9,7 @@
 
 class ROOM;
 class PortcullisStateAction;
+class ObjectMoveAction;
 
 class Portcullis: public OBJECT {
 public:
@@ -41,9 +42,6 @@ public:
      * label - unique name only used for logging and debugging
      * outsideRoom - index of the room the portal will be placed in
      * insideRoom - index of the room the portal leads to
-     * lastInsideRoom - if there are multiple rooms inside this castle, they need to be all have contiguous
-     *                  indexes starting with the room you enter.  This should be the last index of the rooms behind the gate.
-     *                  Optional.  If unspecified will assume castle is a one room castle with only insideRoom.
      * key - the key that opens this gate.
      */
     Portcullis(const char* label, int outsideRoom, ROOM* insideRoom, OBJECT* key);
@@ -70,7 +68,13 @@ public:
      * if no action is taken.
      * Caller is responsible for releasing memory of returned remote action.
      */
-    PortcullisStateAction* checkInteraction();
+    PortcullisStateAction* checkKeyInteraction();
+    
+    /**
+     * Check if an unheld object touches an open gate (a dragon or the bat could walk into it, a magnet could pull an object
+     * into it, or a closing gate may touch a still object).  If it does, move the object into the castle.
+    */
+    ObjectMoveAction* checkObjectEnters(OBJECT* object);
     
     void openFromInside();
     

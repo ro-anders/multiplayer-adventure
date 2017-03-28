@@ -7,6 +7,7 @@
 #include "Sync.hpp"
 
 #include "ActionQueue.hpp"
+#include "Logger.hpp"
 #include "RemoteAction.hpp"
 #include "Transport.hpp"
 #include "Sys.hpp"
@@ -49,9 +50,7 @@ void Sync::BroadcastAction(RemoteAction* action) {
             transport->sendPacket(sendBuffer);
         }
         
-        char message[1000];
-        sprintf(message, "Sent \"%s\" on frame #%d", sendBuffer, frameNum);
-        Sys::log(message);
+        Logger::log() << "Sent \"" << sendBuffer << "\" on frame #" << frameNum << Logger::EOM;
         
         delete action;
     }
@@ -125,7 +124,7 @@ void Sync::handlePlayerWinMessage(const char* message) {
 }
 
 void Sync::handleMazeSetupObjectMessage(const char* message) {
-    MapSetupObjectAction* nextAction = new MapSetupObjectAction();
+    ObjectMoveAction* nextAction = new ObjectMoveAction();
     nextAction->deserialize(receiveBuffer);
     mazeSetupActions.enQ(nextAction);
 }
@@ -133,9 +132,7 @@ void Sync::handleMazeSetupObjectMessage(const char* message) {
 int Sync::pullNextPacket(char* buffer, int bufferSize) {
     int numChars = transport->getPacket(buffer, bufferSize);
     if (numChars > 0) {
-        char message[1000];
-        sprintf(message, "Received \"%s\" on frame #%d", buffer, frameNum);
-        Sys::log(message);
+        Logger::log() << "Received \"" << buffer << "\" on frame #" << frameNum << Logger::EOM;
     }
     return numChars;
 }
@@ -282,10 +279,10 @@ PlayerWinAction* Sync::GetGameWon() {
     return next;
 }
 
-MapSetupObjectAction* Sync::GetNextSetupAction() {
-    MapSetupObjectAction* next = NULL;
+ObjectMoveAction* Sync::GetNextSetupAction() {
+    ObjectMoveAction* next = NULL;
     if (!mazeSetupActions.isEmpty()) {
-        next = (MapSetupObjectAction*)mazeSetupActions.deQ();
+        next = (ObjectMoveAction*)mazeSetupActions.deQ();
     }
     return next;
     

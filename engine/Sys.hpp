@@ -20,18 +20,35 @@ public:
     /**
      * Log the given message.
      */
-	static void log(const char* message);
-
-    /**
-     * Return number of milliseconds since 1970.
+    static void consoleLog(const char* message);
+    
+    /** 
+     * Return today's date in the form of 20161031.
      */
-	static long systemTime();
+    static long today();
+    
+    /**
+     * Return timestamp of form 2017/3/14-01:59:26.
+     * Caller does not need to delete the string when done, but the
+     * string contents may change with each call.
+     */
+    static const char* datetime();
+    
+    /**
+     * Number of milliseconds since this game was started.  Note, this
+     * is really only useful looking at the time between two calls of this.
+     */
+    static long runTime();
+    
     
 private:
 
 	static bool randomized;
+    
+    static long startOfProgramTime;
 
 	static bool seedRandom();
+    
 };
 
 #endif /* Sys_hpp */

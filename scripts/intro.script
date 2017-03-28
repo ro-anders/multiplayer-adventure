@@ -1,0 +1,74 @@
+$ Hide the dragons and bat
+Sent "PR 0" on frame #210
+Sent "PR 1" on frame #215
+
+Send "DM 0 0 80 32 2 2 0 77" on frame #128
+Send "DM 0 0 80 32 2 2 1 77" on frame #128
+Send "DM 0 0 80 32 2 2 2 77" on frame #128
+Send "BM 0 32 14 87 0 1 1" on frame #128
+$ Move the sword, hide the white key
+Sent "PP 0 10 -6 3 -1 0 0 0" on frame #129
+Sent "PP 0 -1 0 0 10 6 56 35" on frame #130
+Sent "PP 0 15 -6 3 -1 0 0 0" on frame #131
+Sent "PP 0 -1 0 0 15 29 32 65" on frame #132
+
+$ Traversing blue maze
+Sent "PM 0 4 291  48 6 0" on frame #570
+Sent "PM 0 5  41  48 0 0" on frame #603
+Sent "PM 0 5  41  48 0 6" on frame #609
+Sent "PM 0 5  41  96 6 6" on frame #633
+Sent "PM 0 5  47 102 6 6" on frame #636
+Sent "PM 0 5  65 126 6 0" on frame #645
+Sent "PM 0 5  89 126 0 6" on frame #657
+Sent "PM 0 5  89 174 6 6" on frame #681
+Sent "PM 0 5  95 180 0 0" on frame #684
+Sent "PM 0 5  95 180 6 0" on frame #687
+
+$ Opening black castle
+Sent "PM 0 16 106 40 0 -6" on frame #938
+Sent "PP 0 16 -6 3 -1 0 0 0" on frame #941
+Sent "PP 0 -1 0 0 16 16 53 28" on frame #942
+Sent "PM 0 16 106 46 0 0" on frame #934
+Sent "PM 0 16 112 46 6 0" on frame #955
+Sent "PM 0 16 160 46 0 0" on frame #982
+Sent "PM 0 16 160 40 0 -6" on frame #991
+Sent "PM 0 4 160 178 0 0" on frame #1018
+Sent "PM 0 4 160 184 0 6" on frame #1141
+Sent "PM 0 16 160 48 0 0" on frame #1168
+Sent "PM 0 16 154 48 -6 0" on frame #1174
+Sent "PM 0 16 112 48 0 0" on frame #1198
+Sent "PM 0 16 112 54 0 6" on frame #1204
+Sent "PP 0 16 -3 1 -1 0 0 0" on frame #1205
+Sent "PP 0 16 -3 4 -1 0 0 0" on frame #1205
+Sent "PP 0 16 -3 7 -1 0 0 0" on frame #1208
+Sent "PM 0 16 112 54 0 0" on frame #1213
+Sent "PM 0 16 112 48 0 -6" on frame #1219
+Sent "PM 0 16 112 42 0 0" on frame #1231
+Sent "PM 0 16 118 42 6 0" on frame #1237
+Sent "PM 0 16 160 48 0 6" on frame #1261
+Sent "GS 0 4 13 1" on frame #1265
+Sent "PM 0 16 160 60 0 0" on frame #1270
+Sent "PM 0 16 160 66 0 6" on frame #1327
+Sent "GS 0 4 1 1" on frame #1334
+Sent "GS 0 4 0 1" on frame #1339
+Sent "PM 0 27 160 30 0 6" on frame #1339
+Sent "PM 0 27 160 78 0 0" on frame #1366
+
+$ Finding chalice
+Sent "PP 0 19 -8 1 -1 0 0 0" on frame #1469
+Sent "PP 0 -1 0 0 19 20 51 31" on frame #1470
+Sent "PM 0 27 178 112 0 6" on frame #1717
+Sent "PM 0 22 172 102 -6 6" on frame #1804
+Sent "PM 0 22 136 144 0 6" on frame #1825
+Sent "PM 0 20 136 60 0 0" on frame #1876
+
+$ Killing dragon
+Sent "PM 0 6 45 115 6 0" on frame #2260
+Send "DM 0 6 110 57 0 0 1 77" on frame #2261
+Send "PM 0 6 141 109 -6 -6" on frame #2335
+Sent "PP 0 10 -3 -7 -1 0 0 0" on frame #2351
+Send "PM 0 6 105 79 0 6" on frame #2354
+Sent "PM 0 6 111 115 6 6" on frame #2371
+Sent "PM 0 6 111 115 0 0" on frame #2371
+Sent "DS 0 1 1 6 56 57" on frame #2371
+.

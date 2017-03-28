@@ -1,0 +1,273 @@
+$ Two players fighting for chalice among dragons and third comes and takes it
+$
+$ NOTE: Requires dragon speed set to EASY and players set to 3
+
+Sent "PR 0" on frame #210
+
+$ Hide  bat 
+Send "BM 0 32 14 87 0 1 1" on frame #215
+
+$ Place chalice
+Send "PP 0 19 -2 -4 -1 0 0 0" on frame #140
+Send "PP 0 -1 0 0 19 3 122 90" on frame #141
+
+$ Player one makes way to grab chalice
+Sent "PM 0 2 243 160 6 0" on frame #250
+Sent "PM 0 3 89 160 0 0" on frame #331
+Sent "PM 0 3 83 160 -6 0" on frame #340
+Sent "PM 0 3 71 166 -6 6" on frame #346
+Sent "PM 0 3 71 172 0 6" on frame #349
+Sent "PM 0 3 77 184 6 6" on frame #355
+Sent "PM 0 3 83 184 6 0" on frame #358
+Sent "PM 0 3 119 184 0 0" on frame #379
+Sent "PM 0 3 113 178 -6 -6" on frame #391
+Sent "PM 0 3 95 172 0 0" on frame #400
+Sent "PM 0 3 95 166 0 -6" on frame #406
+Sent "PM 0 3 101 154 6 -6" on frame #412
+Sent "PM 0 3 101 148 0 -6" on frame #415
+Sent "PM 0 3 107 118 6 -6" on frame #430
+Sent "PM 0 3 119 112 6 0" on frame #436
+Sent "PM 0 3 137 118 6 6" on frame #445
+Sent "PM 0 3 155 130 0 0" on frame #457
+Sent "PM 0 3 161 130 6 0" on frame #469
+Sent "PM 0 3 155 130 0 0" on frame #478
+Sent "PM 0 3 149 130 -6 0" on frame #481
+Sent "PM 0 3 131 136 -6 6" on frame #490
+Sent "PM 0 3 119 160 6 6" on frame #502
+Sent "PM 0 3 131 166 6 0" on frame #508
+Sent "PM 0 3 191 166 0 0" on frame #565
+Sent "PM 0 3 185 172 -6 6" on frame #571
+Sent "PM 0 3 191 172 6 6" on frame #574
+Sent "PM 0 3 197 178 6 0" on frame #580
+Sent "PP 0 19 9 1 -1 0 0 0" on frame #599
+Sent "PM 0 3 275 172 0 -6" on frame #622
+Sent "PM 0 3 269 130 -6 -6" on frame #643
+Sent "PM 0 3 251 118 -6 0" on frame #655
+Sent "PM 0 3 203 124 -6 6" on frame #679
+Sent "PM 0 3 203 130 0 6" on frame #682
+Sent "PM 0 3 203 166 0 0" on frame #703
+Sent "PM 0 3 197 166 -6 0" on frame #706
+Sent "PM 0 3 47 166 0 0" on frame #784
+
+# Red and Yellow dragons chase player 1
+Sent "DM 0 3 122 90 0 0 0 77" on frame #250
+Sent "DM 0 3 52 80 0 0 2 77" on frame #250
+Sent "DM 0 3 122 80 -2 0 0 120" on frame #288
+Sent "DM 0 3 118 80 -3 0 2 116" on frame #288
+Sent "DS 0 2 3 3 45 80" on frame #330
+Sent "DM 0 3 82 80 -2 2 0 47" on frame #348
+Sent "DM 0 3 70 92 -2 0 0 23" on frame #366
+Sent "DS 0 0 3 3 60 92" on frame #378
+Sent "DM 0 3 45 80 3 3 2 12" on frame #393
+Sent "DS 0 2 3 3 54 89" on frame #399
+Sent "DM 0 3 60 92 2 -2 0 36" on frame #441
+Sent "DS 0 0 3 3 78 65" on frame #456
+Sent "DM 0 3 54 89 3 -3 2 24" on frame #462
+Sent "DS 0 2 3 3 78 65" on frame #477
+Sent "DM 0 3 78 65 -2 2 0 18" on frame #519
+Sent "DM 0 3 76 67 2 2 0 16" on frame #522
+Sent "DS 0 0 3 3 96 83" on frame #540
+Sent "DM 0 3 78 65 3 3 2 18" on frame #540
+Sent "DS 0 2 3 3 96 83" on frame #555
+Sent "DM 0 3 102 89 2 0 0 26" on frame #612
+Sent "DM 0 3 110 89 2 -2 0 27" on frame #624
+Sent "DM 0 3 102 89 3 -3 2 35" on frame #624
+Sent "DS 0 0 3 3 135 62" on frame #648
+Sent "DS 0 2 3 3 135 62" on frame #648
+Sent "DM 0 3 135 62 -2 2 0 40" on frame #711
+Sent "DM 0 3 135 62 -3 3 2 40" on frame #711
+Sent "DM 0 3 114 83 -3 0 2 40" on frame #732
+Sent "DM 0 3 113 84 -2 -2 0 51" on frame #744
+Sent "DM 0 3 111 82 -2 2 0 52" on frame #747
+Sent "DM 0 3 109 84 -2 -2 0 53" on frame #750
+Sent "DM 0 3 107 82 -2 2 0 54" on frame #753
+Sent "DM 0 3 105 84 -2 -2 0 55" on frame #756
+Sent "DM 0 3 103 82 -2 2 0 56" on frame #759
+Sent "DM 0 3 101 84 -2 -2 0 57" on frame #762
+Sent "DM 0 3 99 82 -2 2 0 58" on frame #765
+Sent "DM 0 3 97 84 -2 -2 0 59" on frame #768
+Sent "DM 0 3 95 82 -2 2 0 60" on frame #771
+Sent "DM 0 3 93 84 -2 -2 0 61" on frame #774
+Sent "DM 0 3 91 82 -2 2 0 62" on frame #777
+Sent "DM 0 3 89 84 -2 -2 0 63" on frame #780
+Sent "DM 0 3 87 82 -2 2 0 64" on frame #783
+
+$ Player two makes way from bottom and takes chalice from player one
+Sent "PM 1 10 155 178 0 6" on frame #300
+Sent "PM 1 3 155 48 0 0" on frame #321
+Sent "PM 1 3 149 48 -6 0" on frame #364
+Sent "PM 1 3 101 48 0 0" on frame #391
+Sent "PM 1 3 101 54 0 6" on frame #421
+Sent "PM 1 3 107 66 6 6" on frame #427
+Sent "PM 1 3 113 78 0 6" on frame #433
+Sent "PM 1 3 113 78 0 0" on frame #436
+Sent "PM 1 3 101 78 0 0" on frame #442
+Sent "PM 1 3 107 78 -6 0" on frame #478
+Sent "PM 1 3 59 72 -6 -6" on frame #502
+Sent "PM 1 3 53 60 0 -6" on frame #508
+Sent "PM 1 3 53 60 0 0" on frame #511
+Sent "PM 1 3 53 66 0 6" on frame #526
+Sent "PM 1 3 47 78 -6 6" on frame #532
+Sent "PM 1 3 29 90 -6 0" on frame #541
+Sent "PM 1 3 29 90 0 0" on frame #544
+Sent "PM 1 3 35 90 6 0" on frame #556
+Sent "PM 1 3 35 90 0 0" on frame #574
+Sent "PM 1 3 29 90 -6 0" on frame #592
+Sent "PM 1 3 11 96 -6 6" on frame #601
+Sent "PM 1 3 11 102 0 6" on frame #604
+Sent "PM 1 3 17 120 6 6" on frame #613
+Sent "PM 1 3 23 120 6 0" on frame #616
+Sent "PM 1 3 119 126 6 6" on frame #664
+Sent "PM 1 3 119 132 0 6" on frame #667
+Sent "PM 1 3 119 138 0 0" on frame #673
+Sent "PM 1 3 119 144 0 6" on frame #685
+Sent "PM 1 3 119 138 0 0" on frame #694
+Sent "PM 1 3 125 138 6 0" on frame #703
+Sent "PM 1 3 119 138 0 0" on frame #709
+Sent "PM 1 3 113 138 -6 0" on frame #715
+Sent "PM 1 3 77 132 -6 -6" on frame #733
+Sent "PM 1 3 77 126 0 -6" on frame #736
+Sent "PM 1 3 77 126 0 0" on frame #739
+Sent "PM 1 3 77 132 0 6" on frame #748
+Sent "PM 1 3 83 174 6 6" on frame #769
+Sent "PM 1 3 83 180 0 6" on frame #775
+Sent "PM 1 3 83 174 0 0" on frame #778
+Sent "PP 1 19 -6 -3 -1 0 0 0" on frame #782
+
+$ Green dragon chases player two
+Sent "DM 0 3 160 20 0 0 1 77" on frame #270
+Sent "DM 1 3 106 10 -2 -2 1 23" on frame #288
+Sent "DM 1 3 84 31 -2 -2 1 7" on frame #321
+Sent "DS 1 1 3 3 78 24" on frame #330
+Sent "DM 1 3 78 24 -2 0 1 28" on frame #393
+Sent "DM 1 3 58 24 -2 2 1 8" on frame #423
+Sent "DM 1 3 52 30 2 2 1 6" on frame #432
+Sent "DM 1 3 56 34 0 2 1 5" on frame #438
+Sent "DS 1 1 3 3 57 39" on frame #441
+Sent "DM 1 3 57 39 -2 -2 1 28" on frame #504
+Sent "DM 1 3 47 29 -2 2 1 21" on frame #519
+Sent "DM 1 3 45 31 -2 -2 1 19" on frame #522
+Sent "DM 1 3 43 29 -2 2 1 17" on frame #525
+Sent "DM 1 3 27 45 -2 0 1 13" on frame #549
+Sent "DS 1 1 3 3 18 45" on frame #561
+Sent "DM 1 3 18 45 -2 2 1 15" on frame #624
+Sent "DM 1 3 16 47 2 2 1 13" on frame #627
+Sent "DM 1 3 30 61 2 -2 1 11" on frame #648
+Sent "DM 1 3 32 59 2 2 1 12" on frame #651
+Sent "DM 1 3 34 61 2 -2 1 13" on frame #654
+Sent "DM 1 3 36 59 2 2 1 14" on frame #657
+Sent "DM 1 3 38 61 2 -2 1 15" on frame #660
+Sent "DM 1 3 40 59 2 2 1 16" on frame #663
+Sent "DM 1 3 50 69 2 0 1 9" on frame #678
+Sent "DS 1 1 3 3 60 69" on frame #681
+Sent "DM 1 3 60 69 -2 2 1 22" on frame #744
+Sent "DM 1 3 46 83 -2 0 1 8" on frame #765
+Sent "DM 1 3 44 83 -2 2 1 6" on frame #768
+Sent "DS 1 1 3 3 42 87" on frame #771
+
+
+$ Player 2 tries to take chalice down
+Sent "PM 1 3 89 174 6 0" on frame #781
+Sent "PM 1 3 107 174 0 0" on frame #808
+Sent "PM 1 3 101 174 -6 0" on frame #811
+Sent "PM 1 3 77 168 -6 -6" on frame #823
+Sent "PM 1 3 77 162 0 -6" on frame #826
+Sent "PM 1 3 83 114 6 0" on frame #859
+Sent "PM 1 3 77 114 0 0" on frame #868
+Sent "PM 1 3 71 114 -6 0" on frame #883
+Sent "PM 1 3 59 108 -6 -6" on frame #889
+Sent "PM 1 3 53 96 0 -6" on frame #895
+Sent "PM 1 3 47 90 -6 -6" on frame #898
+Sent "PM 1 3 41 78 0 -6" on frame #904
+Sent "PM 1 3 41 48 0 0" on frame #922
+Sent "PM 1 3 35 48 -6 0" on frame #931
+Sent "PM 1 3 5 54 -6 6" on frame #946
+Sent "PM 1 3 5 60 0 6" on frame #949
+
+$ Dragons chase player 2 down
+Sent "DM 1 3 83 86 -2 2 0 33" on frame #789
+Sent "DM 1 3 57 86 -3 3 2 7" on frame #789
+Sent "DM 1 3 81 88 -2 -2 0 28" on frame #792
+Sent "DM 1 3 54 89 -3 -3 2 2" on frame #792
+Sent "DM 1 3 79 86 -2 2 0 26" on frame #795
+Sent "DS 1 2 3 3 54 87" on frame #795
+Sent "DM 1 3 77 88 -2 -2 0 24" on frame #798
+Sent "DM 1 3 75 86 -2 2 0 22" on frame #801
+Sent "DM 1 3 73 88 -2 -2 0 20" on frame #804
+Sent "DM 1 3 71 86 -2 2 0 18" on frame #807
+Sent "DM 1 3 69 88 -2 -2 0 16" on frame #810
+Sent "DM 1 3 67 86 -2 2 0 17" on frame #813
+Sent "DM 1 3 65 88 -2 -2 0 18" on frame #816
+Sent "DM 1 3 63 86 -2 2 0 19" on frame #819
+Sent "DM 1 3 61 88 -2 -2 0 20" on frame #822
+Sent "DS 1 0 3 3 39 57" on frame #852
+Sent "DS 1 2 3 3 39 57" on frame #873
+Sent "DM 1 3 39 57 -2 2 0 27" on frame #915
+Sent "DM 1 3 39 57 -3 3 2 33" on frame #936
+Sent "DM 1 3 23 73 0 2 0 49" on frame #939
+
+$ Next stuff maybe
+Sent "PM 0 3 47 172 0 6" on frame #829
+Sent "DM 0 3 43 87 -2 -2 1 20" on frame #831
+Sent "PM 0 3 53 184 6 6" on frame #835
+Sent "PM 0 3 59 184 6 0" on frame #838
+Sent "DM 0 3 37 81 -2 2 1 11" on frame #840
+Sent "DM 0 3 33 85 2 2 1 7" on frame #846
+Sent "DS 0 1 3 3 39 92" on frame #849
+Sent "DM 0 3 55 87 -3 3 2 14" on frame #855
+Sent "DM 0 3 49 93 -3 -3 2 5" on frame #861
+Sent "DS 0 2 3 3 45 92" on frame #864
+Sent "PM 0 3 101 178 6 -6" on frame #877
+Sent "PM 0 3 107 172 0 -6" on frame #883
+Sent "PM 0 3 101 154 -6 -6" on frame #892
+Sent "PM 0 3 59 106 0 -6" on frame #916
+Sent "PM 0 3 59 76 0 0" on frame #955
+Sent "PM 1 3 25 90 0 0" on frame #1050
+
+$ Player 3 swoops in
+Sent "PM 2 2 281 88 6 0" on frame #853
+Sent "PP 2 19 0 4 -1 0 0 0" on frame #890
+Sent "PM 2 3 41 94 0 6" on frame #892
+Sent "PP 2 19 0 10 -1 0 0 0" on frame #896
+Sent "PM 2 3 41 130 0 0" on frame #913
+Sent "PM 2 3 35 130 -6 0" on frame #991
+Sent "PM 2 3 29 130 0 0" on frame #997
+Sent "PM 2 3 23 130 -6 0" on frame #1030
+
+
+# Dragons react to three players
+Sent "DM 2 3 40 92 -2 -2 1 30" on frame #909
+Sent "DS 0 0 3 3 30 44" on frame #924
+Sent "DM 2 3 28 45 2 -2 0 20" on frame #930
+Sent "DM 2 3 40 57 -3 -3 2 20" on frame #933
+Sent "DS 2 1 3 3 21 65" on frame #936
+Sent "DM 2 3 34 51 -3 3 2 14" on frame #939
+Sent "DS 2 2 3 3 21 65" on frame #951
+
+Sent "DM 2 3 22 65 -2 0 1 8" on frame #996
+Sent "DS 2 1 3 3 15 65" on frame #1005
+
+Sent "DM 2 3 22 65 -3 0 2 8" on frame #1011
+Sent "DS 2 2 3 3 15 65" on frame #1017
+
+# Other players chase after
+Sent "PM 0 3 53 76 -6 0" on frame #976
+Sent "PM 0 3 35 70 -6 -6" on frame #985
+Sent "PM 0 3 11 46 0 0" on frame #1000
+Sent "PM 0 3 11 52 0 6" on frame #1018
+Sent "PM 0 3 11 100 0 0" on frame #1048
+Sent "PM 0 3 11 90 -6 0" on frame #1081
+Sent "PM 1 3 11 156 -6 0" on frame #1090
+
+
+# As soon as player 3 leaves room, move dragons so no more biting
+Sent "DM 0 0 122 90 0 0 0 7" on frame #1045
+Sent "DM 0 0 122 90 0 0 1 7" on frame #1071
+Sent "DM 0 0 122 90 0 0 2 7" on frame #1080
+
+# Send dragons after
+Sent "DM 0 3 11 30 -2 0 0 77" on frame #1090
+Sent "DM 0 3 11 75 -2 0 1 77" on frame #1124
+Sent "DM 0 3 11 57 -3 0 2 77" on frame #1116
+
+.

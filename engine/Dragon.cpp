@@ -19,7 +19,7 @@ static const byte dragonStates [] =
     0,2,0,1
 };
 
-static const byte objectGfxDrag [] =
+const byte Dragon::gfxData [] =
 {
     // Object #6 : State #00 : Graphic
     20,
@@ -91,7 +91,7 @@ static const byte objectGfxDrag [] =
 int Dragon::dragonResetTime = Dragon::TRIVIAL;
 
 Dragon::Dragon(const char* label, int inNumber, int inColor, int inSpeed, const int* chaseMatrix):
-    OBJECT(label, objectGfxDrag, dragonStates, 0, inColor),
+OBJECT(label, Dragon::gfxData, dragonStates, 0, inColor),
     dragonNumber(inNumber),
     speed(inSpeed),
     matrix(chaseMatrix),
@@ -110,8 +110,6 @@ Dragon::~Dragon() {
  */
 void Dragon::init(int inRoom, int inX, int inY, int inState, int inMoveX, int inMoveY) {
     OBJECT::init(inRoom, inX, inY, inState, inMoveX, inMoveY);
-    prevMovementX = inMoveX;
-    prevMovementY = inMoveY;
 }
 
 void Dragon::setRunFromSword(bool willRunFromSword) {
@@ -130,18 +128,15 @@ int Dragon::timerExpired() {
     return (timer <= 0);
 }
 
-void Dragon::roar(int atX, int atY) {
+void Dragon::roar(int atRoom, int atX, int atY) {
     state = ROAR;
     
     resetTimer();
     
     // Set the dragon's position to the same as the ball
+    room = atRoom;
     x = atX+1; // Added one to get over disparity between C++ port and original atari game - not the best solution
     y = atY;
-    
-    movementX = 0;
-    movementY = 0;
-    
 }
 
 void Dragon::setDifficulty(Dragon::Difficulty newDifficulty) {
@@ -158,11 +153,14 @@ void Dragon::syncAction(DragonStateAction* action, int volume) {
         BALL* playerEaten = board->getPlayer(action->sender);
         // Ignore duplicates
         if (eaten != playerEaten) {
-            // Set the State to 01 (eaten)
+            // Set the State to 02 (eaten)
             eaten = playerEaten;
             state = Dragon::EATEN;
-            movementX = 0;
-            movementY = 0;
+            room = action->room;
+            x = action->posx;
+            y = action->posy;
+            movementX = action->velx;
+            movementY = action->vely;
             // Play the sound
             Platform_MakeSound(SOUND_EATEN, volume);
         }
@@ -170,9 +168,11 @@ void Dragon::syncAction(DragonStateAction* action, int volume) {
         // We ignore die actions if the dragon has already eaten somebody or if it's a duplicate.
         if ((state != Dragon::EATEN) && (state != Dragon::DEAD)) {
             state = DEAD;
-            movementX = 0;
-            movementY = 0;
-            // Keep the previous movement untouched.
+            room = action->room;
+            x = action->posx;
+            y = action->posy;
+            movementX = action->velx;
+            movementY = action->vely;
             // Play the sound
             Platform_MakeSound(SOUND_DRAGONDIE, volume);
         }
@@ -180,7 +180,9 @@ void Dragon::syncAction(DragonStateAction* action, int volume) {
     else if (action->newState == Dragon::ROAR) {
         // We ignore roar actions if we are already in an eaten state or dead state
         if ((state != Dragon::EATEN) && (state != Dragon::DEAD)) {
-            roar(action->posx, action->posy);
+            roar(action->room, action->posx, action->posy);
+            movementX = action->velx;
+            movementY = action->vely;
             // Play the sound
             Platform_MakeSound(SOUND_ROAR, volume);
         }
@@ -192,16 +194,10 @@ void Dragon::syncAction(DragonMoveAction* action) {
     x = action->posx;
     y = action->posy;
     movementX = action->velx;
-    if (movementX != 0) {
-        prevMovementX = movementX;
-    }
     movementY = action->vely;
-    if (movementY != 0) {
-        prevMovementY = movementY;
-    }
 }
 
-RemoteAction* Dragon::move(int* displayedRoomIndex)
+RemoteAction* Dragon::move()
 {
 	RemoteAction* actionTaken = NULL;
     Dragon* dragon = this;
@@ -212,25 +208,27 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
         if ((objectBall->room == dragon->room) &&
             board->CollisionCheckObject(dragon, (objectBall->x-4), (objectBall->y-4), 8, 8))
         {
-            dragon->roar(objectBall->x/2, objectBall->y/2);
+            dragon->roar(objectBall->room, objectBall->x/2, objectBall->y/2);
             
             // Notify others
-            actionTaken = new DragonStateAction(dragon->dragonNumber, Dragon::ROAR, dragon->room, dragon->x, dragon->y);
+            actionTaken = new DragonStateAction(dragon->dragonNumber, Dragon::ROAR, dragon->room, dragon->x, dragon->y,
+                                                dragon->movementX, dragon->movementY);
                         
             // Play the sound
             Platform_MakeSound(SOUND_ROAR, MAX_VOLUME);
         }
         
         // Has the Sword hit the Dragon?
-        if (board->CollisionCheckObjectObject(dragon, board->getObject(OBJECT_SWORD)))
+        // Note, you have to be in the same room for a dragon to die on the sword
+        if ((objectBall->room == dragon->room) &&
+            (board->CollisionCheckObjectObject(dragon, board->getObject(OBJECT_SWORD))))
         {
             // Set the State to 01 (Dead)
             dragon->state = Dragon::DEAD;
-            dragon->movementX = 0;
-            dragon->movementY = 0;
             
             // Notify others
-            actionTaken = new DragonStateAction(dragon->dragonNumber, Dragon::DEAD, dragon->room, dragon->x, dragon->y);
+            actionTaken = new DragonStateAction(dragon->dragonNumber, Dragon::DEAD, dragon->room, dragon->x, dragon->y,
+                                                dragon->movementX, dragon->movementY);
             
             // Play the sound
             Platform_MakeSound(SOUND_DRAGONDIE, MAX_VOLUME);
@@ -238,11 +236,6 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
         
         if (dragon->state == Dragon::STALKING)
         {
-            // If nothing is around the dragon to move him, keep going in
-            // previous direction.
-            dragon->movementX = dragon->prevMovementX;
-            dragon->movementY = dragon->prevMovementY;
-            
             // Go through the dragon's object matrix
             // Difficulty switch determines flee or don't flee from sword
             const int* matrixP = (runFromSword ? matrix : matrix+2);
@@ -259,7 +252,7 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
                 if ((fleeObject > OBJECT_NONE) && (fleeObjectPtr != dragon))
                 {
                     // get the object it is fleeing
-                    if (fleeObjectPtr->room == dragon->room)
+                    if ((fleeObjectPtr->room == dragon->room) && (fleeObjectPtr->exists()))
                     {
                         seekDir = -1;
                         seekX = fleeObjectPtr->x;
@@ -329,8 +322,6 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
                     }
                     dragon->movementX = newMovementX;
                     dragon->movementY = newMovementY;
-                    dragon->prevMovementX = newMovementX;
-                    dragon->prevMovementY = newMovementY;
                     
                     // Found something - we're done
                     return actionTaken;
@@ -344,13 +335,11 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
     {
         // Eaten
         dragon->eaten->room = dragon->room;
+        dragon->eaten->previousRoom = dragon->room;
         dragon->eaten->x = (dragon->x + 3) * 2;
+        dragon->eaten->previousX = dragon->eaten->x;
         dragon->eaten->y = (dragon->y - 10) * 2;
-        dragon->movementX = 0;
-        dragon->movementY = 0;
-        if (objectBall == dragon->eaten) {
-            *displayedRoomIndex = dragon->room;
-        }
+        dragon->eaten->previousY = dragon->eaten->y;
     }
     else if (dragon->state == Dragon::ROAR)
     {
@@ -363,9 +352,14 @@ RemoteAction* Dragon::move(int* displayedRoomIndex)
                 // Set the State to 01 (eaten)
                 dragon->eaten = objectBall;
                 dragon->state = Dragon::EATEN;
+                // Move the dragon up so that eating never causes the ball to shift screens
+                if (objectBall->y < 48) {
+                    dragon->y = 24;
+                }
                 
                 // Notify others
-                actionTaken = new DragonStateAction(dragon->dragonNumber, Dragon::EATEN, dragon->room, dragon->x, dragon->y);                
+                actionTaken = new DragonStateAction(dragon->dragonNumber, Dragon::EATEN, dragon->room,
+                                                    dragon->x, dragon->y, dragon->movementX, dragon->movementY);
                 
                 // Play the sound
                 Platform_MakeSound(SOUND_EATEN, MAX_VOLUME);

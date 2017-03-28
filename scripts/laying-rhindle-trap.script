@@ -1,17 +1,20 @@
-# Laying Rhindle trap with white key
-# Place rhindle in maze
-Send "DM 0 7 80 46 0 0 2 77" on frame #213
-# Hide the other two dragons and bat
+$ Laying Rhindle trap with white key
+Sent "PR 1" on frame #190
+Sent "PR 0" on frame #195
+
+$ Place rhindle in maze
+Send "DM 0 7 80 86 0 0 2 77" on frame #213
+$ Hide the other two dragons and bat
 Send "DM 0 0 80 32 2 2 0 77" on frame #213
 Send "DM 0 0 80 32 2 2 1 77" on frame #213
-Send "BM 0 9 14 87 0 1 1" on frame #213
-# Get rid of the lance
-Send "PP 0 10 -2 -4 -1 0 0 0" on frame #213
-Send "PP 0 -1 0 0 10 7 104 26" on frame #219
-# Start off with white key
+Send "BM 0 32 14 87 0 1 1" on frame #213
+$ Get rid of the lance
+Send "PP 1 10 -2 -4 -1 0 0 0" on frame #193
+Send "PP 1 -1 0 0 10 29 104 26" on frame #196
+$ Start off with white key
 Send "PP 0 15 -8 -5 -1 0 0 0" on frame #213
 Send "PM 0 8 51 48 0 0" on frame #250
-# Get chased by dragon
+$ Get chased by dragon
 Send "PM 0 8 53 56 -6 0" on frame #253
 Send "DM 0 7 98 28 3 0 2 50" on frame #291
 Send "PM 0 7 279 56 0 0" on frame #313
@@ -38,25 +41,22 @@ Send "DM 0 1 138 60 3 3 2 11" on frame #486
 Send "DM 0 1 141 63 3 -3 2 11" on frame #489
 Send "DM 0 1 144 60 3 3 2 11" on frame #492
 Send "PM 0 2 83 124 0 0" on frame #535
-Send "PM 1 5 75 48 0 0" on frame #550
-# P2 walks into rhindle
-Send "PM 1 5 75 42 0 -6" on frame #742
-Send "PM 1 8 69 52 -6 -6" on frame #829
-Send "PM 1 8 63 52 -6 0" on frame #832
-Send "PM 1 7 303 52 0 0" on frame #871
-Send "PM 1 7 309 52 6 0" on frame #958
-Send "PM 1 8 119 46 6 -6" on frame #1021
-Send "DM 1 1 72 96 3 3 2 8" on frame #1044
-Send "DS 1 2 3 1 81 101" on frame #1047
-Send "PM 1 1 167 202 6 0" on frame #1060
-Send "PM 1 1 161 202 0 0" on frame #1063
-Send "DS 1 2 2 1 81 101" on frame #1065
-Send "PM 1 1 162 182 -6 0" on frame #1174
-Send "PM 1 1 162 176 -6 -6" on frame #1198
-Send "PM 1 1 168 176 0 -6" on frame #1204
-Send "PM 1 1 174 176 6 -6" on frame #1207
-Send "PM 1 1 174 182 6 0" on frame #1216
-Send "PM 1 1 174 188 6 6" on frame #1228
-Send "PM 1 1 174 182 6 0" on frame #1240
-Send "PM 1 1 168 182 0 0" on frame #1243
+Send "DM 0 1 72 96 0 0 2 8" on frame #645
+
+$ P2 walks into rhindle
+Send "PM 1 7 309 52 6 0" on frame #559
+Send "PM 1 8 119 46 6 -6" on frame #622
+Send "DM 1 1 72 96 3 3 2 8" on frame #645
+$Send "DS 1 2 3 1 81 101" on frame #648
+Send "PM 1 1 167 202 6 0" on frame #661
+Send "PM 1 1 161 202 0 0" on frame #664
+$Send "DS 1 2 2 1 81 101" on frame #666
+Send "PM 1 1 162 182 -6 0" on frame #775
+Send "PM 1 1 162 176 -6 -6" on frame #799
+Send "PM 1 1 168 176 0 -6" on frame #805
+Send "PM 1 1 174 176 6 -6" on frame #808
+Send "PM 1 1 174 182 6 0" on frame #817
+Send "PM 1 1 174 188 6 6" on frame #829
+Send "PM 1 1 174 182 6 0" on frame #841
+Send "PM 1 1 168 182 0 0" on frame #844
 .

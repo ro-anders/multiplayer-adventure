@@ -94,12 +94,12 @@ END
 // WAVE
 //
 
-IDR_DRAGONDIE_WAV       WAVE                    "C:\\Temp\\multiplayer-adventure\\sounds\\dragondie.wav"
-IDR_EATEN_WAV           WAVE                    "C:\\Temp\\multiplayer-adventure\\sounds\\eaten.wav"
-IDR_PICKUP_WAV          WAVE                    "C:\\Temp\\multiplayer-adventure\\sounds\\pickup.wav"
-IDR_PUTDOWN_WAV         WAVE                    "C:\\Temp\\multiplayer-adventure\\sounds\\putdown.wav"
-IDR_ROAR_WAV            WAVE                    "C:\\Temp\\multiplayer-adventure\\sounds\\roar.wav"
-IDR_WON_WAV             WAVE                    "C:\\Temp\\multiplayer-adventure\\sounds\\won.wav"
+IDR_DRAGONDIE_WAV       WAVE                    "..\\sounds\\dragondie.wav"
+IDR_EATEN_WAV           WAVE                    "..\\sounds\\eaten.wav"
+IDR_PICKUP_WAV          WAVE                    "..\\sounds\\pickup.wav"
+IDR_PUTDOWN_WAV         WAVE                    "..\\sounds\\putdown.wav"
+IDR_ROAR_WAV            WAVE                    "..\\sounds\\roar.wav"
+IDR_WON_WAV             WAVE                    "..\\sounds\\won.wav"
 
 /////////////////////////////////////////////////////////////////////////////
 //

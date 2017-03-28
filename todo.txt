@@ -1,30 +1,42 @@
 To Do
 -----
-- Grab an object with someone else in the room and other person picks it up
-  Start Game 1 and have player 2 go to gold castle and grab gold key.  On player 1's game, player 2 gets key.  On player 2's game, player 1 get's key.
-- Hold a key beneath you and just step into a castle.  Key appears at top of outside of castle.  Should appear right below gate (when gate is open)
-- FIXED - When player holds an object, other players see it held in a different position
+- Mac runs too slow in full screen mode.  Speed up or disable full screen mode.
+- PC cannot use DNS name for broker.  Needs explicit IP address.
+- When player holds an object, other players see it held in a different position
+- When holding bat at top of screen it switched objects and dropped the object at the top of the above screen.
+  Also when it picked up an object that was at the bottom edge of the above screen it dropped its current object pretty low in this screen.
+- Dragon getting killed is heard everywhere in the game.  All other sounds mute as they get further away.
+- FIXED - When castle is locked objects are still wrapped from bottom of entrance room to opening of castle
+- FIXED - Make key controls the same for Mac and PC
+- FIXED - Grab an object with someone else in the room and other person picks it up
+- FIXED - Hold a key beneath you and just step into a castle.  Key appears at top of outside of castle.  Should appear right below gate (when gate is open)
 - FIXED - Win screen often randomly displays the other players even if they weren't there to start
+- FIXED - Seems to be some fatal exception on exiting.  Not critical since we're exiting, but a little disturbing.
 - FIXED - Sometimes when you unlock and enter castle the gate locks behind you.  Has to do with other machines seeing player touch the key to the castle and sending a lock event.
+  Unlock a castle.  Hold the key above you and touch the open gate.  As it closes it will bring you into the castle.  Other players will see the castle open, but you will
+  see the castle closed.
 
 To Check
 --------
-- Dragon's pre-bite direction not properly synced across players (would be good to have bite and die events carry a previous direction)
+- Something happened with red dragon that suddenly ball could move through walls.  Couldn't immediately reproduce. - 3/24/17
 - Looked like other player wasn't carrying an object when he was - seen this several times
 - Green dragon ate player 1.  Player 2 reset and now didn't see green dragon.
 - Right arrow key seemed to get stuck.
+- FIXED - Dragon's pre-bite direction not properly synced across players (would be good to have bite and die events carry a previous direction)
 
 Original Disparities
 --------------------
 - Win screen only shows two objects in room
 - Objects aren't occluded by the wall in the catacombs
-- Ball doesn't make pyramid as it drags along the bottom wall
-- Peeking into other room should show flickering ball on both sides of room, right now shows only on one side
-- Peeking up or down into a room with dragons should cause the dragons to chase you.
 - HACKED - Chalice touch gate doesn't trigger win
   (work around in mine wins, but doesn't have same behavior where too many objects in room obscures touch)
 - HACKED - Can't escape dragon by running left 
   (work around in mine allows left but then doesn't allow up and right)
+- FIXED - Peeking into other room should show flickering ball on both sides of room, right now shows only on one side
+- FIXED - Peeking up or down into a room with dragons should cause the dragons to chase you.
+- FIXED - If you run diagonally into the point of a corner you can get stuck on the corner.  Original behavior is you always go the vertical direction.
+- FIXED - Ball doesn't make pyramid as it drags along the bottom wall
+- FIXED - An unheld object (including bats and dragons) that touches an open gate while someone is watching should go into the castle - but it doesn't. 
 - FIXED - If a dragon bites and you then leave the room, the dragon should continue along the direction it was heading before it bit you.  Right now it just stays still.
 - FIXED - Bat sometimes gets stuck picking up object
 - FIXED - Moving into a room that is immediately blocked by a wall should cause you to flicker and, when you stop moving kick you back to the previous room

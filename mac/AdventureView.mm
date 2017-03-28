@@ -20,6 +20,7 @@
 #include "Adventure.h"
 #include "args.h"
 #include "GameSetup.hpp"
+#include "Logger.hpp"
 #include "MacRestClient.hpp"
 #include "PosixUdpSocket.hpp"
 #include "Sys.hpp"
@@ -51,7 +52,6 @@ bool lockKeys = false;
 #define KEY_DOWN	0x08
 #define KEY_FIRE	0x10
 #define KEY_RESET	0x20
-#define KEY_SELECT	0x40
 
 bool gLeftDifficulty = TRUE;	// true = dragons pause before eating you
 bool gRightDifficulty = TRUE;	// true = dragons run from the sword
@@ -75,6 +75,10 @@ bool gMute = FALSE;
     gettimeofday(&time, NULL);
     long millis = (time.tv_sec * 1000) + (time.tv_usec / 1000);
     srandom(millis);
+    
+    // Setup logging
+    Logger::setup(Logger::CONSOLE, Logger::INFO);
+    Logger::log() << "Logging setup at " << Sys::datetime() << "." << Logger::EOM;
     
     // Expecting args: gameLevel playerNum sockAddress1 sockAddress2
     int argc;
@@ -214,29 +218,26 @@ bool gMute = FALSE;
     unsigned short key = [theEvent keyCode];
     switch(key)
     {
-        case 51: // delete
+        case 0x33: // delete
             lockKeys = true;
             break;
-        case 0x7e: //up
+        case 0x7e: //up arrow
             mKeyMap |= KEY_UP;
             break;
-        case 0x7d: //down
+        case 0x7d: //down arrow
             mKeyMap |= KEY_DOWN;
             break;
-        case 0x7b: //left
+        case 0x7b: //left arrow
             mKeyMap |= KEY_LEFT;
             break;
-        case 0x7c: //right
+        case 0x7c: //right arrow
             mKeyMap |= KEY_RIGHT;
             break;
-        case 0x31: //fire
+        case 0x31: //space bar
             mKeyMap |= KEY_FIRE;
             break;
-        case 0x12: //reset
+        case 0x24: //return
             mKeyMap |= KEY_RESET;
-            break;
-        case 0x13: //select
-            mKeyMap |= KEY_SELECT;
             break;
     }
 }
@@ -244,31 +245,28 @@ bool gMute = FALSE;
 - (void) keyUp:(NSEvent *) theEvent
 {
     unsigned short key = [theEvent keyCode];
-    if (key == 51) { // delete
+    if (key == 0x33) { // delete
         lockKeys = false;
     } else if (!lockKeys) {
         switch(key)
         {
-            case 0x7e: //up
+            case 0x7e: //up arrow
                 mKeyMap &= ~KEY_UP;
                 break;
-            case 0x7d: //down
+            case 0x7d: //down arrow
                 mKeyMap &= ~KEY_DOWN;
                 break;
-            case 0x7b: //left
+            case 0x7b: //left arrow
                 mKeyMap &= ~KEY_LEFT;
                 break;
-            case 0x7c: //right
+            case 0x7c: //right arrow
                 mKeyMap &= ~KEY_RIGHT;
                 break;
-            case 0x31: //fire
+            case 0x31: //space bar
                 mKeyMap &= ~KEY_FIRE;
                 break;
-            case 0x12: //reset
+            case 0x24: //return
                 mKeyMap &= ~KEY_RESET;
-                break;
-            case 0x13: //select
-                mKeyMap &= ~KEY_SELECT;
                 break;
         }
     }
@@ -335,22 +333,23 @@ void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int
         
         int bufferWidth = ADVENTURE_SCREEN_WIDTH*gGfxScaler;
         int bufferHeight = ADVENTURE_SCREEN_HEIGHT*gGfxScaler;
+        int bufferOverscan = ADVENTURE_OVERSCAN*gGfxScaler;
         
         for (int cy=0; cy<height; cy++)
         {
             // The game expects a bottom up buffer, so we flip the orientation here.
             // Also, the game actually draws more than would show on a TV screen, hence the adjustment for overscan
             
-            int py = ((ADVENTURE_SCREEN_HEIGHT*gGfxScaler) - (y + cy)) + (ADVENTURE_OVERSCAN*gGfxScaler);
+            int py = (bufferHeight - (y + cy)) + bufferOverscan;
             
-            if ((py >= 0) && (py < (ADVENTURE_SCREEN_HEIGHT*gGfxScaler)))
+            if ((py >= 0) && (py < bufferHeight))
             {
                 for (int cx=0; cx<width; cx++)
                 {
                     int px = cx + x;
-                    byte* p = &gPixelBucket[(unsigned int)((py*(ADVENTURE_SCREEN_WIDTH*gGfxScaler)) + px) * 4];
+                    byte* p = &gPixelBucket[(unsigned int)((py*bufferWidth) + px) * 4];
                     
-                    if ((px >= 0) && (px < (ADVENTURE_SCREEN_WIDTH*gGfxScaler)))
+                    if ((px >= 0) && (px < bufferWidth))
                     {
                         p++;	// skip alpha
                         *(p++) = r & 0xff;
