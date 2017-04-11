@@ -184,13 +184,20 @@ int UdpTransport::readData(char* buffer, int bufferLength) {
 }
 
 int UdpTransport::writeData(const char* data, int numBytes) {
+    return writeData(data, numBytes, -1);
+}
+
+int UdpTransport::writeData(const char* data, int numBytes, int recipient) {
+    int firstRecipient = (recipient == -1 ? 0 : recipient);
+    int lastRecipient = (recipient == -1 ? numOtherMachines-1 : recipient);
+    
     // We want to return the characters sent to the client and, in the case that there are multiple
     // clients and some problem causes fewer characters to be sent to one client, we report
     // the smaller number.
     // If a client has multiple IPs, we use the number of characters sent to the most
     // succesful IP.
     int leastCharsWritten = 1000000;
-    for(int ctr=0; ctr<numOtherMachines; ++ctr) {
+    for(int ctr=firstRecipient; ctr<=lastRecipient; ++ctr) {
         List<struct sockaddr_in*>& socketList = otherMachines[ctr].sockaddrs;
         int mostCharsWrittenToClient = -1;
         for(int ctr2=0; ctr2<socketList.size(); ++ctr2) {
@@ -205,20 +212,6 @@ int UdpTransport::writeData(const char* data, int numBytes) {
     }
     return leastCharsWritten;
 }
-
-int UdpTransport::writeData(const char* data, int numBytes, int recipient) {
-    int leastCharsWritten = 1000000;
-    List<struct sockaddr_in*>& socketList = otherMachines[recipient].sockaddrs;
-    for(int ctr2=0; ctr2<socketList.size(); ++ctr2) {
-        int charsWritten = socket->writeData(data, numBytes, socketList.get(ctr2));
-        // TODOX: Is this okay or might bad addresses fail while good addresses succeed.
-        if (charsWritten < leastCharsWritten) {
-            leastCharsWritten = charsWritten;
-        }
-    }
-    return leastCharsWritten;
-}
-
 
 void UdpTransport::punchHole() {
     

@@ -127,15 +127,15 @@ private:
      */
     int readData(char* buffer, int bufferLength);
     
+    int openSocket();
+
     /**
      * Send data on the socket.  If connected to multiple machines, will send
      * data to both machines.
      */
     int writeData(const char* data, int numBytes);
     
-    
-    int openSocket();
-    
+
     /**
      * Send data on the socket.
      * data - data to send
