@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 
+#include "List.hpp"
 #include "Transport.hpp"
 
 class UdpSocket;
@@ -96,8 +97,8 @@ private:
     
     class Client {
     public:
-        int numPossibleAddrs;
-        Address* possibleAddrs;
+        List<Address> possibleAddrs;
+        List<struct sockaddr_in*> sockaddrs;
         Address address;
         Client();
         ~Client();
@@ -120,12 +121,9 @@ private:
     /** A random number we use to determine test number */
     long randomNum;
     
-    /** Destinations we are sending to */
-    struct sockaddr_in** remaddrs;
-
-    
     /**
      * Pull data off the socket - non-blocking
+     * Put the address of the source of the data in from.
      */
     int readData(char* buffer, int bufferLength);
     
@@ -149,6 +147,15 @@ private:
     /** Look for connection messages from other machines, and send a
      * connection message to each machine that isn't acknowledged yet */
     void punchHole();
+    
+    /**
+     * Remove address and socket entries in this client that don't match the passed in one.
+     * If the passed in one is not one of the machines addresses don't do anything.
+     * clientNum - the player number of the client - used only in debugging and error reporting
+     * otherMachine - the remote machine for which we have multiple addresses
+     * from - the address we want to keep
+     */
+    void reduceClientToOneAddress(int clientNum, Client& otherMachine, Transport::Address& from);
     
     void compareNumbers(int myRandomNumber, char* theirMessage, int otherIndex);
     

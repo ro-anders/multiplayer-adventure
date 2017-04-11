@@ -44,7 +44,8 @@ public:
      */
     int writeData(const char* data, int numBytes, sockaddr_in* recipient);
     
-    int readData(char* buffer, int bufferLength);
+    
+    int readData(char* buffer, int bufferLength, Transport::Address* source);
     
     
 private:

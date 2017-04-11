@@ -172,7 +172,7 @@ void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, ch
         xport.addOtherPlayer(otherPlayerAddr);
     }
     
-    xport.setExternalAddress(myAddress);
+    xport.setExternalAddress(myAddress, true);
     xport.setTransportNum(newParams.thisPlayer);
 }
 
@@ -188,7 +188,16 @@ void GameSetup::setupP2PGame(GameSetup::GameParams& newParams, int argc, char** 
     int myInternalPort = atoi(argv[3]);
     xport.setInternalPort(myInternalPort);
     addr1 = Transport::parseUrl(argv[4]);
-    xport.addOtherPlayer(addr1);
+    // TODOX: Generating a test case - delete when done
+    // ******* xport.addOtherPlayer(addr1);
+    if (newParams.thisPlayer == 0) {
+        Transport::Address addr2 = Transport::Address("1.1.1.1", 1);
+        Transport::Address addr3 = Transport::Address("127.0.0.1", 3000);
+        Transport::Address addrs[] = {addr2, addr1, addr3};
+        xport.addOtherPlayer(addrs, 3);
+    } else {
+        xport.addOtherPlayer(addr1);
+    }
     if (argc > 5) {
         Transport::Address addr2 = Transport::parseUrl(argv[5]);
         xport.addOtherPlayer(addr2);

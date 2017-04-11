@@ -47,7 +47,14 @@ public:
      * Pull data off the socket - non-blocking.  If connected to multiple machines, will
      * return data from either machine.
      */
-    virtual int readData(char* buffer, int bufferLength) = 0;
+    int readData(char* buffer, int bufferLength);
+    
+    /**
+     * Pull data off the socket - non-blocking.  If connected to multiple machines, will
+     * return data from either machine.
+     * Will put the address of the source into from field.
+     */
+    int readData(char* buffer, int bufferLength, Transport::Address& from);
     
     /**
      * Send data on the socket.
@@ -56,6 +63,15 @@ public:
      * recipient - the address to send it to
      */
     virtual int writeData(const char* data, int numBytes, sockaddr_in* recipient) = 0;
+  
+protected:
+
+    /**
+     * Pull data off the socket - non-blocking.  If connected to multiple machines, will
+     * return data from either machine.
+     * If a from address is passed in, will put the address of the source into that field.
+     */
+    virtual int readData(char* buffer, int bufferLength, Transport::Address* from) = 0;
     
 };
 

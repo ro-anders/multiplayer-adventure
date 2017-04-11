@@ -111,8 +111,20 @@ int PosixUdpSocket::writeData(const char* data, int numBytes, sockaddr_in* recip
     return numSent;
 }
 
-int PosixUdpSocket::readData(char *buffer, int bufferLength) {
+int PosixUdpSocket::readData(char *buffer, int bufferLength, Transport::Address* source) {
+    static char tmpString[INET6_ADDRSTRLEN];
+    int n;
+    
     // Receive the next packet
-    int n = recvfrom(socketFd, buffer, bufferLength, 0, NULL, NULL);
+    if (source == NULL) {
+        n = recvfrom(socketFd, buffer, bufferLength, 0, NULL, NULL);
+    } else {
+        struct sockaddr_in source_addr;
+        socklen_t source_addr_len = sizeof(source_addr);
+        memset((char *) &source_addr, 0, sizeof(source_addr));
+        n = recvfrom(socketFd, buffer, bufferLength, 0, (struct sockaddr*)&source_addr, &source_addr_len);
+        inet_ntop(AF_INET, &source_addr.sin_addr, tmpString, INET6_ADDRSTRLEN);
+        *source = Transport::Address(tmpString, ntohs(source_addr.sin_port));
+    }
     return n;
 }

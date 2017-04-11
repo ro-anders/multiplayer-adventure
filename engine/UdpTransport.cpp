@@ -17,15 +17,9 @@ const char* UdpTransport::RECVD_MESSAGE = "UB";
 const char* UdpTransport::RECVD_ACK = "UC";
 
 
-UdpTransport::Client::Client() :
-numPossibleAddrs(0),
-possibleAddrs(NULL) {}
+UdpTransport::Client::Client() {}
 
-UdpTransport::Client::~Client() {
-    if (possibleAddrs != NULL) {
-        delete[] possibleAddrs;
-    }
-}
+UdpTransport::Client::~Client() {}
 
 UdpTransport::UdpTransport(UdpSocket* inSocket, bool useDynamicSetup) :
 Transport(useDynamicSetup),
@@ -37,10 +31,8 @@ states(new const char*[2]), // We always create space for two even though we may
 numOtherMachines(0),
 internalIps(NULL),
 numInternalIps(0),
-remaddrs(new sockaddr_in*[2]), // We always create space for two even though we may only use one.
 socketBound(false)
 {
-    remaddrs[0] = remaddrs[1] = NULL;
     if (useDynamicSetup) {
         myInternalPort = DEFAULT_PORT;
     }
@@ -52,16 +44,15 @@ UdpTransport::~UdpTransport() {
         delete[] internalIps[ctr];
     }
     delete[] internalIps;
-    delete[] otherMachines;
     delete[] states;
-    if (remaddrs != NULL) {
-        for(int ctr=0; ctr<2; ++ctr) {
-            if (remaddrs[ctr] != NULL) {
-                socket->deleteAddress(remaddrs[ctr]);
-            }
+    for(int ctr=0; ctr<numOtherMachines; ++ctr) {
+        List<struct sockaddr_in*>& socketList = otherMachines[ctr].sockaddrs;
+        for(int ctr2=0; ctr2<socketList.size(); ++ctr2) {
+            socket->deleteAddress(socketList.get(ctr2));
+            socketList.set(ctr2, NULL);
         }
-        delete[] remaddrs;
     }
+    delete[] otherMachines;
 }
 
 /**
@@ -86,14 +77,11 @@ void UdpTransport::addOtherPlayer(const Address * addresses, int numAddresses) {
         ++numOtherMachines;
 
         // We only set the possible addresses.  We let the hole punching determine which of those to use.
-        otherMachines[numOtherMachines-1].possibleAddrs = new Address[numAddresses];
         for(int ctr=0; ctr<numAddresses; ++ctr) {
-            otherMachines[numOtherMachines-1].possibleAddrs[ctr] = addresses[ctr];
+            otherMachines[numOtherMachines-1].possibleAddrs.add(addresses[ctr]);
+            otherMachines[numOtherMachines-1].sockaddrs.add(socket->createAddress(addresses[ctr]));
         }
-        
-
         states[numOtherMachines-1] = NOT_YET_INITIATED;
-        remaddrs[numOtherMachines-1] = socket->createAddress(theirAddr);
     }
 }
 
@@ -196,19 +184,39 @@ int UdpTransport::readData(char* buffer, int bufferLength) {
 }
 
 int UdpTransport::writeData(const char* data, int numBytes) {
+    // We want to return the characters sent to the client and, in the case that there are multiple
+    // clients and some problem causes fewer characters to be sent to one client, we report
+    // the smaller number.
+    // If a client has multiple IPs, we use the number of characters sent to the most
+    // succesful IP.
     int leastCharsWritten = 1000000;
     for(int ctr=0; ctr<numOtherMachines; ++ctr) {
-        int charsWritten = socket->writeData(data, numBytes, remaddrs[ctr]);
-        if (charsWritten < leastCharsWritten) {
-            leastCharsWritten = charsWritten;
+        List<struct sockaddr_in*>& socketList = otherMachines[ctr].sockaddrs;
+        int mostCharsWrittenToClient = -1;
+        for(int ctr2=0; ctr2<socketList.size(); ++ctr2) {
+            int charsWritten = socket->writeData(data, numBytes, socketList.get(ctr2));
+            if (charsWritten > mostCharsWrittenToClient) {
+                mostCharsWrittenToClient = charsWritten;
+            }
+        }
+        if (mostCharsWrittenToClient < leastCharsWritten) {
+            leastCharsWritten = mostCharsWrittenToClient;
         }
     }
     return leastCharsWritten;
 }
 
 int UdpTransport::writeData(const char* data, int numBytes, int recipient) {
-    int charsWritten = socket->writeData(data, numBytes, remaddrs[recipient]);
-    return charsWritten;
+    int leastCharsWritten = 1000000;
+    List<struct sockaddr_in*>& socketList = otherMachines[recipient].sockaddrs;
+    for(int ctr2=0; ctr2<socketList.size(); ++ctr2) {
+        int charsWritten = socket->writeData(data, numBytes, socketList.get(ctr2));
+        // TODOX: Is this okay or might bad addresses fail while good addresses succeed.
+        if (charsWritten < leastCharsWritten) {
+            leastCharsWritten = charsWritten;
+        }
+    }
+    return leastCharsWritten;
 }
 
 
@@ -226,7 +234,8 @@ void UdpTransport::punchHole() {
         bool justAcked[2] = {false, false};
     
         // See what messages we have received.
-        int bytes = socket->readData(recvBuffer, READ_BUFFER_LENGTH);
+        Address from;
+        int bytes = socket->readData(recvBuffer, READ_BUFFER_LENGTH, from);
         while (bytes > 0) {
             // This could be non-setup messages, which need to be put in the base class's stream buffer
             // until the setup is complete.
@@ -248,10 +257,18 @@ void UdpTransport::punchHole() {
                     int senderIndex = (senderInt <= transportNum ? senderInt : senderInt-1);
                     
                     if (senderIndex >= 0) {
+                        
+                        Client& senderMachine = otherMachines[senderIndex];
+                        // If we still have multiple possible addresses for this sender
+                        // note the address from which this message came
+                        if (senderMachine.possibleAddrs.size() > 1) {
+                            reduceClientToOneAddress(senderInt, senderMachine, from);
+                        }
+                        
                         if (states[senderIndex] == RECVD_NOTHING) {
                             states[senderIndex] = RECVD_MESSAGE;
-                            Logger::log() << "Received message from " << theirAddrs[senderIndex].ip() << ":" <<
-                            theirAddrs[senderIndex].port() << ".  Waiting for ack." << Logger::EOM;
+                            Logger::log() << "Received message from " << from.ip() << ":" <<
+                            from.port() << ".  Waiting for ack." << Logger::EOM;
                         }
                         // See if they have received ours and this is the first time we have seen them receive ours
                         if ((recvBuffer[1] != RECVD_NOTHING[1]) && (states[senderIndex] != RECVD_ACK)) {
@@ -259,8 +276,8 @@ void UdpTransport::punchHole() {
                             states[senderIndex] = RECVD_ACK;
                             justAcked[senderIndex] = true;
                             connected = states[1-senderIndex] == RECVD_ACK;
-                            Logger::log() << "Connected with " << theirAddrs[senderIndex].ip() << ":" <<
-                            theirAddrs[senderIndex].port() << Logger::EOM;
+                            Logger::log() << "Connected with " << from.ip() << ":" <<
+                            from.port() << Logger::EOM;
                             // If this is a test case, figure out who is player one.
                             if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
                                 compareNumbers(randomNum, recvBuffer, senderIndex);
@@ -271,7 +288,7 @@ void UdpTransport::punchHole() {
             }
             
             // Check for more messages.
-            bytes = socket->readData(recvBuffer, READ_BUFFER_LENGTH);
+            bytes = socket->readData(recvBuffer, READ_BUFFER_LENGTH, from);
         }
         
         // Now send a packet to each other machine.  Don't send if we're not initialized or we're all connected.
@@ -280,6 +297,29 @@ void UdpTransport::punchHole() {
             if (justAcked[ctr] || ((states[ctr] != NOT_YET_INITIATED) && (states[ctr] != RECVD_ACK))) {
                 sprintf(sendBuffer, "%s%d%06ld", states[ctr], transportNum, randomNum);
                 writeData(sendBuffer, strlen(sendBuffer)+1, ctr);
+            }
+        }
+    }
+}
+
+/**
+ * Remove address and socket entries in this client that don't match the passed in one.
+ */
+void UdpTransport::reduceClientToOneAddress(int clientNum, Client& otherMachine, Transport::Address& from) {
+    // Figure out which slot has the right address.
+    int found = -1;
+    for(int ctr=0; (found < 0) && (ctr<otherMachine.possibleAddrs.size()); ++ctr) {
+        found = (otherMachine.possibleAddrs.get(ctr) == from ? ctr : -1);
+    }
+    if (found < 0) {
+        Logger::log() << "Received message for " << clientNum << " from unexpected address "  << from.ip() <<
+            ":" << from.port() << Logger::EOM;
+    } else {
+        // TODOX: Actually remove the entries from the list
+        for(int ctr=0; ctr<otherMachine.possibleAddrs.size(); ++ctr) {
+            if (ctr != found) {
+                socket->deleteAddress(otherMachine.sockaddrs.get(ctr));
+                otherMachine.sockaddrs.set(ctr, NULL);
             }
         }
     }
@@ -304,14 +344,15 @@ void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage, int ot
     } else if (theirRandomNumber < myRandomNumber) {
         setDynamicPlayerSetupNumber(1);
     } else {
-        int ipCmp = strcmp(myExternalAddr.ip(), theirAddrs[otherIndex].ip());
+        const Address& otherAddress = otherMachines[otherIndex].possibleAddrs.get(0);
+        int ipCmp = strcmp(myExternalAddr.ip(), otherAddress.ip());
         if (ipCmp < 0) {
             setDynamicPlayerSetupNumber(0);
         } else if (ipCmp > 0) {
             setDynamicPlayerSetupNumber(1);
         } else {
             // If IP's are equal then ports can't be equal.
-            setDynamicPlayerSetupNumber(myExternalAddr.port() < theirAddrs[otherIndex].port() ? 0 : 1);
+            setDynamicPlayerSetupNumber(myExternalAddr.port() < otherAddress.port() ? 0 : 1);
         }
     }
 }
