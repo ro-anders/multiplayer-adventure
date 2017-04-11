@@ -309,6 +309,7 @@
 				401C851D1D195CBA00110952 /* GameSetup.hpp */,
 				40509AA61C05E9750008BACF /* GameObject.cpp */,
 				40509AA71C05E9750008BACF /* GameObject.hpp */,
+				403FC7101E8F03A5000137FA /* List.hpp */,
 				40D4564C1DAB25E400D052CB /* Logger.cpp */,
 				40D4564D1DAB25E400D052CB /* Logger.hpp */,
 				4092E1E01C4E731900B2AEBB /* Map.cpp */,
@@ -333,7 +334,6 @@
 				408582131D46C0BE00A3F2EF /* UdpSocket.hpp */,
 				40B029DA1C91449200DA27FD /* UdpTransport.cpp */,
 				40B029DB1C91449200DA27FD /* UdpTransport.hpp */,
-				403FC7101E8F03A5000137FA /* List.hpp */,
 			);
 			name = engine;
 			sourceTree = "<group>";

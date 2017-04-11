@@ -27,6 +27,8 @@ public:
     
     void add(T t) {array[numEntries]=t; ++numEntries;}
     
+    void clear() {numEntries=0;}
+    
     void set(int place, T t) {array[place]=t;}
     
     int size() {return numEntries;}

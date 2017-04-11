@@ -297,6 +297,10 @@ void UdpTransport::punchHole() {
 
 /**
  * Remove address and socket entries in this client that don't match the passed in one.
+ * clientNum - the number of the client - used only for logging and debugging
+ * client - the client to operate on
+ * from - the address to keep.  NOTE: This should not be a reference to an Address in the passed in Client as
+ * it will not be valid after this call.
  */
 void UdpTransport::reduceClientToOneAddress(int clientNum, Client& otherMachine, Transport::Address& from) {
     // Figure out which slot has the right address.
@@ -308,13 +312,16 @@ void UdpTransport::reduceClientToOneAddress(int clientNum, Client& otherMachine,
         Logger::log() << "Received message for " << clientNum << " from unexpected address "  << from.ip() <<
             ":" << from.port() << Logger::EOM;
     } else {
-        // TODOX: Actually remove the entries from the list
-        for(int ctr=0; ctr<otherMachine.possibleAddrs.size(); ++ctr) {
+        struct sockaddr_in* keep = otherMachine.sockaddrs.get(found);
+        for(int ctr=0; ctr<otherMachine.sockaddrs.size(); ++ctr) {
             if (ctr != found) {
                 socket->deleteAddress(otherMachine.sockaddrs.get(ctr));
-                otherMachine.sockaddrs.set(ctr, NULL);
             }
         }
+        otherMachine.sockaddrs.clear();
+        otherMachine.possibleAddrs.clear();
+        otherMachine.possibleAddrs.add(from);
+        otherMachine.sockaddrs.add(keep);
     }
 }
 
