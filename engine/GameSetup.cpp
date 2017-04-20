@@ -126,13 +126,21 @@ void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, ch
     if (argc > 3) {
         stunServer = Transport::parseUrl(argv[3]);
     }
-    Transport::Address myAddress = determinePublicAddress(stunServer);
+    
+    
+    Transport::Address publicAddress = determinePublicAddress(stunServer);
+    List<Transport::Address> privateAddresses = xport.determineThisMachineIPs();
     
     Json::Value responseJson;
     // Connect to the client and register a game request.
-    char requestContent[200];
-    sprintf(requestContent, "{\"ip1\": \"%s\",\"port1\": %d, \"sessionId\": %d, \"gameToPlay\": %d, \"desiredPlayers\": %d}",
-            myAddress.ip(), myAddress.port(), sessionId, newParams.gameLevel, desiredPlayers);
+    char requestContent[2000];
+    sprintf(requestContent, "{\"addrs\":[{\"ip\": \"%s\",\"port\": %d}", publicAddress.ip(), publicAddress.port());
+    for(int ctr=0; ctr<privateAddresses.size(); ++ctr) {
+        sprintf(requestContent+strlen(requestContent), ",{\"ip\": \"%s\",\"port\": %d}",
+                privateAddresses.get(ctr).ip(), privateAddresses.get(ctr).port());
+    }
+    sprintf(requestContent+strlen(requestContent), "], \"sessionId\": %d, \"gameToPlay\": %d, \"desiredPlayers\": %d}",
+            sessionId, newParams.gameLevel, desiredPlayers);
     char response[1000];
     bool gotResponse = false;
     
@@ -152,10 +160,26 @@ void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, ch
     // Expecting response of the form:
     // {"gameParams":{
     //   "numPlayers":2, "thisPlayer":1, "gameToPlay":0,
-    //   "otherPlayers":[
-    //    {"ip1":"127.0.0.1", "port1":5678, "sessionId":"1471662312", "gameToPlay":0, "desiredPlayers":2},
-    //    {"ip1":"127.0.0.1", "port1":5679, "sessionId":"1471662320", "gameToPlay":0, "desiredPlayers":2}
-    //   ]}
+    //   "otherPlayers":[{
+    //     "addrs":[{
+    //         "ip":"5.5.5.5",
+    //         "port":5678
+    //       },{
+    //         "ip":"127.0.0.1",
+    //         "port":5678
+    //       }],
+    //     "sessionId":"1471662312",
+    //     "gameToPlay":0,
+    //     "desiredPlayers":2
+    //    },{
+    //     "addrs":[{
+    //         "ip":"6.6.6.6",
+    //         "port":5678
+    //       }],
+    //     "sessionId":"1471662320",
+    //     "gameToPlay":0,
+    //     "desiredPlayers":2
+    //   }]}
     // }
     Json::Value gameParams = responseJson["gameParams"];
     newParams.numberPlayers = gameParams["numPlayers"].asInt();
@@ -163,16 +187,23 @@ void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, ch
     newParams.gameLevel = gameParams["gameToPlay"].asInt();
     Json::Value otherPlayers = gameParams["otherPlayers"];
     int numOtherPlayers = otherPlayers.size();
-    for(int ctr=0; ctr<numOtherPlayers; ++ctr) {
-        Json::Value otherPlayer = otherPlayers[ctr];
-        const char* ip = otherPlayer["ip1"].asCString();
-        int port = otherPlayer["port1"].asInt();
-        Transport::Address otherPlayerAddr(ip, port);
-        std::cout << "Adding player " << otherPlayerAddr.ip() << ":" << otherPlayerAddr.port() << std::endl;
-        xport.addOtherPlayer(otherPlayerAddr);
+    for(int plyrCtr=0; plyrCtr<numOtherPlayers; ++plyrCtr) {
+        // Going to guess there aren't more than 10 addresses
+        Transport::Address addresses[10];
+        Json::Value otherPlayer = otherPlayers[plyrCtr];
+        Json::Value playerAddrs = otherPlayer["addrs"];
+        int numAddresses = playerAddrs.size();
+        for (int addrCtr=0; addrCtr<numAddresses; ++addrCtr) {
+            Json::Value nextAddress = playerAddrs[addrCtr];
+            const char* ip = nextAddress["ip"].asCString();
+            int port = nextAddress["port"].asInt();
+            addresses[addrCtr] = Transport::Address(ip, port);
+        }
+        // TODOX: Will exception if no address.  In general need better validation and error response
+        std::cout << "Adding player " << addresses[0].ip() << ":" << addresses[0].port() << std::endl;
+        xport.addOtherPlayer(addresses, numAddresses);
     }
     
-    xport.setExternalAddress(myAddress, true);
     xport.setTransportNum(newParams.thisPlayer);
 }
 

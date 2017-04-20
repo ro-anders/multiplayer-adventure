@@ -24,7 +24,6 @@ UdpTransport::Client::~Client() {}
 UdpTransport::UdpTransport(UdpSocket* inSocket, bool useDynamicSetup) :
 Transport(useDynamicSetup),
 socket(inSocket),
-myExternalAddr(Address()),
 otherMachines(new Client[2]), // We always create space for two even though we may only use one.
 myInternalPort(0),
 states(new const char*[2]), // We always create space for two even though we may only use one.
@@ -53,15 +52,6 @@ UdpTransport::~UdpTransport() {
         }
     }
     delete[] otherMachines;
-}
-
-/**
- * The ip address to tell other machines to use to talk to this machine.
- */
-void UdpTransport::setExternalAddress(const Address& myExternalAddrIn, bool includeInternalAddrsIn) {
-    myExternalAddr = myExternalAddrIn;
-    includeInternalAddrs = includeInternalAddrsIn;
-    
 }
 
 void UdpTransport::setInternalPort(int port) {
@@ -96,10 +86,8 @@ void UdpTransport::connect() {
             // specified once a port is chosen.
             reservePort();
             if (myInternalPort == DEFAULT_PORT) {
-                myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT);
                 addOtherPlayer(Address(LOCALHOST_IP, DEFAULT_PORT+1));
             } else {
-                myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT+1);
                 addOtherPlayer(Address(LOCALHOST_IP, DEFAULT_PORT));
             }
         } else {
@@ -327,8 +315,7 @@ void UdpTransport::reduceClientToOneAddress(int clientNum, Client& otherMachine,
 
 void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage, int otherIndex) {
     // Whoever has the lowest number is given connect number 0.  In the one in a
-    // million chance that they picked the same number, use alphabetically order of
-    // the IP and port.
+    // million chance that they picked the same number, just abort - dynamic player setup is only used in testing.
     
     long theirRandomNumber;
     // Pull out the number and figure out the connect number.
@@ -344,17 +331,20 @@ void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage, int ot
     } else if (theirRandomNumber < myRandomNumber) {
         setDynamicPlayerSetupNumber(1);
     } else {
-        const Address& otherAddress = otherMachines[otherIndex].possibleAddrs.get(0);
-        int ipCmp = strcmp(myExternalAddr.ip(), otherAddress.ip());
-        if (ipCmp < 0) {
-            setDynamicPlayerSetupNumber(0);
-        } else if (ipCmp > 0) {
-            setDynamicPlayerSetupNumber(1);
-        } else {
-            // If IP's are equal then ports can't be equal.
-            setDynamicPlayerSetupNumber(myExternalAddr.port() < otherAddress.port() ? 0 : 1);
-        }
+        Logger::logError("Cannot dynamically determine player number - both machines used same random number");
+        abort();
     }
+}
+
+/**
+ * Deduce all the IPs that this machine is using.  Does not include localhost.
+ */
+List<Transport::Address> UdpTransport::determineThisMachineIPs() {
+    // TODOX: Implement this
+    Address fake("1.1.1.1", 1111);
+    List<Address> fakes;
+    fakes.add(fake);
+    return fakes;
 }
 
 

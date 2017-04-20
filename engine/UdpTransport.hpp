@@ -28,15 +28,6 @@ public:
     
     ~UdpTransport();
     
-    /**
-     * The ip address to tell other machines to use to talk to this machine.
-     * myExternalAddr - the address
-     * ignoreInternal - if true, will only tell others this external address, if
-     * false, will also determine what IPs this machine is using and include those
-     * as possibilities.
-     */
-    void setExternalAddress(const Address& myExternalAddr, bool ignoreInternal);
-    
     void setInternalPort(int port);
     
     /**
@@ -68,7 +59,12 @@ public:
     bool isConnected();
     
     int getPacket(char* buffer, int bufferLength);
-    
+ 
+    /**
+     * Deduce all the IPs that this machine is using.  Does not include localhost.
+     */
+    List<Address> determineThisMachineIPs();
+
     
 private:
     
@@ -77,14 +73,7 @@ private:
     static const char* RECVD_MESSAGE;
     static const char* RECVD_ACK;
     
-
-    Address myExternalAddr;
-    
     int myInternalPort;
-    
-    /** Whether to send internal addresses to other machiines or only send the external address.
-        Brokered games will include internal addresses.  Explicit peer-to-peer will not. */
-    bool includeInternalAddrs;
     
     /** IP addresses that this machine's NIC is using. */
     char** internalIps;
@@ -158,13 +147,6 @@ private:
     void reduceClientToOneAddress(int clientNum, Client& otherMachine, Transport::Address& from);
     
     void compareNumbers(int myRandomNumber, char* theirMessage, int otherIndex);
-    
-    /**
-     * Deduce all the IPs that this machine is using and populate the internalIps list.
-     * externalAddress - an external IP/port that maps to this machine but wouldn't be deducible,
-     *                   pass in an empty address to not include an external address in the list
-     */
-    void determineThisMachineIPs(Address externalAddress);
     
     
 };
