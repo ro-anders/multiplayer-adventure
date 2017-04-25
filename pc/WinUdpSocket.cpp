@@ -46,7 +46,7 @@ sockaddr_in* WinUdpSocket::createAddress(Transport::Address address, bool dnsLoo
 
 	socketAddr->sin_family = AF_INET;
 	if (dnsLookup) {
-		// TODO: DNS Lookup
+		// TODOX: DNS Lookup
 		socketAddr->sin_addr.S_un.S_addr = inet_addr(address.ip());
 	}
 	else {
@@ -125,8 +125,30 @@ int WinUdpSocket::writeData(const char* data, int numBytes, sockaddr_in* recipie
 	return numSent;
 }
 
-int WinUdpSocket::readData(char *buffer, int bufferLength) {
+//int PosixUdpSocket::readData(char *buffer, int bufferLength) {
+int WinUdpSocket::readData(char *buffer, int bufferLength, Transport::Address* source) {
+	int n;
+
 	// Receive the next packet
-	int n = recvfrom(socketFd, buffer, bufferLength, 0, NULL, NULL);
+	if (source == NULL) {
+		n = recvfrom(socketFd, buffer, bufferLength, 0, NULL, NULL);
+	}
+	else {
+		struct sockaddr_in source_addr;
+		int source_addr_len = sizeof(source_addr);
+		memset((char *)&source_addr, 0, sizeof(source_addr));
+		n = recvfrom(socketFd, buffer, bufferLength, 0, (struct sockaddr*)&source_addr, &source_addr_len);
+		const char* ip = inet_ntoa(source_addr.sin_addr);
+		*source = Transport::Address(ip, ntohs(source_addr.sin_port));
+	}
+
 	return n;
+}
+
+/**
+* Return a list of all IP4 addresses that this machine is using.
+*/
+List<Transport::Address> WinUdpSocket::getLocalIps() {
+	// TODOX: Implement
+	return List<Transport::Address>();
 }

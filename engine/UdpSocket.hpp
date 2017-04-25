@@ -8,7 +8,7 @@
 #include "List.hpp"
 #include "Transport.hpp"
 
-class sockaddr_in;
+struct sockaddr_in;
 
 /**
  * Meant as a virtual interface to an OS-specific UDP socket.

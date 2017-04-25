@@ -315,7 +315,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 int x = gWindowSizeX / ADVENTURE_SCREEN_WIDTH;
                 int y = gWindowSizeY / ADVENTURE_SCREEN_HEIGHT;
 
-                gGfxScaler = min(x, y);
+                gGfxScaler = (float)min(x, y);
                 gGfxScaler = (gGfxScaler == 0) ? .5 : gGfxScaler;
 
                 char s[2055];
@@ -340,8 +340,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
                     if (!gFullscreen)
                     {
-                        int cx = (gWindowSizeX/2) - ((ADVENTURE_SCREEN_WIDTH * gGfxScaler)/2);
-                        int cy = (gWindowSizeY/2) - ((ADVENTURE_SCREEN_HEIGHT * gGfxScaler)/2);
+                        int cx =(int) ((gWindowSizeX/2) - ((ADVENTURE_SCREEN_WIDTH * gGfxScaler)/2));
+                        int cy =(int) ((gWindowSizeY/2) - ((ADVENTURE_SCREEN_HEIGHT * gGfxScaler)/2));
                         int cw = ADVENTURE_SCREEN_WIDTH * gGfxScaler;
                         int ch = ADVENTURE_SCREEN_HEIGHT * gGfxScaler;
 

@@ -46,7 +46,12 @@ public:
 	*/
 	int writeData(const char* data, int numBytes, sockaddr_in* recipient);
 
-	int readData(char* buffer, int bufferLength);
+	int readData(char* buffer, int bufferLength, Transport::Address* source);
+
+	/**
+	* Return a list of all IP4 addresses that this machine is using.
+	*/
+    List<Transport::Address> getLocalIps();
 
 
 private:
