@@ -47,6 +47,12 @@ public:
     
     int readData(char* buffer, int bufferLength, Transport::Address* source);
     
+    /**
+     * Return a list of all IP4 addresses that this machine is using.
+     */
+    List<Transport::Address> getLocalIps();
+
+    
     
 private:
     

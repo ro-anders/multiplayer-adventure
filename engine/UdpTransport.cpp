@@ -340,11 +340,14 @@ void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage, int ot
  * Deduce all the IPs that this machine is using.  Does not include localhost.
  */
 List<Transport::Address> UdpTransport::determineThisMachineIPs() {
-    // TODOX: Implement this
-    Address fake("1.1.1.1", 1111);
-    List<Address> fakes;
-    fakes.add(fake);
-    return fakes;
+    List<Transport::Address> addrs = socket->getLocalIps();
+
+    // Add ports to all addresses
+    for(int ctr=0; ctr<addrs.size(); ++ctr) {
+        addrs.set(ctr, Transport::Address(addrs.get(ctr).ip(), myInternalPort));
+    }
+                  
+    return addrs;
 }
 
 

@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 
+#include "List.hpp"
 #include "Transport.hpp"
 
 class sockaddr_in;
@@ -63,6 +64,11 @@ public:
      * recipient - the address to send it to
      */
     virtual int writeData(const char* data, int numBytes, sockaddr_in* recipient) = 0;
+    
+    /**
+     * Return a list of all IP4 addresses that this machine is using.
+     */
+    virtual List<Transport::Address> getLocalIps() = 0;
   
 protected:
 

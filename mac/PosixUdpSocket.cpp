@@ -5,6 +5,7 @@
 // Socket includes
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <ifaddrs.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -128,3 +129,28 @@ int PosixUdpSocket::readData(char *buffer, int bufferLength, Transport::Address*
     }
     return n;
 }
+
+/**
+ * Return a list of all IP4 addresses that this machine is using.
+ */
+List<Transport::Address> PosixUdpSocket::getLocalIps() {
+    List<Transport::Address> addrs;
+    struct ifaddrs *ifap, *ifa;
+    struct sockaddr_in *sa;
+    char* addr;
+    
+    getifaddrs(&ifap);
+    for(ifa = ifap; ifa; ifa=ifa->ifa_next) {
+        if (ifa->ifa_addr->sa_family == AF_INET) {
+            sa =   (struct sockaddr_in*)ifa->ifa_addr;
+            addr = inet_ntoa(sa->sin_addr);
+            // We filter out the localhost address
+            printf("Interface: %s\tAddress: %s\n", ifa->ifa_name, addr);
+            if (strcmp(addr, "127.0.0.1")!=0) {
+                addrs.add(Transport::Address(addr, 0));
+            }
+        }
+    }
+    return addrs;
+}
+
