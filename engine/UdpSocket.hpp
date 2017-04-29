@@ -43,7 +43,12 @@ public:
      * Whether or not this socket should block.
      */
     virtual void setBlocking(bool shouldBlock) = 0;
-
+    
+    /**
+     * If blocking, how long to listen before aborting.  Negative number means wait forever.
+     */
+    virtual void setTimeout(int seconds) = 0;
+    
     /**
      * Pull data off the socket - non-blocking.  If connected to multiple machines, will
      * return data from either machine.

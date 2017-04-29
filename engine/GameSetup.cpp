@@ -268,7 +268,8 @@ Transport::Address GameSetup::determinePublicAddress(Transport::Address stunServ
     Logger::log("Sending message to STUN server");
     socket.writeData("Hello", 5, stunServerSockAddr);
     
-    // Now listen on the socket, it should be non-blocking, and get the public IP and port
+    // Now listen on the socket and get the public IP and port
+    socket.setTimeout(15); // Listen for 2 minutes
     char buffer[256];
     Logger::log("Listening for STUN server message.");
     int numCharsRead = socket.readData(buffer, 256);
@@ -277,8 +278,13 @@ Transport::Address GameSetup::determinePublicAddress(Transport::Address stunServ
 		buffer[numCharsRead] = '\0';
         Logger::log() << "Received \"" << buffer << "\" from STUN server." << Logger::EOM;
         publicAddress = Transport::parseUrl(buffer);
+        if (!publicAddress.isValid()) {
+            Logger::logError() << "Could not parse IP from STUN server message: " << buffer << Logger::EOM;
+            throw std::runtime_error("Could not determine public address.");
+        }
     } else {
-        Logger::logError() << "Error " << numCharsRead << " from STUN server." << Logger::EOM;
+        Logger::logError() << "Error: Received " << numCharsRead << " from STUN server." << Logger::EOM;
+        throw BrokerException();
     }
     socket.deleteAddress(stunServerSockAddr);
     
@@ -291,7 +297,7 @@ void GameSetup::checkExpirationDate() {
     long time = Sys::today();
     if ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE)) {
         Logger::logError("Beta Release has expired.");
-        exit(-1);
+        exit(-1);f
     }
         
 }

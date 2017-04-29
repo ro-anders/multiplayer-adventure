@@ -35,6 +35,11 @@ public:
      * Whether or not this socket should block.
      */
     void setBlocking(bool shouldBlock);
+    
+    /**
+     * How long the read should listen for data before giving up.  In seconds.
+     */
+    void setTimeout(int seconds);
 
     /**
      * Send data on the socket.

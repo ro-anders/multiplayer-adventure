@@ -101,6 +101,21 @@ void PosixUdpSocket::setBlocking(bool isBlocking) {
 }
 
 /**
+ * How long the read should listen for data before giving up.  In seconds.
+ */
+void PosixUdpSocket::setTimeout(int seconds) {
+    struct timeval tv;
+    tv.tv_sec = seconds;
+    tv.tv_usec = 0;
+    int status = setsockopt(socketFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    if (status < 0) {
+        // TODOX: Throw exception
+    }
+}
+
+
+
+/**
  * Send data on the socket.
  * data - data to send
  * numBytes - number of bytes to send (does not assume data is null terminated)
