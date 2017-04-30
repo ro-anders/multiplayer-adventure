@@ -297,7 +297,7 @@ void GameSetup::checkExpirationDate() {
     long time = Sys::today();
     if ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE)) {
         Logger::logError("Beta Release has expired.");
-        exit(-1);f
+        exit(-1);
     }
         
 }

@@ -112,6 +112,11 @@ void WinUdpSocket::setBlocking(bool isBlocking) {
 	}
 }
 
+void WinUdpSocket::setTimeout(int seconds) {
+	// TODOX: Implement
+}
+
+
 /**
 * Send data on the socket.
 * data - data to send
