@@ -188,13 +188,13 @@ List<Transport::Address> WinUdpSocket::getLocalIps() {
 	for (aa = adapter_addresses; aa != NULL; aa = aa->Next) {
 		for (ua = aa->FirstUnicastAddress; ua != NULL; ua = ua->Next) {
 			char buf[BUFSIZ];
-			// TODO: Only use IPv4
-			//int family = ua->Address.lpSockaddr->sa_family;
-			//printf("\t%s ", family == AF_INET ? "IPv4" : "IPv6");
-			memset(buf, 0, BUFSIZ);
-			getnameinfo(ua->Address.lpSockaddr, ua->Address.iSockaddrLength, buf, sizeof(buf), NULL, 0, NI_NUMERICHOST);
-			if (strlen(buf) > 0) {
-				addrs.add(Transport::Address(buf, 0));
+			// Not supporting IPv6 right now
+			if (ua->Address.lpSockaddr->sa_family == AF_INET) {
+				memset(buf, 0, BUFSIZ);
+				getnameinfo(ua->Address.lpSockaddr, ua->Address.iSockaddrLength, buf, sizeof(buf), NULL, 0, NI_NUMERICHOST);
+				if ((strlen(buf) > 0) && (strcmp(buf, "127.0.0.1") != 0)) {
+					addrs.add(Transport::Address(buf, 0));
+				}
 			}
 		}
 	}
