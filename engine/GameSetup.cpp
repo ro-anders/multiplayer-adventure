@@ -128,8 +128,8 @@ void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, ch
     }
     
     
-    Transport::Address publicAddress = determinePublicAddress(stunServer);
-    List<Transport::Address> privateAddresses = xport.determineThisMachineIPs();
+	List<Transport::Address> privateAddresses = xport.determineThisMachineIPs();
+	Transport::Address publicAddress = determinePublicAddress(stunServer);
     
     Json::Value responseJson;
     // Connect to the client and register a game request.
@@ -293,7 +293,7 @@ Transport::Address GameSetup::determinePublicAddress(Transport::Address stunServ
 
 void GameSetup::checkExpirationDate() {
     
-    const long EXPIRATION_DATE = 20170430;
+    const long EXPIRATION_DATE = 20170531;
     long time = Sys::today();
     if ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE)) {
         Logger::logError("Beta Release has expired.");

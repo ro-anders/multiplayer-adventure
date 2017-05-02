@@ -45,7 +45,7 @@ int Transport::Address::port() const {
 }
 
 bool Transport::Address::isValid() const {
-    return (_port > 0);
+    return (_port > 0) && (strlen(_ip) > 0);
 }
 
 char* Transport::Address::copyIp(const char* inIp) {

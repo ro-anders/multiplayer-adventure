@@ -104,7 +104,6 @@ void parseCommandLine(LPTSTR lpCmdLine) {
 		}
 	}
 
-	char logMessage[1000];
 	Logger::log() << "Parsed " << argc << " arguments." << Logger::EOM;
 	for (int ctr2 = 0; ctr2 < argc; ++ctr2) {
 		Logger::log() << "Arg " << (ctr2 + 1) << " = " << argv[ctr2] << Logger::EOM;
@@ -316,7 +315,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 int y = gWindowSizeY / ADVENTURE_SCREEN_HEIGHT;
 
                 gGfxScaler = (float)min(x, y);
-                gGfxScaler = (gGfxScaler == 0) ? .5 : gGfxScaler;
+                gGfxScaler = (gGfxScaler == 0) ? .5f : gGfxScaler;
 
                 char s[2055];
                 sprintf(s, "%d x %d -> %f\n", gWindowSizeX, gWindowSizeY, gGfxScaler);

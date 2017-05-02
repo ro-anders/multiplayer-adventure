@@ -1,4 +1,6 @@
 
+#define  _WINSOCK_DEPRECATED_NO_WARNINGS
+
 #include "WinUdpSocket.h"
 
 // Socket includes
@@ -7,6 +9,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+
+#include <iphlpapi.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "iphlpapi.lib")
+
+
 // End socket includes
 
 #include "..\engine\Logger.hpp"
@@ -154,6 +163,43 @@ int WinUdpSocket::readData(char *buffer, int bufferLength, Transport::Address* s
 * Return a list of all IP4 addresses that this machine is using.
 */
 List<Transport::Address> WinUdpSocket::getLocalIps() {
-	// TODOX: Implement
-	return List<Transport::Address>();
+	WSAData d;
+	WSAStartup(MAKEWORD(2, 2), &d);
+
+	DWORD rv, size;
+	PIP_ADAPTER_ADDRESSES adapter_addresses, aa;
+	PIP_ADAPTER_UNICAST_ADDRESS ua;
+
+	rv = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, NULL, NULL, &size);
+	if (rv != ERROR_BUFFER_OVERFLOW) {
+		Logger::logError("Failed to deduce local ip: GetAdaptersAddresses() failed.");
+		return List<Transport::Address>();
+	}
+	adapter_addresses = (PIP_ADAPTER_ADDRESSES)malloc(size);
+
+	rv = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, NULL, adapter_addresses, &size);
+	if (rv != ERROR_SUCCESS) {
+		Logger::logError("Failed to deduce local ip: GetAdaptersAddresses() failed on second call.");
+		free(adapter_addresses);
+		return List<Transport::Address>();
+	}
+
+	List<Transport::Address> addrs;
+	for (aa = adapter_addresses; aa != NULL; aa = aa->Next) {
+		for (ua = aa->FirstUnicastAddress; ua != NULL; ua = ua->Next) {
+			char buf[BUFSIZ];
+			// TODO: Only use IPv4
+			//int family = ua->Address.lpSockaddr->sa_family;
+			//printf("\t%s ", family == AF_INET ? "IPv4" : "IPv6");
+			memset(buf, 0, BUFSIZ);
+			getnameinfo(ua->Address.lpSockaddr, ua->Address.iSockaddrLength, buf, sizeof(buf), NULL, 0, NI_NUMERICHOST);
+			if (strlen(buf) > 0) {
+				addrs.add(Transport::Address(buf, 0));
+			}
+		}
+	}
+
+	free(adapter_addresses);
+
+	return addrs;
 }
