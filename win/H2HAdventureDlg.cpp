@@ -30,6 +30,7 @@ void CH2HAdventureDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CH2HAdventureDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_PLAY_BUTTON, &CH2HAdventureDlg::OnBnClickedPlayButton)
 END_MESSAGE_MAP()
 
 
@@ -85,3 +86,9 @@ HCURSOR CH2HAdventureDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CH2HAdventureDlg::OnBnClickedPlayButton()
+{
+	// TODO: Add your control notification handler code here
+}
