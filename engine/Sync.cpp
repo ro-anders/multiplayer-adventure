@@ -57,7 +57,7 @@ void Sync::BroadcastAction(RemoteAction* action) {
 }
 
 void Sync::RejectMessage(const char* message, const char* errorMsg) {
-    printf("Cannot process message - %s: %s", errorMsg, message);
+    Logger::logError() << "Cannot process message - " << errorMsg << ": " << message << Logger::EOM;
 }
 
 void Sync::handleBatMoveMessage(const char* message) {

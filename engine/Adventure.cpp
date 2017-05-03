@@ -1678,10 +1678,8 @@ void OthersPickupPutdown() {
         int actorNum = action->sender;
         BALL* actor = gameBoard->getPlayer(actorNum);
         if (action->dropObject != OBJECT_NONE) {
-            printf("Received drop action for player %d who is carrying %d\n", actorNum, actor->linkedObject);
         }
         if ((action->dropObject != OBJECT_NONE) && (actor->linkedObject == action->dropObject)) {
-            printf("Player %d dropped object %d\n", actorNum, action->dropObject);
             actor->linkedObject = OBJECT_NONE;
             OBJECT* dropped = board[action->dropObject];
             dropped->room = action->dropRoom;
@@ -1696,11 +1694,9 @@ void OthersPickupPutdown() {
             actor->linkedObject = action->pickupObject;
             actor->linkedObjectX = action->pickupX;
             actor->linkedObjectY = action->pickupY;
-            printf("Setting player %d to carrying %d\n", actorNum, actor->linkedObject);
             // If anybody else was carrying this object, take it away.
             for(int ctr=0; ctr<numPlayers; ++ctr) {
                 if ((ctr != actorNum) && (gameBoard->getPlayer(ctr)->linkedObject==action->pickupObject)) {
-                    printf("Player %d took object %d from player %d\n", action->sender, actor->linkedObject, thisPlayer);
                     gameBoard->getPlayer(ctr)->linkedObject = OBJECT_NONE;
                 }
             }

@@ -21,7 +21,7 @@ int MacRestClient::request(const char* path, const char* message, char* response
     
     // Open the HTTP connnection to the server
     
-    printf("Opening http socket\n");
+    Logger::log("Opening http socket\n");
     int n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
@@ -48,7 +48,7 @@ int MacRestClient::request(const char* path, const char* message, char* response
         return -3;
     }
     
-    printf("Sending http request:\n%s\n", message);
+    Logger::log() << "Sending http request:\n" << message << Logger::EOM;
 
     // Send the HTTP request
     int messageLen = strlen(message);
@@ -61,7 +61,7 @@ int MacRestClient::request(const char* path, const char* message, char* response
         Logger::logError("ERROR http request only partially sent");
     }
     
-    printf("Reading http response\n");
+    Logger::log("Reading http response\n");
 
     // Read the HTTP response
     int charsInBuffer = 0;
@@ -105,7 +105,7 @@ int MacRestClient::request(const char* path, const char* message, char* response
 
 void MacRestClient::mimicServer() {
     int port = 9000;
-    printf("Opening server socket\n");
+    Logger::log("Opening server socket\n");
     
     int serverSocketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (serverSocketFd < 0) {
