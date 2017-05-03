@@ -1,0 +1,7 @@
+Debug/
+Release/
+ipch/
+*.aps
+.vs
+*.VC.db
+*.VC.VC.opendb
