@@ -29,7 +29,7 @@ public:
     
     void clear() {numEntries=0;}
     
-    void set(int place, T t) { if (i > numEntries) throw std::runtime_error("Index out of bounds"); array[place]=t;}
+    void set(int place, T t) { if (place > numEntries) throw std::runtime_error("Index out of bounds"); array[place]=t;}
     
     int size() {return numEntries;}
     
