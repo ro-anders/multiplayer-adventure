@@ -35,6 +35,11 @@ public:
      * Whether or not this socket should block.
      */
     void setBlocking(bool shouldBlock);
+    
+    /**
+     * How long the read should listen for data before giving up.  In seconds.
+     */
+    void setTimeout(int seconds);
 
     /**
      * Send data on the socket.
@@ -44,7 +49,14 @@ public:
      */
     int writeData(const char* data, int numBytes, sockaddr_in* recipient);
     
-    int readData(char* buffer, int bufferLength);
+    
+    int readData(char* buffer, int bufferLength, Transport::Address* source);
+    
+    /**
+     * Return a list of all IP4 addresses that this machine is using.
+     */
+    List<Transport::Address> getLocalIps();
+
     
     
 private:

@@ -4,7 +4,16 @@
 #ifndef Transport_hpp
 #define Transport_hpp
 
+#include <exception>
 #include <stdio.h>
+
+
+class BrokerException: public std::exception {
+public:
+    const char* what() const throw() {
+        return "An error occurred communicating with the broker.";
+    }
+};
 
 class Transport {
 public:

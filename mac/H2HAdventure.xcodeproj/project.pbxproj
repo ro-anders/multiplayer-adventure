@@ -99,6 +99,7 @@
 		4036B30C1CB87D080024439C /* roar_near.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = roar_near.wav; path = ../sounds/roar_near.wav; sourceTree = "<group>"; };
 		403DA0901C20C722002FF18B /* Ball.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Ball.cpp; path = ../engine/Ball.cpp; sourceTree = "<group>"; };
 		403DA0911C20C722002FF18B /* Ball.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Ball.hpp; path = ../engine/Ball.hpp; sourceTree = "<group>"; };
+		403FC7101E8F03A5000137FA /* List.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = List.hpp; path = ../engine/List.hpp; sourceTree = "<group>"; };
 		40509AA41C05E9750008BACF /* ActionQueue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ActionQueue.cpp; path = ../engine/ActionQueue.cpp; sourceTree = "<group>"; };
 		40509AA51C05E9750008BACF /* ActionQueue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ActionQueue.hpp; path = ../engine/ActionQueue.hpp; sourceTree = "<group>"; };
 		40509AA61C05E9750008BACF /* GameObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GameObject.cpp; path = ../engine/GameObject.cpp; sourceTree = "<group>"; };
@@ -308,6 +309,7 @@
 				401C851D1D195CBA00110952 /* GameSetup.hpp */,
 				40509AA61C05E9750008BACF /* GameObject.cpp */,
 				40509AA71C05E9750008BACF /* GameObject.hpp */,
+				403FC7101E8F03A5000137FA /* List.hpp */,
 				40D4564C1DAB25E400D052CB /* Logger.cpp */,
 				40D4564D1DAB25E400D052CB /* Logger.hpp */,
 				4092E1E01C4E731900B2AEBB /* Map.cpp */,

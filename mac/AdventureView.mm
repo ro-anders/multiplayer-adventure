@@ -85,13 +85,21 @@ bool gMute = FALSE;
     char** argv;
     Args_GetArgs(&argc, &argv);
     
-    PosixUdpSocket* socket = new PosixUdpSocket();
-    bool usingDynamicSetup = (argc<=2);
-    UdpTransport* xport = new UdpTransport(socket, usingDynamicSetup);
-    MacRestClient client;
-    GameSetup setup(client, *xport);
-    GameSetup::GameParams params = setup.setup(argc-1, argv+1);
-    // TODO: What do we do if we fail to setup a game?
+    GameSetup::GameParams params;
+    UdpTransport* xport = NULL;
+    try {
+        PosixUdpSocket* socket = new PosixUdpSocket();
+        bool usingDynamicSetup = (argc<=2);
+        xport = new UdpTransport(socket, usingDynamicSetup);
+        MacRestClient client;
+        GameSetup setup(client, *xport);
+        params = setup.setup(argc-1, argv+1);
+    } catch (std::exception& e) {
+        Logger::logError() << e.what() << "\nAborting." << Logger::EOM;
+        exit(-1);
+    } catch (...) {
+        Logger::logError("Unexpected error.  Aborting.");
+    }
     
     if (params.isScripting) {
         delete xport;

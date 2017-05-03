@@ -5,6 +5,7 @@
 // Socket includes
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <ifaddrs.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -100,6 +101,21 @@ void PosixUdpSocket::setBlocking(bool isBlocking) {
 }
 
 /**
+ * How long the read should listen for data before giving up.  In seconds.
+ */
+void PosixUdpSocket::setTimeout(int seconds) {
+    struct timeval tv;
+    tv.tv_sec = seconds;
+    tv.tv_usec = 0;
+    int status = setsockopt(socketFd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    if (status < 0) {
+        // TODOX: Throw exception
+    }
+}
+
+
+
+/**
  * Send data on the socket.
  * data - data to send
  * numBytes - number of bytes to send (does not assume data is null terminated)
@@ -111,8 +127,45 @@ int PosixUdpSocket::writeData(const char* data, int numBytes, sockaddr_in* recip
     return numSent;
 }
 
-int PosixUdpSocket::readData(char *buffer, int bufferLength) {
+int PosixUdpSocket::readData(char *buffer, int bufferLength, Transport::Address* source) {
+    static char tmpString[INET6_ADDRSTRLEN];
+    int n;
+    
     // Receive the next packet
-    int n = recvfrom(socketFd, buffer, bufferLength, 0, NULL, NULL);
+    if (source == NULL) {
+        n = recvfrom(socketFd, buffer, bufferLength, 0, NULL, NULL);
+    } else {
+        struct sockaddr_in source_addr;
+        socklen_t source_addr_len = sizeof(source_addr);
+        memset((char *) &source_addr, 0, sizeof(source_addr));
+        n = recvfrom(socketFd, buffer, bufferLength, 0, (struct sockaddr*)&source_addr, &source_addr_len);
+        inet_ntop(AF_INET, &source_addr.sin_addr, tmpString, INET6_ADDRSTRLEN);
+        *source = Transport::Address(tmpString, ntohs(source_addr.sin_port));
+    }
     return n;
 }
+
+/**
+ * Return a list of all IP4 addresses that this machine is using.
+ */
+List<Transport::Address> PosixUdpSocket::getLocalIps() {
+    List<Transport::Address> addrs;
+    struct ifaddrs *ifap, *ifa;
+    struct sockaddr_in *sa;
+    char* addr;
+    
+    getifaddrs(&ifap);
+    for(ifa = ifap; ifa; ifa=ifa->ifa_next) {
+        if (ifa->ifa_addr->sa_family == AF_INET) {
+            sa =   (struct sockaddr_in*)ifa->ifa_addr;
+            addr = inet_ntoa(sa->sin_addr);
+            // We filter out the localhost address
+            printf("Interface: %s\tAddress: %s\n", ifa->ifa_name, addr);
+            if (strcmp(addr, "127.0.0.1")!=0) {
+                addrs.add(Transport::Address(addr, 0));
+            }
+        }
+    }
+    return addrs;
+}
+

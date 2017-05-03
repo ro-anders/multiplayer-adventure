@@ -33,7 +33,7 @@ int MacRestClient::request(const char* path, const char* message, char* response
     }
     server = gethostbyname(BROKER_SERVER);
     if (server == NULL) {
-        Logger::logError("ERROR, no such http host\n");
+        Logger::logError("ERROR, no such http host");
         return -2;
     }
     bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -44,7 +44,7 @@ int MacRestClient::request(const char* path, const char* message, char* response
     serv_addr.sin_port = htons(REST_PORT);
     n = ::connect(socketFd,(struct sockaddr *) &serv_addr,sizeof(serv_addr));
     if (n < 0) {
-        Logger::logError("ERROR making http connecting");
+        Logger::logError("ERROR making http connection");
         return -3;
     }
     

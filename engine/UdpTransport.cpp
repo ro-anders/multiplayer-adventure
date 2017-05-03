@@ -16,18 +16,22 @@ const char* UdpTransport::RECVD_NOTHING = "UA";
 const char* UdpTransport::RECVD_MESSAGE = "UB";
 const char* UdpTransport::RECVD_ACK = "UC";
 
+
+UdpTransport::Client::Client() {}
+
+UdpTransport::Client::~Client() {}
+
 UdpTransport::UdpTransport(UdpSocket* inSocket, bool useDynamicSetup) :
 Transport(useDynamicSetup),
 socket(inSocket),
-myExternalAddr(Address()),
-theirAddrs(NULL),
+otherMachines(new Client[2]), // We always create space for two even though we may only use one.
 myInternalPort(0),
 states(new const char*[2]), // We always create space for two even though we may only use one.
 numOtherMachines(0),
-remaddrs(new sockaddr_in*[2]), // We always create space for two even though we may only use one.
+internalIps(NULL),
+numInternalIps(0),
 socketBound(false)
 {
-    remaddrs[0] = remaddrs[1] = NULL;
     if (useDynamicSetup) {
         myInternalPort = DEFAULT_PORT;
     }
@@ -35,47 +39,41 @@ socketBound(false)
 }
 
 UdpTransport::~UdpTransport() {
-    delete[] theirAddrs;
-    delete[] states;
-    if (remaddrs != NULL) {
-        for(int ctr=0; ctr<2; ++ctr) {
-            if (remaddrs[ctr] != NULL) {
-                socket->deleteAddress(remaddrs[ctr]);
-            }
-        }
-        delete[] remaddrs;
+    for(int ctr=0; ctr<numInternalIps; ++ctr) {
+        delete[] internalIps[ctr];
     }
-}
-
-/**
- * The ip address to tell other machines to use to talk to this machine.
- */
-void UdpTransport::setExternalAddress(const Address& myExternalAddrIn) {
-    myExternalAddr = myExternalAddrIn;
+    delete[] internalIps;
+    delete[] states;
+    for(int ctr=0; ctr<numOtherMachines; ++ctr) {
+        List<struct sockaddr_in*>& socketList = otherMachines[ctr].sockaddrs;
+        for(int ctr2=0; ctr2<socketList.size(); ++ctr2) {
+            socket->deleteAddress(socketList.get(ctr2));
+            socketList.set(ctr2, NULL);
+        }
+    }
+    delete[] otherMachines;
 }
 
 void UdpTransport::setInternalPort(int port) {
     myInternalPort = port;
 }
 
-void UdpTransport::addOtherPlayer(const Address & theirAddr) {
-    if (numOtherMachines < 2) {
-        Address* oldAddrs = theirAddrs;
-        
-        ++numOtherMachines;
-        theirAddrs = new Address[numOtherMachines];
-        theirAddrs[numOtherMachines-1]=theirAddr;
-        states[numOtherMachines-1] = NOT_YET_INITIATED;
-        remaddrs[numOtherMachines-1] = socket->createAddress(theirAddr);
-        
-        // Copy old data
-        if (numOtherMachines == 2) {
-            theirAddrs[0] = oldAddrs[0];
-            delete[] oldAddrs;
-        }
-    }
+void UdpTransport::addOtherPlayer(const Transport::Address &theirAdddr) {
+    addOtherPlayer(&theirAdddr, 1);
 }
 
+void UdpTransport::addOtherPlayer(const Address * addresses, int numAddresses) {
+    if (numOtherMachines < 2) {
+        ++numOtherMachines;
+
+        // We only set the possible addresses.  We let the hole punching determine which of those to use.
+        for(int ctr=0; ctr<numAddresses; ++ctr) {
+            otherMachines[numOtherMachines-1].possibleAddrs.add(addresses[ctr]);
+            otherMachines[numOtherMachines-1].sockaddrs.add(socket->createAddress(addresses[ctr]));
+        }
+        states[numOtherMachines-1] = NOT_YET_INITIATED;
+    }
+}
 
 
 void UdpTransport::connect() {
@@ -88,10 +86,8 @@ void UdpTransport::connect() {
             // specified once a port is chosen.
             reservePort();
             if (myInternalPort == DEFAULT_PORT) {
-                myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT);
                 addOtherPlayer(Address(LOCALHOST_IP, DEFAULT_PORT+1));
             } else {
-                myExternalAddr = Address(LOCALHOST_IP, DEFAULT_PORT+1);
                 addOtherPlayer(Address(LOCALHOST_IP, DEFAULT_PORT));
             }
         } else {
@@ -176,21 +172,34 @@ int UdpTransport::readData(char* buffer, int bufferLength) {
 }
 
 int UdpTransport::writeData(const char* data, int numBytes) {
+    return writeData(data, numBytes, -1);
+}
+
+int UdpTransport::writeData(const char* data, int numBytes, int recipient) {
+    int firstRecipient = (recipient == -1 ? 0 : recipient);
+    int lastRecipient = (recipient == -1 ? numOtherMachines-1 : recipient);
+    
+    // We want to return the characters sent to the client and, in the case that there are multiple
+    // clients and some problem causes fewer characters to be sent to one client, we report
+    // the smaller number.
+    // If a client has multiple IPs, we use the number of characters sent to the most
+    // succesful IP.
     int leastCharsWritten = 1000000;
-    for(int ctr=0; ctr<numOtherMachines; ++ctr) {
-        int charsWritten = socket->writeData(data, numBytes, remaddrs[ctr]);
-        if (charsWritten < leastCharsWritten) {
-            leastCharsWritten = charsWritten;
+    for(int ctr=firstRecipient; ctr<=lastRecipient; ++ctr) {
+        List<struct sockaddr_in*>& socketList = otherMachines[ctr].sockaddrs;
+        int mostCharsWrittenToClient = -1;
+        for(int ctr2=0; ctr2<socketList.size(); ++ctr2) {
+            int charsWritten = socket->writeData(data, numBytes, socketList.get(ctr2));
+            if (charsWritten > mostCharsWrittenToClient) {
+                mostCharsWrittenToClient = charsWritten;
+            }
+        }
+        if (mostCharsWrittenToClient < leastCharsWritten) {
+            leastCharsWritten = mostCharsWrittenToClient;
         }
     }
     return leastCharsWritten;
 }
-
-int UdpTransport::writeData(const char* data, int numBytes, int recipient) {
-    int charsWritten = socket->writeData(data, numBytes, remaddrs[recipient]);
-    return charsWritten;
-}
-
 
 void UdpTransport::punchHole() {
     
@@ -206,7 +215,8 @@ void UdpTransport::punchHole() {
         bool justAcked[2] = {false, false};
     
         // See what messages we have received.
-        int bytes = socket->readData(recvBuffer, READ_BUFFER_LENGTH);
+        Address from;
+        int bytes = socket->readData(recvBuffer, READ_BUFFER_LENGTH, from);
         while (bytes > 0) {
             // This could be non-setup messages, which need to be put in the base class's stream buffer
             // until the setup is complete.
@@ -228,10 +238,18 @@ void UdpTransport::punchHole() {
                     int senderIndex = (senderInt <= transportNum ? senderInt : senderInt-1);
                     
                     if (senderIndex >= 0) {
+                        
+                        Client& senderMachine = otherMachines[senderIndex];
+                        // If we still have multiple possible addresses for this sender
+                        // note the address from which this message came
+                        if (senderMachine.possibleAddrs.size() > 1) {
+                            reduceClientToOneAddress(senderInt, senderMachine, from);
+                        }
+                        
                         if (states[senderIndex] == RECVD_NOTHING) {
                             states[senderIndex] = RECVD_MESSAGE;
-                            Logger::log() << "Received message from " << theirAddrs[senderIndex].ip() << ":" <<
-                            theirAddrs[senderIndex].port() << ".  Waiting for ack." << Logger::EOM;
+                            Logger::log() << "Received message from " << from.ip() << ":" <<
+                            from.port() << ".  Waiting for ack." << Logger::EOM;
                         }
                         // See if they have received ours and this is the first time we have seen them receive ours
                         if ((recvBuffer[1] != RECVD_NOTHING[1]) && (states[senderIndex] != RECVD_ACK)) {
@@ -239,8 +257,8 @@ void UdpTransport::punchHole() {
                             states[senderIndex] = RECVD_ACK;
                             justAcked[senderIndex] = true;
                             connected = states[1-senderIndex] == RECVD_ACK;
-                            Logger::log() << "Connected with " << theirAddrs[senderIndex].ip() << ":" <<
-                            theirAddrs[senderIndex].port() << Logger::EOM;
+                            Logger::log() << "Connected with " << from.ip() << ":" <<
+                            from.port() << Logger::EOM;
                             // If this is a test case, figure out who is player one.
                             if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
                                 compareNumbers(randomNum, recvBuffer, senderIndex);
@@ -251,7 +269,7 @@ void UdpTransport::punchHole() {
             }
             
             // Check for more messages.
-            bytes = socket->readData(recvBuffer, READ_BUFFER_LENGTH);
+            bytes = socket->readData(recvBuffer, READ_BUFFER_LENGTH, from);
         }
         
         // Now send a packet to each other machine.  Don't send if we're not initialized or we're all connected.
@@ -265,10 +283,39 @@ void UdpTransport::punchHole() {
     }
 }
 
+/**
+ * Remove address and socket entries in this client that don't match the passed in one.
+ * clientNum - the number of the client - used only for logging and debugging
+ * client - the client to operate on
+ * from - the address to keep.  NOTE: This should not be a reference to an Address in the passed in Client as
+ * it will not be valid after this call.
+ */
+void UdpTransport::reduceClientToOneAddress(int clientNum, Client& otherMachine, Transport::Address& from) {
+    // Figure out which slot has the right address.
+    int found = -1;
+    for(int ctr=0; (found < 0) && (ctr<otherMachine.possibleAddrs.size()); ++ctr) {
+        found = (otherMachine.possibleAddrs.get(ctr) == from ? ctr : -1);
+    }
+    if (found < 0) {
+        Logger::log() << "Received message for " << clientNum << " from unexpected address "  << from.ip() <<
+            ":" << from.port() << Logger::EOM;
+    } else {
+        struct sockaddr_in* keep = otherMachine.sockaddrs.get(found);
+        for(int ctr=0; ctr<otherMachine.sockaddrs.size(); ++ctr) {
+            if (ctr != found) {
+                socket->deleteAddress(otherMachine.sockaddrs.get(ctr));
+            }
+        }
+        otherMachine.sockaddrs.clear();
+        otherMachine.possibleAddrs.clear();
+        otherMachine.possibleAddrs.add(from);
+        otherMachine.sockaddrs.add(keep);
+    }
+}
+
 void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage, int otherIndex) {
     // Whoever has the lowest number is given connect number 0.  In the one in a
-    // million chance that they picked the same number, use alphabetically order of
-    // the IP and port.
+    // million chance that they picked the same number, just abort - dynamic player setup is only used in testing.
     
     long theirRandomNumber;
     // Pull out the number and figure out the connect number.
@@ -284,16 +331,23 @@ void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage, int ot
     } else if (theirRandomNumber < myRandomNumber) {
         setDynamicPlayerSetupNumber(1);
     } else {
-        int ipCmp = strcmp(myExternalAddr.ip(), theirAddrs[otherIndex].ip());
-        if (ipCmp < 0) {
-            setDynamicPlayerSetupNumber(0);
-        } else if (ipCmp > 0) {
-            setDynamicPlayerSetupNumber(1);
-        } else {
-            // If IP's are equal then ports can't be equal.
-            setDynamicPlayerSetupNumber(myExternalAddr.port() < theirAddrs[otherIndex].port() ? 0 : 1);
-        }
+        Logger::logError("Cannot dynamically determine player number - both machines used same random number");
+        abort();
     }
+}
+
+/**
+ * Deduce all the IPs that this machine is using.  Does not include localhost.
+ */
+List<Transport::Address> UdpTransport::determineThisMachineIPs() {
+    List<Transport::Address> addrs = socket->getLocalIps();
+
+    // Add ports to all addresses
+    for(int ctr=0; ctr<addrs.size(); ++ctr) {
+        addrs.set(ctr, Transport::Address(addrs.get(ctr).ip(), myInternalPort));
+    }
+                  
+    return addrs;
 }
 
 

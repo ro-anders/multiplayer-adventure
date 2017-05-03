@@ -39,6 +39,11 @@ public:
 	void setBlocking(bool shouldBlock);
 
 	/**
+	* If blocking, how long to listen before aborting.  Negative number means wait forever.
+	*/
+	void setTimeout(int seconds);
+
+	/**
 	* Send data on the socket.
 	* data - data to send
 	* numBytes - number of bytes to send (does not assume data is null terminated)
@@ -46,7 +51,12 @@ public:
 	*/
 	int writeData(const char* data, int numBytes, sockaddr_in* recipient);
 
-	int readData(char* buffer, int bufferLength);
+	int readData(char* buffer, int bufferLength, Transport::Address* source);
+
+	/**
+	* Return a list of all IP4 addresses that this machine is using.
+	*/
+    List<Transport::Address> getLocalIps();
 
 
 private:

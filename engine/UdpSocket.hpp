@@ -5,9 +5,10 @@
 
 #include <stdio.h>
 
+#include "List.hpp"
 #include "Transport.hpp"
 
-class sockaddr_in;
+struct sockaddr_in;
 
 /**
  * Meant as a virtual interface to an OS-specific UDP socket.
@@ -42,12 +43,24 @@ public:
      * Whether or not this socket should block.
      */
     virtual void setBlocking(bool shouldBlock) = 0;
-
+    
+    /**
+     * If blocking, how long to listen before aborting.  Negative number means wait forever.
+     */
+    virtual void setTimeout(int seconds) = 0;
+    
     /**
      * Pull data off the socket - non-blocking.  If connected to multiple machines, will
      * return data from either machine.
      */
-    virtual int readData(char* buffer, int bufferLength) = 0;
+    int readData(char* buffer, int bufferLength);
+    
+    /**
+     * Pull data off the socket - non-blocking.  If connected to multiple machines, will
+     * return data from either machine.
+     * Will put the address of the source into from field.
+     */
+    int readData(char* buffer, int bufferLength, Transport::Address& from);
     
     /**
      * Send data on the socket.
@@ -56,6 +69,20 @@ public:
      * recipient - the address to send it to
      */
     virtual int writeData(const char* data, int numBytes, sockaddr_in* recipient) = 0;
+    
+    /**
+     * Return a list of all IP4 addresses that this machine is using.
+     */
+    virtual List<Transport::Address> getLocalIps() = 0;
+  
+protected:
+
+    /**
+     * Pull data off the socket - non-blocking.  If connected to multiple machines, will
+     * return data from either machine.
+     * If a from address is passed in, will put the address of the source into that field.
+     */
+    virtual int readData(char* buffer, int bufferLength, Transport::Address* from) = 0;
     
 };
 
