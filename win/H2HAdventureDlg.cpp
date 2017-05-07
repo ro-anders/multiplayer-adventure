@@ -75,6 +75,9 @@ void CH2HAdventureDlg::OnPaint()
 	}
 	else
 	{
+		CPaintDC dc(this); // device context for painting
+		dc.Rectangle(100, 250, 200, 350);
+
 		CDialogEx::OnPaint();
 	}
 }
