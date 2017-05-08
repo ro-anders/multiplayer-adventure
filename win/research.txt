@@ -1,0 +1,36 @@
+In MFC (which is what Visual C++ uses) there are Dialog apps and SDI/MDI apps.  
+Going with the Dialog.  It seems simpler and I have found example where you can directly draw into it
+(http://stackoverflow.com/questions/2495188/how-to-add-canvas-in-mfc-dialog)
+
+Hirschberg version had a main window with the following:
+- title bar with text
+    ? Do we need to worry about this, or did we do that with the project setup Wizard?
+- reference to "the instance", hInstance
+    ? Never appears to be used but it's global - is it used by MFC?
+- reference to the main window component, gWnd
+- drawing context to draw into that main window, gDC
+    ? Is this what is used by PaintPixel to draw in the window?
+- size and scale
+- constructs for an off screen bitmap, bitsOffscreen(an array of ints) and bmpOffscreen(an HBITMAP)
+- previous display mode (a DEVMODE) and previous window placement (a WINDOWPLACEMENT)
+    ? for coming back from full screen
+
+twinMain() seems to be the procedure that sets the window up
+- Registers window with MFC (handles things like icons)
+- creates main window hard coded to 712x484 at (400, 250)
+- Initializes offscreen bitmap - see below
+- Calls Adventure_Setup
+- Displays window (windows calls ShowWindow() and UpdateWindow())
+- sets up the timer task
+- loops (this is the main gui thread) acting on GUI messages - until exit I think
+- sets off some sort of kill
+- destroys the bitmap
+
+Initializing offscreen bitmap is done at creation and whenever size changes
+- deletes the old bitmap
+- sets the drawing context from the window
+- configures the bitmap and creates a DIB? which allocates the int array
+
+Timer Proc
+????
+
