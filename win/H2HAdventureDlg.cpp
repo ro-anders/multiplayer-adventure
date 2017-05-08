@@ -77,7 +77,10 @@ void CH2HAdventureDlg::OnPaint()
 	else
 	{
 		CPaintDC dc(this); // device context for painting
-		dc.Rectangle(100, 250, 200, 350);
+		dc.Rectangle(12, 194, 640, 448);
+		RECT rcClient;
+		this->GetClientRect(&rcClient);
+
 
 		CDialogEx::OnPaint();
 	}

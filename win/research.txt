@@ -32,5 +32,21 @@ Initializing offscreen bitmap is done at creation and whenever size changes
 - configures the bitmap and creates a DIB? which allocates the int array
 
 Timer Proc
-????
+- Creates drawing context from window 
+- Sets up a NULL pen and the bitmap in the drawing context
+- Runs the adventure code which calls PaintPixel 
+  - just draws into the gDC drawing context
+- Puts the old bitmap back in (implies PaintPixel doesn't change if paint to bitmap or directly to window)
+- Releases and deletes drawing context (I guess because it's all in the bitmap)
+
+WndProc - processes GUI messages like paint
+- on resize, computes new size and reinitializes offscreen bitmap
+- on paint calls 
+                PAINTSTRUCT ps;
+                HDC dc = BeginPaint(hWnd, &ps);
+                EndPaint(hWnd, &ps);
+  don't understand how that does anything, but that must paint the offscreen bitmap
+- on erase background, wipes the whole screen black (do I have to do that?)
+- handles other events like menu, destroy, ...
+
 
