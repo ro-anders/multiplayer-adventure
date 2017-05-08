@@ -25,6 +25,8 @@ public:
 protected:
 	HICON m_hIcon;
 
+	bool gameStarted;
+
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();

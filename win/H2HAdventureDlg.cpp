@@ -17,7 +17,8 @@
 
 
 CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
-	: CDialogEx(IDD_H2HADVENTURE_DIALOG, pParent)
+	: CDialogEx(IDD_H2HADVENTURE_DIALOG, pParent),
+	  gameStarted(false)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -90,5 +91,7 @@ HCURSOR CH2HAdventureDlg::OnQueryDragIcon()
 
 void CH2HAdventureDlg::OnBnClickedPlayButton()
 {
-	// TODO: Add your control notification handler code here
+	if (!gameStarted) {
+
+	}
 }
