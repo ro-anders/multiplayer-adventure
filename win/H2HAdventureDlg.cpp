@@ -76,12 +76,6 @@ void CH2HAdventureDlg::OnPaint()
 	}
 	else
 	{
-		CPaintDC dc(this); // device context for painting
-		dc.Rectangle(12, 194, 640, 448);
-		RECT rcClient;
-		this->GetClientRect(&rcClient);
-
-
 		CDialogEx::OnPaint();
 	}
 }
@@ -93,11 +87,59 @@ HCURSOR CH2HAdventureDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+#include <mmsystem.h>
+typedef void (CALLBACK TIMECALLBACK)(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2);
+typedef TIMECALLBACK FAR *LPTIMECALLBACK;
+void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2);
+
+// We need to make a couple variables available via static-global declaration.
+// The 'this' object is needed by the timed callback and the window's device context (DC) is needed
+// by the PaintPixel call out.
+static CDialogEx* gThis = NULL;
+static CClientDC* gDc = NULL;
 
 
 void CH2HAdventureDlg::OnBnClickedPlayButton()
 {
 	if (!gameStarted) {
-
+		// Start the timer
+		gThis = this;
+		DWORD timerId = ::timeSetEvent(60, 60, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
 	}
+}
+
+void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
+	DWORD_PTR dw1, DWORD_PTR dw2)
+{
+	static int color = 0;
+
+	CClientDC dc(gThis); // device context for painting
+	gDc = &dc;
+
+	//HBITMAP bmpOld = (HBITMAP)::SelectObject(gDC, bmpOffscreen);
+	HPEN penOld = (HPEN)::SelectObject(dc, ::GetStockObject(NULL_PEN));
+
+	//Adventure_Run();
+
+	HBRUSH newBrush = (HBRUSH)::CreateSolidBrush(RGB(color, color, color));
+	color ++;
+	HBRUSH oldBrush = (HBRUSH)::SelectObject(dc, newBrush);
+	dc.Rectangle(12, 194, 640, 448);
+	RECT rcClient;
+	gThis->GetClientRect(&rcClient);
+
+	// If we were using a bitmap
+	//int cx = (gWindowSizeX / 2) - ((ADVENTURE_SCREEN_WIDTH * gGfxScaler) / 2);
+	//int cy = (gWindowSizeY / 2) - ((ADVENTURE_SCREEN_HEIGHT * gGfxScaler) / 2);
+	//int cw = ADVENTURE_SCREEN_WIDTH * gGfxScaler;
+	//int ch = ADVENTURE_SCREEN_HEIGHT * gGfxScaler;
+	//::BitBlt(winDC, cx, cy, cw, ch, gDC, 0, 0, SRCCOPY);
+	//::SelectObject(gDC, bmpOld);
+
+	::SelectObject(dc, penOld);
+
+	// Do we need to clean up dc?
+	//::DeleteDC(gDC);
+	//::ReleaseDC(gWnd, winDC);
+	gDc = NULL;
 }
