@@ -18,21 +18,21 @@ shouldMute(false),
 numberPlayers(0),
 thisPlayer(0),
 gameLevel(DEFAULT_GAME_LEVEL),
-isScripting(false) {}
+noTransport(false) {}
 
 GameSetup::GameParams::GameParams(const GameParams& other) :
 shouldMute(other.shouldMute),
 numberPlayers(other.numberPlayers),
 thisPlayer(other.thisPlayer),
 gameLevel(other.gameLevel),
-isScripting(other.isScripting) {}
+noTransport(other.noTransport) {}
 
 GameSetup::GameParams& GameSetup::GameParams::operator=(const GameParams& other) {
     shouldMute = other.shouldMute;
     numberPlayers = other.numberPlayers;
     thisPlayer = other.thisPlayer;
     gameLevel = other.gameLevel;
-    isScripting = other.isScripting;
+    noTransport = other.noTransport;
     return *this;
 }
 
@@ -63,11 +63,16 @@ GameSetup::GameParams GameSetup::setup(int argc, char** argv) {
             xport.addOtherPlayer(otheraddr);
         }
     } else if ((argc >= 1) && (strcmp(argv[0], "script")==0)) {
-        newParams.isScripting = true;
+        newParams.noTransport = true;
         newParams.numberPlayers = 3;
         newParams.thisPlayer = (argc == 1 ? 0 : atoi(argv[1])-1);
         newParams.gameLevel = GAME_MODE_SCRIPTING;
-    } else if ((argc >= 1) && (strcmp(argv[0], "broker")==0)){
+	} else if ((argc >= 1) && (strcmp(argv[0], "single") == 0)) {
+		newParams.noTransport = true;
+		newParams.numberPlayers = 2;
+		newParams.thisPlayer = 0;
+		newParams.gameLevel = GAME_MODE_2;
+	} else if ((argc >= 1) && (strcmp(argv[0], "broker")==0)){
         // A server will broker the game but still need some info that we parse from the command line.
         // H2HAdventure broker <gameLevel (1-3,4)> <desiredPlayers (2-3)> [stunserver:stunport]
         setupBrokeredGame(newParams, argc, argv);
@@ -97,7 +102,7 @@ GameSetup::GameParams GameSetup::setup(int argc, char** argv) {
     
     if (isConnectTest) {
         Transport::testTransport(xport);
-    } else if (!newParams.isScripting) {
+    } else if (!newParams.noTransport) {
         xport.connect();
         while (!xport.isConnected()) {
             Sys::sleep(1000);

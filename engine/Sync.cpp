@@ -130,7 +130,7 @@ void Sync::handleMazeSetupObjectMessage(const char* message) {
 }
 
 int Sync::pullNextPacket(char* buffer, int bufferSize) {
-    int numChars = transport->getPacket(buffer, bufferSize);
+    int numChars = (transport == NULL ? 0 : transport->getPacket(buffer, bufferSize));
     if (numChars > 0) {
         Logger::log() << "Received \"" << buffer << "\" on frame #" << frameNum << Logger::EOM;
     }

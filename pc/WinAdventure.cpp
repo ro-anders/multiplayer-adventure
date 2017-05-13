@@ -251,7 +251,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    GameSetup::GameParams params = setup.setup(argc, argv);
    // TODO: What do we do if we fail to setup a game?
 
-   if (params.isScripting) {
+   if (params.noTransport) {
 	   delete xport;
 	   xport = NULL;
    }
