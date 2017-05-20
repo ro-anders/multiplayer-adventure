@@ -101,7 +101,7 @@ bool gMute = FALSE;
         Logger::logError("Unexpected error.  Aborting.");
     }
     
-    if (params.isScripting) {
+    if (params.noTransport) {
         delete xport;
         xport = NULL;
     }
