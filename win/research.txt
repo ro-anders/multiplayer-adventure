@@ -50,3 +50,26 @@ WndProc - processes GUI messages like paint
 - handles other events like menu, destroy, ...
 
 
+---------------------------------------------------------------
+
+VStudio configuration I had to do:
+
+1. Make a 32 bit application
+
+  H2HAdventure->properties
+  Configuration Manager
+  Change Active Solution Platform = x86
+  Change H2HAdventure Platform = Win32
+
+2. Turn off PCH (Pre-compiled Headers)
+
+  H2HAdventure->properties
+  Configuration Properties->C/C++->Precompiled Headers
+  Precompiled Header = Not using precompiled headers
+
+3. Don't warn on sprintf classes
+
+  H2HAdventure->properties
+  Configuration Properties->C/C++->Preprocessor
+  Preprocessor Definitions = _CRT_SECURE_NO_WARNINGS
+                             <different options>

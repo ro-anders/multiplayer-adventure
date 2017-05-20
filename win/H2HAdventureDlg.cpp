@@ -143,3 +143,114 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	//::ReleaseDC(gWnd, winDC);
 	gDc = NULL;
 }
+
+void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire)
+{
+	/*
+	if (left) *left = GetAsyncKeyState(leftKey) & 0x8000;
+	if (up) *up = GetAsyncKeyState(upKey) & 0x8000;
+	if (right) *right = GetAsyncKeyState(rightKey) & 0x8000;
+	if (down) *down = GetAsyncKeyState(downKey) & 0x8000;
+	if (fire) *fire = GetAsyncKeyState(dropKey) & 0x8000;
+	*/
+}
+
+void Platform_ReadConsoleSwitches(bool* reset)
+{
+/*
+	if (reset) *reset = GetAsyncKeyState(resetKey) & 0x8000;
+*/
+}
+
+void Platform_ReadDifficultySwitches(int* left, int* right)
+{
+/*
+	*left = leftDifficulty;
+	*right = rightDifficulty;
+*/
+}
+
+void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int height/*=1*/)
+{
+/*
+	if (gDC)
+	{
+		HBRUSH newBrush = (HBRUSH)::CreateSolidBrush(RGB(r, g, b));
+		HBRUSH oldBrush = (HBRUSH)::SelectObject(gDC, newBrush);
+
+		// The game expects a bottom up buffer, so we flip the orientation here
+		y = (ADVENTURE_SCREEN_HEIGHT - y) + ADVENTURE_OVERSCAN;
+
+		x *= gGfxScaler;
+		y *= gGfxScaler;
+		width *= gGfxScaler;
+		height *= gGfxScaler;
+		::Rectangle(gDC, x, y - height, x + width + 1, y + 1);
+
+		::SelectObject(gDC, oldBrush);
+		::DeleteObject(newBrush);
+	}
+*/
+}
+
+void Platform_MuteSound(bool nMute)
+{
+	// TODO: Implement
+}
+
+void Platform_MakeSound(int sound, float volume)
+{
+/*
+	// TODO: Handle volume
+	char szModule[MAX_PATH];
+	char szDrive[MAX_PATH];
+	char szDir[MAX_PATH];
+	char szSoundPath[MAX_PATH];
+
+	GetModuleFileName(NULL, szModule, MAX_PATH);
+	_splitpath(szModule, szDrive, szDir, NULL, NULL);
+
+	switch (sound)
+	{
+	case SOUND_PICKUP:
+		PlaySound((char*)IDR_PICKUP_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+		wsprintf(szSoundPath, "%s%ssounds\\pickup.wav", szDrive, szDir);
+		break;
+	case SOUND_PUTDOWN:
+		PlaySound((char*)IDR_PUTDOWN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+		break;
+	case SOUND_WON:
+		PlaySound((char*)IDR_WON_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+		break;
+	case SOUND_ROAR:
+		PlaySound((char*)IDR_ROAR_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+		break;
+	case SOUND_EATEN:
+		PlaySound((char*)IDR_EATEN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+		break;
+	case SOUND_DRAGONDIE:
+		PlaySound((char*)IDR_DRAGONDIE_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+		break;
+	}
+
+	sndPlaySound(szSoundPath, SND_ASYNC | SND_NODEFAULT);
+*/
+}
+
+float Platform_Random()
+{
+	// Using the C runtime random functions
+	return (float)rand() / RAND_MAX;
+}
+
+void Platform_DisplayStatus(const char* message, int duration) {
+/*
+	static const char* title = "";
+	int msgboxID = MessageBox(
+		NULL,
+		(LPCSTR)message,
+		(LPCSTR)title,
+		MB_ICONWARNING | MB_OK | MB_DEFBUTTON2
+	);
+*/
+}

@@ -1,9 +1,7 @@
 
+#include "sys.h"
 #include "Sys.hpp"
 
-#include <time.h>
-#include <stdio.h>
-#include <stdlib.h>
 #ifdef WIN32
 #include <windows.h>
 #else
@@ -11,6 +9,11 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #endif
+
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 // Use static initialization to make sure the random number generator is randomized.
 bool Sys::randomized = Sys::seedRandom();
 
@@ -30,7 +33,13 @@ void Sys::sleep(int milliseconds) {
 
 void Sys::consoleLog(const char* message) {
 #ifdef WIN32
-    OutputDebugString(message);
+	int a = lstrlenA(message);
+	BSTR unicodestr = SysAllocStringLen(NULL, a);
+	::MultiByteToWideChar(CP_ACP, 0, message, a, unicodestr, a);
+
+	OutputDebugString(unicodestr);
+
+	::SysFreeString(unicodestr);
 #else
     printf("%s", message);
 #endif
@@ -75,7 +84,7 @@ long Sys::runTime() {
     
     long currentTime;
 #ifdef WIN32
-	return GetTickCount64();
+	return (long)GetTickCount64();
 #else
     static timeval timeval;
     gettimeofday(&timeval, NULL);
