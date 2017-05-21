@@ -3,6 +3,8 @@
 //
 
 #include "stdafx.h"
+#include "..\engine\adventure_sys.h"
+#include "..\engine\Adventure.h"
 #include "H2HAdventure.h"
 #include "H2HAdventureDlg.h"
 #include "afxdialogex.h"
@@ -96,15 +98,20 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_
 // The 'this' object is needed by the timed callback and the window's device context (DC) is needed
 // by the PaintPixel call out.
 static CDialogEx* gThis = NULL;
-static CClientDC* gDc = NULL;
+static CClientDC* gDC = NULL;
+static float gGfxScaler = 1;
 
 
 void CH2HAdventureDlg::OnBnClickedPlayButton()
 {
 	if (!gameStarted) {
-		// Start the timer
 		gThis = this;
+		
+		Adventure_Setup(2, 0, NULL, 2, 1, 1);
+
+		// Start the timer
 		DWORD timerId = ::timeSetEvent(60, 60, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
+		gameStarted = true;
 	}
 }
 
@@ -114,12 +121,12 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	static int color = 0;
 
 	CClientDC dc(gThis); // device context for painting
-	gDc = &dc;
+	gDC = &dc;
 
+	/*
 	//HBITMAP bmpOld = (HBITMAP)::SelectObject(gDC, bmpOffscreen);
 	HPEN penOld = (HPEN)::SelectObject(dc, ::GetStockObject(NULL_PEN));
 
-	//Adventure_Run();
 
 	HBRUSH newBrush = (HBRUSH)::CreateSolidBrush(RGB(color, color, color));
 	color ++;
@@ -137,11 +144,15 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	//::SelectObject(gDC, bmpOld);
 
 	::SelectObject(dc, penOld);
+	*/
+
+	Adventure_Run();
+
 
 	// Do we need to clean up dc?
 	//::DeleteDC(gDC);
 	//::ReleaseDC(gWnd, winDC);
-	gDc = NULL;
+	gDC = NULL;
 }
 
 void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire)
@@ -172,25 +183,38 @@ void Platform_ReadDifficultySwitches(int* left, int* right)
 
 void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int height/*=1*/)
 {
-/*
+	/*
+	//HBITMAP bmpOld = (HBITMAP)::SelectObject(gDC, bmpOffscreen);
+	HPEN penOld = (HPEN)::SelectObject(dc, ::GetStockObject(NULL_PEN));
+
+	//Adventure_Run();
+
+	HBRUSH newBrush = (HBRUSH)::CreateSolidBrush(RGB(color, color, color));
+	color++;
+	HBRUSH oldBrush = (HBRUSH)::SelectObject(dc, newBrush);
+	dc.Rectangle(12, 194, 640, 448);
+	RECT rcClient;
+	gThis->GetClientRect(&rcClient);
+*/
 	if (gDC)
 	{
 		HBRUSH newBrush = (HBRUSH)::CreateSolidBrush(RGB(r, g, b));
-		HBRUSH oldBrush = (HBRUSH)::SelectObject(gDC, newBrush);
+		HBRUSH oldBrush = (HBRUSH)::SelectObject(*gDC, newBrush);
 
 		// The game expects a bottom up buffer, so we flip the orientation here
 		y = (ADVENTURE_SCREEN_HEIGHT - y) + ADVENTURE_OVERSCAN;
 
 		x *= gGfxScaler;
+		x += 12;
 		y *= gGfxScaler;
+		y += 194;
 		width *= gGfxScaler;
 		height *= gGfxScaler;
-		::Rectangle(gDC, x, y - height, x + width + 1, y + 1);
+		::Rectangle(*gDC, x, y - height, x + width + 1, y + 1);
 
-		::SelectObject(gDC, oldBrush);
+		::SelectObject(*gDC, oldBrush);
 		::DeleteObject(newBrush);
 	}
-*/
 }
 
 void Platform_MuteSound(bool nMute)
