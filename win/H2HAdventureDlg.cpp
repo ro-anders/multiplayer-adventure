@@ -157,13 +157,11 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 
 void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire)
 {
-	/*
-	if (left) *left = GetAsyncKeyState(leftKey) & 0x8000;
-	if (up) *up = GetAsyncKeyState(upKey) & 0x8000;
-	if (right) *right = GetAsyncKeyState(rightKey) & 0x8000;
-	if (down) *down = GetAsyncKeyState(downKey) & 0x8000;
-	if (fire) *fire = GetAsyncKeyState(dropKey) & 0x8000;
-	*/
+	if (left) *left = GetAsyncKeyState(VK_LEFT) & 0x8000;
+	if (up) *up = GetAsyncKeyState(VK_UP) & 0x8000;
+	if (right) *right = GetAsyncKeyState(VK_RIGHT) & 0x8000;
+	if (down) *down = GetAsyncKeyState(VK_DOWN) & 0x8000;
+	if (fire) *fire = GetAsyncKeyState(VK_SPACE) & 0x8000;
 }
 
 void Platform_ReadConsoleSwitches(bool* reset)
