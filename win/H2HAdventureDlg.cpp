@@ -123,17 +123,21 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	CClientDC dc(gThis); // device context for painting
 	gDC = &dc;
 
-	/*
+	// If we were using a bitmap
 	//HBITMAP bmpOld = (HBITMAP)::SelectObject(gDC, bmpOffscreen);
 	HPEN penOld = (HPEN)::SelectObject(dc, ::GetStockObject(NULL_PEN));
 
+	Adventure_Run();
 
+	/*
+	Original test code to draw a big gray block
 	HBRUSH newBrush = (HBRUSH)::CreateSolidBrush(RGB(color, color, color));
 	color ++;
 	HBRUSH oldBrush = (HBRUSH)::SelectObject(dc, newBrush);
 	dc.Rectangle(12, 194, 640, 448);
 	RECT rcClient;
 	gThis->GetClientRect(&rcClient);
+	*/
 
 	// If we were using a bitmap
 	//int cx = (gWindowSizeX / 2) - ((ADVENTURE_SCREEN_WIDTH * gGfxScaler) / 2);
@@ -142,12 +146,9 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	//int ch = ADVENTURE_SCREEN_HEIGHT * gGfxScaler;
 	//::BitBlt(winDC, cx, cy, cw, ch, gDC, 0, 0, SRCCOPY);
 	//::SelectObject(gDC, bmpOld);
+	
 
 	::SelectObject(dc, penOld);
-	*/
-
-	Adventure_Run();
-
 
 	// Do we need to clean up dc?
 	//::DeleteDC(gDC);
