@@ -22,6 +22,8 @@
     IBOutlet NSTextField *mStatusMessage;
 }
 
+- (void)playGame;
+
 - (IBAction)update:(id)sender;
 
 - (void)displayStatus:(const char*)message :(int)msDuration;

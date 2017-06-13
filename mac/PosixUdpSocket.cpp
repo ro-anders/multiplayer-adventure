@@ -94,7 +94,8 @@ int PosixUdpSocket::bind(int myInternalPort) {
 
 void PosixUdpSocket::setBlocking(bool isBlocking) {
     if (isBlocking) {
-        // TODO: Don't know how to do this
+        // Don't know how to do this, but think I don't need to.  So will wait until I do to research.
+        throw std::runtime_error("Cannot set UDP socket to blocking read.");
     } else {
         fcntl(socketFd, F_SETFL, O_NONBLOCK);
     }

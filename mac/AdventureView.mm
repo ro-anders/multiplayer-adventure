@@ -42,6 +42,10 @@ AdventureView* gAdvView = NULL;
 unsigned char mKeyMap = 0;
 
 time_t mDisplayStatusExpiration = -1;
+UdpTransport* xport = NULL;
+MacRestClient client;
+
+GameSetup* setup;
 
 // Flag to ignore key up events so that we can lock keys
 bool lockKeys = false;
@@ -57,6 +61,7 @@ bool gLeftDifficulty = TRUE;	// true = dragons pause before eating you
 bool gRightDifficulty = TRUE;	// true = dragons run from the sword
 bool gMenuItemReset = FALSE;
 bool gMenuItemSelect = FALSE;
+AdventureView* gView = NULL;
 
 bool gMute = FALSE;
 
@@ -70,6 +75,9 @@ bool gMute = FALSE;
 - (id)initWithFrame:(NSRect)frameRect
 {
     [super initWithFrame:frameRect];
+    
+    gView = self;
+    
     // Randomize the random number generator
     timeval time;
     gettimeofday(&time, NULL);
@@ -79,43 +87,6 @@ bool gMute = FALSE;
     // Setup logging
     Logger::setup(Logger::CONSOLE, Logger::INFO);
     Logger::log() << "Logging setup at " << Sys::datetime() << "." << Logger::EOM;
-    
-    // Expecting args: gameLevel playerNum sockAddress1 sockAddress2
-    int argc;
-    char** argv;
-    Args_GetArgs(&argc, &argv);
-    
-    GameSetup::GameParams params;
-    UdpTransport* xport = NULL;
-    try {
-        PosixUdpSocket* socket = new PosixUdpSocket();
-        bool usingDynamicSetup = (argc<=2);
-        xport = new UdpTransport(socket, usingDynamicSetup);
-        MacRestClient client;
-        GameSetup setup(client, *xport);
-        params = setup.setup(argc-1, argv+1);
-    } catch (std::exception& e) {
-        Logger::logError() << e.what() << "\nAborting." << Logger::EOM;
-        exit(-1);
-    } catch (...) {
-        Logger::logError("Unexpected error.  Aborting.");
-    }
-    
-    if (params.noTransport) {
-        delete xport;
-        xport = NULL;
-    }
-    Platform_MuteSound(params.shouldMute);
-
-    if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
-    {
-        Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 1, 1);
-        timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
-                                                 target: self
-                                               selector: @selector(update:)
-                                               userInfo: nil
-                                                repeats: YES];
-    }
     
     return self;
 }
@@ -146,6 +117,7 @@ bool gMute = FALSE;
 {
     gAdvView = self;
     
+    // Dismiss current display message when it is time
     if (mDisplayStatusExpiration >= 0) {
         time_t currentTime = time(NULL);
         if (currentTime > mDisplayStatusExpiration) {
@@ -154,8 +126,28 @@ bool gMute = FALSE;
         }
     }
     
-    // Run a frame of the game
-    Adventure_Run();
+    if (!setup->isGameSetup()) {
+        bool statusChange = setup->checkSetup();
+        if (statusChange) {
+            // TODOX: Display the status
+        }
+        if (setup->isGameSetup()) {
+            GameSetup::GameParams params = setup->getSetup();
+            if (params.noTransport) {
+                delete xport;
+                xport = NULL;
+            }
+            Platform_MuteSound(params.shouldMute);
+            
+            if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
+            {
+                Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 1, 1);
+            }
+        }
+    } else {
+        // Run a frame of the game
+        Adventure_Run();
+    }
     
     
     
@@ -171,7 +163,42 @@ bool gMute = FALSE;
     mDisplayStatusExpiration = time(NULL) + duration;
 }
 
-- (BOOL)acceptsFirstResponder
+- (void)playGame
+{
+    
+    [gAdvView displayStatus:"Hi" :1000];
+
+    int argc;
+    char** argv;
+    Args_GetArgs(&argc, &argv);
+    
+    GameSetup::GameParams params;
+    try {
+        xport = new UdpTransport();
+        setup = new GameSetup(client, *xport);
+        setup->setCommandLineArgs(argc-1, argv+1);
+        GameSetup::GameParams params = setup->getSetup();
+        if (!params.noTransport) {
+            PosixUdpSocket* socket = new PosixUdpSocket();
+            xport->useSocket(socket);
+        }
+        
+        timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
+                                                 target: self
+                                               selector: @selector(update:)
+                                               userInfo: nil
+                                                repeats: YES];
+
+    } catch (std::exception& e) {
+        Logger::logError() << e.what() << "\nAborting." << Logger::EOM;
+        exit(-1);
+    } catch (...) {
+        Logger::logError("Unexpected error.  Aborting.");
+    }
+
+}
+
+- (BOOL)acceptsFirstResponde
 {
     // Make it so we accept keyboard messages directed at the window
     return YES;

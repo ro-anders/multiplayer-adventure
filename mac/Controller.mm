@@ -14,6 +14,7 @@
 //
 
 #import "Controller.h"
+#import "AdventureView.h"
 
 @implementation Controller
 
@@ -21,6 +22,9 @@ extern bool gLeftDifficulty;
 extern bool gRightDifficulty;
 extern bool gMenuItemReset;
 extern bool gMenuItemSelect;
+
+// This is NOT how to do MVC with Cocoa, but I just want to get this working.
+extern AdventureView* gView;
 
 
 - (void)awakeFromNib
@@ -79,5 +83,8 @@ extern bool gMenuItemSelect;
 	gMenuItemReset = TRUE;
 }
 
+- (IBAction)clickPlay:(id)sender {
+    [gView playGame];
+}
 
 @end

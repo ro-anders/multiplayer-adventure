@@ -21,22 +21,16 @@ UdpTransport::Client::Client() {}
 
 UdpTransport::Client::~Client() {}
 
-UdpTransport::UdpTransport(UdpSocket* inSocket, bool useDynamicSetup) :
-Transport(useDynamicSetup),
-socket(inSocket),
+UdpTransport::UdpTransport() :
+Transport(),
+socket(NULL),
 otherMachines(new Client[2]), // We always create space for two even though we may only use one.
 myInternalPort(0),
 states(new const char*[2]), // We always create space for two even though we may only use one.
 numOtherMachines(0),
 internalIps(NULL),
 numInternalIps(0),
-socketBound(false)
-{
-    if (useDynamicSetup) {
-        myInternalPort = DEFAULT_PORT;
-    }
-    
-}
+socketBound(false) {}
 
 UdpTransport::~UdpTransport() {
     for(int ctr=0; ctr<numInternalIps; ++ctr) {
@@ -53,6 +47,25 @@ UdpTransport::~UdpTransport() {
     }
     delete[] otherMachines;
 }
+
+/**
+ * Give the transport an implementation of a socket to connect and communicate with other clients.
+ */
+void UdpTransport::useSocket(UdpSocket* inSocket) {
+    socket = inSocket;
+}
+
+/**
+ * Often when testing we want to quickly launch two ends of a socket and let them
+ * figure out who should be player one vs player two.
+ * Call this method to make that happen.
+ * Only works when running two clients on the same local machine.
+ */
+void UdpTransport::useDynamicPlayerSetup() {
+    Transport::useDynamicPlayerSetup();
+    myInternalPort = DEFAULT_PORT;
+}
+
 
 void UdpTransport::setInternalPort(int port) {
     myInternalPort = port;
@@ -101,9 +114,6 @@ void UdpTransport::connect() {
     states[1] = (numOtherMachines > 1 ? RECVD_NOTHING : RECVD_ACK);
     // We need a big random integer.
     randomNum = Sys::random() * 1000000;
-    
-    Logger::log("Attempting to punch hole to other machine.");
-    punchHole();
 }
 
 UdpSocket& UdpTransport::reservePort() {

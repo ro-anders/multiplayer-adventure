@@ -12,6 +12,16 @@
 #include "UdpTransport.hpp"
 
 const int GameSetup::DEFAULT_GAME_LEVEL = GAME_MODE_1;
+const int GameSetup::BROKER_TIMEOUT = 10000; // In milliseconds
+const int GameSetup::UDP_HANDSHAKE_PERIOD = 1000; // In milliseconds
+
+const int GameSetup::SETUP_INIT = 0;
+const int GameSetup::SETUP_WAITING_FOR_PUBLIC_IP = 1;
+const int GameSetup::SETUP_MAKE_BROKER_REQUEST = 2;
+const int GameSetup::SETUP_INIT_CONNECT_WITH_PLAYERS = 3;
+const int GameSetup::SETUP_CONNECTING_WITH_PLAYERS = 4;
+const int GameSetup::SETUP_CONNECTED = 5;
+
 
 GameSetup::GameParams::GameParams() :
 shouldMute(false),
@@ -42,14 +52,23 @@ bool GameSetup::GameParams::ok() {
 
 GameSetup::GameSetup(RestClient& inClient, UdpTransport& inTransport) :
 client(inClient),
-xport(inTransport) {}
+xport(inTransport),
+stunServer(RestClient::BROKER_SERVER, RestClient::STUN_PORT),
+broker(RestClient::BROKER_SERVER, RestClient::REST_PORT),
+setupState(SETUP_INIT),
+needPublicIp(false),
+isBrokeredGame(false),
+isConnectTest(false),
+timeoutStart(0),
+stunServerSocket(NULL),
+stunServerSockAddr(NULL) {}
 
-GameSetup::GameParams GameSetup::setup(int argc, char** argv) {
-    checkExpirationDate();
-    
-    GameParams newParams;
-    bool isConnectTest = false;
-
+/**
+ * Reads command line arguments.
+ * On some OS's argv includes the executable name as the first argument, but on others it does not.
+ * This assumes it DOES NOT, so if OS does, call setup(argc-1, argv+1).
+ */
+void GameSetup::setCommandLineArgs(int argc, char** argv) {
     if ((argc >= 1) && (strcmp(argv[0], "test")==0)) {
         // Run a simple UDP socket test and exit.  Can either specify IPs and ports or let it dynamically use ports on localhost
         // H2HAdventure test [<roleNumber(1 for receiver, 2 for sender)> <myport> <otherip>:<otherport>]
@@ -67,75 +86,172 @@ GameSetup::GameParams GameSetup::setup(int argc, char** argv) {
         newParams.numberPlayers = 3;
         newParams.thisPlayer = (argc == 1 ? 0 : atoi(argv[1])-1);
         newParams.gameLevel = GAME_MODE_SCRIPTING;
-	} else if ((argc >= 1) && (strcmp(argv[0], "single") == 0)) {
-		newParams.noTransport = true;
-		newParams.numberPlayers = 2;
-		newParams.thisPlayer = 0;
-		newParams.gameLevel = GAME_MODE_2;
-	} else if ((argc >= 1) && (strcmp(argv[0], "broker")==0)){
+    } else if ((argc >= 1) && (strcmp(argv[0], "single") == 0)) {
+        // Used for debugging with a single client and a faux second player.
+        // H2HAdventure single [gameLevel(1-3,4)]
+        newParams.gameLevel = (argc > 1 ? atoi(argv[1])-1 : DEFAULT_GAME_LEVEL);
+        newParams.noTransport = true;
+        newParams.numberPlayers = 2;
+        newParams.thisPlayer = 0;
+    } else if ((argc >= 1) && (strcmp(argv[0], "broker")==0)){
         // A server will broker the game but still need some info that we parse from the command line.
         // H2HAdventure broker <gameLevel (1-3,4)> <desiredPlayers (2-3)> [stunserver:stunport]
-        setupBrokeredGame(newParams, argc, argv);
-        
-    } else if ((argc >= 1) && (strcmp(argv[0], "debug")==0)){
-        setupSelfGame(newParams, argc, argv);
+        needPublicIp = true;
+        isBrokeredGame = true;
+        newParams.gameLevel = atoi(argv[1])-1;
+        newParams.numberPlayers = (atoi(argv[2]) <= 2 ? 2 : 3);
+        if (argc > 3) {
+            broker = Transport::parseUrl(argv[3]);
+            stunServer = Transport::Address(broker.ip(), RestClient::STUN_PORT);
+        }
+    } else if ((argc >= 1) && (strcmp(argv[0], "dev")==0)){
+        // Used only for development.  Assumes a second dev instance is being started on the same machine and will
+        // dynamically decide which port to use and which is player 1 vs player 2.
+        xport.useDynamicPlayerSetup();
+        newParams.gameLevel = (argc >= 2 ? atoi(argv[1])-1 : DEFAULT_GAME_LEVEL);
+        newParams.numberPlayers = 2;
     } else if ((argc >= 1) && (strcmp(argv[0], "p2p")==0)){
         // Other players' IP information will be specified on the command line.
         // H2HAdventure <gameLevel(1-3,4)> <thisPlayer(1-3)> <myinternalport> <theirip>:<theirport> [<thirdip>:<thirdport>]
         setupP2PGame(newParams, argc, argv);
     }else {
-        // If they don't specify then do one of two things.
-        // If no arguments at all, launch a brokered game requesting 2 players and game 2.
-        // If it has arguments, treat as a p2p request.
-        if (argc == 0) {
-            const char* mode = "broker";
-            const char* game = "2";
-            const char* players = "2";
-            char* fakeArgv[]={(char*)mode, (char*)game, (char*)players};
-            setupBrokeredGame(newParams, 3, fakeArgv);
-        } else {
-            const char* mode = "p2p";
-            char* fakeArgv[] = {(char*)mode, argv[0], argv[1], argv[2], argv[3], (argc>4?argv[4]:NULL)};
-            setupP2PGame(newParams, argc+1, fakeArgv);
-        }
+        // Brokered with key information coming from the GUI
+        needPublicIp = true;
+        isBrokeredGame = true;
+        // TODOX: How do we get info from GUI?
+        //newParams.gameLevel = atoi(argv[1])-1;
+        //newParams.numberPlayers = (atoi(argv[2]) <= 2 ? 2 : 3);
     }
-    
-    if (isConnectTest) {
-        Transport::testTransport(xport);
-    } else if (!newParams.noTransport) {
-        xport.connect();
-        while (!xport.isConnected()) {
-            Sys::sleep(1000);
-        }
-        
-        int setupNum = xport.getDynamicPlayerSetupNumber();
-        if (setupNum != Transport::NOT_DYNAMIC_PLAYER_SETUP) {
-            newParams.thisPlayer = setupNum;
-            newParams.shouldMute = (setupNum == 0);
-        }
-    }
-
-    return newParams;
 }
 
-void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, char** argv) {
+void GameSetup::setGameLevel(int level) {
+    newParams.gameLevel = level;
+}
 
-    // A server will broker the game but still need some info that we parse from the command line.
-    // H2HAdventure broker <gameLevel (1-3,4)> <desiredPlayers (2-3)> [stunserver:stunport]
+void GameSetup::setNumberPlayers(int numPlayers) {
+    newParams.numberPlayers = numPlayers;
+}
 
-    newParams.gameLevel = atoi(argv[1])-1;
-    int desiredPlayers = (atoi(argv[2]) <= 2 ? 2 : 3);
-    int sessionId = Sys::random() * 10000000;
-
-    Transport::Address stunServer(client.BROKER_SERVER, client.STUN_PORT);
-    if (argc > 3) {
-        stunServer = Transport::parseUrl(argv[3]);
+/**
+ * This checks to see if the game is ready to play and, if not, executes the next step in the setup process.
+ * Will occassionally generate status messages (e.g. "first player joined, waiting for second").  If this status
+ * message changes, will return true.  If there is no change in status, will return false.
+ */
+bool GameSetup::checkSetup() {
+    long currentTime;
+    bool statusChange = false;
+    switch (setupState) {
+        case SETUP_INIT: {
+            checkExpirationDate();
+            if (needPublicIp) {
+                timeoutStart = Sys::runTime();
+                askForPublicAddress();
+                setupState = SETUP_WAITING_FOR_PUBLIC_IP;
+            } else if (isBrokeredGame) {
+                // TODOX: Do I really need to check for this here?
+            } else {
+                setupState = SETUP_INIT_CONNECT_WITH_PLAYERS;
+            }
+            break;
+        }
+        case SETUP_WAITING_FOR_PUBLIC_IP: {
+            currentTime = Sys::runTime();
+            if (currentTime-timeoutStart > BROKER_TIMEOUT) {
+                throw BrokerUnreachableException();
+            }
+            Transport::Address publicAddress = checkForPublicAddress();
+            if (publicAddress.isValid()) {
+                craftBrokerRequest(publicAddress);
+                setupState = SETUP_MAKE_BROKER_REQUEST;
+            }
+            break;
+        }
+        case SETUP_MAKE_BROKER_REQUEST: {
+            // TODOX
+            break;
+        }
+        case SETUP_INIT_CONNECT_WITH_PLAYERS: {
+            if (!newParams.noTransport) {
+                xport.connect();
+                setupState = SETUP_CONNECTING_WITH_PLAYERS;
+                timeoutStart = Sys::runTime();
+            } else {
+                setupState = SETUP_CONNECTED;
+            }
+            break;
+        }
+        case SETUP_CONNECTING_WITH_PLAYERS: {
+            currentTime = Sys::runTime();
+            if (currentTime-timeoutStart > UDP_HANDSHAKE_PERIOD) {
+                bool nowConnected = xport.isConnected();
+                if (nowConnected) {
+                    int setupNum = xport.getDynamicPlayerSetupNumber();
+                    if (setupNum != Transport::NOT_DYNAMIC_PLAYER_SETUP) {
+                        newParams.thisPlayer = setupNum;
+                        newParams.shouldMute = (setupNum == 1);
+                    }
+                    setupState = SETUP_CONNECTED;
+                }
+                timeoutStart = currentTime;
+            }
+            break;
+        }
     }
     
+    return statusChange;
+}
+
+void GameSetup::askForPublicAddress() {
+    // First need to pick which port this game will use for UDP communication.
+    stunServerSocket = &xport.reservePort();
     
+    // Now send a packet on that port.
+    stunServerSockAddr = stunServerSocket->createAddress(stunServer, true);
+    Logger::log("Sending message to STUN server");
+    stunServerSocket->writeData("Hello", 5, stunServerSockAddr);
+    
+    stunServerSocket->setBlocking(false);
+    
+}
+
+/**
+ * True if the game has been all setup and is ready to play.  False if still being setup.
+ */
+bool GameSetup::isGameSetup() {
+    // TODOX: Implement
+    return setupState == SETUP_CONNECTED;
+}
+
+/**
+ * A message indicating the current status of setting up the game.
+ */
+const char* GameSetup::getStatus() {
+    // TODOX: Implement
+    return "NaN";
+}
+
+/**
+ * Get the parameters for the setup game.  If the game is not completely setup, this may
+ * return incomplete data.
+ */
+GameSetup::GameParams GameSetup::getSetup() {
+      return newParams;
+}
+
+void GameSetup::craftBrokerRequest(Transport::Address) {
+    // TODOX: Implement
+}
+
+
+// TODOX: Get rid of this method.  It should be broken up into other methods
+void GameSetup::setupBrokeredGame(int argc, char** argv) {
+
+    
+
 	List<Transport::Address> privateAddresses = xport.determineThisMachineIPs();
 	Transport::Address publicAddress = determinePublicAddress(stunServer);
     
+    int sessionId = Sys::random() * 10000000;
     Json::Value responseJson;
     // Connect to the client and register a game request.
     char requestContent[2000];
@@ -145,7 +261,7 @@ void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, ch
                 privateAddresses.get(ctr).ip(), privateAddresses.get(ctr).port());
     }
     sprintf(requestContent+strlen(requestContent), "], \"sessionId\": %d, \"gameToPlay\": %d, \"desiredPlayers\": %d}",
-            sessionId, newParams.gameLevel, desiredPlayers);
+            sessionId, newParams.gameLevel, newParams.numberPlayers);
     char response[1000];
     bool gotResponse = false;
     
@@ -212,6 +328,7 @@ void GameSetup::setupBrokeredGame(GameSetup::GameParams& newParams, int argc, ch
     xport.setTransportNum(newParams.thisPlayer);
 }
 
+// TODOX: Get rid of this method.  It should be broken up into other methods.
 void GameSetup::setupP2PGame(GameSetup::GameParams& newParams, int argc, char** argv) {
     // Other players' IP information will be specified on the command line.
     // H2HAdventure p2p <gameLevel(1-3,4)> <thisPlayer(1-3)> <myinternalport> <theirip>:<theirport> [<thirdip>:<thirdport>]
@@ -224,16 +341,7 @@ void GameSetup::setupP2PGame(GameSetup::GameParams& newParams, int argc, char** 
     int myInternalPort = atoi(argv[3]);
     xport.setInternalPort(myInternalPort);
     addr1 = Transport::parseUrl(argv[4]);
-    // TODOX: Generating a test case - delete when done
-    // ******* xport.addOtherPlayer(addr1);
-    if (newParams.thisPlayer == 0) {
-        Transport::Address addr2 = Transport::Address("1.1.1.1", 1);
-        Transport::Address addr3 = Transport::Address("127.0.0.1", 3000);
-        Transport::Address addrs[] = {addr2, addr1, addr3};
-        xport.addOtherPlayer(addrs, 3);
-    } else {
-        xport.addOtherPlayer(addr1);
-    }
+    xport.addOtherPlayer(addr1);
     if (argc > 5) {
         Transport::Address addr2 = Transport::parseUrl(argv[5]);
         xport.addOtherPlayer(addr2);
@@ -243,26 +351,13 @@ void GameSetup::setupP2PGame(GameSetup::GameParams& newParams, int argc, char** 
 
 }
 
-void GameSetup::setupSelfGame(GameSetup::GameParams& newParams, int argc, char** argv) {
-    // Used for quick testing.  Run two instances in this mode on the same machine and they will
-    // coordinate between themselves what ports to use and which is which player.  Only works when
-    // both instances are running on the same machine.
-    // H2HAdventure debug [gameLevel(1-3,4)]
-
-    if (argc > 1) {
-        newParams.gameLevel = atoi(argv[1])-1;
-    }
-    newParams.numberPlayers = 2;
-    // shouldMute will be set after games coordinate which is which.
-}
-
-
+// TODOX: Get rid of this method.  It should be broken up into other methods.
 /**
  * Contact the STUN server and it will tell you what IP and port your UDP packets
  * will look like they come from.
  */
 Transport::Address GameSetup::determinePublicAddress(Transport::Address stunServer) {
-
+    
     Transport::Address publicAddress;
     
     // First need to pick which port this game will use for UDP communication.
@@ -279,8 +374,8 @@ Transport::Address GameSetup::determinePublicAddress(Transport::Address stunServ
     Logger::log("Listening for STUN server message.");
     int numCharsRead = socket.readData(buffer, 256);
     if (numCharsRead > 0) {
-		// Throw a null on the end to terminate the string
-		buffer[numCharsRead] = '\0';
+        // Throw a null on the end to terminate the string
+        buffer[numCharsRead] = '\0';
         Logger::log() << "Received \"" << buffer << "\" from STUN server." << Logger::EOM;
         publicAddress = Transport::parseUrl(buffer);
         if (!publicAddress.isValid()) {
@@ -296,13 +391,38 @@ Transport::Address GameSetup::determinePublicAddress(Transport::Address stunServ
     return publicAddress;
 }
 
+/**
+ * A request has been made to the STUN server for the public IP address.
+ * Listen for and process the response.
+ */
+Transport::Address GameSetup::checkForPublicAddress() {
+    
+    Transport::Address publicAddress;
+    // Listen on the socket and get the public IP and port
+    char buffer[256];
+    Logger::log("Checking for STUN server message.");
+    int numCharsRead = stunServerSocket->readData(buffer, 256);
+    if (numCharsRead > 0) {
+        // Throw a null on the end to terminate the string
+        buffer[numCharsRead] = '\0';
+        Logger::log() << "Received \"" << buffer << "\" from STUN server." << Logger::EOM;
+        publicAddress = Transport::parseUrl(buffer);
+        stunServerSocket->deleteAddress(stunServerSockAddr);
+        if (!publicAddress.isValid()) {
+            Logger::logError() << "Could not parse IP from STUN server message: " << buffer << Logger::EOM;
+            throw std::runtime_error("Could not determine public address.");
+        }
+    }
+    
+    return publicAddress;
+}
+
 void GameSetup::checkExpirationDate() {
     
-    const long EXPIRATION_DATE = 20170531;
+    const long EXPIRATION_DATE = 20170630;
     long time = Sys::today();
     if ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE)) {
-        Logger::logError("Beta Release has expired.");
-        exit(-1);
+        throw std::runtime_error("Beta Release has expired.");
     }
         
 }
