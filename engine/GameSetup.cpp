@@ -12,15 +12,18 @@
 #include "UdpTransport.hpp"
 
 const int GameSetup::DEFAULT_GAME_LEVEL = GAME_MODE_1;
-const int GameSetup::BROKER_TIMEOUT = 10000; // In milliseconds
+const int GameSetup::STUN_TIMEOUT = 30000; // In milliseconds
+const int GameSetup::BROKER_PERIOD = 10000; // In milliseconds TODOX: 60000
 const int GameSetup::UDP_HANDSHAKE_PERIOD = 1000; // In milliseconds
 
 const int GameSetup::SETUP_INIT = 0;
-const int GameSetup::SETUP_WAITING_FOR_PUBLIC_IP = 1;
-const int GameSetup::SETUP_MAKE_BROKER_REQUEST = 2;
-const int GameSetup::SETUP_INIT_CONNECT_WITH_PLAYERS = 3;
-const int GameSetup::SETUP_CONNECTING_WITH_PLAYERS = 4;
-const int GameSetup::SETUP_CONNECTED = 5;
+const int GameSetup::SETUP_REQUEST_PUBLIC_IP = 1;
+const int GameSetup::SETUP_WAITING_FOR_PUBLIC_IP = 2;
+const int GameSetup::SETUP_MAKE_BROKER_REQUEST = 3;
+const int GameSetup::SETUP_WAITING_FOR_BROKERING = 4;
+const int GameSetup::SETUP_INIT_CONNECT_WITH_PLAYERS = 5;
+const int GameSetup::SETUP_CONNECTING_WITH_PLAYERS = 6;
+const int GameSetup::SETUP_CONNECTED = 7;
 
 
 GameSetup::GameParams::GameParams() :
@@ -55,11 +58,13 @@ client(inClient),
 xport(inTransport),
 stunServer(RestClient::BROKER_SERVER, RestClient::STUN_PORT),
 broker(RestClient::BROKER_SERVER, RestClient::REST_PORT),
+publicAddress(),
 setupState(SETUP_INIT),
 needPublicIp(false),
 isBrokeredGame(false),
 isConnectTest(false),
 timeoutStart(0),
+brokerSessionId(Sys::random() * 10000000),
 stunServerSocket(NULL),
 stunServerSockAddr(NULL) {}
 
@@ -144,30 +149,47 @@ bool GameSetup::checkSetup() {
         case SETUP_INIT: {
             checkExpirationDate();
             if (needPublicIp) {
-                timeoutStart = Sys::runTime();
-                askForPublicAddress();
-                setupState = SETUP_WAITING_FOR_PUBLIC_IP;
+                setupState = SETUP_REQUEST_PUBLIC_IP;
             } else if (isBrokeredGame) {
-                // TODOX: Do I really need to check for this here?
+                setupState = SETUP_MAKE_BROKER_REQUEST;
             } else {
                 setupState = SETUP_INIT_CONNECT_WITH_PLAYERS;
             }
             break;
         }
+        case SETUP_REQUEST_PUBLIC_IP: {
+            askForPublicAddress();
+            setupState = SETUP_WAITING_FOR_PUBLIC_IP;
+            timeoutStart = Sys::runTime();
+            break;
+        }
         case SETUP_WAITING_FOR_PUBLIC_IP: {
             currentTime = Sys::runTime();
-            if (currentTime-timeoutStart > BROKER_TIMEOUT) {
+            if (currentTime-timeoutStart > STUN_TIMEOUT) {
                 throw BrokerUnreachableException();
             }
-            Transport::Address publicAddress = checkForPublicAddress();
+            publicAddress = checkForPublicAddress();
             if (publicAddress.isValid()) {
-                craftBrokerRequest(publicAddress);
                 setupState = SETUP_MAKE_BROKER_REQUEST;
             }
             break;
         }
         case SETUP_MAKE_BROKER_REQUEST: {
-            // TODOX
+            craftBrokerRequest(publicAddress);
+            setupState = SETUP_WAITING_FOR_BROKERING;
+            timeoutStart = 0;
+            break;
+        }
+        case SETUP_WAITING_FOR_BROKERING: {
+            currentTime = Sys::runTime();
+            if (currentTime-timeoutStart > BROKER_PERIOD) {
+                bool nowConnected = pollBroker();
+                if (nowConnected) {
+                    // TODOX: What do we do now?
+                } else {
+                    timeoutStart = Sys::runTime();
+                }
+            }
             break;
         }
         case SETUP_INIT_CONNECT_WITH_PLAYERS: {
@@ -239,29 +261,53 @@ GameSetup::GameParams GameSetup::getSetup() {
 }
 
 void GameSetup::craftBrokerRequest(Transport::Address) {
-    // TODOX: Implement
+    List<Transport::Address> privateAddresses = xport.determineThisMachineIPs();
+    if (!publicAddress.isValid() && (privateAddresses.size()==0)) {
+        throw std::runtime_error("No known IP addresses to publish.");
+    }
+    Transport::Address firstAddress = publicAddress;
+    int secondAddress = 0;
+    if (!publicAddress.isValid()) {
+        firstAddress = privateAddresses.get(0);
+        secondAddress = 1;
+    }
+    
+    Json::Value responseJson;
+    // Connect to the client and register a game request.
+    sprintf(brokerRequestContent, "{\"addrs\":[{\"ip\": \"%s\",\"port\": %d}", publicAddress.ip(), publicAddress.port());
+    for(int ctr=0; ctr<privateAddresses.size(); ++ctr) {
+        sprintf(brokerRequestContent+strlen(brokerRequestContent), ",{\"ip\": \"%s\",\"port\": %d}",
+                privateAddresses.get(ctr).ip(), privateAddresses.get(ctr).port());
+    }
+    sprintf(brokerRequestContent+strlen(brokerRequestContent), "], \"sessionId\": %d, \"gameToPlay\": %d, \"desiredPlayers\": %d}",
+            brokerSessionId, newParams.gameLevel, newParams.numberPlayers);
 }
 
 
+bool GameSetup::pollBroker() {
+    bool gotResponse = false;
+    return gotResponse;
+}
+
 // TODOX: Get rid of this method.  It should be broken up into other methods
 void GameSetup::setupBrokeredGame(int argc, char** argv) {
-
     
-
-	List<Transport::Address> privateAddresses = xport.determineThisMachineIPs();
-	Transport::Address publicAddress = determinePublicAddress(stunServer);
-    
-    int sessionId = Sys::random() * 10000000;
-    Json::Value responseJson;
-    // Connect to the client and register a game request.
-    char requestContent[2000];
-    sprintf(requestContent, "{\"addrs\":[{\"ip\": \"%s\",\"port\": %d}", publicAddress.ip(), publicAddress.port());
-    for(int ctr=0; ctr<privateAddresses.size(); ++ctr) {
-        sprintf(requestContent+strlen(requestContent), ",{\"ip\": \"%s\",\"port\": %d}",
-                privateAddresses.get(ctr).ip(), privateAddresses.get(ctr).port());
-    }
-    sprintf(requestContent+strlen(requestContent), "], \"sessionId\": %d, \"gameToPlay\": %d, \"desiredPlayers\": %d}",
-            sessionId, newParams.gameLevel, newParams.numberPlayers);
+/*------------------ Already xfered to craftBrokerRequest */
+/**/	List<Transport::Address> privateAddresses = xport.determineThisMachineIPs();
+/**/	Transport::Address publicAddress = determinePublicAddress(stunServer);
+/**/
+/**/   int sessionId = Sys::random() * 10000000;
+/**/   Json::Value responseJson;
+/**/   // Connect to the client and register a game request.
+/**/    char requestContent[2000];
+/**/    sprintf(requestContent, "{\"addrs\":[{\"ip\": \"%s\",\"port\": %d}", publicAddress.ip(), publicAddress.port());
+/**/    for(int ctr=0; ctr<privateAddresses.size(); ++ctr) {
+/**/        sprintf(requestContent+strlen(requestContent), ",{\"ip\": \"%s\",\"port\": %d}",
+/**/                privateAddresses.get(ctr).ip(), privateAddresses.get(ctr).port());
+/**/    }
+/**/    sprintf(requestContent+strlen(requestContent), "], \"sessionId\": %d, \"gameToPlay\": %d, \"desiredPlayers\": %d}",
+/**/            sessionId, newParams.gameLevel, newParams.numberPlayers);
+/*------------------ Already xfered to craftBrokerRequest */
     char response[1000];
     bool gotResponse = false;
     
@@ -400,7 +446,6 @@ Transport::Address GameSetup::checkForPublicAddress() {
     Transport::Address publicAddress;
     // Listen on the socket and get the public IP and port
     char buffer[256];
-    Logger::log("Checking for STUN server message.");
     int numCharsRead = stunServerSocket->readData(buffer, 256);
     if (numCharsRead > 0) {
         // Throw a null on the end to terminate the string

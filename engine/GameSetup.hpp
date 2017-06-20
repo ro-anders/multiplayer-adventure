@@ -87,13 +87,16 @@ public:
 private:
     
     /** Milliseconds to wait for communications with broker before timing out. */
-    static const int BROKER_TIMEOUT; // How long to wait for broker to respond in ms.
+    static const int STUN_TIMEOUT; // How long to wait for broker to respond with public ip (in ms).
+    static const int BROKER_PERIOD; // Ms between requesting from btoker status of game setup
     static const int UDP_HANDSHAKE_PERIOD; // Ms between sending/checking UDP packets with initial connection handshake
     
     Transport::Address stunServer;
     Transport::Address broker;
+    Transport::Address publicAddress;
     UdpSocket* stunServerSocket;
     sockaddr_in* stunServerSockAddr;
+    int brokerSessionId;
     char brokerRequestContent[2000];
     
     /** The parameters of the setup game. */
@@ -102,12 +105,14 @@ private:
     /** The cuurent state in the state machine of setting up a game. */
     int setupState;
     static const int SETUP_INIT;
+    static const int SETUP_REQUEST_PUBLIC_IP;
     static const int SETUP_WAITING_FOR_PUBLIC_IP;
     static const int SETUP_MAKE_BROKER_REQUEST;
+    static const int SETUP_WAITING_FOR_BROKERING;
     static const int SETUP_INIT_CONNECT_WITH_PLAYERS;
     static const int SETUP_CONNECTING_WITH_PLAYERS;
     static const int SETUP_CONNECTED;
-    
+
     /** Whether we need to determin our public IP address.*/
     bool needPublicIp;
     
@@ -126,6 +131,8 @@ private:
     Transport::Address checkForPublicAddress();
     
     void craftBrokerRequest(Transport::Address);
+    
+    bool pollBroker();
 
     void setupBrokeredGame(int argc, char** argv);
     
