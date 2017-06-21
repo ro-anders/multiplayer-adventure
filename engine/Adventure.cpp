@@ -13,13 +13,10 @@
 // Original game written by Warren Robinett. Warren, you rock.
 //
 
-#ifdef WIN32
-#include <Windows.h>
-#endif
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include "sys.h"
 
 
 #include "Adventure.h"

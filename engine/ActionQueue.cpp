@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include "sys.h"
 #include "ActionQueue.hpp"
 
 ActionQueue::ActionQueue() {

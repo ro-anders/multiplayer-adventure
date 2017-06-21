@@ -3,6 +3,8 @@
 #ifndef adventure_sys_h
 #define adventure_sys_h
 
+#include "sys.h"
+
 // Some types
 typedef unsigned long color;
 typedef unsigned char byte;

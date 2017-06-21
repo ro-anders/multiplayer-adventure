@@ -1,9 +1,4 @@
-         
-
-#ifdef WIN32
-//#include "stdafx.h"
-#endif
-
+#include "sys.h"
 #include "Sync.hpp"
 
 #include "ActionQueue.hpp"
