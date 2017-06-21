@@ -26,7 +26,7 @@
 
 - (IBAction)update:(id)sender;
 
-- (void)displayStatus:(const char*)message :(int)msDuration;
+- (void)displayStatus:(const char*)message :(int)durationSec;
 
 
 @end

@@ -155,12 +155,12 @@ bool gMute = FALSE;
     [self setNeedsDisplay:YES];
 }
 
--(void)displayStatus:(const char*)message :(int)duration
+-(void)displayStatus:(const char*)message :(int)durationSec
 {
     NSString *nsstring = [NSString stringWithUTF8String:message];
     [mStatusMessage setStringValue:nsstring];
     [mStatusMessage setHidden:NO];
-    mDisplayStatusExpiration = time(NULL) + duration;
+    mDisplayStatusExpiration = time(NULL) + durationSec;
 }
 
 - (void)playGame
@@ -472,8 +472,8 @@ float Platform_Random()
     return val;
 }
 
-void Platform_DisplayStatus(const char* message, int duration) {
-    [gAdvView displayStatus:message :duration];
+void Platform_DisplayStatus(const char* message, int durationSec) {
+    [gAdvView displayStatus:message :durationSec];
 }
 
 
