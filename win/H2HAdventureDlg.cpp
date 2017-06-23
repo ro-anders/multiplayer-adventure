@@ -27,8 +27,17 @@ CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
 	  gameStarted(false)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_pdcMemory = new CDC;
+	m_pBitmap = new CBitmap;
 	pixelArray[0] = -1;
 }
+
+CH2HAdventureDlg::~CH2HAdventureDlg()
+{
+	delete m_pBitmap; // already deselected
+	delete m_pdcMemory;
+}
+
 
 void CH2HAdventureDlg::DoDataExchange(CDataExchange* pDX)
 {
@@ -54,6 +63,19 @@ BOOL CH2HAdventureDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+
+	// creates the memory device context and the bitmap
+	if (m_pdcMemory->GetSafeHdc() == NULL) {
+		CClientDC dc(this);
+		// OnPrepareDC(&dc);  Don't think we need to call this because this is a dialog not a scrollview
+		CSize sizeTotal(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN);
+		CRect rectMax(0, 0, sizeTotal.cx, -sizeTotal.cy);
+		dc.LPtoDP(rectMax);
+		m_pdcMemory->CreateCompatibleDC(&dc);
+		// makes bitmap same size as display window
+		m_pBitmap->CreateCompatibleBitmap(&dc, rectMax.right, rectMax.bottom);
+		m_pdcMemory->SetMapMode(MM_LOENGLISH);
+	}
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -87,7 +109,30 @@ void CH2HAdventureDlg::OnPaint()
 	else
 	{
 		CDialogEx::OnPaint();
-		OnDraw(&dc);
+
+		// TODO: Add your message handler code here
+		CPaintDC dc(this);
+		// OnPrepareDC(&dc);  Don't think we need to call this because this is a dialog not a scrollview
+		CRect rectUpdate;
+		dc.GetClipBox(&rectUpdate);
+
+		CBitmap* pOldBitmap = m_pdcMemory->SelectObject(m_pBitmap);
+		m_pdcMemory->SelectClipRgn(NULL);
+		m_pdcMemory->IntersectClipRect(&rectUpdate);
+		CBrush backgroundBrush((COLORREF) ::GetSysColor(COLOR_WINDOW));
+		CBrush* pOldBrush = m_pdcMemory->SelectObject(&backgroundBrush);
+		m_pdcMemory->PatBlt(rectUpdate.left, rectUpdate.top,
+			rectUpdate.Width(), rectUpdate.Height(), PATCOPY);
+		OnDraw(m_pdcMemory);
+		dc.BitBlt(rectUpdate.left, rectUpdate.top,
+			rectUpdate.Width(), rectUpdate.Height(),
+			m_pdcMemory, rectUpdate.left, rectUpdate.top, SRCCOPY);
+		m_pdcMemory->SelectObject(pOldBitmap);
+		m_pdcMemory->SelectObject(pOldBrush);
+		// Do not call CScrollView::OnPaint() for painting messages
+
+
+		// OnDraw(&dc);  No longer call this but call it earlier passing in bitmap context
 	}
 }
 
@@ -157,7 +202,7 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	CSize screenSize(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT+ADVENTURE_OVERSCAN);
 	CRect screenRect(screenTopLeft, screenSize);
 	dc.LPtoDP(screenRect);
-	gThis->InvalidateRect(screenRect, FALSE);
+	gThis->InvalidateRect(screenRect, TRUE);
 
 	/*
 	Original test code to draw a big gray block

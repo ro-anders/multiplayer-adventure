@@ -11,6 +11,7 @@ class CH2HAdventureDlg : public CDialogEx
 // Construction
 public:
 	CH2HAdventureDlg(CWnd* pParent = NULL);	// standard constructor
+	virtual  ~CH2HAdventureDlg();
 
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 
@@ -26,6 +27,8 @@ public:
 // Implementation
 protected:
 	HICON m_hIcon;
+	CDC*     m_pdcMemory;
+	CBitmap* m_pBitmap;
 
 	bool gameStarted;
 
