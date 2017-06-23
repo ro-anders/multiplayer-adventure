@@ -2,6 +2,18 @@ In MFC (which is what Visual C++ uses) there are Dialog apps and SDI/MDI apps.
 Going with the Dialog.  It seems simpler and I have found example where you can directly draw into it
 (http://stackoverflow.com/questions/2495188/how-to-add-canvas-in-mfc-dialog)
 
+Basic idea is you have a CDC, the context in which you draw stuff, and GDIs, tools for drawing in that context.
+Examples of GDIs are pens, brushes, and bitmaps.
+Examples of CDCs are CWindowDC for drawing anywhere on the window (including menu bar), CClientDC and CPaintDC for 
+  drawing in the app area of the window, and CMetaFileDC for creating a script.
+HDC is a 32 bit handle to a Windows Device Context (don't know if it's just a pointer to a CDC or a pointer to the
+  unerlying physical device that the CDC uses).
+You can get a CClientDC from a window either on the stack "CClientDC cldc(pWindow);" or 
+  on the heap "CDC* pDC = pWindow->GetDC();" but you must release the heap using "ReleaseDC(pDC);"
+  ?? How do you know you get a CClientDC and not some other CDC subclass?
+
+
+
 Hirschberg version had a main window with the following:
 - title bar with text
     ? Do we need to worry about this, or did we do that with the project setup Wizard?
@@ -73,3 +85,32 @@ VStudio configuration I had to do:
   Configuration Properties->C/C++->Preprocessor
   Preprocessor Definitions = _CRT_SECURE_NO_WARNINGS
                              <different options>
+
+
+--------------------------------------------------------------------------------
+
+Looking at an example of how to draw to the window first directly and then 
+using a bitmap:
+
+Drawing is done in OnDraw()
+A pointer to a CDC is passed in and it draws a static square and an ellipse at a 
+  dynamic point and size.
+  - before it draws anythings it does
+      CPoint point(0, 0);                  // logical (0, 0)
+      pDC->LPtoDP(&point);                 // In device coordinates,
+      pDC->SetBrushOrg(point);             //  align the brush with
+    This handles mapping things (i think like if scrollbars are involved) 
+    ???I don't really understand when I would want device coordinates and when I want logical coordinates???
+    ???This handles when device and logical contexts have different origins, but they can also have different scales???
+  - the square is drawn with a 
+      pDC->Rectangle(CRect(100, -100, 200, -200))
+  - the ellipse instead is drawn with a variable top-left CPoint and a constant CSize of (100, -100)
+    ????Why -100???
+  - when the mouse is dragged they take the mouse's position (a CPoint passed in to the mouseMove() callback), 
+      pass it through DPtoLP(), and then set that to the top left variable
+ 
+Whenever you drag the mouse it calls InvalidateRect (I guess to ask OnDraw to draw it again)
+
+When migrated to using bitmap, all the OnDraw code remained the same, the mouse move 
+  just changed the enigmatic second argument of IvalidateRect from TRUE to FALSE, and
+  now has an OnPaint method (which seems to get called every time) that sets up a bitmap.

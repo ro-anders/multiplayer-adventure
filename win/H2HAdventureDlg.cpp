@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "..\engine\adventure_sys.h"
 #include "..\engine\Adventure.h"
+#include "..\engine\Sys.hpp"
 #include "H2HAdventure.h"
 #include "H2HAdventureDlg.h"
 #include "afxdialogex.h"
@@ -16,6 +17,9 @@
 
 // CH2HAdventureDlg dialog
 
+// Hold my beer.  Trying sumtin.
+int pixelArray[7000];
+int numPixels = 0;
 
 
 CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
@@ -23,6 +27,7 @@ CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
 	  gameStarted(false)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	pixelArray[0] = -1;
 }
 
 void CH2HAdventureDlg::DoDataExchange(CDataExchange* pDX)
@@ -59,9 +64,12 @@ BOOL CH2HAdventureDlg::OnInitDialog()
 
 void CH2HAdventureDlg::OnPaint()
 {
+	static int lastTime = 0;
+	int startTime = Sys::runTime();
+	CPaintDC dc(this); // device context for painting
+
 	if (IsIconic())
 	{
-		CPaintDC dc(this); // device context for painting
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
@@ -79,8 +87,19 @@ void CH2HAdventureDlg::OnPaint()
 	else
 	{
 		CDialogEx::OnPaint();
+		OnDraw(&dc);
 	}
 }
+
+void CH2HAdventureDlg::OnDraw(CDC* pDC) {
+	for (int pixel = 0; pixel < numPixels; ++pixel) {
+		int row = pixel * 7;
+		DrawPixel(pDC, pixelArray[row], pixelArray[row + 1], pixelArray[row + 2], pixelArray[row + 3], pixelArray[row + 4],
+			pixelArray[row + 5], pixelArray[row + 6]);
+	}
+	numPixels = 0;
+}
+
 
 // The system calls this function to obtain the cursor to display while the user drags
 //  the minimized window.
@@ -110,7 +129,7 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		Adventure_Setup(2, 0, NULL, 2, 1, 1);
 
 		// Start the timer
-		DWORD timerId = ::timeSetEvent(60, 60, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
+		DWORD timerId = ::timeSetEvent(16, 16, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
 		gameStarted = true;
 	}
 }
@@ -118,6 +137,8 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	DWORD_PTR dw1, DWORD_PTR dw2)
 {
+	static int lastTime = 0;
+	long startTime = Sys::runTime();
 	static int color = 0;
 
 	CClientDC dc(gThis); // device context for painting
@@ -127,7 +148,16 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	//HBITMAP bmpOld = (HBITMAP)::SelectObject(gDC, bmpOffscreen);
 	HPEN penOld = (HPEN)::SelectObject(dc, ::GetStockObject(NULL_PEN));
 
+	numPixels = 0;
+	pixelArray[0] = -1;
+	
 	Adventure_Run();
+
+	CPoint screenTopLeft(12, 194);
+	CSize screenSize(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT+ADVENTURE_OVERSCAN);
+	CRect screenRect(screenTopLeft, screenSize);
+	dc.LPtoDP(screenRect);
+	gThis->InvalidateRect(screenRect, FALSE);
 
 	/*
 	Original test code to draw a big gray block
@@ -154,6 +184,13 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	//::DeleteDC(gDC);
 	//::ReleaseDC(gWnd, winDC);
 	gDC = NULL;
+
+	int totalTime = Sys::runTime() - startTime;
+	int sinceLast = startTime - lastTime;
+	lastTime = startTime;
+	char message[1000];
+	sprintf(message, "Timed proc took %d ms.  Last called %d ms ago at %d.\n", totalTime, sinceLast, lastTime/1000);
+	Sys::consoleLog(message);
 }
 
 void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire)
@@ -182,6 +219,20 @@ void Platform_ReadDifficultySwitches(int* left, int* right)
 
 void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int height/*=1*/)
 {
+	int row = numPixels * 7;
+	pixelArray[row] = r;
+	pixelArray[row + 1] = g;
+	pixelArray[row + 2] = b;
+	pixelArray[row + 3] = x;
+	pixelArray[row + 4] = y;
+	pixelArray[row + 5] = width;
+	pixelArray[row + 6] = height;
+	++numPixels;
+	pixelArray[numPixels * 7] = -1;
+}
+
+void CH2HAdventureDlg::DrawPixel(CDC* pDC, int r, int g, int b, int x, int y, int width, int height)
+{
 	/*
 	//HBITMAP bmpOld = (HBITMAP)::SelectObject(gDC, bmpOffscreen);
 	HPEN penOld = (HPEN)::SelectObject(dc, ::GetStockObject(NULL_PEN));
@@ -195,10 +246,10 @@ void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int
 	RECT rcClient;
 	gThis->GetClientRect(&rcClient);
 */
-	if (gDC)
+	if (pDC)
 	{
 		HBRUSH newBrush = (HBRUSH)::CreateSolidBrush(RGB(r, g, b));
-		HBRUSH oldBrush = (HBRUSH)::SelectObject(*gDC, newBrush);
+		HBRUSH oldBrush = (HBRUSH)::SelectObject(*pDC, newBrush);
 
 		// The game expects a bottom up buffer, so we flip the orientation here
 		y = (ADVENTURE_SCREEN_HEIGHT - y) + ADVENTURE_OVERSCAN;
@@ -209,9 +260,9 @@ void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int
 		y += 194;
 		width *= gGfxScaler;
 		height *= gGfxScaler;
-		::Rectangle(*gDC, x, y - height, x + width + 1, y + 1);
+		::Rectangle(*pDC, x, y - height, x + width + 1, y + 1);
 
-		::SelectObject(*gDC, oldBrush);
+		::SelectObject(*pDC, oldBrush);
 		::DeleteObject(newBrush);
 	}
 }

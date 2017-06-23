@@ -12,6 +12,8 @@ class CH2HAdventureDlg : public CDialogEx
 public:
 	CH2HAdventureDlg(CWnd* pParent = NULL);	// standard constructor
 
+	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
+
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_H2HADVENTURE_DIALOG };
@@ -19,7 +21,7 @@ public:
 
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
-
+	void DrawPixel(CDC* pDC, int r, int g, int b, int x, int y, int width, int height);
 
 // Implementation
 protected:

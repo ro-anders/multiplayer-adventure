@@ -47,6 +47,8 @@ private:
     
     static long startOfProgramTime;
 
+	static long dummyNumber;
+
 	static bool seedRandom();
     
 };
