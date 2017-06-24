@@ -115,8 +115,23 @@ When migrated to using bitmap, all the OnDraw code remained the same, the mouse 
   just changed the enigmatic second argument of IvalidateRect from TRUE to FALSE, and
   now has an OnPaint method (which seems to get called every time) that sets up a bitmap.
 
-So what does it draw, invalidate, and bitblt?
+So what does it draw, inva
 
-Small drag started at [10,10,110,110] which was in the window [11,11,117,117] (Huh? Changed size?)
-Invalidates [11,11,117,117]
+Mouse downed at (55, 55) which was {46, 46} into the ellipse.
+Ellipse started at [[10,-10,110,-110]] which was [9,9,101,101] in the window (Huh? Changed size?)
+Invalidates [9,9,101,101]
+MouseMove passes in (56,54) which is a {1, -1} move because I mouse-downed at (55, 55)
+Top Left becomes (10, 8) which was ((11, -9)) in the frame
+Ellipse now in [[11, -9, 111, -119]] which is [10, 8, 102, 100] in the window (-119?  Shouldn't that be -109?)
+Invalidates [10, 8, 102, 100]
+
+Then Paints
+Update box is [[10, -9, 111, -110]] (the super rectangle of the two it invalidated)
+Call PatBlt on that - though in left, top, width, height form (what's PatBlt?)
+Draws ellipse at [[11, -9, 111, -119]]
+Calls BitBlt on [[10, -9, 111, -110]]
+
+
+
+
  
