@@ -114,3 +114,9 @@ Whenever you drag the mouse it calls InvalidateRect (I guess to ask OnDraw to dr
 When migrated to using bitmap, all the OnDraw code remained the same, the mouse move 
   just changed the enigmatic second argument of IvalidateRect from TRUE to FALSE, and
   now has an OnPaint method (which seems to get called every time) that sets up a bitmap.
+
+So what does it draw, invalidate, and bitblt?
+
+Small drag started at [10,10,110,110] which was in the window [11,11,117,117] (Huh? Changed size?)
+Invalidates [11,11,117,117]
+ 
