@@ -21,6 +21,9 @@
 int pixelArray[7000];
 int numPixels = 0;
 
+const int CH2HAdventureDlg::ATARI_SCREEN_TOP = 0;
+const int CH2HAdventureDlg::ATARI_SCREEN_LEFT = 0;
+
 
 CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_H2HADVENTURE_DIALOG, pParent),
@@ -68,11 +71,11 @@ BOOL CH2HAdventureDlg::OnInitDialog()
 	if (m_pdcMemory->GetSafeHdc() == NULL) {
 		CClientDC dc(this);
 		// OnPrepareDC(&dc);  Don't think we need to call this because this is a dialog not a scrollview
-		CSize sizeTotal(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN);
-		CRect rectMax(0, 0, sizeTotal.cx, -sizeTotal.cy);
+		CSize sizeTotal(ATARI_SCREEN_LEFT + ADVENTURE_SCREEN_WIDTH, ATARI_SCREEN_TOP + ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN);
+		// TODOX: CRect rectMax(0, 0, sizeTotal.cx, -sizeTotal.cy);
+		CRect rectMax(0, 0, sizeTotal.cx, sizeTotal.cy);
 		dc.LPtoDP(rectMax);
 		m_pdcMemory->CreateCompatibleDC(&dc);
-		// makes bitmap same size as display window
 		m_pBitmap->CreateCompatibleBitmap(&dc, rectMax.right, rectMax.bottom);
 		m_pdcMemory->SetMapMode(MM_LOENGLISH);
 	}
@@ -110,8 +113,6 @@ void CH2HAdventureDlg::OnPaint()
 	{
 		CDialogEx::OnPaint();
 
-		// TODO: Add your message handler code here
-		CPaintDC dc(this);
 		// OnPrepareDC(&dc);  Don't think we need to call this because this is a dialog not a scrollview
 		CRect rectUpdate;
 		dc.GetClipBox(&rectUpdate);
@@ -131,8 +132,7 @@ void CH2HAdventureDlg::OnPaint()
 		m_pdcMemory->SelectObject(pOldBrush);
 		// Do not call CScrollView::OnPaint() for painting messages
 
-
-		// OnDraw(&dc);  No longer call this but call it earlier passing in bitmap context
+		//OnDraw(&dc);  //No longer call this but call it earlier passing in bitmap context
 	}
 }
 
@@ -198,7 +198,7 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	
 	Adventure_Run();
 
-	CPoint screenTopLeft(12, 194);
+	CPoint screenTopLeft(CH2HAdventureDlg::ATARI_SCREEN_TOP, CH2HAdventureDlg::ATARI_SCREEN_TOP);
 	CSize screenSize(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT+ADVENTURE_OVERSCAN);
 	CRect screenRect(screenTopLeft, screenSize);
 	dc.LPtoDP(screenRect);
@@ -300,9 +300,9 @@ void CH2HAdventureDlg::DrawPixel(CDC* pDC, int r, int g, int b, int x, int y, in
 		y = (ADVENTURE_SCREEN_HEIGHT - y) + ADVENTURE_OVERSCAN;
 
 		x *= gGfxScaler;
-		x += 12;
+		x += CH2HAdventureDlg::ATARI_SCREEN_TOP;
 		y *= gGfxScaler;
-		y += 194;
+		y += CH2HAdventureDlg::ATARI_SCREEN_LEFT;
 		width *= gGfxScaler;
 		height *= gGfxScaler;
 		::Rectangle(*pDC, x, y - height, x + width + 1, y + 1);

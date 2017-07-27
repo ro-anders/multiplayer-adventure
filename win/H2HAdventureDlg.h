@@ -38,5 +38,7 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
+	static const int ATARI_SCREEN_TOP;
+	static const int ATARI_SCREEN_LEFT;
 	afx_msg void OnBnClickedPlayButton();
 };
