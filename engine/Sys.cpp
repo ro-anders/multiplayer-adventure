@@ -97,6 +97,6 @@ long Sys::runTime() {
 
 
 bool Sys::seedRandom() {
-	srand((unsigned)time(NULL));
+    srand((unsigned)Sys::runTime());
 	return true;
 }

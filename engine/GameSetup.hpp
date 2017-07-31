@@ -63,20 +63,15 @@ public:
     
     /**
      * This checks to see if the game is ready to play and, if not, executes the next step in the setup process.
-     * Will occassionally generate status messages (e.g. "first player joined, waiting for second").  If this status
-     * message changes, will return true.  If there is no change in status, will return false.
+     * Will occassionally generate status messages (e.g. "first player joined, waiting for second") that it will
+     * send to the platform to display.
      */
-    bool checkSetup();
+    void checkSetup();
     
     /**
      * True if the game has been all setup and is ready to play.  False if still being setup.
      */
     bool isGameSetup();
-    
-    /**
-     * A message indicating the current status of setting up the game.
-     */
-    const char* getStatus();
     
     /**
      * Get the parameters for the setup game.  If the game is not yet setup may have incomplete
@@ -109,9 +104,11 @@ private:
     static const int SETUP_WAITING_FOR_PUBLIC_IP;
     static const int SETUP_MAKE_BROKER_REQUEST;
     static const int SETUP_WAITING_FOR_BROKERING;
+    static const int SETUP_PAUSE_BEFORE_CONNECTING;
     static const int SETUP_INIT_CONNECT_WITH_PLAYERS;
     static const int SETUP_CONNECTING_WITH_PLAYERS;
     static const int SETUP_CONNECTED;
+    static const int SETUP_FAILED;
 
     /** Whether we need to determin our public IP address.*/
     bool needPublicIp;
@@ -138,13 +135,16 @@ private:
     
     void setupP2PGame(GameSetup::GameParams& newParams, int argc, char** argv);
     
-    void checkExpirationDate();
+    bool hasExpired();
 
     RestClient& client;
     
     UdpTransport& xport;
     
     Transport::Address determinePublicAddress(Transport::Address stunServer);
+    
+    bool sameAsMyAddresses(Transport::Address* addresses, int numAddresses);
+
 };
 
 #endif /* GameSetup_hpp */

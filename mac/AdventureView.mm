@@ -127,16 +127,13 @@ bool gMute = FALSE;
     }
     
     if (!setup->isGameSetup()) {
-        bool statusChange = setup->checkSetup();
-        if (statusChange) {
-            // TODOX: Display the status
-        }
+        setup->checkSetup();
         if (setup->isGameSetup()) {
             GameSetup::GameParams params = setup->getSetup();
             if (params.noTransport) {
                 delete xport;
                 xport = NULL;
-            }
+            }   
             Platform_MuteSound(params.shouldMute);
             
             if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
@@ -160,7 +157,7 @@ bool gMute = FALSE;
     NSString *nsstring = [NSString stringWithUTF8String:message];
     [mStatusMessage setStringValue:nsstring];
     [mStatusMessage setHidden:NO];
-    mDisplayStatusExpiration = time(NULL) + durationSec;
+    mDisplayStatusExpiration = (durationSec >= 0 ? time(NULL) + durationSec : -1);
 }
 
 - (void)playGame

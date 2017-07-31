@@ -22,9 +22,12 @@ const int GameSetup::SETUP_REQUEST_PUBLIC_IP = 1;
 const int GameSetup::SETUP_WAITING_FOR_PUBLIC_IP = 2;
 const int GameSetup::SETUP_MAKE_BROKER_REQUEST = 3;
 const int GameSetup::SETUP_WAITING_FOR_BROKERING = 4;
-const int GameSetup::SETUP_INIT_CONNECT_WITH_PLAYERS = 5;
-const int GameSetup::SETUP_CONNECTING_WITH_PLAYERS = 6;
-const int GameSetup::SETUP_CONNECTED = 7;
+const int GameSetup::SETUP_PAUSE_BEFORE_CONNECTING = 5;
+const int GameSetup::SETUP_INIT_CONNECT_WITH_PLAYERS = 6;
+const int GameSetup::SETUP_CONNECTING_WITH_PLAYERS = 7;
+const int GameSetup::SETUP_CONNECTED = 8;
+const int GameSetup::SETUP_FAILED = 9;
+
 
 
 GameSetup::GameParams::GameParams() :
@@ -143,22 +146,25 @@ void GameSetup::setNumberPlayers(int numPlayers) {
  * Will occassionally generate status messages (e.g. "first player joined, waiting for second").  If this status
  * message changes, will return true.  If there is no change in status, will return false.
  */
-bool GameSetup::checkSetup() {
+void GameSetup::checkSetup() {
     long currentTime;
-    bool statusChange = false;
     switch (setupState) {
         case SETUP_INIT: {
-            checkExpirationDate();
-            if (needPublicIp) {
+            if (hasExpired()) {
+                Platform_DisplayStatus("Beta versions only work for a limited time.\nThis version has expired.", -1);
+                setupState = SETUP_FAILED;
+            } else if (needPublicIp) {
                 setupState = SETUP_REQUEST_PUBLIC_IP;
             } else if (isBrokeredGame) {
                 setupState = SETUP_MAKE_BROKER_REQUEST;
             } else {
-                setupState = SETUP_INIT_CONNECT_WITH_PLAYERS;
+                timeoutStart = Sys::runTime() + 3000; // TODOX: Remove this line
+                setupState = SETUP_PAUSE_BEFORE_CONNECTING; // TODOX: SETUP_INIT_CONNECT_WITH_PLAYERS;
             }
             break;
         }
         case SETUP_REQUEST_PUBLIC_IP: {
+            Platform_DisplayStatus("Contacting game broker", -1);
             askForPublicAddress();
             setupState = SETUP_WAITING_FOR_PUBLIC_IP;
             timeoutStart = Sys::runTime();
@@ -167,15 +173,18 @@ bool GameSetup::checkSetup() {
         case SETUP_WAITING_FOR_PUBLIC_IP: {
             currentTime = Sys::runTime();
             if (currentTime-timeoutStart > STUN_TIMEOUT) {
-                throw BrokerUnreachableException();
-            }
-            publicAddress = checkForPublicAddress();
-            if (publicAddress.isValid()) {
-                setupState = SETUP_MAKE_BROKER_REQUEST;
+                Platform_DisplayStatus("Failed to connect with game broker.\nBroker may be down or you may be behind a firewall.", -1);
+                setupState = SETUP_FAILED;
+            } else {
+                publicAddress = checkForPublicAddress();
+                if (publicAddress.isValid()) {
+                    setupState = SETUP_MAKE_BROKER_REQUEST;
+                }
             }
             break;
         }
         case SETUP_MAKE_BROKER_REQUEST: {
+            Platform_DisplayStatus("Waiting for other players.", -1);
             craftBrokerRequest(publicAddress);
             setupState = SETUP_WAITING_FOR_BROKERING;
             timeoutStart = 0;
@@ -186,14 +195,27 @@ bool GameSetup::checkSetup() {
             if (currentTime-timeoutStart > BROKER_PERIOD) {
                 bool nowConnected = pollBroker();
                 if (nowConnected) {
-                    // TODOX: What do we do now?
+                    timeoutStart = Sys::runTime() + 60000; // Usingg 'timeoutStart' as a timeout end.  Bad.
+                    setupState = SETUP_PAUSE_BEFORE_CONNECTING;
                 } else {
                     timeoutStart = Sys::runTime();
                 }
             }
             break;
         }
+        case SETUP_PAUSE_BEFORE_CONNECTING: {
+            int timeLeft = timeoutStart - Sys::runTime();
+            if (timeLeft > 0) {
+                char message[128];
+                sprintf(message, "Connecting in %d seconds.", timeLeft/1000);
+                Platform_DisplayStatus(message, -1);
+            } else {
+                setupState = SETUP_INIT_CONNECT_WITH_PLAYERS;
+            }
+            break;
+        }
         case SETUP_INIT_CONNECT_WITH_PLAYERS: {
+            Platform_DisplayStatus("Initiating peer-to-peer connections", -1);
             if (!newParams.noTransport) {
                 xport.connect();
                 setupState = SETUP_CONNECTING_WITH_PLAYERS;
@@ -219,9 +241,14 @@ bool GameSetup::checkSetup() {
             }
             break;
         }
+        case SETUP_CONNECTED: case SETUP_FAILED: {
+            // Do nothing
+            break;
+        }
     }
-    
-    return statusChange;
+    if (setupState == SETUP_CONNECTED) {
+        Platform_DisplayStatus("", 0);
+    }
 }
 
 void GameSetup::askForPublicAddress() {
@@ -246,14 +273,6 @@ bool GameSetup::isGameSetup() {
 }
 
 /**
- * A message indicating the current status of setting up the game.
- */
-const char* GameSetup::getStatus() {
-    // TODOX: Implement
-    return "NaN";
-}
-
-/**
  * Get the parameters for the setup game.  If the game is not completely setup, this may
  * return incomplete data.
  */
@@ -273,7 +292,6 @@ void GameSetup::craftBrokerRequest(Transport::Address) {
         secondAddress = 1;
     }
     
-    Json::Value responseJson;
     // Connect to the client and register a game request.
     sprintf(brokerRequestContent, "{\"addrs\":[{\"ip\": \"%s\",\"port\": %d}", publicAddress.ip(), publicAddress.port());
     for(int ctr=0; ctr<privateAddresses.size(); ++ctr) {
@@ -286,7 +304,82 @@ void GameSetup::craftBrokerRequest(Transport::Address) {
 
 
 bool GameSetup::pollBroker() {
+    // TODOX: How do we report the broker bexoming unreachable
+    char response[1000];
     bool gotResponse = false;
+    Json::Value responseJson;
+    
+    client.post("/game", brokerRequestContent, response, 1000);
+    
+    std::stringstream strm(response);
+    strm >> responseJson;
+    
+    gotResponse = (!responseJson.empty() && (responseJson["numPlayers"].asInt() > 0));
+    if (!gotResponse) {
+        std::cout << "Waiting for second player." << std::endl;
+        Sys::sleep(10000);
+    } else {
+ 
+        // Expecting response of the form
+        // {
+        //   "gameToPlay": 1,
+        //   "numPlayers": 2,
+        //   "requests": [
+        //     {
+        //       "addrs": [
+        //         {
+        //           "ip": "127.0.0.1",
+        //           "port": 9999
+        //         }
+        //       ],
+        //       "sessionId": "2425783",
+        //       "gameToPlay": 1,
+        //       "desiredPlayers": 2
+        //     },
+        //     {
+        //       "addrs": [
+        //         {
+        //           "ip": "127.0.0.1",
+        //           "port": 8888
+        //         }
+        //       ],
+        //       "sessionId": "2425783",
+        //       "gameToPlay": 1,
+        //       "desiredPlayers": 2
+        //     }
+        //   ]
+        // }
+        //
+        // Where "gameToPlay" will be -1 if the game is not full yet.
+        
+        newParams.gameLevel = responseJson["gameToPlay"].asInt();
+        newParams.numberPlayers = responseJson["numPlayers"].asInt();
+        newParams.thisPlayer = responseJson["thisPlayer"].asInt();
+        Json::Value requests = responseJson["requests"];
+        int numRequests = requests.size();
+        for(int plyrCtr=0; plyrCtr<numRequests; ++plyrCtr) {
+            // Going to guess there aren't more than 10 addresses
+            Transport::Address addresses[10];
+            Json::Value otherPlayer = requests[plyrCtr];
+            Json::Value playerAddrs = otherPlayer["addrs"];
+            int numAddresses = playerAddrs.size();
+            for (int addrCtr=0; addrCtr<numAddresses; ++addrCtr) {
+                Json::Value nextAddress = playerAddrs[addrCtr];
+                const char* ip = nextAddress["ip"].asCString();
+                int port = nextAddress["port"].asInt();
+                addresses[addrCtr] = Transport::Address(ip, port);
+            }
+            
+            if (plyrCtr != newParams.thisPlayer) {
+                // TODOX: Will exception if no address.  In general need better validation and error response
+                std::cout << "Adding player " << addresses[0].ip() << ":" << addresses[0].port() << std::endl;
+                xport.addOtherPlayer(addresses, numAddresses);
+            }
+        }
+        xport.setTransportNum(newParams.thisPlayer);
+
+    }
+
     return gotResponse;
 }
 
@@ -463,12 +556,10 @@ Transport::Address GameSetup::checkForPublicAddress() {
     return publicAddress;
 }
 
-void GameSetup::checkExpirationDate() {
+bool GameSetup::hasExpired() {
     
-    const long EXPIRATION_DATE = 20170630;
+    const long EXPIRATION_DATE = 20170831;
     long time = Sys::today();
-    if ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE)) {
-        throw std::runtime_error("Beta Release has expired.");
-    }
-        
+    return ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE));
+    
 }
