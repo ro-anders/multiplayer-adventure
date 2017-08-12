@@ -24,6 +24,8 @@ public:
 // Implementation
 protected:
 	HICON m_hIcon;
+	CBitmap* pBitmap;
+	CDC* pInMemDC;
 
 	// Generated message map functions
 	virtual BOOL OnInitDialog();

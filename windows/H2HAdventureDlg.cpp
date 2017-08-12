@@ -24,6 +24,8 @@ CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_H2HADVENTURE_DIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	pBitmap = NULL;
+	pInMemDC = NULL;
 }
 
 void CH2HAdventureDlg::DoDataExchange(CDataExchange* pDX)
@@ -81,19 +83,33 @@ void CH2HAdventureDlg::OnPaint()
 	{
 		CDialogEx::OnPaint();
 
+		// Setup Bitmap
+		CRect WinRect(0, 0, 200, 200);
+		if (pBitmap == NULL)
+		{
+			pInMemDC = new CDC();
+			pInMemDC->CreateCompatibleDC(&dc);
+			pBitmap = new CBitmap();
+			pBitmap->CreateCompatibleBitmap(&dc, WinRect.Width(), WinRect.Height());
+			pInMemDC->SelectObject(pBitmap);
+		}
+
 		// Painting on dialog
 		HBRUSH newBrush = (HBRUSH)::CreateSolidBrush(RGB(gColor, gColor, gColor));
-		HBRUSH oldBrush = (HBRUSH)::SelectObject(dc, newBrush);
+		HBRUSH oldBrush = (HBRUSH)::SelectObject(*pInMemDC, newBrush);
 
 		//::Rectangle(dc, 10, 10, 210, 210);
 		for (int xctr = 0; xctr < 20; ++xctr) {
 			for (int yctr = 0; yctr < 20; ++yctr) {
-				::Rectangle(dc, xctr * 5, yctr * 5, xctr * 5 + 4, yctr * 5 + 4);
+				::Rectangle(*pInMemDC, xctr * 5, yctr * 5, xctr * 5 + 4, yctr * 5 + 4);
 			}
 		}
 
-		::SelectObject(dc, oldBrush);
+		::SelectObject(*pInMemDC, oldBrush);
 		::DeleteObject(newBrush);
+
+		// Copy bitmap to window
+		dc.BitBlt(10, 10, WinRect.right + 10, WinRect.bottom + 10, pInMemDC, 0, 0, SRCCOPY);
 
 	}
 }
@@ -109,6 +125,6 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	DWORD_PTR dw1, DWORD_PTR dw2)
 {
 	gColor = (gColor < 255 ? gColor + 1 : 0);
-	gThis->Invalidate();
+	gThis->Invalidate(FALSE);
 }
 
