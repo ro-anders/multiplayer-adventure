@@ -11,10 +11,14 @@
 #define new DEBUG_NEW
 #endif
 
+#include <mmsystem.h>
+typedef void (CALLBACK TIMECALLBACK)(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2);
+typedef TIMECALLBACK FAR *LPTIMECALLBACK;
+void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2);
 
 // CH2HAdventureDlg dialog
-
-
+static CDialogEx* gThis = NULL;
+static int gColor = 0;
 
 CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_H2HADVENTURE_DIALOG, pParent)
@@ -45,6 +49,8 @@ BOOL CH2HAdventureDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	gThis = this;
+	DWORD timerId = ::timeSetEvent(16, 1000, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -55,10 +61,9 @@ BOOL CH2HAdventureDlg::OnInitDialog()
 
 void CH2HAdventureDlg::OnPaint()
 {
+	CPaintDC dc(this); // device context for painting
 	if (IsIconic())
 	{
-		CPaintDC dc(this); // device context for painting
-
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
 		// Center icon in client rectangle
@@ -75,6 +80,21 @@ void CH2HAdventureDlg::OnPaint()
 	else
 	{
 		CDialogEx::OnPaint();
+
+		// Painting on dialog
+		HBRUSH newBrush = (HBRUSH)::CreateSolidBrush(RGB(gColor, gColor, gColor));
+		HBRUSH oldBrush = (HBRUSH)::SelectObject(dc, newBrush);
+
+		//::Rectangle(dc, 10, 10, 210, 210);
+		for (int xctr = 0; xctr < 20; ++xctr) {
+			for (int yctr = 0; yctr < 20; ++yctr) {
+				::Rectangle(dc, xctr * 5, yctr * 5, xctr * 5 + 4, yctr * 5 + 4);
+			}
+		}
+
+		::SelectObject(dc, oldBrush);
+		::DeleteObject(newBrush);
+
 	}
 }
 
@@ -83,5 +103,12 @@ void CH2HAdventureDlg::OnPaint()
 HCURSOR CH2HAdventureDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
+}
+
+void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
+	DWORD_PTR dw1, DWORD_PTR dw2)
+{
+	gColor = (gColor < 255 ? gColor + 1 : 0);
+	gThis->Invalidate();
 }
 
