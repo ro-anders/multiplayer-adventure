@@ -27,8 +27,8 @@ public:
 // Implementation
 protected:
 	HICON m_hIcon;
-	CDC*     m_pdcMemory;
-	CBitmap* m_pBitmap;
+	CDC*     pMemDC;
+	CBitmap* pNewBitmap;
 
 	bool gameStarted;
 

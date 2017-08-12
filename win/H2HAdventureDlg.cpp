@@ -30,15 +30,15 @@ CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
 	  gameStarted(false)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-	m_pdcMemory = new CDC;
-	m_pBitmap = new CBitmap;
+	pMemDC = new CDC;
+	pNewBitmap = new CBitmap;
 	pixelArray[0] = -1;
 }
 
 CH2HAdventureDlg::~CH2HAdventureDlg()
 {
-	delete m_pBitmap; // already deselected
-	delete m_pdcMemory;
+	delete pNewBitmap; // already deselected
+	delete pMemDC;
 }
 
 
@@ -66,19 +66,6 @@ BOOL CH2HAdventureDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-
-	// creates the memory device context and the bitmap
-	if (m_pdcMemory->GetSafeHdc() == NULL) {
-		CClientDC dc(this);
-		// OnPrepareDC(&dc);  Don't think we need to call this because this is a dialog not a scrollview
-		CSize sizeTotal(ATARI_SCREEN_LEFT + ADVENTURE_SCREEN_WIDTH, ATARI_SCREEN_TOP + ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN);
-		// TODOX: CRect rectMax(0, 0, sizeTotal.cx, -sizeTotal.cy);
-		CRect rectMax(0, 0, sizeTotal.cx, sizeTotal.cy);
-		dc.LPtoDP(rectMax);
-		m_pdcMemory->CreateCompatibleDC(&dc);
-		m_pBitmap->CreateCompatibleBitmap(&dc, rectMax.right, rectMax.bottom);
-		m_pdcMemory->SetMapMode(MM_LOENGLISH);
-	}
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -113,26 +100,24 @@ void CH2HAdventureDlg::OnPaint()
 	{
 		CDialogEx::OnPaint();
 
-		// OnPrepareDC(&dc);  Don't think we need to call this because this is a dialog not a scrollview
-		CRect rectUpdate;
-		dc.GetClipBox(&rectUpdate);
+		int screenWidth = ATARI_SCREEN_LEFT + ADVENTURE_SCREEN_WIDTH;
+		int screenHeight = ATARI_SCREEN_TOP + ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN;
 
-		CBitmap* pOldBitmap = m_pdcMemory->SelectObject(m_pBitmap);
-		m_pdcMemory->SelectClipRgn(NULL);
-		m_pdcMemory->IntersectClipRect(&rectUpdate);
-		CBrush backgroundBrush((COLORREF) ::GetSysColor(COLOR_WINDOW));
-		CBrush* pOldBrush = m_pdcMemory->SelectObject(&backgroundBrush);
-		m_pdcMemory->PatBlt(rectUpdate.left, rectUpdate.top,
-			rectUpdate.Width(), rectUpdate.Height(), PATCOPY);
-		OnDraw(m_pdcMemory);
-		dc.BitBlt(rectUpdate.left, rectUpdate.top,
-			rectUpdate.Width(), rectUpdate.Height(),
-			m_pdcMemory, rectUpdate.left, rectUpdate.top, SRCCOPY);
-		m_pdcMemory->SelectObject(pOldBitmap);
-		m_pdcMemory->SelectObject(pOldBrush);
-		// Do not call CScrollView::OnPaint() for painting messages
+		if (pNewBitmap == NULL) {
+			pMemDC = new CDC();
+			pMemDC->CreateCompatibleDC(&dc);
+			pNewBitmap = new CBitmap();
+			pNewBitmap->CreateCompatibleBitmap(&dc, screenWidth, screenHeight);
+			pMemDC->SelectObject(pNewBitmap);
+		}
 
-		//OnDraw(&dc);  //No longer call this but call it earlier passing in bitmap context
+		HPEN penOld = (HPEN)::SelectObject(dc, ::GetStockObject(NULL_PEN));
+
+		OnDraw(pMemDC);
+
+		::SelectObject(dc, penOld);
+
+		dc.BitBlt(0, 0, screenWidth, screenHeight, pMemDC, 0, 0, SRCCOPY);
 	}
 }
 
@@ -162,7 +147,6 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_
 // The 'this' object is needed by the timed callback and the window's device context (DC) is needed
 // by the PaintPixel call out.
 static CDialogEx* gThis = NULL;
-static CClientDC* gDC = NULL;
 static float gGfxScaler = 1;
 
 
@@ -182,60 +166,19 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	DWORD_PTR dw1, DWORD_PTR dw2)
 {
-	static int lastTime = 0;
-	long startTime = Sys::runTime();
-	static int color = 0;
-
-	CClientDC dc(gThis); // device context for painting
-	gDC = &dc;
-
-	// If we were using a bitmap
-	//HBITMAP bmpOld = (HBITMAP)::SelectObject(gDC, bmpOffscreen);
-	HPEN penOld = (HPEN)::SelectObject(dc, ::GetStockObject(NULL_PEN));
-
 	numPixels = 0;
 	pixelArray[0] = -1;
 	
 	Adventure_Run();
 
+	/* Code to invalidate just the screen rectangle
 	CPoint screenTopLeft(CH2HAdventureDlg::ATARI_SCREEN_TOP, CH2HAdventureDlg::ATARI_SCREEN_TOP);
 	CSize screenSize(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT+ADVENTURE_OVERSCAN);
 	CRect screenRect(screenTopLeft, screenSize);
 	dc.LPtoDP(screenRect);
 	gThis->InvalidateRect(screenRect, TRUE);
-
-	/*
-	Original test code to draw a big gray block
-	HBRUSH newBrush = (HBRUSH)::CreateSolidBrush(RGB(color, color, color));
-	color ++;
-	HBRUSH oldBrush = (HBRUSH)::SelectObject(dc, newBrush);
-	dc.Rectangle(12, 194, 640, 448);
-	RECT rcClient;
-	gThis->GetClientRect(&rcClient);
 	*/
-
-	// If we were using a bitmap
-	//int cx = (gWindowSizeX / 2) - ((ADVENTURE_SCREEN_WIDTH * gGfxScaler) / 2);
-	//int cy = (gWindowSizeY / 2) - ((ADVENTURE_SCREEN_HEIGHT * gGfxScaler) / 2);
-	//int cw = ADVENTURE_SCREEN_WIDTH * gGfxScaler;
-	//int ch = ADVENTURE_SCREEN_HEIGHT * gGfxScaler;
-	//::BitBlt(winDC, cx, cy, cw, ch, gDC, 0, 0, SRCCOPY);
-	//::SelectObject(gDC, bmpOld);
-	
-
-	::SelectObject(dc, penOld);
-
-	// Do we need to clean up dc?
-	//::DeleteDC(gDC);
-	//::ReleaseDC(gWnd, winDC);
-	gDC = NULL;
-
-	int totalTime = Sys::runTime() - startTime;
-	int sinceLast = startTime - lastTime;
-	lastTime = startTime;
-	char message[1000];
-	sprintf(message, "Timed proc took %d ms.  Last called %d ms ago at %d.\n", totalTime, sinceLast, lastTime/1000);
-	Sys::consoleLog(message);
+	gThis->Invalidate(FALSE);
 }
 
 void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire)
