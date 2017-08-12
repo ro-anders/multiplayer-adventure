@@ -3,9 +3,6 @@
 // Used by H2HAdventure.rc
 //
 #define IDR_MAINFRAME					128
-#define IDM_ABOUTBOX					0x0010
-#define IDD_ABOUTBOX					100
-#define IDS_ABOUTBOX					101
 #define IDD_H2HADVENTURE_DIALOG				102
 #define IDP_SOCKETS_INIT_FAILED			103
 

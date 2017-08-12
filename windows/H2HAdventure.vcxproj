@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{117464FD-3BBA-4484-B865-934967D365E5}</ProjectGuid>
+    <ProjectGuid>{0D96B133-C55D-4B6D-A018-DA13A16A796F}</ProjectGuid>
     <RootNamespace>H2HAdventure</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
     <Keyword>MFCProj</Keyword>
