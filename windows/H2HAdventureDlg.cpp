@@ -36,6 +36,7 @@ void CH2HAdventureDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CH2HAdventureDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_PLAY_BUTTON, &CH2HAdventureDlg::OnBnClickedPlayButton)
 END_MESSAGE_MAP()
 
 
@@ -51,8 +52,6 @@ BOOL CH2HAdventureDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-	gThis = this;
-	DWORD timerId = ::timeSetEvent(16, 1000, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -128,3 +127,11 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	gThis->Invalidate(FALSE);
 }
 
+
+
+void CH2HAdventureDlg::OnBnClickedPlayButton()
+{
+	// TODO: Add your control notification handler code here
+	gThis = this;
+	DWORD timerId = ::timeSetEvent(16, 1000, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
+}
