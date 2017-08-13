@@ -22,6 +22,9 @@ static int gBrightness = 0;
 static int SCREEN_HEIGHT = 224;
 static int SCREEN_WIDTH = 320;
 
+int pixelArray[7000];
+int numPixels = 0;
+
 
 CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_H2HADVENTURE_DIALOG, pParent)
@@ -29,6 +32,8 @@ CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	pBitmap = NULL;
 	pInMemDC = NULL;
+	pixelArray[0] = -1;
+
 }
 
 void CH2HAdventureDlg::DoDataExchange(CDataExchange* pDX)
@@ -97,30 +102,54 @@ void CH2HAdventureDlg::OnPaint()
 		}
 
 		// Painting on dialog
-		HPEN penOld = (HPEN)::SelectObject(*pInMemDC, ::GetStockObject(NULL_PEN));
-
-		int SIZE = 8;
-		int H_PIXEL = SCREEN_WIDTH / SIZE;
-		int V_PIXEL = SCREEN_HEIGHT / SIZE;
-		for (int xctr = 0; xctr < SIZE; ++xctr) {
-			for (int yctr = 0; yctr < SIZE; ++yctr) {
-				HBRUSH newBrush = (HBRUSH)::CreateSolidBrush(RGB(gBrightness * xctr / SIZE, gBrightness * yctr / SIZE, gBrightness));
-				HBRUSH oldBrush = (HBRUSH)::SelectObject(*pInMemDC, newBrush);
-
-				::Rectangle(*pInMemDC, xctr * H_PIXEL, yctr * V_PIXEL, (xctr+1) * H_PIXEL+1, (yctr + 1) * V_PIXEL+1);
-
-				::SelectObject(*pInMemDC, oldBrush);
-				::DeleteObject(newBrush);
-			}
-		}
-
-		::SelectObject(*pInMemDC, penOld);
+		OnDraw(pInMemDC);
 
 		// Copy bitmap to window
 		dc.BitBlt(10, 10, WinRect.right + 10, WinRect.bottom + 10, pInMemDC, 0, 0, SRCCOPY);
 
 	}
 }
+
+void CH2HAdventureDlg::OnDraw(CDC* pDC) {
+	HPEN penOld = (HPEN)::SelectObject(*pInMemDC, ::GetStockObject(NULL_PEN));
+
+	for (int pixel = 0; pixel < numPixels; ++pixel) {
+		int row = pixel * 7;
+		DrawPixel(pDC, pixelArray[row], pixelArray[row + 1], pixelArray[row + 2], pixelArray[row + 3], pixelArray[row + 4],
+			pixelArray[row + 5], pixelArray[row + 6]);
+	}
+	numPixels = 0;
+
+	::SelectObject(*pInMemDC, penOld);
+}
+
+
+void CH2HAdventureDlg::DrawPixel(CDC* pDC, int r, int g, int b, int x, int y, int width, int height)
+{
+	if (pDC)
+	{
+
+		/*
+		// The game expects a bottom up buffer, so we flip the orientation here
+		y = (ADVENTURE_SCREEN_HEIGHT - y) + ADVENTURE_OVERSCAN;
+
+		x *= gGfxScaler;
+		y *= gGfxScaler;
+		width *= gGfxScaler;
+		height *= gGfxScaler;
+		*/
+
+		HBRUSH newBrush = (HBRUSH)::CreateSolidBrush(RGB(r, g, b));
+		HBRUSH oldBrush = (HBRUSH)::SelectObject(*pInMemDC, newBrush);
+
+		::Rectangle(*pInMemDC, x, y, x + width + 1, y + width + 1);
+
+		::SelectObject(*pInMemDC, oldBrush);
+		::DeleteObject(newBrush);
+
+	}
+}
+
 
 // The system calls this function to obtain the cursor to display while the user drags
 //  the minimized window.
@@ -129,10 +158,36 @@ HCURSOR CH2HAdventureDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int height/*=1*/)
+{
+	int row = numPixels * 7;
+	pixelArray[row] = r;
+	pixelArray[row + 1] = g;
+	pixelArray[row + 2] = b;
+	pixelArray[row + 3] = x;
+	pixelArray[row + 4] = y;
+	pixelArray[row + 5] = width;
+	pixelArray[row + 6] = height;
+	++numPixels;
+	pixelArray[numPixels * 7] = -1;
+}
+
 void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	DWORD_PTR dw1, DWORD_PTR dw2)
 {
+	numPixels = 0;
+	pixelArray[0] = -1;
+
 	gBrightness = (gBrightness < 255 ? gBrightness + 1 : 0);
+	int SIZE = 8;
+	int H_PIXEL = SCREEN_WIDTH / SIZE;
+	int V_PIXEL = SCREEN_HEIGHT / SIZE;
+	for (int xctr = 0; xctr < SIZE; ++xctr) {
+		for (int yctr = 0; yctr < SIZE; ++yctr) {
+			Platform_PaintPixel(gBrightness * xctr / SIZE, gBrightness * yctr / SIZE, gBrightness, xctr * H_PIXEL, yctr * V_PIXEL, H_PIXEL, V_PIXEL);
+		}
+	}
+
 	gThis->Invalidate(FALSE);
 }
 

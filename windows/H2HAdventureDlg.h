@@ -30,6 +30,8 @@ protected:
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
+	void OnDraw(CDC* pDC);
+	void DrawPixel(CDC* pDC, int r, int g, int b, int x, int y, int width, int height);
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
