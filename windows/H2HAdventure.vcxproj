@@ -87,10 +87,10 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG; _CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -185,6 +185,32 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\engine\ActionQueue.hpp" />
+    <ClInclude Include="..\engine\Adventure.h" />
+    <ClInclude Include="..\engine\adventure_sys.h" />
+    <ClInclude Include="..\engine\Ball.hpp" />
+    <ClInclude Include="..\engine\Bat.hpp" />
+    <ClInclude Include="..\engine\Board.hpp" />
+    <ClInclude Include="..\engine\color.h" />
+    <ClInclude Include="..\engine\Dragon.hpp" />
+    <ClInclude Include="..\engine\GameObject.hpp" />
+    <ClInclude Include="..\engine\GameSetup.hpp" />
+    <ClInclude Include="..\engine\json\json-forwards.h" />
+    <ClInclude Include="..\engine\json\json.h" />
+    <ClInclude Include="..\engine\List.hpp" />
+    <ClInclude Include="..\engine\Logger.hpp" />
+    <ClInclude Include="..\engine\Map.hpp" />
+    <ClInclude Include="..\engine\Portcullis.hpp" />
+    <ClInclude Include="..\engine\RemoteAction.hpp" />
+    <ClInclude Include="..\engine\RestClient.hpp" />
+    <ClInclude Include="..\engine\Room.hpp" />
+    <ClInclude Include="..\engine\ScriptedSync.hpp" />
+    <ClInclude Include="..\engine\Sync.hpp" />
+    <ClInclude Include="..\engine\sys.h" />
+    <ClInclude Include="..\engine\Sys.hpp" />
+    <ClInclude Include="..\engine\Transport.hpp" />
+    <ClInclude Include="..\engine\UdpSocket.hpp" />
+    <ClInclude Include="..\engine\UdpTransport.hpp" />
     <ClInclude Include="H2HAdventure.h" />
     <ClInclude Include="H2HAdventureDlg.h" />
     <ClInclude Include="Resource.h" />
@@ -192,6 +218,27 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\engine\ActionQueue.cpp" />
+    <ClCompile Include="..\engine\Adventure.cpp" />
+    <ClCompile Include="..\engine\Ball.cpp" />
+    <ClCompile Include="..\engine\Bat.cpp" />
+    <ClCompile Include="..\engine\Board.cpp" />
+    <ClCompile Include="..\engine\Dragon.cpp" />
+    <ClCompile Include="..\engine\GameObject.cpp" />
+    <ClCompile Include="..\engine\GameSetup.cpp" />
+    <ClCompile Include="..\engine\jsoncpp.cpp" />
+    <ClCompile Include="..\engine\Logger.cpp" />
+    <ClCompile Include="..\engine\Map.cpp" />
+    <ClCompile Include="..\engine\Portcullis.cpp" />
+    <ClCompile Include="..\engine\RemoteAction.cpp" />
+    <ClCompile Include="..\engine\RestClient.cpp" />
+    <ClCompile Include="..\engine\Room.cpp" />
+    <ClCompile Include="..\engine\ScriptedSync.cpp" />
+    <ClCompile Include="..\engine\Sync.cpp" />
+    <ClCompile Include="..\engine\Sys.cpp" />
+    <ClCompile Include="..\engine\Transport.cpp" />
+    <ClCompile Include="..\engine\UdpSocket.cpp" />
+    <ClCompile Include="..\engine\UdpTransport.cpp" />
     <ClCompile Include="H2HAdventure.cpp" />
     <ClCompile Include="H2HAdventureDlg.cpp" />
     <ClCompile Include="stdafx.cpp">

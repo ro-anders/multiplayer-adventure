@@ -3,6 +3,8 @@
 //
 
 #include "stdafx.h"
+#include "..\engine\adventure_sys.h"
+#include "..\engine\Adventure.h"
 #include "H2HAdventure.h"
 #include "H2HAdventureDlg.h"
 #include "afxdialogex.h"
@@ -129,10 +131,10 @@ void CH2HAdventureDlg::DrawPixel(CDC* pDC, int r, int g, int b, int x, int y, in
 	if (pDC)
 	{
 
-		/*
 		// The game expects a bottom up buffer, so we flip the orientation here
 		y = (ADVENTURE_SCREEN_HEIGHT - y) + ADVENTURE_OVERSCAN;
 
+		/*
 		x *= gGfxScaler;
 		y *= gGfxScaler;
 		width *= gGfxScaler;
@@ -158,6 +160,64 @@ HCURSOR CH2HAdventureDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
+	DWORD_PTR dw1, DWORD_PTR dw2)
+{
+	numPixels = 0;
+	pixelArray[0] = -1;
+
+	Adventure_Run();
+/*
+ * Original color matrix *
+	gBrightness = (gBrightness < 255 ? gBrightness + 1 : 0);
+	int SIZE = 8;
+	int H_PIXEL = SCREEN_WIDTH / SIZE;
+	int V_PIXEL = SCREEN_HEIGHT / SIZE;
+	for (int xctr = 0; xctr < SIZE; ++xctr) {
+		for (int yctr = 0; yctr < SIZE; ++yctr) {
+			Platform_PaintPixel(gBrightness * xctr / SIZE, gBrightness * yctr / SIZE, gBrightness, xctr * H_PIXEL, yctr * V_PIXEL, H_PIXEL, V_PIXEL);
+		}
+	}
+*/
+	gThis->Invalidate(FALSE);
+}
+
+
+
+void CH2HAdventureDlg::OnBnClickedPlayButton()
+{
+	// TODO: Add your control notification handler code here
+	gThis = this;
+	Adventure_Setup(2, 0, NULL, 2, 1, 1);
+	DWORD timerId = ::timeSetEvent(16, 1000, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
+}
+
+void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire)
+{
+	/*
+	if (left) *left = GetAsyncKeyState(leftKey) & 0x8000;
+	if (up) *up = GetAsyncKeyState(upKey) & 0x8000;
+	if (right) *right = GetAsyncKeyState(rightKey) & 0x8000;
+	if (down) *down = GetAsyncKeyState(downKey) & 0x8000;
+	if (fire) *fire = GetAsyncKeyState(dropKey) & 0x8000;
+	*/
+}
+
+void Platform_ReadConsoleSwitches(bool* reset)
+{
+	/*
+	if (reset) *reset = GetAsyncKeyState(resetKey) & 0x8000;
+	*/
+}
+
+void Platform_ReadDifficultySwitches(int* left, int* right)
+{
+	/*
+	*left = leftDifficulty;
+	*right = rightDifficulty;
+	*/
+}
+
 void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int height/*=1*/)
 {
 	int row = numPixels * 7;
@@ -172,30 +232,64 @@ void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int
 	pixelArray[numPixels * 7] = -1;
 }
 
-void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
-	DWORD_PTR dw1, DWORD_PTR dw2)
+void Platform_MuteSound(bool nMute)
 {
-	numPixels = 0;
-	pixelArray[0] = -1;
-
-	gBrightness = (gBrightness < 255 ? gBrightness + 1 : 0);
-	int SIZE = 8;
-	int H_PIXEL = SCREEN_WIDTH / SIZE;
-	int V_PIXEL = SCREEN_HEIGHT / SIZE;
-	for (int xctr = 0; xctr < SIZE; ++xctr) {
-		for (int yctr = 0; yctr < SIZE; ++yctr) {
-			Platform_PaintPixel(gBrightness * xctr / SIZE, gBrightness * yctr / SIZE, gBrightness, xctr * H_PIXEL, yctr * V_PIXEL, H_PIXEL, V_PIXEL);
-		}
-	}
-
-	gThis->Invalidate(FALSE);
+	// TODO: Implement
 }
 
-
-
-void CH2HAdventureDlg::OnBnClickedPlayButton()
+void Platform_MakeSound(int sound, float volume)
 {
-	// TODO: Add your control notification handler code here
-	gThis = this;
-	DWORD timerId = ::timeSetEvent(16, 1000, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
+	/*
+	// TODO: Handle volume
+	char szModule[MAX_PATH];
+	char szDrive[MAX_PATH];
+	char szDir[MAX_PATH];
+	char szSoundPath[MAX_PATH];
+
+	GetModuleFileName(NULL, szModule, MAX_PATH);
+	_splitpath(szModule, szDrive, szDir, NULL, NULL);
+
+	switch (sound)
+	{
+	case SOUND_PICKUP:
+	PlaySound((char*)IDR_PICKUP_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+	wsprintf(szSoundPath, "%s%ssounds\\pickup.wav", szDrive, szDir);
+	break;
+	case SOUND_PUTDOWN:
+	PlaySound((char*)IDR_PUTDOWN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+	break;
+	case SOUND_WON:
+	PlaySound((char*)IDR_WON_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+	break;
+	case SOUND_ROAR:
+	PlaySound((char*)IDR_ROAR_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+	break;
+	case SOUND_EATEN:
+	PlaySound((char*)IDR_EATEN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+	break;
+	case SOUND_DRAGONDIE:
+	PlaySound((char*)IDR_DRAGONDIE_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+	break;
+	}
+
+	sndPlaySound(szSoundPath, SND_ASYNC | SND_NODEFAULT);
+	*/
+}
+
+float Platform_Random()
+{
+	// Using the C runtime random functions
+	return (float)rand() / RAND_MAX;
+}
+
+void Platform_DisplayStatus(const char* message, int duration) {
+	/*
+	static const char* title = "";
+	int msgboxID = MessageBox(
+	NULL,
+	(LPCSTR)message,
+	(LPCSTR)title,
+	MB_ICONWARNING | MB_OK | MB_DEFBUTTON2
+	);
+	*/
 }
