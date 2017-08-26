@@ -209,17 +209,14 @@ void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* 
 
 void Platform_ReadConsoleSwitches(bool* reset)
 {
-	/*
 	if (reset) *reset = GetAsyncKeyState(resetKey) & 0x8000;
-	*/
 }
 
 void Platform_ReadDifficultySwitches(int* left, int* right)
 {
-	/*
-	*left = leftDifficulty;
-	*right = rightDifficulty;
-	*/
+	// Haven't figured out how to support difficulty.  Pegged to B for right now.
+	*left = DIFFICULTY_B;
+	*right = DIFFICULTY_B;
 }
 
 void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int height/*=1*/)
