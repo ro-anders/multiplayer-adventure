@@ -21,8 +21,14 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_
 // CH2HAdventureDlg dialog
 static CDialogEx* gThis = NULL;
 static int gBrightness = 0;
-static int SCREEN_HEIGHT = 224;
-static int SCREEN_WIDTH = 320;
+
+int leftKey = VK_LEFT;
+int rightKey = VK_RIGHT;
+int upKey = VK_UP;
+int downKey = VK_DOWN;
+int dropKey = VK_SPACE;
+int resetKey = VK_RETURN;
+
 
 int pixelArray[7000];
 int numPixels = 0;
@@ -93,7 +99,7 @@ void CH2HAdventureDlg::OnPaint()
 		CDialogEx::OnPaint();
 
 		// Setup Bitmap
-		CRect WinRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		CRect WinRect(0, 0, ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT);
 		if (pBitmap == NULL)
 		{
 			pInMemDC = new CDC();
@@ -144,7 +150,7 @@ void CH2HAdventureDlg::DrawPixel(CDC* pDC, int r, int g, int b, int x, int y, in
 		HBRUSH newBrush = (HBRUSH)::CreateSolidBrush(RGB(r, g, b));
 		HBRUSH oldBrush = (HBRUSH)::SelectObject(*pInMemDC, newBrush);
 
-		::Rectangle(*pInMemDC, x, y, x + width + 1, y + width + 1);
+		::Rectangle(*pInMemDC, x, y - height, x + width + 1, y + 1);
 
 		::SelectObject(*pInMemDC, oldBrush);
 		::DeleteObject(newBrush);
@@ -194,13 +200,11 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 
 void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire)
 {
-	/*
 	if (left) *left = GetAsyncKeyState(leftKey) & 0x8000;
 	if (up) *up = GetAsyncKeyState(upKey) & 0x8000;
 	if (right) *right = GetAsyncKeyState(rightKey) & 0x8000;
 	if (down) *down = GetAsyncKeyState(downKey) & 0x8000;
 	if (fire) *fire = GetAsyncKeyState(dropKey) & 0x8000;
-	*/
 }
 
 void Platform_ReadConsoleSwitches(bool* reset)
