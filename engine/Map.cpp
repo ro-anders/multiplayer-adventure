@@ -344,6 +344,7 @@ int Map::numRooms = COPPER_FOYER + 1;
 int Map::LONG_WAY = 5;
 
 Map::Map(int numPlayers, int gameMapLayout) {
+    distances = NULL;
     roomDefs = new ROOM*[numRooms];
     memset(roomDefs, 0, numRooms*sizeof(ROOM*));
     
@@ -358,7 +359,9 @@ Map::~Map() {
         if (roomDefs[ctr] != NULL) {
             delete roomDefs[ctr];
         }
-        delete[] distances[ctr];
+        if (distances != NULL) {
+            delete[] distances[ctr];
+        }
     }
     delete[] roomDefs;
     delete[] distances;
@@ -488,6 +491,14 @@ void Map::ConfigureMaze(int numPlayers, int gameMapLayout) {
 }
 
 void Map::ComputeDistances(int numPorts, Portcullis** ports) {
+    // This may get called more than once.  Free up old distance calculations
+    if (distances != NULL) {
+        for(int ctr=0; ctr<numRooms; ++ctr) {
+            delete[] distances[ctr];
+        }
+        delete[] distances;
+    }
+    
     distances = new int*[numRooms];
     for(int ctr1=0; ctr1<numRooms; ++ctr1) {
         distances[ctr1] = new int[numRooms];

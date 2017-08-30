@@ -79,7 +79,7 @@ protected:
     int movementY;              // vertical movement
 
     /** For private magnets. */
-    int privateToPlayer = -1;
+    int privateToPlayer;
     
 private:
     

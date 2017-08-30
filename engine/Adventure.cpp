@@ -96,7 +96,7 @@ void AdvanceFlashColor();
 //
 
 static bool joyLeft, joyUp, joyRight, joyDown, joyFire;
-static bool switchReset;
+static bool switchReset = false;
 
 #define MAX_OBJECTS             16                      // Should be plenty
 static bool showObjectFlicker = true;                   // True if accurate object flicker is desired
@@ -756,7 +756,7 @@ void Adventure_Run()
     SyncWithOthers();
     
     // read the console switches every frame
-    bool reset;
+    bool reset = false;
     Platform_ReadDifficultySwitches(&gameDifficultyLeft, &gameDifficultyRight);
     Platform_ReadConsoleSwitches(&reset);
 
