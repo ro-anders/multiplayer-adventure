@@ -11,9 +11,6 @@ class CH2HAdventureDlg : public CDialogEx
 // Construction
 public:
 	CH2HAdventureDlg(CWnd* pParent = NULL);	// standard constructor
-	virtual  ~CH2HAdventureDlg();
-
-	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
@@ -22,23 +19,21 @@ public:
 
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
-	void DrawPixel(CDC* pDC, int r, int g, int b, int x, int y, int width, int height);
+
 
 // Implementation
 protected:
 	HICON m_hIcon;
-	CDC*     pMemDC;
-	CBitmap* pNewBitmap;
-
-	bool gameStarted;
+	CBitmap* pBitmap;
+	CDC* pInMemDC;
 
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
+	void OnDraw(CDC* pDC);
+	void DrawPixel(CDC* pDC, int r, int g, int b, int x, int y, int width, int height);
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
-	static const int ATARI_SCREEN_TOP;
-	static const int ATARI_SCREEN_LEFT;
 	afx_msg void OnBnClickedPlayButton();
 };
