@@ -14,7 +14,7 @@
 
 const int GameSetup::DEFAULT_GAME_LEVEL = GAME_MODE_1;
 const int GameSetup::STUN_TIMEOUT = 30000; // In milliseconds
-const int GameSetup::BROKER_PERIOD = 10000; // In milliseconds TODOX: 60000
+const int GameSetup::BROKER_PERIOD = 10000; // In milliseconds
 const int GameSetup::UDP_HANDSHAKE_PERIOD = 1000; // In milliseconds
 
 const int GameSetup::SETUP_INIT = 0;
@@ -195,7 +195,7 @@ void GameSetup::checkSetup() {
             if (currentTime-timeoutStart > BROKER_PERIOD) {
                 bool nowConnected = pollBroker();
                 if (nowConnected) {
-                    timeoutStart = Sys::runTime() + 60000; // Usingg 'timeoutStart' as a timeout end.  Bad.
+                    timeoutStart = Sys::runTime() + 10000; // Usingg 'timeoutStart' as a timeout end.  Bad.
                     setupState = SETUP_PAUSE_BEFORE_CONNECTING;
                 } else {
                     timeoutStart = Sys::runTime();
@@ -268,7 +268,6 @@ void GameSetup::askForPublicAddress() {
  * True if the game has been all setup and is ready to play.  False if still being setup.
  */
 bool GameSetup::isGameSetup() {
-    // TODOX: Implement
     return setupState == SETUP_CONNECTED;
 }
 
@@ -306,7 +305,7 @@ void GameSetup::craftBrokerRequest(Transport::Address) {
 bool GameSetup::pollBroker() {
     // TODOX: How do we report the broker bexoming unreachable
     char response[1000];
-    bool gotResponse = false;
+    bool gameSetup = false;
     Json::Value responseJson;
     
     client.post("/game", brokerRequestContent, response, 1000);
@@ -314,16 +313,18 @@ bool GameSetup::pollBroker() {
     std::stringstream strm(response);
     strm >> responseJson;
     
-    gotResponse = (!responseJson.empty() && (responseJson["numPlayers"].asInt() > 0));
-    if (!gotResponse) {
-        std::cout << "Waiting for second player." << std::endl;
-        Sys::sleep(10000);
+    if (responseJson.empty()) {
+        // TODOX: Not sure if this is how broker becoming unreachable manifests
+        // Do something intelligent.
+        Platform_DisplayStatus("The game broker has stopped responding for some unknown reason.\nWill continue trying.", -1);
     } else {
- 
+        gameSetup = (responseJson["gameToPlay"].asInt() >= 0);
+        
         // Expecting response of the form
         // {
         //   "gameToPlay": 1,
         //   "numPlayers": 2,
+        //   "thisPlayer": 0,
         //   "requests": [
         //     {
         //       "addrs": [
@@ -352,127 +353,63 @@ bool GameSetup::pollBroker() {
         //
         // Where "gameToPlay" will be -1 if the game is not full yet.
         
-        newParams.gameLevel = responseJson["gameToPlay"].asInt();
-        newParams.numberPlayers = responseJson["numPlayers"].asInt();
-        newParams.thisPlayer = responseJson["thisPlayer"].asInt();
-        Json::Value requests = responseJson["requests"];
-        int numRequests = requests.size();
-        for(int plyrCtr=0; plyrCtr<numRequests; ++plyrCtr) {
-            // Going to guess there aren't more than 10 addresses
-            Transport::Address addresses[10];
-            Json::Value otherPlayer = requests[plyrCtr];
-            Json::Value playerAddrs = otherPlayer["addrs"];
-            int numAddresses = playerAddrs.size();
-            for (int addrCtr=0; addrCtr<numAddresses; ++addrCtr) {
-                Json::Value nextAddress = playerAddrs[addrCtr];
-                const char* ip = nextAddress["ip"].asCString();
-                int port = nextAddress["port"].asInt();
-                addresses[addrCtr] = Transport::Address(ip, port);
+        if (gameSetup) {
+            // Read in the game info
+            newParams.gameLevel = responseJson["gameToPlay"].asInt();
+            newParams.numberPlayers = responseJson["numPlayers"].asInt();
+            newParams.thisPlayer = responseJson["thisPlayer"].asInt();
+            Json::Value requests = responseJson["requests"];
+            int numRequests = requests.size();
+            for(int plyrCtr=0; plyrCtr<numRequests; ++plyrCtr) {
+                // Going to guess there aren't more than 10 addresses
+                Transport::Address addresses[10];
+                Json::Value otherPlayer = requests[plyrCtr];
+                Json::Value playerAddrs = otherPlayer["addrs"];
+                int numAddresses = playerAddrs.size();
+                for (int addrCtr=0; addrCtr<numAddresses; ++addrCtr) {
+                    Json::Value nextAddress = playerAddrs[addrCtr];
+                    const char* ip = nextAddress["ip"].asCString();
+                    int port = nextAddress["port"].asInt();
+                    addresses[addrCtr] = Transport::Address(ip, port);
+                }
+                
+                if (plyrCtr != newParams.thisPlayer) {
+                    // TODOX: Will exception if no address.  In general need better validation and error response
+                    std::cout << "Adding player " << addresses[0].ip() << ":" << addresses[0].port() << std::endl;
+                    xport.addOtherPlayer(addresses, numAddresses);
+                }
             }
-            
-            if (plyrCtr != newParams.thisPlayer) {
-                // TODOX: Will exception if no address.  In general need better validation and error response
-                std::cout << "Adding player " << addresses[0].ip() << ":" << addresses[0].port() << std::endl;
-                xport.addOtherPlayer(addresses, numAddresses);
+            xport.setTransportNum(newParams.thisPlayer);
+        } else {
+            // Read just the names of the players to give a status message.
+            Json::Value requests = responseJson["requests"];
+            int numberJoined = requests.size();
+            if (numberJoined <= 1) {
+                Platform_DisplayStatus("Waiting for other players.", -1);
+            } else {
+                char msg[256];
+                int thisPlayerSlot = responseJson["thisPlayer"].asInt();
+                Json::Value otherPlayer = requests[1-thisPlayerSlot];
+                Json::Value otherPlayerAddrs = otherPlayer["addrs"];
+                Json::Value firstAddress = otherPlayerAddrs[0];
+                const char* ip = firstAddress["ip"].asCString();
+                int port = firstAddress["port"].asInt();
+
+                sprintf(msg, "%s:%d has joined the game.  Waiting for third plater.", ip, port);
+                Platform_DisplayStatus(msg, -1);
             }
         }
-        xport.setTransportNum(newParams.thisPlayer);
 
     }
 
-    return gotResponse;
-}
-
-// TODOX: Get rid of this method.  It should be broken up into other methods
-void GameSetup::setupBrokeredGame(int argc, char** argv) {
-    
-/*------------------ Already xfered to craftBrokerRequest */
-/**/	List<Transport::Address> privateAddresses = xport.determineThisMachineIPs();
-/**/	Transport::Address publicAddress = determinePublicAddress(stunServer);
-/**/
-/**/   int sessionId = Sys::random() * 10000000;
-/**/   Json::Value responseJson;
-/**/   // Connect to the client and register a game request.
-/**/    char requestContent[2000];
-/**/    sprintf(requestContent, "{\"addrs\":[{\"ip\": \"%s\",\"port\": %d}", publicAddress.ip(), publicAddress.port());
-/**/    for(int ctr=0; ctr<privateAddresses.size(); ++ctr) {
-/**/        sprintf(requestContent+strlen(requestContent), ",{\"ip\": \"%s\",\"port\": %d}",
-/**/                privateAddresses.get(ctr).ip(), privateAddresses.get(ctr).port());
-/**/    }
-/**/    sprintf(requestContent+strlen(requestContent), "], \"sessionId\": %d, \"gameToPlay\": %d, \"desiredPlayers\": %d}",
-/**/            sessionId, newParams.gameLevel, newParams.numberPlayers);
-/*------------------ Already xfered to craftBrokerRequest */
-    char response[1000];
-    bool gotResponse = false;
-    
-    while (!gotResponse) {
-        client.post("/game", requestContent, response, 1000);
-        
-        std::stringstream strm(response);
-        strm >> responseJson;
-        
-        gotResponse = !responseJson.empty();
-        if (!gotResponse) {
-            std::cout << "Waiting for second player." << std::endl;
-            Sys::sleep(10000);
-        }
-    }
-    
-    // Expecting response of the form:
-    // {"gameParams":{
-    //   "numPlayers":2, "thisPlayer":1, "gameToPlay":0,
-    //   "otherPlayers":[{
-    //     "addrs":[{
-    //         "ip":"5.5.5.5",
-    //         "port":5678
-    //       },{
-    //         "ip":"127.0.0.1",
-    //         "port":5678
-    //       }],
-    //     "sessionId":"1471662312",
-    //     "gameToPlay":0,
-    //     "desiredPlayers":2
-    //    },{
-    //     "addrs":[{
-    //         "ip":"6.6.6.6",
-    //         "port":5678
-    //       }],
-    //     "sessionId":"1471662320",
-    //     "gameToPlay":0,
-    //     "desiredPlayers":2
-    //   }]}
-    // }
-    Json::Value gameParams = responseJson["gameParams"];
-    newParams.numberPlayers = gameParams["numPlayers"].asInt();
-    newParams.thisPlayer = gameParams["thisPlayer"].asInt();
-    newParams.gameLevel = gameParams["gameToPlay"].asInt();
-    Json::Value otherPlayers = gameParams["otherPlayers"];
-    int numOtherPlayers = otherPlayers.size();
-    for(int plyrCtr=0; plyrCtr<numOtherPlayers; ++plyrCtr) {
-        // Going to guess there aren't more than 10 addresses
-        Transport::Address addresses[10];
-        Json::Value otherPlayer = otherPlayers[plyrCtr];
-        Json::Value playerAddrs = otherPlayer["addrs"];
-        int numAddresses = playerAddrs.size();
-        for (int addrCtr=0; addrCtr<numAddresses; ++addrCtr) {
-            Json::Value nextAddress = playerAddrs[addrCtr];
-            const char* ip = nextAddress["ip"].asCString();
-            int port = nextAddress["port"].asInt();
-            addresses[addrCtr] = Transport::Address(ip, port);
-        }
-        // TODOX: Will exception if no address.  In general need better validation and error response
-        std::cout << "Adding player " << addresses[0].ip() << ":" << addresses[0].port() << std::endl;
-        xport.addOtherPlayer(addresses, numAddresses);
-    }
-    
-    xport.setTransportNum(newParams.thisPlayer);
+    return gameSetup;
 }
 
 // TODOX: Get rid of this method.  It should be broken up into other methods.
 void GameSetup::setupP2PGame(GameSetup::GameParams& newParams, int argc, char** argv) {
     // Other players' IP information will be specified on the command line.
     // H2HAdventure p2p <gameLevel(1-3,4)> <thisPlayer(1-3)> <myinternalport> <theirip>:<theirport> [<thirdip>:<thirdport>]
-
+    
     newParams.gameLevel = atoi(argv[1])-1;
     newParams.numberPlayers = argc-3;
     Transport::Address addr1;
@@ -488,48 +425,9 @@ void GameSetup::setupP2PGame(GameSetup::GameParams& newParams, int argc, char** 
     }
     
     newParams.shouldMute = ((strcmp(addr1.ip(), "127.0.0.1")==0) && (newParams.thisPlayer > 0));
-
+    
 }
 
-// TODOX: Get rid of this method.  It should be broken up into other methods.
-/**
- * Contact the STUN server and it will tell you what IP and port your UDP packets
- * will look like they come from.
- */
-Transport::Address GameSetup::determinePublicAddress(Transport::Address stunServer) {
-    
-    Transport::Address publicAddress;
-    
-    // First need to pick which port this game will use for UDP communication.
-    UdpSocket& socket = xport.reservePort();
-    
-    // Now send a packet on that port.
-    sockaddr_in* stunServerSockAddr = socket.createAddress(stunServer, true);
-    Logger::log("Sending message to STUN server");
-    socket.writeData("Hello", 5, stunServerSockAddr);
-    
-    // Now listen on the socket and get the public IP and port
-    socket.setTimeout(15); // Listen for 2 minutes
-    char buffer[256];
-    Logger::log("Listening for STUN server message.");
-    int numCharsRead = socket.readData(buffer, 256);
-    if (numCharsRead > 0) {
-        // Throw a null on the end to terminate the string
-        buffer[numCharsRead] = '\0';
-        Logger::log() << "Received \"" << buffer << "\" from STUN server." << Logger::EOM;
-        publicAddress = Transport::parseUrl(buffer);
-        if (!publicAddress.isValid()) {
-            Logger::logError() << "Could not parse IP from STUN server message: " << buffer << Logger::EOM;
-            throw std::runtime_error("Could not determine public address.");
-        }
-    } else {
-        Logger::logError() << "Error: Received " << numCharsRead << " from STUN server." << Logger::EOM;
-        throw BrokerException();
-    }
-    socket.deleteAddress(stunServerSockAddr);
-    
-    return publicAddress;
-}
 
 /**
  * A request has been made to the STUN server for the public IP address.

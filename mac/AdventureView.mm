@@ -162,9 +162,6 @@ bool gMute = FALSE;
 
 - (void)playGame
 {
-    
-    [gAdvView displayStatus:"Hi" :1000];
-
     int argc;
     char** argv;
     Args_GetArgs(&argc, &argv);

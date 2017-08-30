@@ -23,6 +23,8 @@
     IBOutlet NSMenuItem *mMenuDragonsRun;
 }
 
+@property (assign) IBOutlet NSButton *playButton;
+
 - (IBAction)clickDragonsHesitate:(id)sender;
 - (IBAction)clickDragonsRun:(id)sender;
 - (IBAction)clickReset:(id)sender;
