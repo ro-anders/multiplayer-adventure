@@ -205,11 +205,7 @@ void GameSetup::checkSetup() {
         }
         case SETUP_PAUSE_BEFORE_CONNECTING: {
             int timeLeft = timeoutStart - Sys::runTime();
-            if (timeLeft > 0) {
-                char message[128];
-                sprintf(message, "Connecting in %d seconds.", timeLeft/1000);
-                Platform_DisplayStatus(message, -1);
-            } else {
+            if (timeLeft <= 0) {
                 setupState = SETUP_INIT_CONNECT_WITH_PLAYERS;
             }
             break;
@@ -456,7 +452,7 @@ Transport::Address GameSetup::checkForPublicAddress() {
 
 bool GameSetup::hasExpired() {
     
-    const long EXPIRATION_DATE = 20170831;
+    const long EXPIRATION_DATE = 20180831;
     long time = Sys::today();
     return ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE));
     

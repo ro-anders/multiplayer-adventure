@@ -14,12 +14,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Use static initialization to make sure the random number generator is randomized.
-bool Sys::randomized = Sys::seedRandom();
+bool Sys::randomized = false;
 
-long Sys::startOfProgramTime = Sys::runTime();
+long Sys::startOfProgramTime = timeSinceX();
+
+static long dummyVal = Sys::runTime();
 
 float Sys::random() {
+    if (!randomized) {
+        srand((unsigned)Sys::timeSinceX());
+        randomized = true;
+    }
 	return (float)rand() / RAND_MAX;
 }
 
@@ -65,43 +70,26 @@ const char* Sys::datetime() {
     return string;
 }
 
-
-/**
- * Number of milliseconds since this game was started.  Note, this
- * is really only useful looking at the time between two calls of this.
- */
-long Sys::runTime() {
-    static bool firstTime = true;
-	static char message[500];
-    // In some cases it's easier to get the number of milliseconds since some external
-    // event (e.g. the epoch) than the start of this program.  So we record that time at
-    // the start of the program and return the difference with every subsequent time.
-    if (firstTime) {
-		Sys::consoleLog("Calling Sys::runTime() for the first time.\n");
-        firstTime = false;
-        startOfProgramTime = 0;
-        startOfProgramTime =  runTime();
-		sprintf(message, "Sys::runTime's startOfProgram = %d\n", startOfProgramTime);
-		Sys::consoleLog(message);
-    }
-    
+// Want the number of milliseconds since some time, but in Mac that is since 1970 whereas
+// in Windows it is since this machine was rebooted.
+long Sys::timeSinceX() {
     long currentTime;
 #ifdef WIN32
-	currentTime = (long)GetTickCount64();
+    currentTime = (long)GetTickCount64();
 #else
     static timeval timeval;
     gettimeofday(&timeval, NULL);
     currentTime = timeval.tv_sec*1000 + timeval.tv_usec/1000;
 #endif
     
-	sprintf(message, "Sys::runTime returning %ld - %ld = %ld\n", currentTime, startOfProgramTime, (currentTime - startOfProgramTime));
-	Sys::consoleLog(message);
-    return currentTime - startOfProgramTime;
+    return currentTime;
 }
 
 
-
-bool Sys::seedRandom() {
-    srand((unsigned)Sys::runTime());
-	return true;
+/**
+ * Number of milliseconds since this game was started.  Note, this
+ * is really only useful looking at the time between two calls of this.
+ */
+long Sys::runTime() {
+    return timeSinceX() - startOfProgramTime;
 }
