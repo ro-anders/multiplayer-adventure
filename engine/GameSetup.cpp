@@ -356,6 +356,11 @@ bool GameSetup::pollBroker() {
             newParams.thisPlayer = responseJson["thisPlayer"].asInt();
             Json::Value requests = responseJson["requests"];
             int numRequests = requests.size();
+            char player1[256];
+            player1[0] = '\0';
+            char player2[256];
+            player2[0] = '\0';
+            char message[1024];
             for(int plyrCtr=0; plyrCtr<numRequests; ++plyrCtr) {
                 // Going to guess there aren't more than 10 addresses
                 Transport::Address addresses[10];
@@ -370,12 +375,20 @@ bool GameSetup::pollBroker() {
                 }
                 
                 if (plyrCtr != newParams.thisPlayer) {
+                    char* nameDest = (player1[0] == '\0' ? player1 : player2);
+                    sprintf(nameDest, "%s:%d", addresses[0].ip(), addresses[0].port());
                     // TODOX: Will exception if no address.  In general need better validation and error response
                     std::cout << "Adding player " << addresses[0].ip() << ":" << addresses[0].port() << std::endl;
                     xport.addOtherPlayer(addresses, numAddresses);
                 }
             }
             xport.setTransportNum(newParams.thisPlayer);
+            if (player2[0] == '\0') {
+                sprintf(message, "Playing game %d against %s.\nStarting momentarily.", newParams.gameLevel+1, player1);
+            } else {
+                sprintf(message, "Playing game %d against %s and %s.\nStarting momentarily.", newParams.gameLevel+1, player1, player2);
+            }
+            Platform_DisplayStatus(message, -1);
         } else {
             // Read just the names of the players to give a status message.
             Json::Value requests = responseJson["requests"];
