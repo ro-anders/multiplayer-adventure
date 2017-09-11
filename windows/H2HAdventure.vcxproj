@@ -168,9 +168,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\H2HAdventure.rc2" />
+    <None Include="res\wav1.bin" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\H2HAdventure.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="..\sounds\pickup.wav" />
+    <Media Include="..\sounds\pickup_far.wav" />
+    <Media Include="..\sounds\pickup_near.wav" />
+    <Media Include="..\sounds\putdown.wav" />
+    <Media Include="..\sounds\putdown_far.wav" />
+    <Media Include="..\sounds\putdown_near.wav" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

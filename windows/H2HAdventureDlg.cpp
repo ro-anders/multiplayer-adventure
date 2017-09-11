@@ -8,6 +8,7 @@
 #include "H2HAdventure.h"
 #include "H2HAdventureDlg.h"
 #include "afxdialogex.h"
+#include "Resource.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -194,7 +195,7 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 {
 	// TODO: Add your control notification handler code here
 	gThis = this;
-	Adventure_Setup(2, 0, NULL, 2, 1, 1);
+	Adventure_Setup(2, 0, NULL, 0, 1, 1);
 	DWORD timerId = ::timeSetEvent(16, 1000, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
 }
 
@@ -240,21 +241,45 @@ void Platform_MuteSound(bool nMute)
 
 void Platform_MakeSound(int sound, float volume)
 {
-	/*
-	// TODO: Handle volume
-	char szModule[MAX_PATH];
-	char szDrive[MAX_PATH];
-	char szDir[MAX_PATH];
-	char szSoundPath[MAX_PATH];
 
-	GetModuleFileName(NULL, szModule, MAX_PATH);
-	_splitpath(szModule, szDrive, szDir, NULL, NULL);
+	if (volume > 0.5 * MAX_VOLUME) {
+		switch (sound)
+		{
+		case SOUND_PICKUP:
+			PlaySoundA((char*)IDR_PICKUP_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		default:
+			PlaySoundA((char*)IDR_PUTDOWN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+			break;
+		}
+	}
+	else if (volume > 0.25 * MAX_VOLUME) {
+		switch (sound)
+		{
+		case SOUND_PICKUP:
+			PlaySoundA((char*)IDR_PICKUPNEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		default:
+			PlaySoundA((char*)IDR_PUTDOWNNEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+			break;
+		}
+	}
+	else if (volume > 0) {
+		switch (sound)
+		{
+		case SOUND_PICKUP:
+			PlaySoundA((char*)IDR_PICKUPFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		default:
+			PlaySoundA((char*)IDR_PUTDOWNFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC);
+			break;
+		}
+	}
+
+
+	/*
 
 	switch (sound)
 	{
 	case SOUND_PICKUP:
 	PlaySound((char*)IDR_PICKUP_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-	wsprintf(szSoundPath, "%s%ssounds\\pickup.wav", szDrive, szDir);
 	break;
 	case SOUND_PUTDOWN:
 	PlaySound((char*)IDR_PUTDOWN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
@@ -273,7 +298,6 @@ void Platform_MakeSound(int sound, float volume)
 	break;
 	}
 
-	sndPlaySound(szSoundPath, SND_ASYNC | SND_NODEFAULT);
 	*/
 }
 
