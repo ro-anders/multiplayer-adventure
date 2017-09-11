@@ -9,7 +9,7 @@
 const char* RestClient::BROKER_SERVER = "127.0.0.1";
 
 const int RestClient::STUN_PORT = 8888;
-const int RestClient::REST_PORT = 9000;
+const int RestClient::REST_PORT = 8080;
 
 
 int RestClient::get(const char* path, char* responseBuffer, int bufferLength) {

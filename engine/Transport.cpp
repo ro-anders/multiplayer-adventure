@@ -66,13 +66,13 @@ const int Transport::PLAYER_NOT_YET_DETERMINED = -2;
 const char* Transport::LOCALHOST_IP = "127.0.0.1";
 
 
-Transport::Transport(bool useDynamicSetup) :
+Transport::Transport() :
 transportNum(0),
-connected(false) {
+connected(false),
+dynamicPlayerSetupNumber(NOT_DYNAMIC_PLAYER_SETUP) {
     streamBufferSize = 1024;
     streamBuffer = new char[streamBufferSize]; // TODO: Make this more dynamic.
     charsInStreamBuffer = 0;
-    dynamicPlayerSetupNumber = (useDynamicSetup ? PLAYER_NOT_YET_DETERMINED : NOT_DYNAMIC_PLAYER_SETUP);
 }
 
 Transport::~Transport()
@@ -82,6 +82,12 @@ Transport::~Transport()
 
 bool Transport::isConnected() {
     return connected;
+}
+
+void Transport::useDynamicPlayerSetup() {
+    if (dynamicPlayerSetupNumber == NOT_DYNAMIC_PLAYER_SETUP) {
+        dynamicPlayerSetupNumber = PLAYER_NOT_YET_DETERMINED;
+    }
 }
 
 int Transport::getDynamicPlayerSetupNumber() {

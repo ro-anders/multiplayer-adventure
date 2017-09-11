@@ -39,7 +39,7 @@ void Platform_MuteSound(bool mute);
 void Platform_MakeSound(int sound, float volume);
 #define MAX_VOLUME              11.0
 float Platform_Random();
-void Platform_DisplayStatus(const char* message, int duration);
+void Platform_DisplayStatus(const char* message, int durationSec);
 
 // Difficulty switch values
 #define DIFFICULTY_A           0

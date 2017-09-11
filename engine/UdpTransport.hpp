@@ -19,14 +19,23 @@ public:
     
     /**
      * Create a UdpTransport.
-     * socket - an uninitialized socket to handle the passing of UDP packets
-     * isTest - if running this in a development environment for testing something we want the transport
-     * to figure out how to talk to another test instance running on the same local host with no other
-     * information.  Otherwise, more information needs to be dictated before the transport can connect.
      */
-    UdpTransport(UdpSocket* socket, bool useDynamicSetup);
+    UdpTransport();
     
     ~UdpTransport();
+    
+    /**
+     * Give the transport an implementation of a socket to connect and communicate with other clients.
+     */
+    void useSocket(UdpSocket* socket);
+    
+    /**
+     * Often when testing we want to quickly launch two ends of a socket and let them
+     * figure out who should be player one vs player two.
+     * Call this method to make that happen.
+     * Only works when running two clients on the same local machine.
+     */
+    void useDynamicPlayerSetup();
     
     void setInternalPort(int port);
     

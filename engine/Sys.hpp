@@ -47,9 +47,10 @@ private:
     
     static long startOfProgramTime;
 
-	static long dummyNumber;
+    // Want the number of milliseconds since some time, but in Mac that is since 1970 whereas
+    // in Windows it is since this machine was rebooted.
+    static long timeSinceX();
 
-	static bool seedRandom();
     
 };
 

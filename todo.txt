@@ -1,5 +1,7 @@
 To Do
 -----
+- Two players connect.  Game ends.  Player from same host connects and is joined with previous game.
+- Mac still has menu options that apply to Hirschberg version, not H2H version
 - Mac runs too slow in full screen mode.  Speed up or disable full screen mode.
 - PC cannot use DNS name for broker.  Needs explicit IP address.
 - When player holds an object, other players see it held in a different position

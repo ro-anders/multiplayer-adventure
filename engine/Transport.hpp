@@ -11,7 +11,13 @@
 class BrokerException: public std::exception {
 public:
     const char* what() const throw() {
-        return "An error occurred communicating with the broker.";
+        return "An error occurred communicating with game broker.";
+    }
+};
+class BrokerUnreachableException: public std::exception {
+public:
+    const char* what() const throw() {
+        return "Could not communicate with game broker.";
     }
 };
 
@@ -48,10 +54,8 @@ public:
     
     /**
      * Create a transport. 
-     * @param inATest whether this is a test scenario and transport should figure out
-     * who is player 1 and player 2.
      */
-    Transport(bool inATest);
+    Transport();
     
     virtual ~Transport();
     
@@ -82,8 +86,15 @@ public:
     /**
      * Often when testing we want to quickly launch two ends of a socket and let them
      * figure out who should be player one vs player two.
-     * The will return 0 for player 1 and will return 1 for player 2.  Does not work with three players.
-     * If this transport has not been setup for a quick test, will return NOT_DYNAMIC_PLAYER_SETUP.
+     * Call this method to make that happen.
+     * Only works when running two clients on the same local machine.
+     */
+    virtual void useDynamicPlayerSetup();
+    
+    /**
+     * When using dynamic player setup,
+     * this will return 0 for player 1 and will return 1 for player 2.  Does not work with three players.
+     * If useDynamicPlayerSetup was not called before setup, will return NOT_DYNAMIC_PLAYER_SETUP.
      */
     int getDynamicPlayerSetupNumber();
     
