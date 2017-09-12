@@ -31,6 +31,7 @@ public:
     class GameParams {
     public:
         
+        const char* playerName() {return privatePlayerName;}
         bool shouldMute; // Whether other games are running on the same machine (usually only for dev and testing) and this game should mute itself
         int numberPlayers; // How many players are in the game
         int thisPlayer; // Which player this game is playing.
@@ -41,6 +42,10 @@ public:
         GameParams(const GameParams& other);
         GameParams& operator=(const GameParams&);
         bool ok();
+        void setPlayerName(const char* newPlayerName);
+        
+    private:
+        char* privatePlayerName;
     };
     
     /**
@@ -56,6 +61,8 @@ public:
      * This assumes it DOES NOT, so if OS does, call setup(argc-1, argv+1).
      */
     void setCommandLineArgs(int argc, char** argv);
+    
+    void setPlayerName(const char* playerName);
     
     void setGameLevel(int level);
     

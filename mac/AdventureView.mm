@@ -160,7 +160,7 @@ bool gMute = FALSE;
     mDisplayStatusExpiration = (durationSec >= 0 ? time(NULL) + durationSec : -1);
 }
 
-- (void)playGame
+- (void)playGame:(const char*)playerName
 {
     int argc;
     char** argv;
@@ -171,6 +171,7 @@ bool gMute = FALSE;
         xport = new UdpTransport();
         setup = new GameSetup(client, *xport);
         setup->setCommandLineArgs(argc-1, argv+1);
+        setup->setPlayerName(playerName);
         GameSetup::GameParams params = setup->getSetup();
         if (!params.noTransport) {
             PosixUdpSocket* socket = new PosixUdpSocket();
@@ -192,7 +193,7 @@ bool gMute = FALSE;
 
 }
 
-- (BOOL)acceptsFirstResponde
+- (BOOL)acceptsFirstResponder
 {
     // Make it so we accept keyboard messages directed at the window
     return YES;

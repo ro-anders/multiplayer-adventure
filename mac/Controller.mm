@@ -85,7 +85,7 @@ extern AdventureView* gView;
 
 - (IBAction)clickPlay:(id)sender {
     [_playButton setHidden:TRUE];
-    [gView playGame];
+    [gView playGame: "waldo"];
 }
 
 @end

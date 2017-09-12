@@ -35,16 +35,23 @@ shouldMute(false),
 numberPlayers(0),
 thisPlayer(0),
 gameLevel(DEFAULT_GAME_LEVEL),
-noTransport(false) {}
+noTransport(false),
+privatePlayerName(NULL) {
+    setPlayerName("");
+}
 
 GameSetup::GameParams::GameParams(const GameParams& other) :
 shouldMute(other.shouldMute),
 numberPlayers(other.numberPlayers),
 thisPlayer(other.thisPlayer),
 gameLevel(other.gameLevel),
-noTransport(other.noTransport) {}
+noTransport(other.noTransport),
+privatePlayerName(NULL) {
+    setPlayerName(other.privatePlayerName);
+}
 
 GameSetup::GameParams& GameSetup::GameParams::operator=(const GameParams& other) {
+    setPlayerName(other.privatePlayerName);
     shouldMute = other.shouldMute;
     numberPlayers = other.numberPlayers;
     thisPlayer = other.thisPlayer;
@@ -55,6 +62,14 @@ GameSetup::GameParams& GameSetup::GameParams::operator=(const GameParams& other)
 
 bool GameSetup::GameParams::ok() {
     return (numberPlayers > 0);
+}
+
+void GameSetup::GameParams::setPlayerName(const char* newName) {
+    if (privatePlayerName != NULL) {
+        delete[] privatePlayerName;
+    }
+    privatePlayerName = new char[strlen(newName)+1];
+    strcpy(privatePlayerName, newName);
 }
 
 GameSetup::GameSetup(RestClient& inClient, UdpTransport& inTransport) :
@@ -132,6 +147,11 @@ void GameSetup::setCommandLineArgs(int argc, char** argv) {
         //newParams.numberPlayers = (atoi(argv[2]) <= 2 ? 2 : 3);
     }
 }
+
+void GameSetup::setPlayerName(const char* playerName) {
+    newParams.setPlayerName(playerName);
+}
+
 
 void GameSetup::setGameLevel(int level) {
     newParams.gameLevel = level;
@@ -288,7 +308,8 @@ void GameSetup::craftBrokerRequest(Transport::Address) {
     }
     
     // Connect to the client and register a game request.
-    sprintf(brokerRequestContent, "{\"addrs\":[{\"ip\": \"%s\",\"port\": %d}", publicAddress.ip(), publicAddress.port());
+    sprintf(brokerRequestContent, "{\"playerName\":\"%s\",\"addrs\":[{\"ip\": \"%s\",\"port\": %d}", newParams.playerName(),
+            publicAddress.ip(), publicAddress.port());
     for(int ctr=0; ctr<privateAddresses.size(); ++ctr) {
         sprintf(brokerRequestContent+strlen(brokerRequestContent), ",{\"ip\": \"%s\",\"port\": %d}",
                 privateAddresses.get(ctr).ip(), privateAddresses.get(ctr).port());
@@ -365,6 +386,7 @@ bool GameSetup::pollBroker() {
                 // Going to guess there aren't more than 10 addresses
                 Transport::Address addresses[10];
                 Json::Value otherPlayer = requests[plyrCtr];
+                const char* playerName = otherPlayer["playerName"].asCString();
                 Json::Value playerAddrs = otherPlayer["addrs"];
                 int numAddresses = playerAddrs.size();
                 for (int addrCtr=0; addrCtr<numAddresses; ++addrCtr) {
@@ -376,9 +398,9 @@ bool GameSetup::pollBroker() {
                 
                 if (plyrCtr != newParams.thisPlayer) {
                     char* nameDest = (player1[0] == '\0' ? player1 : player2);
-                    sprintf(nameDest, "%s:%d", addresses[0].ip(), addresses[0].port());
+                    strcpy(nameDest, playerName);
                     // TODOX: Will exception if no address.  In general need better validation and error response
-                    std::cout << "Adding player " << addresses[0].ip() << ":" << addresses[0].port() << std::endl;
+                    std::cout << "Adding player " << playerName << " at " << addresses[0].ip() << ":" << addresses[0].port() << std::endl;
                     xport.addOtherPlayer(addresses, numAddresses);
                 }
             }
@@ -399,12 +421,9 @@ bool GameSetup::pollBroker() {
                 char msg[256];
                 int thisPlayerSlot = responseJson["thisPlayer"].asInt();
                 Json::Value otherPlayer = requests[1-thisPlayerSlot];
-                Json::Value otherPlayerAddrs = otherPlayer["addrs"];
-                Json::Value firstAddress = otherPlayerAddrs[0];
-                const char* ip = firstAddress["ip"].asCString();
-                int port = firstAddress["port"].asInt();
+                const char* otherPlayerName = otherPlayer["playerName"].asCString();
 
-                sprintf(msg, "%s:%d has joined the game.  Waiting for third plater.", ip, port);
+                sprintf(msg, "%s has joined the game.  Waiting for third plater.", otherPlayerName);
                 Platform_DisplayStatus(msg, -1);
             }
         }
