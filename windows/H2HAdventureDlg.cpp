@@ -174,21 +174,12 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	pixelArray[0] = -1;
 
 	Adventure_Run();
-/*
- * Original color matrix *
-	gBrightness = (gBrightness < 255 ? gBrightness + 1 : 0);
-	int SIZE = 8;
-	int H_PIXEL = SCREEN_WIDTH / SIZE;
-	int V_PIXEL = SCREEN_HEIGHT / SIZE;
-	for (int xctr = 0; xctr < SIZE; ++xctr) {
-		for (int yctr = 0; yctr < SIZE; ++yctr) {
-			Platform_PaintPixel(gBrightness * xctr / SIZE, gBrightness * yctr / SIZE, gBrightness, xctr * H_PIXEL, yctr * V_PIXEL, H_PIXEL, V_PIXEL);
-		}
-	}
-*/
 	gThis->Invalidate(FALSE);
 }
 
+void CH2HAdventureDlg::OnOK() {
+	// Override to do nothing instead of closing the window.
+}
 
 
 void CH2HAdventureDlg::OnBnClickedPlayButton()
