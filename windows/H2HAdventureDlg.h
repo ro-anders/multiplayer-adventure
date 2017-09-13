@@ -26,6 +26,7 @@ protected:
 	HICON m_hIcon;
 	CBitmap* pBitmap;
 	CDC* pInMemDC;
+	BOOL gameStarted;
 
 	// Generated message map functions
 	virtual BOOL OnInitDialog();

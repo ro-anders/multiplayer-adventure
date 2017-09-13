@@ -42,7 +42,7 @@ CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
 	pBitmap = NULL;
 	pInMemDC = NULL;
 	pixelArray[0] = -1;
-
+	gameStarted = FALSE;
 }
 
 void CH2HAdventureDlg::DoDataExchange(CDataExchange* pDX)
@@ -194,9 +194,12 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 void CH2HAdventureDlg::OnBnClickedPlayButton()
 {
 	// TODO: Add your control notification handler code here
-	gThis = this;
-	Adventure_Setup(2, 0, NULL, 0, 1, 1);
-	DWORD timerId = ::timeSetEvent(16, 1000, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
+	if (!gameStarted) {
+		gThis = this;
+		Adventure_Setup(2, 0, NULL, 0, 1, 1);
+		DWORD timerId = ::timeSetEvent(16, 1000, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
+		gameStarted = TRUE;
+	}
 }
 
 void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire)
