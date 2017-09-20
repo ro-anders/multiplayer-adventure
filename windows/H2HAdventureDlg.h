@@ -26,6 +26,7 @@ protected:
 	HICON m_hIcon;
 	CBitmap* pBitmap;
 	CDC* pInMemDC;
+	BOOL gameStarted;
 
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
@@ -35,5 +36,6 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
+	void OnOK();
 	afx_msg void OnBnClickedPlayButton();
 };
