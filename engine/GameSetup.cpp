@@ -423,7 +423,7 @@ bool GameSetup::pollBroker() {
                 Json::Value otherPlayer = requests[1-thisPlayerSlot];
                 const char* otherPlayerName = otherPlayer["playerName"].asCString();
 
-                sprintf(msg, "%s has joined the game.  Waiting for third plater.", otherPlayerName);
+                sprintf(msg, "%s has joined the game.  Waiting for third player.", otherPlayerName);
                 Platform_DisplayStatus(msg, -1);
             }
         }

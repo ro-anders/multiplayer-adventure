@@ -22,7 +22,7 @@
     IBOutlet NSTextField *mStatusMessage;
 }
 
-- (void)playGame:(const char*)playerName;
+- (void)playGame:(NSString*)playerName;
 
 - (IBAction)update:(id)sender;
 

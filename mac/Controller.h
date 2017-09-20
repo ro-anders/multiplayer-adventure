@@ -21,6 +21,7 @@
 {
     IBOutlet NSMenuItem *mMenuDragonsHesitate;
     IBOutlet NSMenuItem *mMenuDragonsRun;
+    IBOutlet NSTextField *mNameText;
 }
 
 @property (assign) IBOutlet NSButton *playButton;
