@@ -241,9 +241,18 @@ void Platform_MakeSound(int sound, float volume)
 		{
 		case SOUND_PICKUP:
 			PlaySoundA((char*)IDR_PICKUP_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
-		default:
-			PlaySoundA((char*)IDR_PUTDOWN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-			break;
+		case SOUND_PUTDOWN:
+			PlaySoundA((char*)IDR_PUTDOWN_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_ROAR:
+			PlaySoundA((char*)IDR_ROAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_EATEN:
+			PlaySoundA((char*)IDR_EATEN_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_DRAGONDIE:
+			PlaySoundA((char*)IDR_DRAGONDIE_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_WON:
+			PlaySoundA((char*)IDR_WON_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_GLOW:
+			PlaySoundA((char*)IDR_GLOW_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
 		}
 	}
 	else if (volume > 0.25 * MAX_VOLUME) {
@@ -251,9 +260,18 @@ void Platform_MakeSound(int sound, float volume)
 		{
 		case SOUND_PICKUP:
 			PlaySoundA((char*)IDR_PICKUPNEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
-		default:
-			PlaySoundA((char*)IDR_PUTDOWNNEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-			break;
+		case SOUND_PUTDOWN:
+			PlaySoundA((char*)IDR_PUTDOWNNEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_ROAR:
+			PlaySoundA((char*)IDR_ROARNEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_EATEN:
+			PlaySoundA((char*)IDR_EATENNEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_DRAGONDIE:
+			PlaySoundA((char*)IDR_DRAGONDIENEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_WON:
+			PlaySoundA((char*)IDR_WON_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_GLOW:
+			PlaySoundA((char*)IDR_GLOWNEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
 		}
 	}
 	else if (volume > 0) {
@@ -261,38 +279,20 @@ void Platform_MakeSound(int sound, float volume)
 		{
 		case SOUND_PICKUP:
 			PlaySoundA((char*)IDR_PICKUPFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
-		default:
-			PlaySoundA((char*)IDR_PUTDOWNFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-			break;
+		case SOUND_PUTDOWN:
+			PlaySoundA((char*)IDR_PUTDOWNFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_ROAR:
+			PlaySoundA((char*)IDR_ROARFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_EATEN:
+			PlaySoundA((char*)IDR_EATENFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_DRAGONDIE:
+			PlaySoundA((char*)IDR_DRAGONDIEFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_WON:
+			PlaySoundA((char*)IDR_WON_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_GLOW:
+			PlaySoundA((char*)IDR_GLOWFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
 		}
 	}
-
-
-	/*
-
-	switch (sound)
-	{
-	case SOUND_PICKUP:
-	PlaySound((char*)IDR_PICKUP_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-	break;
-	case SOUND_PUTDOWN:
-	PlaySound((char*)IDR_PUTDOWN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-	break;
-	case SOUND_WON:
-	PlaySound((char*)IDR_WON_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-	break;
-	case SOUND_ROAR:
-	PlaySound((char*)IDR_ROAR_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-	break;
-	case SOUND_EATEN:
-	PlaySound((char*)IDR_EATEN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-	break;
-	case SOUND_DRAGONDIE:
-	PlaySound((char*)IDR_DRAGONDIE_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-	break;
-	}
-
-	*/
 }
 
 float Platform_Random()

@@ -204,9 +204,6 @@
     <None Include="res\H2HAdventure.rc2">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\wav1.bin">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\H2HAdventure.ico">
@@ -230,6 +227,45 @@
       <Filter>Resource Files</Filter>
     </Media>
     <Media Include="..\sounds\putdown_near.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\roar.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\roar_far.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\roar_near.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\eaten.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\eaten_far.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\eaten_near.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\dragondie.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\dragondie_far.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\dragondie_near.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\glow.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\glow_far.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\glow_near.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\won.wav">
       <Filter>Resource Files</Filter>
     </Media>
   </ItemGroup>
