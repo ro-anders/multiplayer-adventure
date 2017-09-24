@@ -120,6 +120,12 @@
     <ClInclude Include="..\engine\json\json-forwards.h">
       <Filter>Header Files\engine\json</Filter>
     </ClInclude>
+    <ClInclude Include="WinRestClient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WinUdpSocket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="H2HAdventure.cpp">
@@ -193,6 +199,12 @@
     </ClCompile>
     <ClCompile Include="..\engine\UdpTransport.cpp">
       <Filter>Source Files\engine</Filter>
+    </ClCompile>
+    <ClCompile Include="WinRestClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WinUdpSocket.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

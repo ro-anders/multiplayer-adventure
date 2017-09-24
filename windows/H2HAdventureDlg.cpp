@@ -5,8 +5,12 @@
 #include "stdafx.h"
 #include "..\engine\adventure_sys.h"
 #include "..\engine\Adventure.h"
+#include "..\engine\GameSetup.hpp"
+#include "..\engine\UdpTransport.hpp"
 #include "H2HAdventure.h"
 #include "H2HAdventureDlg.h"
+#include "WinRestClient.h"
+#include "WinUdpSocket.h"
 #include "afxdialogex.h"
 #include "Resource.h"
 
@@ -20,7 +24,7 @@ typedef TIMECALLBACK FAR *LPTIMECALLBACK;
 void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2);
 
 // CH2HAdventureDlg dialog
-static CDialogEx* gThis = NULL;
+static CH2HAdventureDlg* gThis = NULL;
 static int gBrightness = 0;
 
 int leftKey = VK_LEFT;
@@ -43,6 +47,9 @@ CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
 	pInMemDC = NULL;
 	pixelArray[0] = -1;
 	gameStarted = FALSE;
+	xport = NULL;
+	setup = NULL;
+	client = new WinRestClient();
 }
 
 void CH2HAdventureDlg::DoDataExchange(CDataExchange* pDX)
@@ -173,8 +180,30 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	numPixels = 0;
 	pixelArray[0] = -1;
 
-	Adventure_Run();
+	gThis->update();
+
 	gThis->Invalidate(FALSE);
+}
+
+void CH2HAdventureDlg::update() {
+	if (!setup->isGameSetup()) {
+		setup->checkSetup();
+		if (setup->isGameSetup()) {
+			GameSetup::GameParams params = setup->getSetup();
+			if (params.noTransport) {
+				delete xport;
+				xport = NULL;
+			}
+			Platform_MuteSound(params.shouldMute);
+
+			Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 1, 1);
+		}
+	}
+	else {
+		// Run a frame of the game
+		Adventure_Run();
+	}
+
 }
 
 void CH2HAdventureDlg::OnOK() {
@@ -184,10 +213,28 @@ void CH2HAdventureDlg::OnOK() {
 
 void CH2HAdventureDlg::OnBnClickedPlayButton()
 {
-	// TODO: Add your control notification handler code here
 	if (!gameStarted) {
+
 		gThis = this;
-		Adventure_Setup(2, 0, NULL, 0, 1, 1);
+
+		xport = new UdpTransport();
+		setup = new GameSetup(*client, *xport);
+		/*
+		setup->setGameLevel(1);
+		setup->setNumberPlayers(2);
+		*/
+		setup->setPlayerName("Waldo");
+		char** argv = new char*[3];
+		argv[0] = "broker";
+		argv[1] = "1";
+		argv[2] = "2";
+		setup->setCommandLineArgs(2, argv);
+		GameSetup::GameParams params = setup->getSetup();
+		if (!params.noTransport) {
+			WinUdpSocket* socket = new WinUdpSocket();
+			xport->useSocket(socket);
+		}
+		//Adventure_Setup(2, 0, NULL, 0, 1, 1);
 		DWORD timerId = ::timeSetEvent(16, 1000, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
 		gameStarted = TRUE;
 	}
