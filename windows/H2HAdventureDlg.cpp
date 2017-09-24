@@ -302,13 +302,12 @@ float Platform_Random()
 }
 
 void Platform_DisplayStatus(const char* message, int duration) {
-	/*
-	static const char* title = "";
-	int msgboxID = MessageBox(
-	NULL,
-	(LPCSTR)message,
-	(LPCSTR)title,
-	MB_ICONWARNING | MB_OK | MB_DEFBUTTON2
-	);
-	*/
+	int a = lstrlenA(message);
+	BSTR unicodestr = SysAllocStringLen(NULL, a);
+	::MultiByteToWideChar(CP_ACP, 0, message, a, unicodestr, a);
+
+	CWnd* label = gThis->GetDlgItem(IDC_STATUS_LABEL);
+	label->SetWindowText(unicodestr);
+
+	::SysFreeString(unicodestr);
 }
