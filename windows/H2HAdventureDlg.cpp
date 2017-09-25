@@ -5,8 +5,12 @@
 #include "stdafx.h"
 #include "..\engine\adventure_sys.h"
 #include "..\engine\Adventure.h"
+#include "..\engine\GameSetup.hpp"
+#include "..\engine\UdpTransport.hpp"
 #include "H2HAdventure.h"
 #include "H2HAdventureDlg.h"
+#include "WinRestClient.h"
+#include "WinUdpSocket.h"
 #include "afxdialogex.h"
 #include "Resource.h"
 
@@ -20,7 +24,7 @@ typedef TIMECALLBACK FAR *LPTIMECALLBACK;
 void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2);
 
 // CH2HAdventureDlg dialog
-static CDialogEx* gThis = NULL;
+static CH2HAdventureDlg* gThis = NULL;
 static int gBrightness = 0;
 
 int leftKey = VK_LEFT;
@@ -43,6 +47,9 @@ CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
 	pInMemDC = NULL;
 	pixelArray[0] = -1;
 	gameStarted = FALSE;
+	xport = NULL;
+	setup = NULL;
+	client = new WinRestClient();
 }
 
 void CH2HAdventureDlg::DoDataExchange(CDataExchange* pDX)
@@ -173,8 +180,30 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	numPixels = 0;
 	pixelArray[0] = -1;
 
-	Adventure_Run();
+	gThis->update();
+
 	gThis->Invalidate(FALSE);
+}
+
+void CH2HAdventureDlg::update() {
+	if (!setup->isGameSetup()) {
+		setup->checkSetup();
+		if (setup->isGameSetup()) {
+			GameSetup::GameParams params = setup->getSetup();
+			if (params.noTransport) {
+				delete xport;
+				xport = NULL;
+			}
+			Platform_MuteSound(params.shouldMute);
+
+			Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 1, 1);
+		}
+	}
+	else {
+		// Run a frame of the game
+		Adventure_Run();
+	}
+
 }
 
 void CH2HAdventureDlg::OnOK() {
@@ -184,10 +213,28 @@ void CH2HAdventureDlg::OnOK() {
 
 void CH2HAdventureDlg::OnBnClickedPlayButton()
 {
-	// TODO: Add your control notification handler code here
 	if (!gameStarted) {
+
 		gThis = this;
-		Adventure_Setup(2, 0, NULL, 0, 1, 1);
+
+		xport = new UdpTransport();
+		setup = new GameSetup(*client, *xport);
+		/*
+		setup->setGameLevel(1);
+		setup->setNumberPlayers(2);
+		*/
+		setup->setPlayerName("Waldo");
+		char** argv = new char*[3];
+		argv[0] = "broker";
+		argv[1] = "1";
+		argv[2] = "2";
+		setup->setCommandLineArgs(2, argv);
+		GameSetup::GameParams params = setup->getSetup();
+		if (!params.noTransport) {
+			WinUdpSocket* socket = new WinUdpSocket();
+			xport->useSocket(socket);
+		}
+		//Adventure_Setup(2, 0, NULL, 0, 1, 1);
 		DWORD timerId = ::timeSetEvent(16, 1000, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
 		gameStarted = TRUE;
 	}
@@ -241,9 +288,18 @@ void Platform_MakeSound(int sound, float volume)
 		{
 		case SOUND_PICKUP:
 			PlaySoundA((char*)IDR_PICKUP_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
-		default:
-			PlaySoundA((char*)IDR_PUTDOWN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-			break;
+		case SOUND_PUTDOWN:
+			PlaySoundA((char*)IDR_PUTDOWN_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_ROAR:
+			PlaySoundA((char*)IDR_ROAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_EATEN:
+			PlaySoundA((char*)IDR_EATEN_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_DRAGONDIE:
+			PlaySoundA((char*)IDR_DRAGONDIE_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_WON:
+			PlaySoundA((char*)IDR_WON_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_GLOW:
+			PlaySoundA((char*)IDR_GLOW_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
 		}
 	}
 	else if (volume > 0.25 * MAX_VOLUME) {
@@ -251,9 +307,18 @@ void Platform_MakeSound(int sound, float volume)
 		{
 		case SOUND_PICKUP:
 			PlaySoundA((char*)IDR_PICKUPNEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
-		default:
-			PlaySoundA((char*)IDR_PUTDOWNNEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-			break;
+		case SOUND_PUTDOWN:
+			PlaySoundA((char*)IDR_PUTDOWNNEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_ROAR:
+			PlaySoundA((char*)IDR_ROARNEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_EATEN:
+			PlaySoundA((char*)IDR_EATENNEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_DRAGONDIE:
+			PlaySoundA((char*)IDR_DRAGONDIENEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_WON:
+			PlaySoundA((char*)IDR_WON_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_GLOW:
+			PlaySoundA((char*)IDR_GLOWNEAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
 		}
 	}
 	else if (volume > 0) {
@@ -261,38 +326,20 @@ void Platform_MakeSound(int sound, float volume)
 		{
 		case SOUND_PICKUP:
 			PlaySoundA((char*)IDR_PICKUPFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
-		default:
-			PlaySoundA((char*)IDR_PUTDOWNFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-			break;
+		case SOUND_PUTDOWN:
+			PlaySoundA((char*)IDR_PUTDOWNFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_ROAR:
+			PlaySoundA((char*)IDR_ROARFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_EATEN:
+			PlaySoundA((char*)IDR_EATENFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_DRAGONDIE:
+			PlaySoundA((char*)IDR_DRAGONDIEFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_WON:
+			PlaySoundA((char*)IDR_WON_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
+		case SOUND_GLOW:
+			PlaySoundA((char*)IDR_GLOWFAR_WAV, NULL, SND_RESOURCE | SND_ASYNC); break;
 		}
 	}
-
-
-	/*
-
-	switch (sound)
-	{
-	case SOUND_PICKUP:
-	PlaySound((char*)IDR_PICKUP_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-	break;
-	case SOUND_PUTDOWN:
-	PlaySound((char*)IDR_PUTDOWN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-	break;
-	case SOUND_WON:
-	PlaySound((char*)IDR_WON_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-	break;
-	case SOUND_ROAR:
-	PlaySound((char*)IDR_ROAR_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-	break;
-	case SOUND_EATEN:
-	PlaySound((char*)IDR_EATEN_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-	break;
-	case SOUND_DRAGONDIE:
-	PlaySound((char*)IDR_DRAGONDIE_WAV, NULL, SND_RESOURCE | SND_ASYNC);
-	break;
-	}
-
-	*/
 }
 
 float Platform_Random()
@@ -302,13 +349,12 @@ float Platform_Random()
 }
 
 void Platform_DisplayStatus(const char* message, int duration) {
-	/*
-	static const char* title = "";
-	int msgboxID = MessageBox(
-	NULL,
-	(LPCSTR)message,
-	(LPCSTR)title,
-	MB_ICONWARNING | MB_OK | MB_DEFBUTTON2
-	);
-	*/
+	int a = lstrlenA(message);
+	BSTR unicodestr = SysAllocStringLen(NULL, a);
+	::MultiByteToWideChar(CP_ACP, 0, message, a, unicodestr, a);
+
+	CWnd* label = gThis->GetDlgItem(IDC_STATUS_LABEL);
+	label->SetWindowText(unicodestr);
+
+	::SysFreeString(unicodestr);
 }

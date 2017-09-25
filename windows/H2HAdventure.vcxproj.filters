@@ -120,6 +120,12 @@
     <ClInclude Include="..\engine\json\json-forwards.h">
       <Filter>Header Files\engine\json</Filter>
     </ClInclude>
+    <ClInclude Include="WinRestClient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WinUdpSocket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="H2HAdventure.cpp">
@@ -194,6 +200,12 @@
     <ClCompile Include="..\engine\UdpTransport.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
+    <ClCompile Include="WinRestClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WinUdpSocket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="H2HAdventure.rc">
@@ -202,9 +214,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\H2HAdventure.rc2">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\wav1.bin">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -230,6 +239,45 @@
       <Filter>Resource Files</Filter>
     </Media>
     <Media Include="..\sounds\putdown_near.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\roar.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\roar_far.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\roar_near.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\eaten.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\eaten_far.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\eaten_near.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\dragondie.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\dragondie_far.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\dragondie_near.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\glow.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\glow_far.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\glow_near.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="..\sounds\won.wav">
       <Filter>Resource Files</Filter>
     </Media>
   </ItemGroup>

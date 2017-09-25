@@ -4,6 +4,9 @@
 
 #pragma once
 
+class UdpTransport;
+class RestClient;
+class GameSetup;
 
 // CH2HAdventureDlg dialog
 class CH2HAdventureDlg : public CDialogEx
@@ -27,6 +30,9 @@ protected:
 	CBitmap* pBitmap;
 	CDC* pInMemDC;
 	BOOL gameStarted;
+	UdpTransport* xport;
+	GameSetup* setup;
+	RestClient* client;
 
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
@@ -37,5 +43,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	void OnOK();
+	void update();
 	afx_msg void OnBnClickedPlayButton();
 };

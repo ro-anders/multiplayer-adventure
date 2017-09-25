@@ -6,7 +6,8 @@
 //const char* RestClient::BROKER_SERVER = "roserver.ddns.net";
 //const char* RestClient::BROKER_SERVER = "52.36.221.9";
 // TODOX: Just for debugging.  Undo.
-const char* RestClient::BROKER_SERVER = "127.0.0.1";
+//const char* RestClient::BROKER_SERVER = "127.0.0.1";
+const char* RestClient::BROKER_SERVER = "192.168.1.2";
 
 const int RestClient::STUN_PORT = 8888;
 const int RestClient::REST_PORT = 8080;
