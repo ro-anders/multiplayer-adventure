@@ -86,7 +86,11 @@ extern AdventureView* gView;
 - (IBAction)clickPlay:(id)sender {
     [_playButton setHidden:TRUE];
     [mNameText setHidden:TRUE];
-    [gView playGame: [mNameText stringValue]];
+    [_gameSelectPopup setHidden:TRUE];
+    [_playersSelectPopp setHidden:TRUE];
+    int gameNum = [_gameSelectPopup indexOfSelectedItem];
+    int desiredPlayers = [_playersSelectPopp indexOfSelectedItem] + 2;
+    [gView playGame: [mNameText stringValue] :gameNum :desiredPlayers];
 }
 
 @end
