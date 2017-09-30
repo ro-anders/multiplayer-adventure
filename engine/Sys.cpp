@@ -75,7 +75,7 @@ const char* Sys::datetime() {
 long Sys::timeSinceX() {
     long currentTime;
 #ifdef WIN32
-    currentTime = (long)GetTickCount64();
+    currentTime = (long)GetTickCount();
 #else
     static timeval timeval;
     gettimeofday(&timeval, NULL);
