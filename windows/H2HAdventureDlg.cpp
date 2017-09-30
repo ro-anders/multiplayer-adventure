@@ -223,9 +223,10 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		setup->setGameLevel(1);
 		setup->setNumberPlayers(2);
 		*/
-		char** argv = new char*[2];
-		argv[0] = "single";
+		char** argv = new char*[3];
+		argv[0] = "broker";
 		argv[1] = "1";
+		argv[2] = "2";
 		setup->setCommandLineArgs(2, argv);
 
 		setup->setPlayerName("Waldo");
