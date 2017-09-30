@@ -223,12 +223,19 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		setup->setGameLevel(1);
 		setup->setNumberPlayers(2);
 		*/
-		setup->setPlayerName("Waldo");
-		char** argv = new char*[3];
-		argv[0] = "broker";
+		char** argv = new char*[2];
+		argv[0] = "single";
 		argv[1] = "1";
-		argv[2] = "2";
 		setup->setCommandLineArgs(2, argv);
+
+		setup->setPlayerName("Waldo");
+		CComboBox* gameCombo = (CComboBox*)gThis->GetDlgItem(IDC_GAME_COMBO);
+		int gameSelected = gameCombo->GetCurSel();
+		setup->setGameLevel(gameSelected);
+		CComboBox* playersCombo = (CComboBox*)gThis->GetDlgItem(IDC_PLAYERS_COMBO);
+		int playersSelected = playersCombo->GetCurSel() + 2;
+		setup->setNumberPlayers(playersSelected);
+
 		GameSetup::GameParams params = setup->getSetup();
 		if (!params.noTransport) {
 			WinUdpSocket* socket = new WinUdpSocket();
