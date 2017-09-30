@@ -160,7 +160,7 @@ bool gMute = FALSE;
     mDisplayStatusExpiration = (durationSec >= 0 ? time(NULL) + durationSec : -1);
 }
 
-- (void)playGame:(NSString*)playerName
+- (void)playGame:(NSString*)playerName :(int)gameNum :(int)desiredPlayers
 {
     int argc;
     char** argv;
@@ -172,6 +172,8 @@ bool gMute = FALSE;
         setup = new GameSetup(client, *xport);
         setup->setCommandLineArgs(argc-1, argv+1);
         setup->setPlayerName([playerName UTF8String]);
+        setup->setGameLevel(gameNum);
+        setup->setNumberPlayers(desiredPlayers);
         GameSetup::GameParams params = setup->getSetup();
         if (!params.noTransport) {
             PosixUdpSocket* socket = new PosixUdpSocket();

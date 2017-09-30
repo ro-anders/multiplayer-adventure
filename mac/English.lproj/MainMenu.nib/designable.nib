@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="13196" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment version="101000" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12121"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13196"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -22,7 +22,7 @@
                         <rect key="frame" x="0.0" y="14" width="335" height="192"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" allowsCharacterPickerTouchBarItem="NO" id="VPN-BE-F8H">
+                            <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" id="VPN-BE-F8H">
                                 <rect key="frame" x="18" y="38" width="299" height="66"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="center" title="Status Message" id="OeK-pY-YuW">
@@ -42,7 +42,7 @@
                                     <action selector="clickPlay:" target="249" id="aeD-pm-Fpl"/>
                                 </connections>
                             </button>
-                            <textField verticalHuggingPriority="750" misplaced="YES" allowsCharacterPickerTouchBarItem="NO" id="TFq-w4-kLP">
+                            <textField verticalHuggingPriority="750" misplaced="YES" id="TFq-w4-kLP">
                                 <rect key="frame" x="20" y="157" width="225" height="22"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Name" drawsBackground="YES" id="ycT-gC-q2S">
@@ -51,6 +51,35 @@
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
+                            <popUpButton verticalHuggingPriority="750" misplaced="YES" id="pTF-ey-dOd" userLabel="Game Select Popup">
+                                <rect key="frame" x="18" y="109" width="95" height="26"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <popUpButtonCell key="cell" type="push" title="Game 1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="Lti-lp-WLI" id="tBs-km-Zgg">
+                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="menu"/>
+                                    <menu key="menu" id="gLu-up-QoH">
+                                        <items>
+                                            <menuItem title="Game 1" state="on" id="Lti-lp-WLI"/>
+                                            <menuItem title="Game 2" id="oTq-Ng-wfM"/>
+                                            <menuItem title="Game 3" id="nQ9-ag-MBc"/>
+                                        </items>
+                                    </menu>
+                                </popUpButtonCell>
+                            </popUpButton>
+                            <popUpButton verticalHuggingPriority="750" misplaced="YES" id="5j4-W9-pqI" userLabel="Players Select Popup">
+                                <rect key="frame" x="130" y="109" width="93" height="26"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <popUpButtonCell key="cell" type="push" title="2 Players" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="qYB-DO-MDM" id="jV8-HK-3Cu">
+                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="menu"/>
+                                    <menu key="menu" id="P5D-od-oHh">
+                                        <items>
+                                            <menuItem title="2 Players" state="on" id="qYB-DO-MDM"/>
+                                            <menuItem title="3 Players" id="E9l-Pq-6ec"/>
+                                        </items>
+                                    </menu>
+                                </popUpButtonCell>
+                            </popUpButton>
                         </subviews>
                         <connections>
                             <outlet property="mStatusMessage" destination="VPN-BE-F8H" id="ND5-Yf-DJA"/>
@@ -158,10 +187,12 @@
         </menu>
         <customObject id="249" userLabel="Controller" customClass="Controller">
             <connections>
+                <outlet property="gameSelectPopup" destination="pTF-ey-dOd" id="2Ox-iR-XYo"/>
                 <outlet property="mMenuDragonsHesitate" destination="235" id="252"/>
                 <outlet property="mMenuDragonsRun" destination="236" id="253"/>
                 <outlet property="mNameText" destination="TFq-w4-kLP" id="i79-SI-U6f"/>
                 <outlet property="playButton" destination="89X-Lz-fM1" id="K1L-YC-1Uj"/>
+                <outlet property="playersSelectPopp" destination="5j4-W9-pqI" id="PEN-77-hte"/>
             </connections>
         </customObject>
         <window title="Adventure:Revisited Game Instructions" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="260" userLabel="helpPanel" customClass="NSPanel">
@@ -173,7 +204,7 @@
                 <rect key="frame" x="0.0" y="0.0" width="689" height="225"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="268">
+                    <textField verticalHuggingPriority="750" id="268">
                         <rect key="frame" x="20" y="-26" width="649" height="231"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <textFieldCell key="cell" sendsActionOnEndEditing="YES" id="272">
