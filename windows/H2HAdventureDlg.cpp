@@ -229,7 +229,12 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		argv[2] = "2";
 		setup->setCommandLineArgs(2, argv);
 
-		setup->setPlayerName("Waldo");
+		CEdit* nameEdit = (CEdit*)gThis->GetDlgItem(IDC_NAME_EDIT);
+		WCHAR buffer[100];
+		nameEdit->GetWindowTextW(buffer, 100);
+		USES_CONVERSION;
+		const char* name = W2A(buffer);
+		setup->setPlayerName(name);
 		CComboBox* gameCombo = (CComboBox*)gThis->GetDlgItem(IDC_GAME_COMBO);
 		int gameSelected = gameCombo->GetCurSel();
 		setup->setGameLevel(gameSelected);
