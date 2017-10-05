@@ -1028,7 +1028,9 @@ void randomizeRoomObjects() {
     // Run through all the objects in the game.  The ones that shouldn't be
     // randomized will have their random location flag turned off.
     int numObjects = gameBoard->getNumObjects();
-    for(int objCtr=0; objCtr < numObjects; ++objCtr) {
+	// TODO: Bug in windows requires we reseed now.
+	Sys::randomized = false;
+	for(int objCtr=0; objCtr < numObjects; ++objCtr) {
         OBJECT* nextObj = gameBoard->getObject(objCtr);
         if (nextObj->randomPlacement != OBJECT::FIXED_LOCATION) {
             bool ok = false;

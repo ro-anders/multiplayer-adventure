@@ -39,11 +39,13 @@ public:
      * is really only useful looking at the time between two calls of this.
      */
     static long runTime();
-    
-    
+   
+	// TODO: This should be private but bug in Windows requires us to 
+	// reseed in the middle of the game.
+	static bool randomized;
+
 private:
 
-	static bool randomized;
     
     static long startOfProgramTime;
 
