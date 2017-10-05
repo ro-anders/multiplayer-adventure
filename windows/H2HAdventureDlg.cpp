@@ -224,7 +224,7 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		setup->setNumberPlayers(2);
 		*/
 		char** argv = new char*[3];
-		argv[0] = "broker";
+		argv[0] = "single";
 		argv[1] = "1";
 		argv[2] = "2";
 		setup->setCommandLineArgs(2, argv);
