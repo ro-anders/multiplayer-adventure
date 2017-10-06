@@ -266,7 +266,7 @@ void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* 
 
 void Platform_ReadConsoleSwitches(bool* reset)
 {
-	if (reset) *reset = GetAsyncKeyState(resetKey) & 0x8000;
+	if (reset) *reset = (GetAsyncKeyState(resetKey) & 0x8000) > 0;
 }
 
 void Platform_ReadDifficultySwitches(int* left, int* right)
