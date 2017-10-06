@@ -217,6 +217,15 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 
 		gThis = this;
 
+		CEdit* nameEdit = (CEdit*)gThis->GetDlgItem(IDC_NAME_EDIT);
+		nameEdit->ShowWindow(SW_HIDE);
+		CComboBox* gameCombo = (CComboBox*)gThis->GetDlgItem(IDC_GAME_COMBO);
+		gameCombo->ShowWindow(SW_HIDE);
+		CComboBox* playersCombo = (CComboBox*)gThis->GetDlgItem(IDC_PLAYERS_COMBO);
+		playersCombo->ShowWindow(SW_HIDE);
+		CButton* playButton = (CButton*)gThis->GetDlgItem(IDC_PLAY_BUTTON);
+		playButton->ShowWindow(SW_HIDE);
+
 		xport = new UdpTransport();
 		setup = new GameSetup(*client, *xport);
 		/*
@@ -229,16 +238,13 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		argv[2] = "2";
 		setup->setCommandLineArgs(2, argv);
 
-		CEdit* nameEdit = (CEdit*)gThis->GetDlgItem(IDC_NAME_EDIT);
 		WCHAR buffer[100];
 		nameEdit->GetWindowTextW(buffer, 100);
 		USES_CONVERSION;
 		const char* name = W2A(buffer);
 		setup->setPlayerName(name);
-		CComboBox* gameCombo = (CComboBox*)gThis->GetDlgItem(IDC_GAME_COMBO);
 		int gameSelected = gameCombo->GetCurSel();
 		setup->setGameLevel(gameSelected);
-		CComboBox* playersCombo = (CComboBox*)gThis->GetDlgItem(IDC_PLAYERS_COMBO);
 		int playersSelected = playersCombo->GetCurSel() + 2;
 		setup->setNumberPlayers(playersSelected);
 
