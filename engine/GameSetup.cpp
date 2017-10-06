@@ -83,7 +83,7 @@ needPublicIp(false),
 isBrokeredGame(false),
 isConnectTest(false),
 timeoutStart(0),
-brokerSessionId(Sys::random() * 10000000),
+brokerSessionId((int)(Sys::random() * 10000000)),
 stunServerSocket(NULL),
 stunServerSockAddr(NULL) {}
 

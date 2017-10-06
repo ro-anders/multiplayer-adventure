@@ -233,7 +233,7 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		setup->setNumberPlayers(2);
 		*/
 		char** argv = new char*[3];
-		argv[0] = "broker";
+		argv[0] = "single";
 		argv[1] = "1";
 		argv[2] = "2";
 		setup->setCommandLineArgs(2, argv);
@@ -244,8 +244,10 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		const char* name = W2A(buffer);
 		setup->setPlayerName(name);
 		int gameSelected = gameCombo->GetCurSel();
+		gameSelected = (gameSelected < 0 ? 1 : gameSelected);
 		setup->setGameLevel(gameSelected);
-		int playersSelected = playersCombo->GetCurSel() + 2;
+		int playersSelected = playersCombo->GetCurSel();
+		playersSelected = (playersSelected < 0 ? 2 : playersSelected +2);
 		setup->setNumberPlayers(playersSelected);
 
 		GameSetup::GameParams params = setup->getSetup();
@@ -261,16 +263,16 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 
 void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire)
 {
-	if (left) *left = GetAsyncKeyState(leftKey) & 0x8000;
-	if (up) *up = GetAsyncKeyState(upKey) & 0x8000;
-	if (right) *right = GetAsyncKeyState(rightKey) & 0x8000;
-	if (down) *down = GetAsyncKeyState(downKey) & 0x8000;
-	if (fire) *fire = GetAsyncKeyState(dropKey) & 0x8000;
+	if (left) *left = (GetAsyncKeyState(leftKey) & 0x8000) > 0;
+	if (up) *up = (GetAsyncKeyState(upKey) & 0x8000) > 0;
+	if (right) *right = (GetAsyncKeyState(rightKey) & 0x8000) > 0;
+	if (down) *down = (GetAsyncKeyState(downKey) & 0x8000) > 0;
+	if (fire) *fire = (GetAsyncKeyState(dropKey) & 0x8000) > 0;
 }
 
 void Platform_ReadConsoleSwitches(bool* reset)
 {
-	if (reset) *reset = GetAsyncKeyState(resetKey) & 0x8000;
+	if (reset) *reset = (GetAsyncKeyState(resetKey) & 0x8000) > 0;
 }
 
 void Platform_ReadDifficultySwitches(int* left, int* right)
