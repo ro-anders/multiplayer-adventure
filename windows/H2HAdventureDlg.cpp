@@ -228,15 +228,12 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 
 		xport = new UdpTransport();
 		setup = new GameSetup(*client, *xport);
-		/*
-		setup->setGameLevel(1);
-		setup->setNumberPlayers(2);
-		*/
-		char** argv = new char*[3];
-		argv[0] = "single";
-		argv[1] = "1";
-		argv[2] = "2";
-		setup->setCommandLineArgs(2, argv);
+
+//		char** argv = new char*[3];
+//		argv[0] = "broker";
+//		argv[1] = "1";
+//		argv[2] = "2";
+		setup->setCommandLineArgs(0, NULL);
 
 		WCHAR buffer[100];
 		nameEdit->GetWindowTextW(buffer, 100);

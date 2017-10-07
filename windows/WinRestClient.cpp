@@ -23,7 +23,7 @@
 int WinRestClient::request(const char* path, const char* message, char* responseBuffer, int bufferLength) {
 
 	char portStr[10];
-	sprintf(portStr, "%d", brokerServer.port());
+	sprintf(portStr, "%d", brokerAddress.port());
 
 	// Open the HTTP connnection to the server
 	Logger::log("Opening client socket");
@@ -54,7 +54,7 @@ int WinRestClient::request(const char* path, const char* message, char* response
 	}
 	*/
 	// Resolve the server address and port
-	iResult = getaddrinfo(brokerServer.ip(), portStr, &hints, &result);
+	iResult = getaddrinfo(brokerAddress.ip(), portStr, &hints, &result);
 	if (iResult != 0) {
 		Logger::logError() << "getaddrinfo failed with error: " << iResult << Logger::EOM;
 		WSACleanup();
