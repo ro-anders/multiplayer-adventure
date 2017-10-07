@@ -115,6 +115,8 @@ bool gMute = FALSE;
 
 - (IBAction)update:(id)sender
 {
+    static bool isGraphicsSetup = false;
+    
     gAdvView = self;
     
     // Dismiss current display message when it is time
@@ -139,9 +141,11 @@ bool gMute = FALSE;
             if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
             {
                 Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 1, 1);
+                isGraphicsSetup = true;
             }
+            // TODO: What if CreateOffscreen fails.  Silently stops working.
         }
-    } else {
+    } else if (isGraphicsSetup) {
         // Run a frame of the game
         Adventure_Run();
     }
