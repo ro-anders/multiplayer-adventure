@@ -217,23 +217,37 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 
 		gThis = this;
 
+		CEdit* nameEdit = (CEdit*)gThis->GetDlgItem(IDC_NAME_EDIT);
+		nameEdit->ShowWindow(SW_HIDE);
+		CComboBox* gameCombo = (CComboBox*)gThis->GetDlgItem(IDC_GAME_COMBO);
+		gameCombo->ShowWindow(SW_HIDE);
+		CComboBox* playersCombo = (CComboBox*)gThis->GetDlgItem(IDC_PLAYERS_COMBO);
+		playersCombo->ShowWindow(SW_HIDE);
+		CButton* playButton = (CButton*)gThis->GetDlgItem(IDC_PLAY_BUTTON);
+		playButton->ShowWindow(SW_HIDE);
+
 		xport = new UdpTransport();
 		setup = new GameSetup(*client, *xport);
 		/*
 		setup->setGameLevel(1);
 		setup->setNumberPlayers(2);
 		*/
-		char** argv = new char*[2];
+		char** argv = new char*[3];
 		argv[0] = "single";
 		argv[1] = "1";
+		argv[2] = "2";
 		setup->setCommandLineArgs(2, argv);
 
-		setup->setPlayerName("Waldo");
-		CComboBox* gameCombo = (CComboBox*)gThis->GetDlgItem(IDC_GAME_COMBO);
+		WCHAR buffer[100];
+		nameEdit->GetWindowTextW(buffer, 100);
+		USES_CONVERSION;
+		const char* name = W2A(buffer);
+		setup->setPlayerName(name);
 		int gameSelected = gameCombo->GetCurSel();
+		gameSelected = (gameSelected < 0 ? 1 : gameSelected);
 		setup->setGameLevel(gameSelected);
-		CComboBox* playersCombo = (CComboBox*)gThis->GetDlgItem(IDC_PLAYERS_COMBO);
-		int playersSelected = playersCombo->GetCurSel() + 2;
+		int playersSelected = playersCombo->GetCurSel();
+		playersSelected = (playersSelected < 0 ? 2 : playersSelected +2);
 		setup->setNumberPlayers(playersSelected);
 
 		GameSetup::GameParams params = setup->getSetup();
@@ -249,16 +263,16 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 
 void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire)
 {
-	if (left) *left = GetAsyncKeyState(leftKey) & 0x8000;
-	if (up) *up = GetAsyncKeyState(upKey) & 0x8000;
-	if (right) *right = GetAsyncKeyState(rightKey) & 0x8000;
-	if (down) *down = GetAsyncKeyState(downKey) & 0x8000;
-	if (fire) *fire = GetAsyncKeyState(dropKey) & 0x8000;
+	if (left) *left = (GetAsyncKeyState(leftKey) & 0x8000) > 0;
+	if (up) *up = (GetAsyncKeyState(upKey) & 0x8000) > 0;
+	if (right) *right = (GetAsyncKeyState(rightKey) & 0x8000) > 0;
+	if (down) *down = (GetAsyncKeyState(downKey) & 0x8000) > 0;
+	if (fire) *fire = (GetAsyncKeyState(dropKey) & 0x8000) > 0;
 }
 
 void Platform_ReadConsoleSwitches(bool* reset)
 {
-	if (reset) *reset = GetAsyncKeyState(resetKey) & 0x8000;
+	if (reset) *reset = (GetAsyncKeyState(resetKey) & 0x8000) > 0;
 }
 
 void Platform_ReadDifficultySwitches(int* left, int* right)

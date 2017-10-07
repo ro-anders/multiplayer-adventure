@@ -8,7 +8,7 @@
 #include "Transport.hpp"
 
 class RestClient;
-class sockaddr_in;
+struct sockaddr_in;
 class UdpSocket;
 class UdpTransport;
 
