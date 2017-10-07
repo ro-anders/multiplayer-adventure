@@ -1,5 +1,6 @@
 To Do
 -----
+- Close button on Mac is ineffective.
 - Broker only keeps last established game.  If two people start a game and within seconds two more people come on and start a game, first two may be affected.
 - Two players connect.  Game ends.  Player from same host connects and is joined with previous game.
 - Mac still has menu options that apply to Hirschberg version, not H2H version

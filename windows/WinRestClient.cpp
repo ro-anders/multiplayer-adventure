@@ -23,7 +23,7 @@
 int WinRestClient::request(const char* path, const char* message, char* responseBuffer, int bufferLength) {
 
 	char portStr[10];
-	sprintf(portStr, "%d", REST_PORT);
+	sprintf(portStr, "%d", brokerServer.port());
 
 	// Open the HTTP connnection to the server
 	Logger::log("Opening client socket");
@@ -47,14 +47,14 @@ int WinRestClient::request(const char* path, const char* message, char* response
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
 	/*
-	server = gethostbyname(BROKER_SERVER);
+	server = gethostbyname(brokerServer.io());
 	if (server == NULL) {
 		Sys::log("ERROR, no such http host\n");
 		return -2;
 	}
 	*/
 	// Resolve the server address and port
-	iResult = getaddrinfo(BROKER_SERVER, portStr, &hints, &result);
+	iResult = getaddrinfo(brokerServer.ip(), portStr, &hints, &result);
 	if (iResult != 0) {
 		Logger::logError() << "getaddrinfo failed with error: " << iResult << Logger::EOM;
 		WSACleanup();

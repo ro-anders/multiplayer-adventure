@@ -3,21 +3,26 @@
 
 #include <string.h>
 
-//const char* RestClient::BROKER_SERVER = "roserver.ddns.net";
-//const char* RestClient::BROKER_SERVER = "52.36.221.9";
-// TODOX: Just for debugging.  Undo.
-const char* RestClient::BROKER_SERVER = "127.0.0.1";
+//const char* RestClient::DEFAULT_BROKER_SERVER = "roserver.ddns.net";
+const char* RestClient::DEFAULT_BROKER_SERVER = "54.175.45.95";
 
 const int RestClient::STUN_PORT = 8888;
 const int RestClient::REST_PORT = 8080;
 
+RestClient::RestClient() :
+brokerAddress(Transport::Address(DEFAULT_BROKER_SERVER, REST_PORT))
+{}
+
+void RestClient::setAddress(const Transport::Address& address) {
+    brokerAddress = address;
+}
 
 int RestClient::get(const char* path, char* responseBuffer, int bufferLength) {
     char message[2000];
     sprintf(message, "GET %s HTTP/1.1\r\n"
             "Host: %s:%d\r\n"
             "Accept: */*\r\n"
-            "\r\n", path, BROKER_SERVER, REST_PORT);
+            "\r\n", path, brokerAddress.ip(), brokerAddress.port());
     
     int charsInResponse = request(path, message, responseBuffer, bufferLength);
     
@@ -33,7 +38,7 @@ int RestClient::post(const char* path, const char* content, char* responseBuffer
             "Content-Type: application/json\r\n"
             "Content-Length: %d\r\n"
             "\r\n"
-            "%s", path, BROKER_SERVER, REST_PORT, contentLength, content);
+            "%s", path, brokerAddress.ip(), brokerAddress.port(), contentLength, content);
     
     int charsInResponse = request(path, message, responseBuffer, bufferLength);
     

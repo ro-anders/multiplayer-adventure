@@ -75,8 +75,8 @@ void GameSetup::GameParams::setPlayerName(const char* newName) {
 GameSetup::GameSetup(RestClient& inClient, UdpTransport& inTransport) :
 client(inClient),
 xport(inTransport),
-stunServer(RestClient::BROKER_SERVER, RestClient::STUN_PORT),
-broker(RestClient::BROKER_SERVER, RestClient::REST_PORT),
+stunServer(RestClient::DEFAULT_BROKER_SERVER, RestClient::STUN_PORT),
+broker(RestClient::DEFAULT_BROKER_SERVER, RestClient::REST_PORT),
 publicAddress(),
 setupState(SETUP_INIT),
 needPublicIp(false),
@@ -126,7 +126,11 @@ void GameSetup::setCommandLineArgs(int argc, char** argv) {
         newParams.numberPlayers = (atoi(argv[2]) <= 2 ? 2 : 3);
         if (argc > 3) {
             broker = Transport::parseUrl(argv[3]);
+            if (broker.port() == 0) {
+                broker = Transport::Address(broker.ip(), RestClient::REST_PORT);
+            }
             stunServer = Transport::Address(broker.ip(), RestClient::STUN_PORT);
+            client.setAddress(broker);
         }
     } else if ((argc >= 1) && (strcmp(argv[0], "dev")==0)){
         // Used only for development.  Assumes a second dev instance is being started on the same machine and will

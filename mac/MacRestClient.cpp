@@ -31,7 +31,7 @@ int MacRestClient::request(const char* path, const char* message, char* response
         Logger::logError("ERROR opening http socket");
         return -1;
     }
-    server = gethostbyname(BROKER_SERVER);
+    server = gethostbyname(brokerAddress.ip());
     if (server == NULL) {
         Logger::logError("ERROR, no such http host");
         return -2;
