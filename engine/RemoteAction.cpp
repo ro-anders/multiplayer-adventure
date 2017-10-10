@@ -274,7 +274,9 @@ int PortcullisStateAction::serialize(char* buffer, int bufferLength) {
 
 void PortcullisStateAction::deserialize(const char *message) {
     char type[8];
-    sscanf(message, "%s %d %d %d %d", type, &sender, &portPkey, &newState, &allowsEntry);
+	int tmpInt;
+    sscanf(message, "%s %d %d %d %d", type, &sender, &portPkey, &newState, &tmpInt);
+	allowsEntry = (tmpInt != 0);
 }
 
 

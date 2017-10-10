@@ -1035,7 +1035,7 @@ void randomizeRoomObjects() {
         if (nextObj->randomPlacement != OBJECT::FIXED_LOCATION) {
             bool ok = false;
             while (!ok) {
-                int randomKey = Sys::random() * numRooms;
+                int randomKey = (int)(Sys::random() * numRooms);
                 ROOM* randomRoom = gameMap->getRoom(randomKey);
                 
                 // Make sure the object isn't put in a hidden room
@@ -1110,8 +1110,8 @@ void handleSetupMessages() {
 }
 
 float volumeAtDistance(int room) {
-    int NEAR_VOLUME = MAX_VOLUME/3;
-    int FAR_VOLUME = MAX_VOLUME/9;
+    float NEAR_VOLUME = MAX_VOLUME/3;
+    float FAR_VOLUME = MAX_VOLUME/9;
     
     int distance = gameMap->distance(room, objectBall->room);
 
@@ -1310,7 +1310,7 @@ void BallMovement(BALL* ball) {
     else if (ball->y < BOTTOM_EDGE)
     {
         // Handle the ball leaving a castle.
-        bool canUnlockFromInside = (gameOptions & GAMEOPTION_UNLOCK_GATES_FROM_INSIDE);
+		bool canUnlockFromInside = ((gameOptions & GAMEOPTION_UNLOCK_GATES_FROM_INSIDE) != 0);
         bool leftCastle = false;
         for (int portalCtr = 0; !leftCastle && (portalCtr < numPorts); ++portalCtr) {
             Portcullis* port = ports[portalCtr];
@@ -1426,7 +1426,7 @@ void SyncDragons() {
             DragonStateAction* nextState = (DragonStateAction*)next;
             Dragon* dragon = dragons[nextState->dragonNum];
             // If something causes a sound, we need to know how far away it is.
-            int volume = volumeAtDistance(dragon->room);
+            float volume = volumeAtDistance(dragon->room);
             dragon->syncAction(nextState, volume);
         } else {
             // If we are in the same room as the dragon and are closer to it than the reporting player,
@@ -2270,7 +2270,7 @@ COLOR GetFlashColor()
     COLOR color;
 
     float r=0, g=0, b=0;
-    float h = flashColorHue / (360.0/3);
+    float h = flashColorHue / (360.0f/3);
     if (h < 1)
     {
         r = h * 255;
@@ -2292,9 +2292,9 @@ COLOR GetFlashColor()
         b = h * 255;
     }
 
-    color.r = max(flashColorLum, r);
-    color.g = max(flashColorLum, g);
-    color.b = max(flashColorLum, b);
+    color.r = (int)max(flashColorLum, r);
+    color.g = (int)max(flashColorLum, g);
+    color.b = (int)max(flashColorLum, b);
 
     return color;
 }
