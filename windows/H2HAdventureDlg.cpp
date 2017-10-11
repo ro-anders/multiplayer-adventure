@@ -6,6 +6,7 @@
 #include "..\engine\adventure_sys.h"
 #include "..\engine\Adventure.h"
 #include "..\engine\GameSetup.hpp"
+#include "..\engine\Sys.hpp"
 #include "..\engine\UdpTransport.hpp"
 #include "H2HAdventure.h"
 #include "H2HAdventureDlg.h"
@@ -229,15 +230,25 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		xport = new UdpTransport();
 		setup = new GameSetup(*client, *xport);
 
-//		char** argv = new char*[3];
-//		argv[0] = "broker";
-//		argv[1] = "1";
-//		argv[2] = "2";
-		setup->setCommandLineArgs(0, NULL);
+		// Read the command line and pass it in to setup.
+		USES_CONVERSION;
+		LPCWSTR wholeCommandLine = GetCommandLine();
+		int argc = 0;
+		LPWSTR* parsedCommandLine = CommandLineToArgvW(wholeCommandLine, &argc);
+		char** argv = new char*[argc];
+		for (int ctr = 0; ctr < argc; ++ctr) {
+			const char* argStr = W2A(parsedCommandLine[ctr]);
+			argv[ctr] = new char[strlen(argStr) + 1];
+			strcpy(argv[ctr], argStr);
+		}
+		setup->setCommandLineArgs(argc -1, argv+1);
+		for (int ctr = 0; ctr < argc; ++ctr) {
+			delete[] argv[ctr];
+		}
+		delete[] argv;
 
 		WCHAR buffer[100];
 		nameEdit->GetWindowTextW(buffer, 100);
-		USES_CONVERSION;
 		const char* name = W2A(buffer);
 		setup->setPlayerName(name);
 		int gameSelected = gameCombo->GetCurSel();

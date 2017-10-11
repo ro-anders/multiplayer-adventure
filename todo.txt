@@ -1,6 +1,5 @@
 To Do
 -----
-- Crash on Mac when playing across internet
 - Windows status message flickers.  Shouldn't redraw the whole window.
 - Close button on Mac is ineffective.
 - 4 requests at once confuses broker.
