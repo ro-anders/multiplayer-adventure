@@ -218,6 +218,8 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 
 		gThis = this;
 
+		CEdit* nameLabel = (CEdit*)gThis->GetDlgItem(IDC_NAME_LABEL);
+		nameLabel->ShowWindow(SW_HIDE);
 		CEdit* nameEdit = (CEdit*)gThis->GetDlgItem(IDC_NAME_EDIT);
 		nameEdit->ShowWindow(SW_HIDE);
 		CComboBox* gameCombo = (CComboBox*)gThis->GetDlgItem(IDC_GAME_COMBO);
