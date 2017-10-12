@@ -113,7 +113,7 @@ void UdpTransport::connect() {
     states[0] = RECVD_NOTHING;
     states[1] = (numOtherMachines > 1 ? RECVD_NOTHING : RECVD_ACK);
     // We need a big random integer.
-    randomNum = Sys::random() * 1000000;
+    randomNum = (long)(Sys::random() * 1000000);
 }
 
 UdpSocket& UdpTransport::reservePort() {

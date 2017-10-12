@@ -161,7 +161,7 @@ class PortcullisStateAction: public RemoteAction {
 public:
     int portPkey; // The Object::pkey of the portcullis, nothing to do with the key that unlocks it
     int newState;
-    int allowsEntry;
+    bool allowsEntry;
     
     static const char* CODE;
     

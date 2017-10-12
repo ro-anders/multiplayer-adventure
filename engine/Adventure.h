@@ -37,7 +37,7 @@ void Platform_ReadConsoleSwitches(bool* reset);
 void Platform_ReadDifficultySwitches(int* left, int* right);
 void Platform_MuteSound(bool mute);
 void Platform_MakeSound(int sound, float volume);
-#define MAX_VOLUME              11.0
+#define MAX_VOLUME              11.0f
 float Platform_Random();
 void Platform_DisplayStatus(const char* message, int durationSec);
 

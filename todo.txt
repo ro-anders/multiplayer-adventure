@@ -1,10 +1,8 @@
 To Do
 -----
-- Crash on Mac when playing across internet
 - Windows status message flickers.  Shouldn't redraw the whole window.
-- Tab order in Windows is wrong.
 - Close button on Mac is ineffective.
-- Broker only keeps last established game.  If two people start a game and within seconds two more people come on and start a game, first two may be affected.
+- 4 requests at once confuses broker.
 - Two players connect.  Game ends.  Player from same host connects and is joined with previous game.
 - Mac still has menu options that apply to Hirschberg version, not H2H version
 - Mac runs too slow in full screen mode.  Speed up or disable full screen mode.
@@ -22,6 +20,8 @@ To Do
 - FIXED - Sometimes when you unlock and enter castle the gate locks behind you.  Has to do with other machines seeing player touch the key to the castle and sending a lock event.
   Unlock a castle.  Hold the key above you and touch the open gate.  As it closes it will bring you into the castle.  Other players will see the castle open, but you will
   see the castle closed.
+- FIXED - Crash on Mac when playing across internet - Looked like first round of game executing before setup was done.  Put in explicit wait until setup is done.
+- FIXED - Tab order in Windows is wrong.
 
 To Check
 --------

@@ -57,7 +57,7 @@ public:
      * volume - given how far this dragon is from this player, how loud would any
      *          sound be
      */
-    void syncAction(DragonStateAction* action, int volume);
+    void syncAction(DragonStateAction* action, float volume);
 
     /**
      * Incorporate a move action from another machine into this dragon's state.

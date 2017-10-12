@@ -148,7 +148,7 @@ bool Dragon::hasEatenCurrentPlayer() {
 	return (state == Dragon::EATEN) && (eaten == board->getCurrentPlayer());
 }
 
-void Dragon::syncAction(DragonStateAction* action, int volume) {
+void Dragon::syncAction(DragonStateAction* action, float volume) {
     if (action->newState == Dragon::EATEN) {
         
         BALL* playerEaten = board->getPlayer(action->sender);
