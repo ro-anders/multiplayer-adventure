@@ -488,7 +488,7 @@ Transport::Address GameSetup::checkForPublicAddress() {
 
 bool GameSetup::hasExpired() {
     
-    const long EXPIRATION_DATE = 20180831;
+    const long EXPIRATION_DATE = 20171031;
     long time = Sys::today();
     return ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE));
     
