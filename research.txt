@@ -1,4 +1,40 @@
 --------------------------------------------------------------------------------------------------------------------------------
+Faster Mac CGContextDrawImage
+Post: https://stackoverflow.com/questions/7560979/cgcontextdrawimage-is-extremely-slow-after-large-uiimage-drawn-into-it
+CGContextDrawImage is really slow if you have to map pixels and they should be in the same pixel format.
+Specifically mentioned converting between pixels with alpha to without alpha, but also talked about pixels from ARGB to RGBA.  Specifically they said Apple works best with no alpha (kCGImageAlphaNoneSkipLast) and RGBA (kCGBitmapByteOrder32Little);
+
+What we do:
+Platform_PaintPixel puts the pixels in the PixekBucket
+CreateOffscreen() calls CGBitmapContextCreate 
+
+When we create a bucket we call CGBitmapContextCreate passing in a byte* of pixels of ARGB and specify the standards kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Big
+  Adventure loop calls Platform_PaintPixel which puts the pixels in the PixekBucket
+  update calls CreateOffscreen() which calls CGBitmapContextCreate passing in PixelBucket
+  Mac event loop calls drawRect() which calls CGContextDrawImage 
+
+Profiler spends a LOT of time in rgb64_image_mark_RGB24?  
+
+How do I determine/set the pixel format used when painting to the screen?
+  - look at the profiler?
+  - if Mac just has a set one, sounds like the posts say its BGRnA but that didn't work
+  - is there a setting on CGContextDrawImage or on the screen we draw it onto?
+
+CocoaBuilder post: http://www.cocoabuilder.com/archive/cocoa/309165-how-to-quickly-paint-to-cocoa-view-from-bitmap-in-memory.html
+Says to create bitmap with CGImageCreate, not CGBitmapContextCreate:
+  CGImageCreate(x, y, 8, 32, 4*x, colorSpace,  kCGImageAlphaNoneSkipFirst|kCGBitmapByteOrder32Host,provider, NULL,true, kCGRenderingIntentDefault)
+  where x and y are dimensions and provider is a CGDataProviderCreateWithData that streams an array into an image.
+Then call CGContextDrawImage
+
+Girard Benoit post: https://benoitgirard.wordpress.com/2010/03/09/optimizing-cgcontextdrawimage/
+Says to make sure you’re not using a transformation matrix and to use the monitor’s color profile instead of kCGColorSpaceGenericRGB.
+Complained all the time was being spent in argb32_sample_RGBA32 which is similar but different than rgb64_image_mark_RGB24.
+
+Other Post: https://stackoverflow.com/questions/17787822/optimized-alternative-to-cgcontextdrawimage
+Says CG is specifically for rendering final images to the screen and maybe Core Image (CImage) is a better choice (xhttps://developer.apple.com/library/mac/#documentation/GraphicsImaging/Conceptual/CoreImaging/ci_intro/ci_intro.html#//apple_ref/doc/uid/TP30001185)
+        
+
+--------------------------------------------------------------------------------------------------------------------------------
 libjingle - C++ toolkit by Google for peer-to-peer applications.  Seems to do everything.
   Requires third party server to setup communication via XMPP but also takes ~8% of traffic.
   Lots of good example applications.
