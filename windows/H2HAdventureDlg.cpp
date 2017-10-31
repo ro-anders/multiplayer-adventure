@@ -6,6 +6,7 @@
 #include "..\engine\adventure_sys.h"
 #include "..\engine\Adventure.h"
 #include "..\engine\GameSetup.hpp"
+#include "..\engine\Logger.hpp"
 #include "..\engine\Sys.hpp"
 #include "..\engine\UdpTransport.hpp"
 #include "H2HAdventure.h"
@@ -77,6 +78,7 @@ BOOL CH2HAdventureDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
+	Logger::setup(Logger::FILE, Logger::INFO);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
