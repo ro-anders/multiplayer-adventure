@@ -85,7 +85,7 @@ bool gMute = FALSE;
     srandom(millis);
     
     // Setup logging
-    Logger::setup(Logger::CONSOLE, Logger::INFO);
+    Logger::setup(Logger::FILE, Logger::INFO);
     Logger::log() << "Logging setup at " << Sys::datetime() << "." << Logger::EOM;
     
     return self;

@@ -132,7 +132,11 @@ Logger::Logger(int inDestination) :
 	buffer[0] = '\0';
     
     if (destination == FILE) {
+#ifdef WIN32
         logFile = fopen("adventure.log", "a");
+#else
+        logFile = fopen("/tmp/adventure.log", "a");
+#endif
     }
 }
 
