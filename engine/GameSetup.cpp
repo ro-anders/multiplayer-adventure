@@ -325,11 +325,11 @@ void GameSetup::craftBrokerRequest(Transport::Address) {
 
 bool GameSetup::pollBroker() {
     // TODOX: How do we report the broker bexoming unreachable
-    char response[1000];
+    char response[10000];
     bool gameSetup = false;
     Json::Value responseJson;
     
-    client.post("/game", brokerRequestContent, response, 1000);
+    client.post("/game", brokerRequestContent, response, 10000);
     
     std::stringstream strm(response);
     strm >> responseJson;
