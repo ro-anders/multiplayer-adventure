@@ -31,6 +31,7 @@
 #include "Logger.hpp"
 #include "Map.hpp"
 #include "Portcullis.hpp"
+#include "Robot.hpp"
 #include "Room.hpp"
 #include "ScriptedSync.hpp"
 #include "Sync.hpp"
@@ -816,6 +817,9 @@ void Adventure_Run()
             {
                 // Read joystick
                 Platform_ReadJoystick(&joyLeft, &joyUp, &joyRight, &joyDown, &joyFire);
+                if (Robot::isOn()) {
+                    Robot::ControlJoystick(&joyLeft, &joyUp, &joyRight, &joyDown, &joyFire);
+                }
 
                 if (gameState == GAMESTATE_ACTIVE_1)
                 {

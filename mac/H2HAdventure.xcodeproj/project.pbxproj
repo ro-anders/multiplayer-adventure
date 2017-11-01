@@ -57,6 +57,7 @@
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		A880B1911FA9E2C80086F374 /* Robot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A880B18F1FA9E2C80086F374 /* Robot.cpp */; };
 		D009FDD20BCA0A64007C5A37 /* H2HAdventureIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = D009FDD10BCA0A64007C5A37 /* H2HAdventureIcon.icns */; };
 		D06FE00F0BC856BF005633CA /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D06FE00E0BC856BF005633CA /* Carbon.framework */; };
 /* End PBXBuildFile section */
@@ -147,6 +148,8 @@
 		40F99C061C1A334B0032B2A2 /* color.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = color.h; path = ../engine/color.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* H2HAdventure.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = H2HAdventure.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A880B18F1FA9E2C80086F374 /* Robot.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Robot.cpp; path = ../engine/Robot.cpp; sourceTree = "<group>"; };
+		A880B1901FA9E2C80086F374 /* Robot.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = Robot.hpp; path = ../engine/Robot.hpp; sourceTree = "<group>"; };
 		D009FDD10BCA0A64007C5A37 /* H2HAdventureIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = H2HAdventureIcon.icns; sourceTree = "<group>"; };
 		D06FE00E0BC856BF005633CA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
@@ -334,6 +337,8 @@
 				408582131D46C0BE00A3F2EF /* UdpSocket.hpp */,
 				40B029DA1C91449200DA27FD /* UdpTransport.cpp */,
 				40B029DB1C91449200DA27FD /* UdpTransport.hpp */,
+				A880B18F1FA9E2C80086F374 /* Robot.cpp */,
+				A880B1901FA9E2C80086F374 /* Robot.hpp */,
 			);
 			name = engine;
 			sourceTree = "<group>";
@@ -423,6 +428,7 @@
 				408E43D11C3C6D8C00E0715B /* Board.cpp in Sources */,
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
 				407773D31BF2AC9C00454AC5 /* Transport.cpp in Sources */,
+				A880B1911FA9E2C80086F374 /* Robot.cpp in Sources */,
 				4013C0A11C503FAA00C99342 /* Room.cpp in Sources */,
 				401C851E1D195CBA00110952 /* GameSetup.cpp in Sources */,
 				40740BAE1C1859730018AE6D /* Bat.cpp in Sources */,
