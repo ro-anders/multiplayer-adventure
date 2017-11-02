@@ -323,6 +323,8 @@
 				40509AA91C05E9750008BACF /* RemoteAction.hpp */,
 				401C851F1D1960A100110952 /* RestClient.cpp */,
 				401C85201D1960A100110952 /* RestClient.hpp */,
+				A880B18F1FA9E2C80086F374 /* Robot.cpp */,
+				A880B1901FA9E2C80086F374 /* Robot.hpp */,
 				4013C09F1C503FAA00C99342 /* Room.cpp */,
 				4013C0A01C503FAA00C99342 /* Room.hpp */,
 				40663AC41CBD122900A75EE3 /* ScriptedSync.cpp */,
@@ -337,8 +339,6 @@
 				408582131D46C0BE00A3F2EF /* UdpSocket.hpp */,
 				40B029DA1C91449200DA27FD /* UdpTransport.cpp */,
 				40B029DB1C91449200DA27FD /* UdpTransport.hpp */,
-				A880B18F1FA9E2C80086F374 /* Robot.cpp */,
-				A880B1901FA9E2C80086F374 /* Robot.hpp */,
 			);
 			name = engine;
 			sourceTree = "<group>";
