@@ -36,10 +36,10 @@ int downKey = VK_DOWN;
 int dropKey = VK_SPACE;
 int resetKey = VK_RETURN;
 
-
-int pixelArray[7000];
 int numPixels = 0;
-
+const int MAX_PIXELS = 20000;
+int pixelArray[MAX_PIXELS];
+bool reportedOverflow = false;
 
 CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_H2HADVENTURE_DIALOG, pParent)
@@ -47,7 +47,6 @@ CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	pBitmap = NULL;
 	pInMemDC = NULL;
-	pixelArray[0] = -1;
 	gameStarted = FALSE;
 	xport = NULL;
 	setup = NULL;
@@ -138,6 +137,7 @@ void CH2HAdventureDlg::OnDraw(CDC* pDC) {
 			pixelArray[row + 5], pixelArray[row + 6]);
 	}
 	numPixels = 0;
+	reportedOverflow = false;
 
 	::SelectObject(*pInMemDC, penOld);
 }
@@ -181,7 +181,7 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser,
 	DWORD_PTR dw1, DWORD_PTR dw2)
 {
 	numPixels = 0;
-	pixelArray[0] = -1;
+	reportedOverflow = false;
 
 	gThis->update();
 
@@ -297,15 +297,22 @@ void Platform_ReadDifficultySwitches(int* left, int* right)
 void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int height/*=1*/)
 {
 	int row = numPixels * 7;
-	pixelArray[row] = r;
-	pixelArray[row + 1] = g;
-	pixelArray[row + 2] = b;
-	pixelArray[row + 3] = x;
-	pixelArray[row + 4] = y;
-	pixelArray[row + 5] = width;
-	pixelArray[row + 6] = height;
-	++numPixels;
-	pixelArray[numPixels * 7] = -1;
+	if (row + 7 >= MAX_PIXELS) {
+		if (!reportedOverflow) {
+			Logger::logError("Too many pixels to paint.");
+			reportedOverflow = true;
+		}
+	}
+	else {
+		pixelArray[row] = r;
+		pixelArray[row + 1] = g;
+		pixelArray[row + 2] = b;
+		pixelArray[row + 3] = x;
+		pixelArray[row + 4] = y;
+		pixelArray[row + 5] = width;
+		pixelArray[row + 6] = height;
+		++numPixels;
+	}
 }
 
 void Platform_MuteSound(bool nMute)

@@ -120,6 +120,7 @@
     <ClInclude Include="..\engine\Portcullis.hpp" />
     <ClInclude Include="..\engine\RemoteAction.hpp" />
     <ClInclude Include="..\engine\RestClient.hpp" />
+    <ClInclude Include="..\engine\Robot.hpp" />
     <ClInclude Include="..\engine\Room.hpp" />
     <ClInclude Include="..\engine\ScriptedSync.hpp" />
     <ClInclude Include="..\engine\Sync.hpp" />
@@ -151,6 +152,7 @@
     <ClCompile Include="..\engine\Portcullis.cpp" />
     <ClCompile Include="..\engine\RemoteAction.cpp" />
     <ClCompile Include="..\engine\RestClient.cpp" />
+    <ClCompile Include="..\engine\Robot.cpp" />
     <ClCompile Include="..\engine\Room.cpp" />
     <ClCompile Include="..\engine\ScriptedSync.cpp" />
     <ClCompile Include="..\engine\Sync.cpp" />

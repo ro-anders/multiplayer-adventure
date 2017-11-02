@@ -17,8 +17,8 @@ bool Robot::isOn() {
 void Robot::ControlJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire) {
     static int lastXDirection = 0;
     static int lastYDirection = 0;
-    const float DIRECTION_CHANGE_PROBABILITY = 0.01;
-    const float DROP_PROBABILITY = 0.0001;
+    const float DIRECTION_CHANGE_PROBABILITY = 0.01f;
+    const float DROP_PROBABILITY = 0.0001f;
     
     if (isOn()) {
         float random = Sys::random();
@@ -38,8 +38,8 @@ void Robot::ControlJoystick(bool* left, bool* up, bool* right, bool* down, bool*
 
 void Robot::ControlConsoleSwitches(bool* reset, Dragon** dragons, int numDragons, BALL* ball) {
     // TODO: DIfferent frequency for eaten vs. non-eaten
-    const float RESET_PROBABILITY = 0.00001;
-    const float EATEN_RESET_PROBABILITY = 0.001;
+    const float RESET_PROBABILITY = 0.00001f;
+    const float EATEN_RESET_PROBABILITY = 0.001f;
     
     if (isOn()) {
         bool eaten = false;

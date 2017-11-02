@@ -126,6 +126,9 @@
     <ClInclude Include="WinUdpSocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\engine\Robot.hpp">
+      <Filter>Header Files\engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="H2HAdventure.cpp">
@@ -205,6 +208,9 @@
     </ClCompile>
     <ClCompile Include="WinUdpSocket.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\engine\Robot.cpp">
+      <Filter>Source Files\engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
