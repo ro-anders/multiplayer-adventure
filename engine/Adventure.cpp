@@ -31,6 +31,7 @@
 #include "Logger.hpp"
 #include "Map.hpp"
 #include "Portcullis.hpp"
+#include "Robot.hpp"
 #include "Room.hpp"
 #include "ScriptedSync.hpp"
 #include "Sync.hpp"
@@ -759,6 +760,9 @@ void Adventure_Run()
     bool reset = false;
     Platform_ReadDifficultySwitches(&gameDifficultyLeft, &gameDifficultyRight);
     Platform_ReadConsoleSwitches(&reset);
+    if (Robot::isOn()) {
+        Robot::ControlConsoleSwitches(&reset, dragons, numDragons, objectBall);
+    }
 
 	Dragon::setRunFromSword(gameDifficultyRight == DIFFICULTY_A);
     // If joystick is disabled and we hit the reset switch we don't treat it as a reset but as
@@ -816,6 +820,9 @@ void Adventure_Run()
             {
                 // Read joystick
                 Platform_ReadJoystick(&joyLeft, &joyUp, &joyRight, &joyDown, &joyFire);
+                if (Robot::isOn()) {
+                    Robot::ControlJoystick(&joyLeft, &joyUp, &joyRight, &joyDown, &joyFire);
+                }
 
                 if (gameState == GAMESTATE_ACTIVE_1)
                 {
