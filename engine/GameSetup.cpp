@@ -217,6 +217,7 @@ void GameSetup::checkSetup() {
         case SETUP_WAITING_FOR_BROKERING: {
             currentTime = Sys::runTime();
             if (currentTime-timeoutStart > BROKER_PERIOD) {
+                keepPortOpen();
                 bool nowConnected = pollBroker();
                 if (nowConnected) {
                     timeoutStart = Sys::runTime() + 10000; // Usingg 'timeoutStart' as a timeout end.  Bad.
@@ -282,6 +283,12 @@ void GameSetup::askForPublicAddress() {
     
     stunServerSocket->setBlocking(false);
     
+}
+
+void GameSetup::keepPortOpen() {
+    if (stunServerSockAddr != NULL) {
+        stunServerSocket->writeData("Ping", 5, stunServerSockAddr);
+    }
 }
 
 /**

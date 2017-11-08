@@ -150,6 +150,10 @@ private:
     
     Transport::Address determinePublicAddress(Transport::Address stunServer);
     
+    /** Send a UDP packet out on the designated port in attempt to keep firewall/NAT from reclaiming port. */
+    void keepPortOpen();
+
+    
     bool sameAsMyAddresses(Transport::Address* addresses, int numAddresses);
 
 };
