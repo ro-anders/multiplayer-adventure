@@ -24,8 +24,6 @@
 
 - (bool)CreateOffscreen ;
 
-- (void)playGame:(NSString*)playerName :(int)gameNum :(int)desiredPlayers;
-
 - (IBAction)update:(id)sender;
 
 @end

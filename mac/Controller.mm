@@ -18,79 +18,8 @@
 
 @implementation Controller
 
-extern bool gLeftDifficulty;
-extern bool gRightDifficulty;
-extern bool gMenuItemReset;
-extern bool gMenuItemSelect;
-
-// This is NOT how to do MVC with Cocoa, but I just want to get this working.
-extern AdventureView* gView;
-
-
 - (void)awakeFromNib
 {
-	if (gLeftDifficulty)
-		[mMenuDragonsHesitate setState:NSOnState];
-	else
-		[mMenuDragonsHesitate setState:NSOffState];
-	
-	if (!gRightDifficulty)
-		[mMenuDragonsRun setState:NSOnState];
-	else
-		[mMenuDragonsRun setState:NSOffState];
-}
-
-
-- (IBAction)clickDragonsHesitate:(id)sender
-{
-	// toggle the check mark and value
-	int state = [mMenuDragonsHesitate state];
-	if (state == NSOnState)
-	{
-		gLeftDifficulty = FALSE;
-		[mMenuDragonsHesitate setState:NSOffState];
-	}
-	else
-	{
-		gLeftDifficulty = TRUE;
-		[mMenuDragonsHesitate setState:NSOnState];
-	}
-}
-
-- (IBAction)clickDragonsRun:(id)sender
-{
-	// toggle the check mark and value
-	int state = [mMenuDragonsRun state];
-	if (state == NSOnState)
-	{
-		gRightDifficulty = TRUE;
-		[mMenuDragonsRun setState:NSOffState];
-	}
-	else
-	{
-		gRightDifficulty = FALSE;
-		[mMenuDragonsRun setState:NSOnState];
-	}
-}
-
-- (IBAction)clickSelect:(id)sender
-{
-	gMenuItemSelect = TRUE;
-}
-
-- (IBAction)clickReset:(id)sender
-{
-	gMenuItemReset = TRUE;
-}
-
-- (IBAction)clickPlay:(id)sender {
-    [_playButton setHidden:TRUE];
-    [mNameText setHidden:TRUE];
-    [_gameSelectPopup setHidden:TRUE];
-    [_playersSelectPopp setHidden:TRUE];
-    int gameNum = [_gameSelectPopup indexOfSelectedItem];
-    int desiredPlayers = [_playersSelectPopp indexOfSelectedItem] + 2;
-    [gView playGame: [mNameText stringValue] :gameNum :desiredPlayers];
 }
 
 @end

@@ -21,69 +21,6 @@
                     <customView id="206" customClass="AdventureView">
                         <rect key="frame" x="0.0" y="14" width="335" height="192"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" id="VPN-BE-F8H">
-                                <rect key="frame" x="18" y="38" width="299" height="66"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="center" title="Status Message" id="OeK-pY-YuW">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <button verticalHuggingPriority="750" misplaced="YES" id="89X-Lz-fM1">
-                                <rect key="frame" x="240" y="105" width="81" height="32"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="push" title="Play" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="6mf-pb-LJR">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <action selector="clickPlay:" target="249" id="aeD-pm-Fpl"/>
-                                </connections>
-                            </button>
-                            <textField verticalHuggingPriority="750" misplaced="YES" id="TFq-w4-kLP">
-                                <rect key="frame" x="20" y="157" width="225" height="22"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Name" drawsBackground="YES" id="ycT-gC-q2S">
-                                    <font key="font" metaFont="system"/>
-                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </textFieldCell>
-                            </textField>
-                            <popUpButton verticalHuggingPriority="750" misplaced="YES" id="pTF-ey-dOd" userLabel="Game Select Popup">
-                                <rect key="frame" x="18" y="109" width="95" height="26"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <popUpButtonCell key="cell" type="push" title="Game 1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="Lti-lp-WLI" id="tBs-km-Zgg">
-                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="menu"/>
-                                    <menu key="menu" id="gLu-up-QoH">
-                                        <items>
-                                            <menuItem title="Game 1" state="on" id="Lti-lp-WLI"/>
-                                            <menuItem title="Game 2" id="oTq-Ng-wfM"/>
-                                            <menuItem title="Game 3" id="nQ9-ag-MBc"/>
-                                        </items>
-                                    </menu>
-                                </popUpButtonCell>
-                            </popUpButton>
-                            <popUpButton verticalHuggingPriority="750" misplaced="YES" id="5j4-W9-pqI" userLabel="Players Select Popup">
-                                <rect key="frame" x="130" y="109" width="93" height="26"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <popUpButtonCell key="cell" type="push" title="2 Players" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="qYB-DO-MDM" id="jV8-HK-3Cu">
-                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="menu"/>
-                                    <menu key="menu" id="P5D-od-oHh">
-                                        <items>
-                                            <menuItem title="2 Players" state="on" id="qYB-DO-MDM"/>
-                                            <menuItem title="3 Players" id="E9l-Pq-6ec"/>
-                                        </items>
-                                    </menu>
-                                </popUpButtonCell>
-                            </popUpButton>
-                        </subviews>
-                        <connections>
-                            <outlet property="mStatusMessage" destination="VPN-BE-F8H" id="ND5-Yf-DJA"/>
-                        </connections>
                     </customView>
                 </subviews>
             </view>
@@ -140,61 +77,9 @@
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem title="Options" id="233">
-                    <menu key="submenu" title="Options" id="234">
-                        <items>
-                            <menuItem title="Game Reset" keyEquivalent="1" id="255">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="clickReset:" target="249" id="257"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Game Select" keyEquivalent="2" id="256">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="clickSelect:" target="249" id="258"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" id="254">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                            </menuItem>
-                            <menuItem title="Dragons Hesitate Between Attacks" id="235">
-                                <connections>
-                                    <action selector="clickDragonsHesitate:" target="249" id="250"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Dragons Run From The Sword" id="236">
-                                <connections>
-                                    <action selector="clickDragonsRun:" target="249" id="251"/>
-                                </connections>
-                            </menuItem>
-                        </items>
-                    </menu>
-                </menuItem>
-                <menuItem title="Help" id="103">
-                    <menu key="submenu" title="Help" id="106">
-                        <items>
-                            <menuItem title="Game Instructions" id="111">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="makeKeyAndOrderFront:" target="260" id="263"/>
-                                </connections>
-                            </menuItem>
-                        </items>
-                    </menu>
-                </menuItem>
             </items>
         </menu>
-        <customObject id="249" userLabel="Controller" customClass="Controller">
-            <connections>
-                <outlet property="gameSelectPopup" destination="pTF-ey-dOd" id="2Ox-iR-XYo"/>
-                <outlet property="mMenuDragonsHesitate" destination="235" id="252"/>
-                <outlet property="mMenuDragonsRun" destination="236" id="253"/>
-                <outlet property="mNameText" destination="TFq-w4-kLP" id="i79-SI-U6f"/>
-                <outlet property="playButton" destination="89X-Lz-fM1" id="K1L-YC-1Uj"/>
-                <outlet property="playersSelectPopp" destination="5j4-W9-pqI" id="PEN-77-hte"/>
-            </connections>
-        </customObject>
+        <customObject id="249" userLabel="Controller" customClass="Controller"/>
         <window title="Adventure:Revisited Game Instructions" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="260" userLabel="helpPanel" customClass="NSPanel">
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>

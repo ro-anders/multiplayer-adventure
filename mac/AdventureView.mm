@@ -19,22 +19,14 @@
 #include "Sys.hpp"
 
 // Some types
-typedef unsigned long color;
 typedef unsigned char byte;
 
 // Screen characteristics
-#define ADVENTURE_SCREEN_WIDTH              320
-#define ADVENTURE_SCREEN_HEIGHT             192
-#define ADVENTURE_OVERSCAN                  16
-#define ADVENTURE_TOTAL_SCREEN_HEIGHT       (ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN)
+#define ADVENTURE_SCREEN_WIDTH              250//320
+#define ADVENTURE_SCREEN_HEIGHT             150//192
 #define ADVENTURE_FPS                       58
 
-#define ABS(X)                           ((X)>0?(X):-(X))
-
-void Platform_PaintPixel(int r, int g, int b, int x, int y, int width=1, int height=1);
-
-
-
+void PaintScreen(int shade);
 void FreeOffscreen();
 
 short GetKeyState(unsigned short k);
@@ -42,26 +34,8 @@ short GetKeyState(unsigned short k);
 float gGfxScaler = 3.0f;
 byte* gPixelBucket = NULL;
 CGContextRef gDC = NULL;
-AdventureView* gAdvView = NULL;
 
 unsigned char mKeyMap = 0;
-
-
-// Flag to ignore key up events so that we can lock keys
-bool lockKeys = false;
-
-#define KEY_LEFT	0x01
-#define KEY_UP		0x02
-#define KEY_RIGHT	0x04
-#define KEY_DOWN	0x08
-#define KEY_FIRE	0x10
-#define KEY_RESET	0x20
-
-bool gLeftDifficulty = TRUE;	// true = dragons pause before eating you
-bool gRightDifficulty = TRUE;	// true = dragons run from the sword
-bool gMenuItemReset = FALSE;
-bool gMenuItemSelect = FALSE;
-AdventureView* gView = NULL;
 
 bool gMute = FALSE;
 
@@ -75,8 +49,6 @@ bool gMute = FALSE;
 - (id)initWithFrame:(NSRect)frameRect
 {
     [super initWithFrame:frameRect];
-    
-    gView = self;
     
     // Randomize the random number generator
     timeval time;
@@ -147,7 +119,6 @@ bool gMute = FALSE;
 {
     static bool isSetup = false;
     static int shade = 0;
-    static bool isGraphicsSetup = false;
     static long timestamp = Sys::runTime();
     
     shade = shade + 1;
@@ -162,45 +133,16 @@ bool gMute = FALSE;
         timestamp = now;
         
     }
-    gAdvView = self;
     
     if (!isSetup) {
+        [self CreateOffscreen];
         isSetup = true;
-        
-        if ([self CreateOffscreen])
-        {
-            isGraphicsSetup = true;
-        }
-    } else if (isGraphicsSetup) {
-        // Run a frame of the game
-        Platform_PaintPixel(shade, shade, shade, 0, 0, ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT);
-        Platform_PaintPixel(0, 0, 255, 0, 0, ADVENTURE_SCREEN_WIDTH, 10);
-        Platform_PaintPixel(0, 255, 0, 0, 0, 10, ADVENTURE_SCREEN_HEIGHT);
-        Platform_PaintPixel(0, 255, 0, ADVENTURE_SCREEN_WIDTH-10, 0, ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT);
-        Platform_PaintPixel(255, 0, 0, 0, ADVENTURE_SCREEN_HEIGHT-10, ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT);
-
+    } else {
+        PaintScreen(shade);
     }
-    
-    
     
     // Display it
     [self setNeedsDisplay:YES];
-}
-
-- (void)playGame:(NSString*)playerName :(int)gameNum :(int)desiredPlayers
-{    
-    timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
-                                             target: self
-                                           selector: @selector(update:)
-                                           userInfo: nil
-                                            repeats: YES];
-
-}
-
-- (BOOL)acceptsFirstResponder
-{
-    // Make it so we accept keyboard messages directed at the window
-    return YES;
 }
 
 - (void)drawRect:(NSRect)rect
@@ -226,28 +168,13 @@ bool gMute = FALSE;
         CGImageRef imgRef = CGBitmapContextCreateImage(gDC);
         CGContextDrawImage(dc, dstRect, imgRef);
         CGImageRelease(imgRef);
-        
-        // Draw the border stroke
-        [[NSColor colorWithDeviceRed:0 green:0 blue:0 alpha:.3] set];
-        NSBezierPath *borderPath= [[NSBezierPath alloc] init];
-        [borderPath setLineWidth:0.4];
-        [borderPath moveToPoint:NSMakePoint(cx, cy)];
-        [borderPath lineToPoint:NSMakePoint(cx, cy+ch)];
-        [borderPath lineToPoint:NSMakePoint(cx+cw, cy+ch)];
-        [borderPath lineToPoint:NSMakePoint(cx+cw, cy)];
-        [borderPath closePath];
-        [borderPath stroke];
-        
+                
     }
 }
 
 
 @end // AdventureView
 
-
-// *******************************************************************************************
-// Buffer stuff
-// *******************************************************************************************
 
 void FreeOffscreen()
 {
@@ -267,46 +194,26 @@ void FreeOffscreen()
 // Platform callbacks from game code
 // *******************************************************************************************
 
-void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int height/*=1*/)
-{
-    if (gPixelBucket)
-    {
-        x *= gGfxScaler;
-        y *= gGfxScaler;
-        width *= gGfxScaler;
-        height *= gGfxScaler;
-        
+void PaintScreen(int shade) {
+    if (gPixelBucket) {
         int bufferWidth = ADVENTURE_SCREEN_WIDTH*gGfxScaler;
         int bufferHeight = ADVENTURE_SCREEN_HEIGHT*gGfxScaler;
-        
-        for (int cy=0; cy<height; cy++)
-        {
-            // The game expects a bottom up buffer, so we flip the orientation here.
-            // Also, the game actually draws more than would show on a TV screen, hence the adjustment for overscan
-            
-            int py = cy + y;
-            //int py = (bufferHeight - (y + cy)) + bufferOverscan;
-            
-            if ((py >= 0) && (py < bufferHeight))
-            {
-                for (int cx=0; cx<width; cx++)
+
+        for(int py=0; py<bufferHeight; ++py) {
+            for(int px=0; px<bufferWidth; ++px) {
+                byte* p = &gPixelBucket[(unsigned int)((py*bufferWidth) + px) * 4];
+                if ((px >= 0) && (px < bufferWidth))
                 {
-                    int px = cx + x;
-                    byte* p = &gPixelBucket[(unsigned int)((py*bufferWidth) + px) * 4];
-                    
-                    if ((px >= 0) && (px < bufferWidth))
-                    {
-                        p++;	// skip alpha
-                        *(p++) = r & 0xff;
-                        *(p++) = g & 0xff;
-                        *(p++) = b & 0xff;
-                    }
+                    p++;    // skip alpha
+                    *(p++) = shade & 0xff;
+                    *(p++) = shade & 0xff;
+                    *(p++) = shade & 0xff;
                 }
             }
-            
         }
     }
 }
+
 
 
 
