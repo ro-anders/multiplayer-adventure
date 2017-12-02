@@ -15,10 +15,23 @@
 
 #include <sys/time.h>
 
-#include "adventure_sys.h"
 #include "AdventureView.h"
-#include "Adventure.h"
 #include "Sys.hpp"
+
+// Some types
+typedef unsigned long color;
+typedef unsigned char byte;
+
+// Screen characteristics
+#define ADVENTURE_SCREEN_WIDTH              320
+#define ADVENTURE_SCREEN_HEIGHT             192
+#define ADVENTURE_OVERSCAN                  16
+#define ADVENTURE_TOTAL_SCREEN_HEIGHT       (ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN)
+#define ADVENTURE_FPS                       58
+
+#define ABS(X)                           ((X)>0?(X):-(X))
+
+void Platform_PaintPixel(int r, int g, int b, int x, int y, int width=1, int height=1);
 
 
 
@@ -33,8 +46,6 @@ CGContextRef gDC = NULL;
 AdventureView* gAdvView = NULL;
 
 unsigned char mKeyMap = 0;
-
-time_t mDisplayStatusExpiration = -1;
 
 
 // Flag to ignore key up events so that we can lock keys
@@ -74,6 +85,12 @@ bool gMute = FALSE;
     long millis = (time.tv_sec * 1000) + (time.tv_usec / 1000);
     srandom(millis);
     
+    timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
+                                             target: self
+                                           selector: @selector(update:)
+                                           userInfo: nil
+                                            repeats: YES];
+
     return self;
 }
 
@@ -120,15 +137,6 @@ bool gMute = FALSE;
     }
     gAdvView = self;
     
-    // Dismiss current display message when it is time
-    if (mDisplayStatusExpiration >= 0) {
-        time_t currentTime = time(NULL);
-        if (currentTime > mDisplayStatusExpiration) {
-           [mStatusMessage setHidden:YES];
-            mDisplayStatusExpiration = -1;
-        }
-    }
-    
     if (!isSetup) {
         isSetup = true;
         
@@ -150,14 +158,6 @@ bool gMute = FALSE;
     
     // Display it
     [self setNeedsDisplay:YES];
-}
-
--(void)displayStatus:(const char*)message :(int)durationSec
-{
-    NSString *nsstring = [NSString stringWithUTF8String:message];
-    [mStatusMessage setStringValue:nsstring];
-    [mStatusMessage setHidden:NO];
-    mDisplayStatusExpiration = (durationSec >= 0 ? time(NULL) + durationSec : -1);
 }
 
 - (void)playGame:(NSString*)playerName :(int)gameNum :(int)desiredPlayers
@@ -220,64 +220,6 @@ bool gMute = FALSE;
     }
 }
 
-- (void) keyDown:(NSEvent *) theEvent
-{
-    unsigned short key = [theEvent keyCode];
-    switch(key)
-    {
-        case 0x33: // delete
-            lockKeys = true;
-            break;
-        case 0x7e: //up arrow
-            mKeyMap |= KEY_UP;
-            break;
-        case 0x7d: //down arrow
-            mKeyMap |= KEY_DOWN;
-            break;
-        case 0x7b: //left arrow
-            mKeyMap |= KEY_LEFT;
-            break;
-        case 0x7c: //right arrow
-            mKeyMap |= KEY_RIGHT;
-            break;
-        case 0x31: //space bar
-            mKeyMap |= KEY_FIRE;
-            break;
-        case 0x24: //return
-            mKeyMap |= KEY_RESET;
-            break;
-    }
-}
-
-- (void) keyUp:(NSEvent *) theEvent
-{
-    unsigned short key = [theEvent keyCode];
-    if (key == 0x33) { // delete
-        lockKeys = false;
-    } else if (!lockKeys) {
-        switch(key)
-        {
-            case 0x7e: //up arrow
-                mKeyMap &= ~KEY_UP;
-                break;
-            case 0x7d: //down arrow
-                mKeyMap &= ~KEY_DOWN;
-                break;
-            case 0x7b: //left arrow
-                mKeyMap &= ~KEY_LEFT;
-                break;
-            case 0x7c: //right arrow
-                mKeyMap &= ~KEY_RIGHT;
-                break;
-            case 0x31: //space bar
-                mKeyMap &= ~KEY_FIRE;
-                break;
-            case 0x24: //return
-                mKeyMap &= ~KEY_RESET;
-                break;
-        }
-    }
-}
 
 @end // AdventureView
 
