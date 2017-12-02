@@ -18,7 +18,6 @@
 #include "adventure_sys.h"
 #include "AdventureView.h"
 #include "Adventure.h"
-#include "args.h"
 #include "Sys.hpp"
 
 
@@ -162,11 +161,7 @@ bool gMute = FALSE;
 }
 
 - (void)playGame:(NSString*)playerName :(int)gameNum :(int)desiredPlayers
-{
-    int argc;
-    char** argv;
-    Args_GetArgs(&argc, &argv);
-    
+{    
     timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
                                              target: self
                                            selector: @selector(update:)
