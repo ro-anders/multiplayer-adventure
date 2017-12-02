@@ -7,10 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		400319151D1B30F300AEA951 /* jsoncpp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 400319141D1B30F300AEA951 /* jsoncpp.cpp */; };
-		4013C0A11C503FAA00C99342 /* Room.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4013C09F1C503FAA00C99342 /* Room.cpp */; };
-		401C851E1D195CBA00110952 /* GameSetup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 401C851C1D195CBA00110952 /* GameSetup.cpp */; };
-		401C85211D1960A100110952 /* RestClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 401C851F1D1960A100110952 /* RestClient.cpp */; };
 		403175301C49C5CC0051B60C /* putdown.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4031752F1C49C5CC0051B60C /* putdown.wav */; };
 		403175361C49C6010051B60C /* dragondie.wav in Resources */ = {isa = PBXBuildFile; fileRef = 403175311C49C6010051B60C /* dragondie.wav */; };
 		403175371C49C6010051B60C /* eaten.wav in Resources */ = {isa = PBXBuildFile; fileRef = 403175321C49C6010051B60C /* eaten.wav */; };
@@ -30,34 +26,15 @@
 		4036B3161CB87D080024439C /* putdown_near.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B30A1CB87D080024439C /* putdown_near.wav */; };
 		4036B3171CB87D080024439C /* roar_far.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B30B1CB87D080024439C /* roar_far.wav */; };
 		4036B3181CB87D080024439C /* roar_near.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4036B30C1CB87D080024439C /* roar_near.wav */; };
-		403DA0921C20C722002FF18B /* Ball.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 403DA0901C20C722002FF18B /* Ball.cpp */; };
-		40509AAA1C05E9750008BACF /* ActionQueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40509AA41C05E9750008BACF /* ActionQueue.cpp */; };
-		40509AAB1C05E9750008BACF /* GameObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40509AA61C05E9750008BACF /* GameObject.cpp */; };
-		40509AAC1C05E9750008BACF /* RemoteAction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40509AA81C05E9750008BACF /* RemoteAction.cpp */; };
 		406264921C236DE600154D97 /* args.c in Sources */ = {isa = PBXBuildFile; fileRef = 406264901C236DE600154D97 /* args.c */; };
-		40663AC61CBD122900A75EE3 /* ScriptedSync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40663AC41CBD122900A75EE3 /* ScriptedSync.cpp */; };
-		406CD1541C0C7C17002477BB /* Dragon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 406CD1521C0C7C17002477BB /* Dragon.cpp */; };
-		4072EC701D0F59950074389A /* MacRestClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4072EC6E1D0F59950074389A /* MacRestClient.cpp */; };
-		40740BAE1C1859730018AE6D /* Bat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40740BAC1C1859730018AE6D /* Bat.cpp */; };
-		407773D31BF2AC9C00454AC5 /* Transport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 407773D11BF2AC9C00454AC5 /* Transport.cpp */; };
-		4084EC8F1BF22AEE00E8F375 /* Adventure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4084EC8B1BF22AEE00E8F375 /* Adventure.cpp */; };
-		4084EC901BF22AEE00E8F375 /* Sync.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4084EC8D1BF22AEE00E8F375 /* Sync.cpp */; };
-		408582141D46C0BE00A3F2EF /* UdpSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 408582121D46C0BE00A3F2EF /* UdpSocket.cpp */; };
-		408582171D46C1E200A3F2EF /* PosixUdpSocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 408582151D46C1E200A3F2EF /* PosixUdpSocket.cpp */; };
-		408E43D11C3C6D8C00E0715B /* Board.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 408E43CF1C3C6D8C00E0715B /* Board.cpp */; };
-		4092E1E21C4E731900B2AEBB /* Map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4092E1E01C4E731900B2AEBB /* Map.cpp */; };
 		40B029DC1C91449200DA27FD /* Sys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40B029D81C91449200DA27FD /* Sys.cpp */; };
-		40B029DD1C91449200DA27FD /* UdpTransport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40B029DA1C91449200DA27FD /* UdpTransport.cpp */; };
 		40B345F91C25A2B4001EE63C /* args.m in Sources */ = {isa = PBXBuildFile; fileRef = 40B345F81C25A2B4001EE63C /* args.m */; };
-		40D4564E1DAB25E400D052CB /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40D4564C1DAB25E400D052CB /* Logger.cpp */; };
 		40E47FB11BF22BA20052B84E /* AdventureView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40E47FAE1BF22BA20052B84E /* AdventureView.mm */; };
 		40E47FB21BF22BA20052B84E /* Controller.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40E47FB01BF22BA20052B84E /* Controller.mm */; };
-		40F99C051C1A31930032B2A2 /* Portcullis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40F99C031C1A31930032B2A2 /* Portcullis.cpp */; };
 		8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
-		A880B1911FA9E2C80086F374 /* Robot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A880B18F1FA9E2C80086F374 /* Robot.cpp */; };
 		D009FDD20BCA0A64007C5A37 /* H2HAdventureIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = D009FDD10BCA0A64007C5A37 /* H2HAdventureIcon.icns */; };
 		D06FE00F0BC856BF005633CA /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D06FE00E0BC856BF005633CA /* Carbon.framework */; };
 /* End PBXBuildFile section */
@@ -70,15 +47,6 @@
 		29B97319FDCFA39411CA2CEA /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* MacAdventure_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MacAdventure_Prefix.pch; sourceTree = "<group>"; };
-		400319141D1B30F300AEA951 /* jsoncpp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = jsoncpp.cpp; path = ../engine/jsoncpp.cpp; sourceTree = "<group>"; };
-		400319171D1B32A900AEA951 /* json-forwards.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "json-forwards.h"; path = "../engine/json/json-forwards.h"; sourceTree = "<group>"; };
-		400319181D1B32A900AEA951 /* json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = json.h; path = ../engine/json/json.h; sourceTree = "<group>"; };
-		4013C09F1C503FAA00C99342 /* Room.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Room.cpp; path = ../engine/Room.cpp; sourceTree = "<group>"; };
-		4013C0A01C503FAA00C99342 /* Room.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Room.hpp; path = ../engine/Room.hpp; sourceTree = "<group>"; };
-		401C851C1D195CBA00110952 /* GameSetup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GameSetup.cpp; path = ../engine/GameSetup.cpp; sourceTree = "<group>"; };
-		401C851D1D195CBA00110952 /* GameSetup.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = GameSetup.hpp; path = ../engine/GameSetup.hpp; sourceTree = "<group>"; };
-		401C851F1D1960A100110952 /* RestClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RestClient.cpp; path = ../engine/RestClient.cpp; sourceTree = "<group>"; };
-		401C85201D1960A100110952 /* RestClient.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = RestClient.hpp; path = ../engine/RestClient.hpp; sourceTree = "<group>"; };
 		4031752F1C49C5CC0051B60C /* putdown.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = putdown.wav; path = ../sounds/putdown.wav; sourceTree = "<group>"; };
 		403175311C49C6010051B60C /* dragondie.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = dragondie.wav; path = ../sounds/dragondie.wav; sourceTree = "<group>"; };
 		403175321C49C6010051B60C /* eaten.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = eaten.wav; path = ../sounds/eaten.wav; sourceTree = "<group>"; };
@@ -98,58 +66,20 @@
 		4036B30A1CB87D080024439C /* putdown_near.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = putdown_near.wav; path = ../sounds/putdown_near.wav; sourceTree = "<group>"; };
 		4036B30B1CB87D080024439C /* roar_far.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = roar_far.wav; path = ../sounds/roar_far.wav; sourceTree = "<group>"; };
 		4036B30C1CB87D080024439C /* roar_near.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = roar_near.wav; path = ../sounds/roar_near.wav; sourceTree = "<group>"; };
-		403DA0901C20C722002FF18B /* Ball.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Ball.cpp; path = ../engine/Ball.cpp; sourceTree = "<group>"; };
-		403DA0911C20C722002FF18B /* Ball.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Ball.hpp; path = ../engine/Ball.hpp; sourceTree = "<group>"; };
-		403FC7101E8F03A5000137FA /* List.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = List.hpp; path = ../engine/List.hpp; sourceTree = "<group>"; };
-		40509AA41C05E9750008BACF /* ActionQueue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ActionQueue.cpp; path = ../engine/ActionQueue.cpp; sourceTree = "<group>"; };
-		40509AA51C05E9750008BACF /* ActionQueue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ActionQueue.hpp; path = ../engine/ActionQueue.hpp; sourceTree = "<group>"; };
-		40509AA61C05E9750008BACF /* GameObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GameObject.cpp; path = ../engine/GameObject.cpp; sourceTree = "<group>"; };
-		40509AA71C05E9750008BACF /* GameObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = GameObject.hpp; path = ../engine/GameObject.hpp; sourceTree = "<group>"; };
-		40509AA81C05E9750008BACF /* RemoteAction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RemoteAction.cpp; path = ../engine/RemoteAction.cpp; sourceTree = "<group>"; };
-		40509AA91C05E9750008BACF /* RemoteAction.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = RemoteAction.hpp; path = ../engine/RemoteAction.hpp; sourceTree = "<group>"; };
 		406264901C236DE600154D97 /* args.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = args.c; sourceTree = "<group>"; };
 		406264911C236DE600154D97 /* args.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = args.h; sourceTree = "<group>"; };
-		40663AC41CBD122900A75EE3 /* ScriptedSync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ScriptedSync.cpp; path = ../engine/ScriptedSync.cpp; sourceTree = "<group>"; };
-		40663AC51CBD122900A75EE3 /* ScriptedSync.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ScriptedSync.hpp; path = ../engine/ScriptedSync.hpp; sourceTree = "<group>"; };
-		406CD1521C0C7C17002477BB /* Dragon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Dragon.cpp; path = ../engine/Dragon.cpp; sourceTree = "<group>"; };
-		406CD1531C0C7C17002477BB /* Dragon.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Dragon.hpp; path = ../engine/Dragon.hpp; sourceTree = "<group>"; };
-		4072EC6E1D0F59950074389A /* MacRestClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MacRestClient.cpp; sourceTree = "<group>"; };
-		4072EC6F1D0F59950074389A /* MacRestClient.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = MacRestClient.hpp; sourceTree = "<group>"; };
-		40740BAC1C1859730018AE6D /* Bat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Bat.cpp; path = ../engine/Bat.cpp; sourceTree = "<group>"; };
-		40740BAD1C1859730018AE6D /* Bat.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Bat.hpp; path = ../engine/Bat.hpp; sourceTree = "<group>"; };
-		407773D11BF2AC9C00454AC5 /* Transport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = Transport.cpp; path = ../engine/Transport.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
-		407773D21BF2AC9C00454AC5 /* Transport.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; name = Transport.hpp; path = ../engine/Transport.hpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
-		4084EC8B1BF22AEE00E8F375 /* Adventure.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Adventure.cpp; path = ../engine/Adventure.cpp; sourceTree = "<group>"; };
 		4084EC8C1BF22AEE00E8F375 /* Adventure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Adventure.h; path = ../engine/Adventure.h; sourceTree = "<group>"; };
-		4084EC8D1BF22AEE00E8F375 /* Sync.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Sync.cpp; path = ../engine/Sync.cpp; sourceTree = "<group>"; };
-		408582121D46C0BE00A3F2EF /* UdpSocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UdpSocket.cpp; path = ../engine/UdpSocket.cpp; sourceTree = "<group>"; };
-		408582131D46C0BE00A3F2EF /* UdpSocket.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = UdpSocket.hpp; path = ../engine/UdpSocket.hpp; sourceTree = "<group>"; };
-		408582151D46C1E200A3F2EF /* PosixUdpSocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PosixUdpSocket.cpp; sourceTree = "<group>"; };
-		408582161D46C1E200A3F2EF /* PosixUdpSocket.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PosixUdpSocket.hpp; sourceTree = "<group>"; };
-		408E43CF1C3C6D8C00E0715B /* Board.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Board.cpp; path = ../engine/Board.cpp; sourceTree = "<group>"; };
-		408E43D01C3C6D8C00E0715B /* Board.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Board.hpp; path = ../engine/Board.hpp; sourceTree = "<group>"; };
-		4092E1E01C4E731900B2AEBB /* Map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Map.cpp; path = ../engine/Map.cpp; sourceTree = "<group>"; };
-		4092E1E11C4E731900B2AEBB /* Map.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Map.hpp; path = ../engine/Map.hpp; sourceTree = "<group>"; };
 		40B029D81C91449200DA27FD /* Sys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Sys.cpp; path = ../engine/Sys.cpp; sourceTree = "<group>"; };
 		40B029D91C91449200DA27FD /* Sys.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Sys.hpp; path = ../engine/Sys.hpp; sourceTree = "<group>"; };
-		40B029DA1C91449200DA27FD /* UdpTransport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = UdpTransport.cpp; path = ../engine/UdpTransport.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
-		40B029DB1C91449200DA27FD /* UdpTransport.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = UdpTransport.hpp; path = ../engine/UdpTransport.hpp; sourceTree = "<group>"; };
 		40B345F81C25A2B4001EE63C /* args.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = args.m; sourceTree = "<group>"; };
 		40D0F81B1C356A360096980F /* adventure_sys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = adventure_sys.h; path = ../engine/adventure_sys.h; sourceTree = "<group>"; };
-		40D4564C1DAB25E400D052CB /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Logger.cpp; path = ../engine/Logger.cpp; sourceTree = "<group>"; };
-		40D4564D1DAB25E400D052CB /* Logger.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Logger.hpp; path = ../engine/Logger.hpp; sourceTree = "<group>"; };
 		40E47FAD1BF22BA20052B84E /* AdventureView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AdventureView.h; sourceTree = "<group>"; };
 		40E47FAE1BF22BA20052B84E /* AdventureView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = AdventureView.mm; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		40E47FAF1BF22BA20052B84E /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Controller.h; sourceTree = "<group>"; };
 		40E47FB01BF22BA20052B84E /* Controller.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Controller.mm; sourceTree = "<group>"; };
-		40E8214E1C0FACB9004CCADB /* Sync.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Sync.hpp; path = ../engine/Sync.hpp; sourceTree = "<group>"; };
-		40F99C031C1A31930032B2A2 /* Portcullis.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Portcullis.cpp; path = ../engine/Portcullis.cpp; sourceTree = "<group>"; };
-		40F99C041C1A31930032B2A2 /* Portcullis.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Portcullis.hpp; path = ../engine/Portcullis.hpp; sourceTree = "<group>"; };
 		40F99C061C1A334B0032B2A2 /* color.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = color.h; path = ../engine/color.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* H2HAdventure.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = H2HAdventure.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A880B18F1FA9E2C80086F374 /* Robot.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Robot.cpp; path = ../engine/Robot.cpp; sourceTree = "<group>"; };
-		A880B1901FA9E2C80086F374 /* Robot.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = Robot.hpp; path = ../engine/Robot.hpp; sourceTree = "<group>"; };
 		D009FDD10BCA0A64007C5A37 /* H2HAdventureIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = H2HAdventureIcon.icns; sourceTree = "<group>"; };
 		D06FE00E0BC856BF005633CA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
@@ -216,7 +146,6 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				4084EC8B1BF22AEE00E8F375 /* Adventure.cpp */,
 				4084EC8C1BF22AEE00E8F375 /* Adventure.h */,
 				32CA4F630368D1EE00C91783 /* MacAdventure_Prefix.pch */,
 				29B97316FDCFA39411CA2CEA /* main.m */,
@@ -264,26 +193,13 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		400319161D1B329700AEA951 /* json */ = {
-			isa = PBXGroup;
-			children = (
-				400319171D1B32A900AEA951 /* json-forwards.h */,
-				400319181D1B32A900AEA951 /* json.h */,
-			);
-			name = json;
-			sourceTree = "<group>";
-		};
 		407773CF1BF2AC3700454AC5 /* mac */ = {
 			isa = PBXGroup;
 			children = (
-				4072EC6E1D0F59950074389A /* MacRestClient.cpp */,
-				4072EC6F1D0F59950074389A /* MacRestClient.hpp */,
 				40E47FAD1BF22BA20052B84E /* AdventureView.h */,
 				40E47FAE1BF22BA20052B84E /* AdventureView.mm */,
 				40E47FAF1BF22BA20052B84E /* Controller.h */,
 				40E47FB01BF22BA20052B84E /* Controller.mm */,
-				408582151D46C1E200A3F2EF /* PosixUdpSocket.cpp */,
-				408582161D46C1E200A3F2EF /* PosixUdpSocket.hpp */,
 				406264901C236DE600154D97 /* args.c */,
 				406264911C236DE600154D97 /* args.h */,
 				40B345F81C25A2B4001EE63C /* args.m */,
@@ -294,51 +210,10 @@
 		407773D01BF2AC5900454AC5 /* engine */ = {
 			isa = PBXGroup;
 			children = (
-				400319161D1B329700AEA951 /* json */,
-				400319141D1B30F300AEA951 /* jsoncpp.cpp */,
 				40D0F81B1C356A360096980F /* adventure_sys.h */,
-				40509AA41C05E9750008BACF /* ActionQueue.cpp */,
-				40509AA51C05E9750008BACF /* ActionQueue.hpp */,
-				403DA0901C20C722002FF18B /* Ball.cpp */,
-				403DA0911C20C722002FF18B /* Ball.hpp */,
-				40740BAC1C1859730018AE6D /* Bat.cpp */,
-				40740BAD1C1859730018AE6D /* Bat.hpp */,
-				408E43CF1C3C6D8C00E0715B /* Board.cpp */,
-				408E43D01C3C6D8C00E0715B /* Board.hpp */,
 				40F99C061C1A334B0032B2A2 /* color.h */,
-				406CD1521C0C7C17002477BB /* Dragon.cpp */,
-				406CD1531C0C7C17002477BB /* Dragon.hpp */,
-				401C851C1D195CBA00110952 /* GameSetup.cpp */,
-				401C851D1D195CBA00110952 /* GameSetup.hpp */,
-				40509AA61C05E9750008BACF /* GameObject.cpp */,
-				40509AA71C05E9750008BACF /* GameObject.hpp */,
-				403FC7101E8F03A5000137FA /* List.hpp */,
-				40D4564C1DAB25E400D052CB /* Logger.cpp */,
-				40D4564D1DAB25E400D052CB /* Logger.hpp */,
-				4092E1E01C4E731900B2AEBB /* Map.cpp */,
-				4092E1E11C4E731900B2AEBB /* Map.hpp */,
-				40F99C031C1A31930032B2A2 /* Portcullis.cpp */,
-				40F99C041C1A31930032B2A2 /* Portcullis.hpp */,
-				40509AA81C05E9750008BACF /* RemoteAction.cpp */,
-				40509AA91C05E9750008BACF /* RemoteAction.hpp */,
-				401C851F1D1960A100110952 /* RestClient.cpp */,
-				401C85201D1960A100110952 /* RestClient.hpp */,
-				A880B18F1FA9E2C80086F374 /* Robot.cpp */,
-				A880B1901FA9E2C80086F374 /* Robot.hpp */,
-				4013C09F1C503FAA00C99342 /* Room.cpp */,
-				4013C0A01C503FAA00C99342 /* Room.hpp */,
-				40663AC41CBD122900A75EE3 /* ScriptedSync.cpp */,
-				40663AC51CBD122900A75EE3 /* ScriptedSync.hpp */,
-				40E8214E1C0FACB9004CCADB /* Sync.hpp */,
-				4084EC8D1BF22AEE00E8F375 /* Sync.cpp */,
 				40B029D81C91449200DA27FD /* Sys.cpp */,
 				40B029D91C91449200DA27FD /* Sys.hpp */,
-				407773D11BF2AC9C00454AC5 /* Transport.cpp */,
-				407773D21BF2AC9C00454AC5 /* Transport.hpp */,
-				408582121D46C0BE00A3F2EF /* UdpSocket.cpp */,
-				408582131D46C0BE00A3F2EF /* UdpSocket.hpp */,
-				40B029DA1C91449200DA27FD /* UdpTransport.cpp */,
-				40B029DB1C91449200DA27FD /* UdpTransport.hpp */,
 			);
 			name = engine;
 			sourceTree = "<group>";
@@ -425,34 +300,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				408E43D11C3C6D8C00E0715B /* Board.cpp in Sources */,
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
-				407773D31BF2AC9C00454AC5 /* Transport.cpp in Sources */,
-				A880B1911FA9E2C80086F374 /* Robot.cpp in Sources */,
-				4013C0A11C503FAA00C99342 /* Room.cpp in Sources */,
-				401C851E1D195CBA00110952 /* GameSetup.cpp in Sources */,
-				40740BAE1C1859730018AE6D /* Bat.cpp in Sources */,
-				401C85211D1960A100110952 /* RestClient.cpp in Sources */,
-				408582141D46C0BE00A3F2EF /* UdpSocket.cpp in Sources */,
-				4084EC8F1BF22AEE00E8F375 /* Adventure.cpp in Sources */,
 				406264921C236DE600154D97 /* args.c in Sources */,
-				4084EC901BF22AEE00E8F375 /* Sync.cpp in Sources */,
 				40B029DC1C91449200DA27FD /* Sys.cpp in Sources */,
-				403DA0921C20C722002FF18B /* Ball.cpp in Sources */,
-				4092E1E21C4E731900B2AEBB /* Map.cpp in Sources */,
-				4072EC701D0F59950074389A /* MacRestClient.cpp in Sources */,
-				40D4564E1DAB25E400D052CB /* Logger.cpp in Sources */,
 				40E47FB21BF22BA20052B84E /* Controller.mm in Sources */,
-				406CD1541C0C7C17002477BB /* Dragon.cpp in Sources */,
-				40509AAB1C05E9750008BACF /* GameObject.cpp in Sources */,
-				408582171D46C1E200A3F2EF /* PosixUdpSocket.cpp in Sources */,
-				40509AAA1C05E9750008BACF /* ActionQueue.cpp in Sources */,
-				400319151D1B30F300AEA951 /* jsoncpp.cpp in Sources */,
-				40F99C051C1A31930032B2A2 /* Portcullis.cpp in Sources */,
-				40509AAC1C05E9750008BACF /* RemoteAction.cpp in Sources */,
-				40B029DD1C91449200DA27FD /* UdpTransport.cpp in Sources */,
 				40B345F91C25A2B4001EE63C /* args.m in Sources */,
-				40663AC61CBD122900A75EE3 /* ScriptedSync.cpp in Sources */,
 				40E47FB11BF22BA20052B84E /* AdventureView.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

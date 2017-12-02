@@ -19,13 +19,7 @@
 #include "AdventureView.h"
 #include "Adventure.h"
 #include "args.h"
-#include "GameSetup.hpp"
-#include "Logger.hpp"
-#include "MacRestClient.hpp"
-#include "PosixUdpSocket.hpp"
 #include "Sys.hpp"
-#include "Transport.hpp"
-#include "UdpTransport.hpp"
 
 
 
@@ -42,10 +36,7 @@ AdventureView* gAdvView = NULL;
 unsigned char mKeyMap = 0;
 
 time_t mDisplayStatusExpiration = -1;
-UdpTransport* xport = NULL;
-MacRestClient client;
 
-GameSetup* setup;
 
 // Flag to ignore key up events so that we can lock keys
 bool lockKeys = false;
@@ -84,10 +75,6 @@ bool gMute = FALSE;
     long millis = (time.tv_sec * 1000) + (time.tv_usec / 1000);
     srandom(millis);
     
-    // Setup logging
-    Logger::setup(Logger::FILE, Logger::INFO);
-    Logger::log() << "Logging setup at " << Sys::datetime() << "." << Logger::EOM;
-    
     return self;
 }
 
@@ -115,8 +102,23 @@ bool gMute = FALSE;
 
 - (IBAction)update:(id)sender
 {
+    static bool isSetup = false;
+    static int shade = 0;
     static bool isGraphicsSetup = false;
+    static long timestamp = Sys::runTime();
     
+    shade = shade + 1;
+    if (shade == 240) {
+        shade = 0;
+        long now = Sys::runTime();
+        long ellapsed = now - timestamp;
+        // 240 times at 60 times per second should be about 4 seconds.
+        if (ellapsed > 4400) {
+            printf("Painting took too long.  Only painting %ld times per second.\n", 240000 / ellapsed);
+        }
+        timestamp = now;
+        
+    }
     gAdvView = self;
     
     // Dismiss current display message when it is time
@@ -128,26 +130,21 @@ bool gMute = FALSE;
         }
     }
     
-    if (!setup->isGameSetup()) {
-        setup->checkSetup();
-        if (setup->isGameSetup()) {
-            GameSetup::GameParams params = setup->getSetup();
-            if (params.noTransport) {
-                delete xport;
-                xport = NULL;
-            }   
-            Platform_MuteSound(params.shouldMute);
-            
-            if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
-            {
-                Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 1, 1);
-                isGraphicsSetup = true;
-            }
-            // TODO: What if CreateOffscreen fails.  Silently stops working.
+    if (!isSetup) {
+        isSetup = true;
+        
+        if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
+        {
+            isGraphicsSetup = true;
         }
     } else if (isGraphicsSetup) {
         // Run a frame of the game
-        Adventure_Run();
+        Platform_PaintPixel(shade, shade, shade, 0, 0, ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT);
+        Platform_PaintPixel(0, 0, 255, 0, 0, ADVENTURE_SCREEN_WIDTH, 10);
+        Platform_PaintPixel(0, 255, 0, 0, 0, 10, ADVENTURE_SCREEN_HEIGHT);
+        Platform_PaintPixel(0, 255, 0, ADVENTURE_SCREEN_WIDTH-10, 0, ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT);
+        Platform_PaintPixel(255, 0, 0, 0, ADVENTURE_SCREEN_HEIGHT-10, ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT);
+
     }
     
     
@@ -170,32 +167,11 @@ bool gMute = FALSE;
     char** argv;
     Args_GetArgs(&argc, &argv);
     
-    GameSetup::GameParams params;
-    try {
-        xport = new UdpTransport();
-        setup = new GameSetup(client, *xport);
-        setup->setCommandLineArgs(argc-1, argv+1);
-        setup->setPlayerName([playerName UTF8String]);
-        setup->setGameLevel(gameNum);
-        setup->setNumberPlayers(desiredPlayers);
-        GameSetup::GameParams params = setup->getSetup();
-        if (!params.noTransport) {
-            PosixUdpSocket* socket = new PosixUdpSocket();
-            xport->useSocket(socket);
-        }
-        
-        timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
-                                                 target: self
-                                               selector: @selector(update:)
-                                               userInfo: nil
-                                                repeats: YES];
-
-    } catch (std::exception& e) {
-        Logger::logError() << e.what() << "\nAborting." << Logger::EOM;
-        exit(-1);
-    } catch (...) {
-        Logger::logError("Unexpected error.  Aborting.");
-    }
+    timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
+                                             target: self
+                                           selector: @selector(update:)
+                                           userInfo: nil
+                                            repeats: YES];
 
 }
 
@@ -369,14 +345,14 @@ void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int
         
         int bufferWidth = ADVENTURE_SCREEN_WIDTH*gGfxScaler;
         int bufferHeight = ADVENTURE_SCREEN_HEIGHT*gGfxScaler;
-        int bufferOverscan = ADVENTURE_OVERSCAN*gGfxScaler;
         
         for (int cy=0; cy<height; cy++)
         {
             // The game expects a bottom up buffer, so we flip the orientation here.
             // Also, the game actually draws more than would show on a TV screen, hence the adjustment for overscan
             
-            int py = (bufferHeight - (y + cy)) + bufferOverscan;
+            int py = cy + y;
+            //int py = (bufferHeight - (y + cy)) + bufferOverscan;
             
             if ((py >= 0) && (py < bufferHeight))
             {
@@ -398,85 +374,6 @@ void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int
         }
     }
 }
-
-void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire)
-{
-    if (left) *left = mKeyMap & KEY_LEFT;
-    if (up) *up =  mKeyMap & KEY_UP;
-    if (right) *right =  mKeyMap & KEY_RIGHT;
-    if (down) *down =  mKeyMap & KEY_DOWN;
-    
-    if (fire) *fire =  mKeyMap & KEY_FIRE;
-}
-
-void Platform_ReadConsoleSwitches(bool* reset)
-{
-    if (reset) *reset =  (mKeyMap & KEY_RESET) | gMenuItemReset;
-    
-    gMenuItemReset = FALSE;
-}
-
-void Platform_ReadDifficultySwitches(int* left, int* right)
-{
-    if (left) *left = gLeftDifficulty;	// true = dragons pause before eating you
-    if (right) *right = gRightDifficulty;  // true = dragons do not run from the sword
-}
-
-void Platform_MuteSound(bool nMute)
-{
-    gMute = nMute;
-}
-
-void Platform_MakeSound(int nSound, float volume)
-{
-    NSSound* sound = NULL;
-    
-    if (!gMute && volume > 0) {
-        switch (nSound)
-        {
-            case SOUND_PICKUP:
-                sound = [NSSound soundNamed:@"pickup"];
-                break;
-            case SOUND_PUTDOWN:
-                sound = [NSSound soundNamed:@"putdown"];
-                break;
-            case SOUND_WON:
-                sound = [NSSound soundNamed:@"won"];
-                break;
-            case SOUND_ROAR:
-                sound = [NSSound soundNamed:@"roar"];
-                break;
-            case SOUND_EATEN:
-                sound = [NSSound soundNamed:@"eaten"];
-                break;
-            case SOUND_DRAGONDIE:
-                sound = [NSSound soundNamed:@"dragondie"];
-                break;
-            case SOUND_GLOW:
-                sound = [NSSound soundNamed:@"pickup"];
-                break;
-        }
-        
-        if (sound)
-        {
-            [sound setVolume:volume/MAX_VOLUME];
-            [sound play];
-        }
-    }
-}
-
-float Platform_Random()
-{
-    long r = random();
-    float val = ((float)r/32767.0f);
-    val = (val + 1) / 2;
-    return val;
-}
-
-void Platform_DisplayStatus(const char* message, int durationSec) {
-    [gAdvView displayStatus:message :durationSec];
-}
-
 
 
 
