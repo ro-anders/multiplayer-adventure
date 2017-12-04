@@ -29,7 +29,6 @@
 
 
 
-bool CreateOffscreen(int aWidth, int aHeight);
 void FreeOffscreen();
 
 short GetKeyState(unsigned short k);
@@ -100,7 +99,7 @@ bool gMute = FALSE;
     [super dealloc];
 }
 
-- (void)viewDidEndLiveResize
+- (bool)CreateOffscreen
 {
     NSRect rectWindow = [self bounds];
     
@@ -109,8 +108,35 @@ bool gMute = FALSE;
     int sy = rectWindow.size.height / ADVENTURE_SCREEN_HEIGHT;
     gGfxScaler = (sx < sy) ? sx : sy; // min(sx, sy);
     gGfxScaler = (gGfxScaler == 0) ? .5 : gGfxScaler;
+    int aWidth = ADVENTURE_SCREEN_WIDTH * gGfxScaler;
+    int aHeight = ADVENTURE_SCREEN_HEIGHT * gGfxScaler;
     
-    CreateOffscreen(ADVENTURE_SCREEN_WIDTH * gGfxScaler, ADVENTURE_SCREEN_HEIGHT * gGfxScaler);
+    if (gPixelBucket)
+    {
+        delete gPixelBucket;
+        gPixelBucket = NULL;
+    }
+    if (gDC)
+    {
+        CGContextRelease(gDC);
+        gDC = NULL;
+    }
+
+    size_t rowBytes = aWidth * 4;
+    
+    gPixelBucket = new byte [rowBytes * aHeight];
+    CGBitmapInfo info = kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Big;
+    
+    CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
+    
+    gDC = CGBitmapContextCreate(gPixelBucket, aWidth, aHeight, 8, rowBytes, colorspace, info);
+    return gDC ? TRUE : FALSE;
+}
+
+
+- (void)viewDidEndLiveResize
+{
+    [self CreateOffscreen];
 }
 
 - (IBAction)update:(id)sender
@@ -138,7 +164,7 @@ bool gMute = FALSE;
             }   
             Platform_MuteSound(params.shouldMute);
             
-            if (CreateOffscreen(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT))
+            if ([self CreateOffscreen])
             {
                 Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 1, 1);
                 isGraphicsSetup = true;
@@ -213,12 +239,6 @@ bool gMute = FALSE;
         
         // Set up a graphics context to draw to the window
         CGContextRef dc = (CGContextRef) [[NSGraphicsContext currentContext] graphicsPort];
-        
-        // Find the best scale for this resolution
-        int x = rectWindow.size.width / ADVENTURE_SCREEN_WIDTH;
-        int y = rectWindow.size.height / ADVENTURE_SCREEN_HEIGHT;
-        gGfxScaler = (x < y) ? x : y; // min(x, y);
-        gGfxScaler = (gGfxScaler == 0) ? .5 : gGfxScaler;
         
         // Only use subsampling when scaling below 100%
         CGContextSetInterpolationQuality(dc, (gGfxScaler < 1) ? kCGInterpolationHigh : kCGInterpolationNone);
@@ -315,30 +335,6 @@ bool gMute = FALSE;
 // Buffer stuff
 // *******************************************************************************************
 
-bool CreateOffscreen(int aWidth, int aHeight)
-{
-    if (gPixelBucket)
-    {
-        delete gPixelBucket;
-        gPixelBucket = NULL;
-    }
-    if (gDC)
-    {
-        CGContextRelease(gDC);
-        gDC = NULL;
-    }
-    
-    size_t rowBytes = aWidth * 4;
-    
-    gPixelBucket = new byte [rowBytes * aHeight];
-    CGBitmapInfo info = kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Big;
-    
-    CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
-    
-    gDC = CGBitmapContextCreate(gPixelBucket, aWidth, aHeight, 8, rowBytes, colorspace, info);
-    
-    return gDC ? TRUE : FALSE;
-}
 
 void FreeOffscreen()
 {
