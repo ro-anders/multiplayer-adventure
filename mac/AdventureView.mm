@@ -83,8 +83,8 @@ bool gMute = FALSE;
     int sy = rectWindow.size.height / ADVENTURE_SCREEN_HEIGHT;
     gGfxScaler = (sx < sy) ? sx : sy; // min(sx, sy);
     gGfxScaler = (gGfxScaler == 0) ? .5 : gGfxScaler;
-    int aWidth = ADVENTURE_SCREEN_WIDTH * gGfxScaler;
-    int aHeight = ADVENTURE_SCREEN_HEIGHT * gGfxScaler;
+    int aWidth = ADVENTURE_SCREEN_WIDTH;
+    int aHeight = ADVENTURE_SCREEN_HEIGHT;
 
     if (gPixelBucket)
     {
@@ -196,8 +196,8 @@ void FreeOffscreen()
 
 void PaintScreen(int shade) {
     if (gPixelBucket) {
-        int bufferWidth = ADVENTURE_SCREEN_WIDTH*gGfxScaler;
-        int bufferHeight = ADVENTURE_SCREEN_HEIGHT*gGfxScaler;
+        int bufferWidth = ADVENTURE_SCREEN_WIDTH;
+        int bufferHeight = ADVENTURE_SCREEN_HEIGHT;
 
         for(int py=0; py<bufferHeight; ++py) {
             for(int px=0; px<bufferWidth; ++px) {
