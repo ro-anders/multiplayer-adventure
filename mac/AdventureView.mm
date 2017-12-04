@@ -108,8 +108,8 @@ bool gMute = FALSE;
     int sy = rectWindow.size.height / ADVENTURE_SCREEN_HEIGHT;
     gGfxScaler = (sx < sy) ? sx : sy; // min(sx, sy);
     gGfxScaler = (gGfxScaler == 0) ? .5 : gGfxScaler;
-    int aWidth = ADVENTURE_SCREEN_WIDTH * gGfxScaler;
-    int aHeight = ADVENTURE_SCREEN_HEIGHT * gGfxScaler;
+    int aWidth = ADVENTURE_SCREEN_WIDTH;
+    int aHeight = ADVENTURE_SCREEN_HEIGHT;
     
     if (gPixelBucket)
     {
@@ -358,14 +358,9 @@ void Platform_PaintPixel(int r, int g, int b, int x, int y, int width/*=1*/, int
 {
     if (gPixelBucket)
     {
-        x *= gGfxScaler;
-        y *= gGfxScaler;
-        width *= gGfxScaler;
-        height *= gGfxScaler;
-        
-        int bufferWidth = ADVENTURE_SCREEN_WIDTH*gGfxScaler;
-        int bufferHeight = ADVENTURE_SCREEN_HEIGHT*gGfxScaler;
-        int bufferOverscan = ADVENTURE_OVERSCAN*gGfxScaler;
+        int bufferWidth = ADVENTURE_SCREEN_WIDTH;
+        int bufferHeight = ADVENTURE_SCREEN_HEIGHT;
+        int bufferOverscan = ADVENTURE_OVERSCAN;
         
         for (int cy=0; cy<height; cy++)
         {
