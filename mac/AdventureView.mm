@@ -33,7 +33,7 @@ void FreeOffscreen();
 
 short GetKeyState(unsigned short k);
 
-float gGfxScaler = 2.0f;
+float gGfxScaler = 1.0f;
 byte* gPixelBucket = NULL;
 CGContextRef gDC = NULL;
 AdventureView* gAdvView = NULL;
@@ -110,6 +110,7 @@ bool gMute = FALSE;
     gGfxScaler = (gGfxScaler == 0) ? .5 : gGfxScaler;
     int aWidth = ADVENTURE_SCREEN_WIDTH;
     int aHeight = ADVENTURE_SCREEN_HEIGHT;
+    
     
     if (gPixelBucket)
     {
@@ -234,7 +235,7 @@ bool gMute = FALSE;
 
 - (void)drawRect:(NSRect)rect
 {
-    if (gDC)
+    if (gDC && (setup != NULL) && setup->isGameSetup())
     {
         NSRect rectWindow = [self bounds];
         
