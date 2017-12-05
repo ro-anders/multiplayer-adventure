@@ -750,6 +750,43 @@ void SyncWithOthers() {
 
 }
 
+void Adventure_CheckTime(float currentScale) {
+    const int FRAMES_PER_SLOT = 60;
+    const long TARGET_SLOT_TIME = (long)(FRAMES_PER_SLOT * ADVENTURE_FRAME_PERIOD * 1000);
+    const int MAX_SLOTS_MISSED = 5;
+    static float lastScale = 0;
+    static bool haveWarnedAboutThisScale = false;
+    static int framesIntoSlot = 0;
+    static long timeAtStartOfSlot = Sys::runTime();
+    static int numSlotsMissed = 0;
+    
+    if (currentScale != lastScale) {
+        // Scale changed.  Reset timing history.
+        haveWarnedAboutThisScale = false;
+        framesIntoSlot = 0;
+        timeAtStartOfSlot = Sys::runTime();
+        numSlotsMissed = 0;
+        lastScale = currentScale;
+    } else if (!haveWarnedAboutThisScale) {
+        ++framesIntoSlot;
+        if (framesIntoSlot >= FRAMES_PER_SLOT) {
+            long currentTime = Sys::runTime();
+            long elapsed = currentTime - timeAtStartOfSlot;
+            if (elapsed > TARGET_SLOT_TIME * 1.1) { // We allow for 10% slowness.
+                ++numSlotsMissed;
+                if (numSlotsMissed > MAX_SLOTS_MISSED) {
+                    Platform_DisplayStatus("Your game is running too slow.\nConsider shrinking the window size.", 4);
+                    haveWarnedAboutThisScale = true;
+                }
+            } else {
+                numSlotsMissed = 0;
+            }
+            framesIntoSlot = 0;
+            timeAtStartOfSlot = currentTime;
+        }
+    }
+}
+
 
 void Adventure_Run()
 {

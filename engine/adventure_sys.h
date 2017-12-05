@@ -14,7 +14,7 @@ typedef unsigned char byte;
 #define ADVENTURE_SCREEN_HEIGHT             192
 #define ADVENTURE_OVERSCAN                  16
 #define ADVENTURE_TOTAL_SCREEN_HEIGHT       (ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN)
-#define ADVENTURE_FPS                       58
+#define ADVENTURE_FRAME_PERIOD               0.017
 
 #define ABS(X)                           ((X)>0?(X):-(X))
 

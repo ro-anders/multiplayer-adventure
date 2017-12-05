@@ -28,6 +28,15 @@ class Transport;
  * initialRightDiff - initial value of right difficulty switch (0 = A, 1 = B)
  */
 void Adventure_Setup(int numPlayers, int thisPlayer, Transport* transport, int gameNum, int initialLeftDiff, int initialRightDiff);
+
+/**
+ * Check that the game is executing fast enough.  If it isn't, display a recommendation to shrink the screen.
+ */
+void Adventure_CheckTime(float currentScale);
+
+/**
+ Run one iteration of the game
+ */
 void Adventure_Run();
 
 // Platform-dependant functions

@@ -173,6 +173,7 @@ bool gMute = FALSE;
         }
     } else if (isGraphicsSetup) {
         // Run a frame of the game
+        Adventure_CheckTime(gGfxScaler);
         Adventure_Run();
     }
     
@@ -210,7 +211,7 @@ bool gMute = FALSE;
             xport->useSocket(socket);
         }
         
-        timer = [NSTimer scheduledTimerWithTimeInterval: 0.016
+        timer = [NSTimer scheduledTimerWithTimeInterval: ADVENTURE_FRAME_PERIOD
                                                  target: self
                                                selector: @selector(update:)
                                                userInfo: nil
