@@ -24,7 +24,8 @@ Sync::Sync(int inNumPlayers, int inThisPlayer, Transport* inTransport) :
     for(int ctr=0; ctr<numPlayers; ++ctr) {
         playersLastMove[ctr] = NULL;
     }
-    
+    msgsRcvdFromPlayer = new int[numPlayers];
+    resetMessagesReceived();
 }
 
 Sync::~Sync() {
@@ -37,6 +38,26 @@ void Sync::StartFrame() {
 
 int Sync::getFrameNumber() {
     return frameNum;
+}
+
+int Sync::getMessagesReceived(int player) {
+    return msgsRcvdFromPlayer[player];
+}
+
+void Sync::resetMessagesReceived() {
+    for(int ctr=0; ctr<numPlayers; ++ctr) {
+        msgsRcvdFromPlayer[ctr] = 0;
+    }
+}
+
+void Sync::handled(RemoteAction* action) {
+    // Record we got a message from the sender
+    if (action != NULL) {
+        int sender = action->sender;
+        if ((sender >= 0) && (sender < numPlayers)) {
+            ++msgsRcvdFromPlayer[sender];
+        }
+    }
 }
 
 void Sync::BroadcastAction(RemoteAction* action) {
@@ -61,15 +82,15 @@ void Sync::handleBatMoveMessage(const char* message) {
     BatMoveAction* nextAction = new BatMoveAction();
     nextAction->deserialize(receiveBuffer);
     batMoves.enQ(nextAction);
+    handled(nextAction);
 }
 
 void Sync::handleBatPickupMessage(const char* message) {
     BatPickupAction* nextAction = new BatPickupAction();
     nextAction->deserialize(receiveBuffer);
     batMoves.enQ(nextAction);
+    handled(nextAction);
 }
-
-
 
 void Sync::handlePlayerMoveMessage(const char* message) {
     PlayerMoveAction* nextAction = new PlayerMoveAction();
@@ -79,36 +100,42 @@ void Sync::handlePlayerMoveMessage(const char* message) {
         delete playersLastMove[messageSender];
     }
     playersLastMove[messageSender] = nextAction;
+    handled(nextAction);
 }
 
 void Sync::handleDragonMoveMessage(const char* message) {
     DragonMoveAction* nextAction = new DragonMoveAction();
     nextAction->deserialize(receiveBuffer);
     dragonMoves.enQ(nextAction);
+    handled(nextAction);
 }
 
 void Sync::handleDragonStateMessage(const char* message) {
     DragonStateAction* nextAction = new DragonStateAction();
     nextAction->deserialize(receiveBuffer);
     dragonMoves.enQ(nextAction);
+    handled(nextAction);
 }
 
 void Sync::handlePlayerPickupMessage(const char* message) {
     PlayerPickupAction* nextAction = new PlayerPickupAction();
     nextAction->deserialize(receiveBuffer);
     playerPickups.enQ(nextAction);
+    handled(nextAction);
 }
 
 void Sync::handlePlayerResetMessage(const char* message) {
     PlayerResetAction* nextAction = new PlayerResetAction();
     nextAction->deserialize(receiveBuffer);
     playerResets.enQ(nextAction);
+    handled(nextAction);
 }
 
 void Sync::handlePortcullisStateMessage(const char* message) {
     PortcullisStateAction* nextAction = new PortcullisStateAction();
     nextAction->deserialize(receiveBuffer);
     gateStateChanges.enQ(nextAction);
+    handled(nextAction);
 }
 
 void Sync::handlePlayerWinMessage(const char* message) {
@@ -117,13 +144,22 @@ void Sync::handlePlayerWinMessage(const char* message) {
         PlayerWinAction* nextAction = new PlayerWinAction();
         nextAction->deserialize(receiveBuffer);
         gameWon = nextAction;
+        handled(nextAction);
     }
+}
+
+void Sync::handlePingMessage(const char* message) {
+    PingAction* nextAction = new PingAction();
+    nextAction->deserialize(receiveBuffer);
+    // Don't need to do anything with the ping except mark that it was handled.
+    handled(nextAction);
 }
 
 void Sync::handleMazeSetupObjectMessage(const char* message) {
     ObjectMoveAction* nextAction = new ObjectMoveAction();
     nextAction->deserialize(receiveBuffer);
     mazeSetupActions.enQ(nextAction);
+    handled(nextAction);
 }
 
 int Sync::pullNextPacket(char* buffer, int bufferSize) {
@@ -202,7 +238,7 @@ void Sync::PullLatestMessages() {
                         break;
                     }
                     default:
-                        printf("Message with unknown message type C%c: %s\n", receiveBuffer[1], receiveBuffer);
+                        printf("Message with unknown message type G%c: %s\n", receiveBuffer[1], receiveBuffer);
                 }
                 break;
             case 'M':
@@ -212,7 +248,17 @@ void Sync::PullLatestMessages() {
                         break;
                     }
                     default:
-                        printf("Message with unknown message type C%c: %s\n", receiveBuffer[1], receiveBuffer);
+                        printf("Message with unknown message type M%c: %s\n", receiveBuffer[1], receiveBuffer);
+                }
+                break;
+            case 'X':
+                switch (receiveBuffer[1]) {
+                    case 'x': {
+                        handlePingMessage(receiveBuffer);
+                        break;
+                    }
+                    default:
+                        printf("Message with unknown message type X%c: %s\n", receiveBuffer[1], receiveBuffer);
                 }
                 break;
             default:

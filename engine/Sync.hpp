@@ -92,6 +92,10 @@ public:
   
     int getFrameNumber();
     
+    int getMessagesReceived(int player);
+    
+    void resetMessagesReceived();
+    
 protected:
     /**
      * This pulls the next message off the socket.
@@ -101,6 +105,8 @@ protected:
 private:
     
     static const int MAX_MESSAGE_SIZE;
+    
+    static const int CHECK_PERIOD = 15000; // Fifteen seconds
 
     Transport* transport;
     
@@ -124,7 +130,11 @@ private:
     
     int frameNum;
     
+    int* msgsRcvdFromPlayer;
+    
     void RejectMessage(const char* message, const char* errorMsg);
+    
+    void handled(RemoteAction* action);
     
     void handleBatMoveMessage(const char* message);
     
@@ -146,6 +156,7 @@ private:
 
     void handleMazeSetupObjectMessage(const char* message);
 
+    void handlePingMessage(const char* message);
 
 };
 

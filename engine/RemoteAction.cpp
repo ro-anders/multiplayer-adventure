@@ -381,6 +381,31 @@ void ObjectMoveAction::deserialize(const char *message) {
     sscanf(message, "%s %d %d %d %d %d", type, &sender, &object, &room, &x, &y);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////
+//
+// ping
+//
+
+const char* PingAction::CODE = "XX";
+
+PingAction::PingAction() :
+RemoteAction(CODE) {}
+
+PingAction::~PingAction() {}
+
+
+int PingAction::serialize(char* buffer, int bufferLength) {
+    // TODO - Right now we are ignoring bufferLength
+    // TODO - Reuse base class serialize
+    int numChars = sprintf(buffer, "XX %d", sender);
+    return numChars;
+}
+
+void PingAction::deserialize(const char *message) {
+    char type[8];
+    sscanf(message, "%s %d", type, &sender);
+}
+
 
 
 

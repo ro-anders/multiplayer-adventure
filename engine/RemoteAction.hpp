@@ -218,8 +218,9 @@ public:
 };
 
 /**
- * This places an object.  It is used when an object touches a gate and in level 3 when one client randomly assigns the objects 
- * and then communicates the positions to the other clients.  It can be used to move the dragons and bat, too.
+ * This places an object.  It is used when an object touches a gate and in level 3 when one client randomly
+ * assigns the objects and then communicates the positions to the other clients.  It can be used to move
+ * the dragons and bat, too.
  */
 class ObjectMoveAction: public RemoteAction {
 public:
@@ -240,6 +241,20 @@ public:
     
     void deserialize(const char* message);
 };
+
+class PingAction: public RemoteAction {
+public:
+    static const char* CODE;
+
+    PingAction();
+    
+    ~PingAction();
+    
+    int serialize(char* buffer, int bufferLength);
+    
+    void deserialize(const char* message);
+};
+
 
 
 
