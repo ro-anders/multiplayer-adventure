@@ -29,6 +29,7 @@ void CALLBACK TimerWindowProc(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_
 static CH2HAdventureDlg* gThis = NULL;
 static int gBrightness = 0;
 
+
 int leftKey = VK_LEFT;
 int rightKey = VK_RIGHT;
 int upKey = VK_UP;
@@ -123,10 +124,31 @@ void CH2HAdventureDlg::OnPaint()
 		OnDraw(pInMemDC);
 
 		// Copy bitmap to window
-		dc.BitBlt(10, 10, WinRect.right + 10, WinRect.bottom + 10, pInMemDC, 0, 0, SRCCOPY);
+		int SCREEN_MARGIN = 10;
+		const int SCREEN_TOP = 133;
+		float scale = 1;
+		int leftMargin = SCREEN_MARGIN;
+		computeScale(SCREEN_TOP, SCREEN_MARGIN, &scale, &leftMargin);
+		dc.StretchBlt(leftMargin, SCREEN_TOP, (int)(WinRect.right * scale), (int)(WinRect.bottom * scale), pInMemDC, 0, 0, WinRect.right, WinRect.bottom, SRCCOPY);
 
 	}
 }
+
+void CH2HAdventureDlg::computeScale(int SCREEN_TOP, int SCREEN_MARGIN, float* scale, int* margin) {
+	RECT rcClient;
+	this->GetClientRect(&rcClient);
+
+	int windowHeight = rcClient.bottom - rcClient.top - SCREEN_TOP - SCREEN_MARGIN;
+	float heightRatio = windowHeight / (float)ADVENTURE_SCREEN_HEIGHT;
+
+	int windowWidth = rcClient.right - rcClient.left - 2* SCREEN_MARGIN;
+	float widthRatio = windowWidth / (float)ADVENTURE_SCREEN_WIDTH;
+
+	float minRatio = (widthRatio < heightRatio ? widthRatio : heightRatio);
+	*scale = (minRatio < 1 ? 0.5 : floor(minRatio));
+	*margin = (int)(windowWidth - (*scale * ADVENTURE_SCREEN_WIDTH))/2 + SCREEN_MARGIN;
+}
+
 
 void CH2HAdventureDlg::OnDraw(CDC* pDC) {
 	HPEN penOld = (HPEN)::SelectObject(*pInMemDC, ::GetStockObject(NULL_PEN));
