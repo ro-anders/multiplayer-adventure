@@ -153,7 +153,7 @@ int UdpTransport::openSocket() {
         Logger::log() << "Bound to port " << myInternalPort << Logger::EOM;
         socketBound = true;
     } else {
-        printf("Failed to bind to port %d.\n", myInternalPort);
+        Logger::logError() << "Failed to bind to port " << myInternalPort << Logger::EOM;
     }
     
     

@@ -95,6 +95,9 @@ Logger& Logger::operator<<(long number) {
 */
 Logger& Logger::operator<<(EndOfLogMessage end) {
 	if (destination != OFF) {
+        if (buffer[charsInBuffer-1] != '\n') {
+            this->operator<<("\n");
+        }
 		buffer[charsInBuffer] = '\0';
 		sendMessage(buffer);
 	}

@@ -6,23 +6,25 @@ To Do
 - 4 requests at once confuses broker.
 - Two players connect.  Game ends.  Player from same host connects and is joined with previous game.
 - Mac still has menu options that apply to Hirschberg version, not H2H version
-- Mac runs too slow in full screen mode.  Speed up or disable full screen mode.
 - PC cannot use DNS name for broker.  Needs explicit IP address.
 - When player holds an object, other players see it held in a different position
 - When holding bat at top of screen it switched objects and dropped the object at the top of the above screen.
   Also when it picked up an object that was at the bottom edge of the above screen it dropped its current object pretty low in this screen.
 - Dragon getting killed is heard everywhere in the game.  All other sounds mute as they get further away.
+- FIXED - Mac runs too slow in full screen mode.  Speed up or disable full screen mode.
 - FIXED - When castle is locked objects are still wrapped from bottom of entrance room to opening of castle
 - FIXED - Make key controls the same for Mac and PC
 - FIXED - Grab an object with someone else in the room and other person picks it up
 - FIXED - Hold a key beneath you and just step into a castle.  Key appears at top of outside of castle.  Should appear right below gate (when gate is open)
 - FIXED - Win screen often randomly displays the other players even if they weren't there to start
 - FIXED - Seems to be some fatal exception on exiting.  Not critical since we're exiting, but a little disturbing.
-- FIXED - Sometimes when you unlock and enter castle the gate locks behind you.  Has to do with other machines seeing player touch the key to the castle and sending a lock event.
-  Unlock a castle.  Hold the key above you and touch the open gate.  As it closes it will bring you into the castle.  Other players will see the castle open, but you will
-  see the castle closed.
-- FIXED - Crash on Mac when playing across internet - Looked like first round of game executing before setup was done.  Put in explicit wait until setup is done.
+- FIXED - Sometimes when you unlock and enter castle the gate locks behind you.  Has to do with other machines seeing player touch the key to the castle
+          and sending a lock event.  Unlock a castle.  Hold the key above you and touch the open gate.  As it closes it will bring you into the castle.
+          Other players will see the castle open, but you will see the castle closed.
+- FIXED - Crash on Mac when playing across internet - Looked like first round of game executing before setup was done.  
+          Put in explicit wait until setup is done.
 - FIXED - Tab order in Windows is wrong.
+- FIXED - Dragon's pre-bite direction not properly synced across players (would be good to have bite and die events carry a previous direction)
 
 To Check
 --------
@@ -30,7 +32,6 @@ To Check
 - Looked like other player wasn't carrying an object when he was - seen this several times
 - Green dragon ate player 1.  Player 2 reset and now didn't see green dragon.
 - Right arrow key seemed to get stuck.
-- FIXED - Dragon's pre-bite direction not properly synced across players (would be good to have bite and die events carry a previous direction)
 
 Original Disparities
 --------------------

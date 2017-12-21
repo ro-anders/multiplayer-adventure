@@ -140,7 +140,7 @@ void GameSetup::setCommandLineArgs(int argc, char** argv) {
         newParams.numberPlayers = 2;
     } else if ((argc >= 1) && (strcmp(argv[0], "p2p")==0)){
         // Other players' IP information will be specified on the command line.
-        // H2HAdventure <gameLevel(1-3,4)> <thisPlayer(1-3)> <myinternalport> <theirip>:<theirport> [<thirdip>:<thirdport>]
+        // H2HAdventure p2p <gameLevel(1-3,4)> <thisPlayer(1-3)> <myinternalport> <theirip>:<theirport> [<thirdip>:<thirdport>]
         setupP2PGame(newParams, argc, argv);
     }else {
         // Brokered with key information coming from the GUI

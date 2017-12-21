@@ -4,6 +4,7 @@
 
 // Socket includes
 #include <arpa/inet.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <ifaddrs.h>
 #include <netdb.h>
@@ -84,9 +85,12 @@ int PosixUdpSocket::bind(int myInternalPort) {
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     serv_addr.sin_port = htons(myInternalPort);
     Logger::log() << "Opening socket on port " << ntohs(serv_addr.sin_port) << Logger::EOM;
-    if (::bind(socketFd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-        // Assume it is because another process is listening and we should instead launch the client
+    int resp = ::bind(socketFd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+    if (resp == EADDRINUSE) {
         return Transport::TPT_BUSY;
+    } else if (resp < 0) {
+        Logger::logError() << "Failed to bind: " << strerror(resp) << Logger::EOM;
+        return Transport::TPT_ERROR;
     }
     
     return Transport::TPT_OK;
@@ -125,6 +129,9 @@ void PosixUdpSocket::setTimeout(int seconds) {
 int PosixUdpSocket::writeData(const char* data, int numBytes, sockaddr_in* recipient)
 {
     int numSent = sendto(socketFd, data, numBytes, 0, (struct sockaddr *)recipient, sizeof(sockaddr_in));
+    if (numSent < 0) {
+        Logger::logError() << "UDP write failed with error: " << strerror(errno) << Logger::EOM;
+    }
     return numSent;
 }
 
@@ -161,7 +168,6 @@ List<Transport::Address> PosixUdpSocket::getLocalIps() {
             sa =   (struct sockaddr_in*)ifa->ifa_addr;
             addr = inet_ntoa(sa->sin_addr);
             // We filter out the localhost address
-            printf("Interface: %s\tAddress: %s\n", ifa->ifa_name, addr);
             if (strcmp(addr, "127.0.0.1")!=0) {
                 addrs.add(Transport::Address(addr, 0));
             }
