@@ -39,6 +39,8 @@ protected:
 	afx_msg void OnPaint();
 	void OnDraw(CDC* pDC);
 	void DrawPixel(CDC* pDC, int r, int g, int b, int x, int y, int width, int height);
+	void computeScale(int SCREEN_TOP, int SCREEN_MARGIN, float* scale, int* margin);
+
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
