@@ -131,9 +131,10 @@ static bool joystickDisabled = false;
 
 #define GAMEOPTION_PRIVATE_MAGNETS  1
 #define GAMEOPTION_UNLOCK_GATES_FROM_INSIDE 2
+#define GAMEOPTION_NO_HIDE_KEY_IN_CASTLE 3
 // This holds all the switches for whether to turn on or off different game options
 // It is a bitwise or of each game option
-static int gameOptions = 0;
+static int gameOptions = GAMEOPTION_NO_HIDE_KEY_IN_CASTLE;
 
 static int winFlashTimer=0;
 static int winningRoom=-1; // The room number of the castle of the winning player.  -1 if the game is not won yet.
@@ -1754,6 +1755,25 @@ void OthersPickupPutdown() {
     }
 }
 
+/**
+ * To make game play more fun, you can't shove your key inside the walls of your own castle.  If you try, it will
+ * stick out the other side.
+ */
+void unhideKey(OBJECT* droppedObject) {
+
+    int objectPkey = droppedObject->getPKey();
+    if ((objectPkey == OBJECT_YELLOWKEY) || (objectPkey == OBJECT_COPPERKEY) || (objectPkey == OBJECT_JADEKEY)) {
+        int roomNum = droppedObject->room;
+        if ((roomNum == GOLD_FOYER) || (roomNum == COPPER_FOYER) || (roomNum == JADE_FOYER)) {
+            if (droppedObject->y < 15) {
+                droppedObject->y = 15;
+            } else if (droppedObject->y > 99) {
+                droppedObject->y = 99;
+            }
+        }
+    }
+}
+
 void PickupPutdown()
 {
     if (!joystickDisabled && joyFire && (objectBall->linkedObject >= 0))
@@ -1763,6 +1783,10 @@ void PickupPutdown()
         
         // Put down the current object!
         objectBall->linkedObject = OBJECT_NONE;
+        
+        if ((gameOptions & GAMEOPTION_NO_HIDE_KEY_IN_CASTLE) != 0 ) {
+            unhideKey(droppedObject);
+        }
         
         // Tell other clients about the drop
         PlayerPickupAction* action = new PlayerPickupAction(OBJECT_NONE, 0, 0, dropped, droppedObject->room,

@@ -119,13 +119,11 @@ void GameSetup::setCommandLineArgs(int argc, char** argv) {
         newParams.thisPlayer = 0;
     } else if ((argc >= 1) && (strcmp(argv[0], "broker")==0)){
         // A server will broker the game but still need some info that we parse from the command line.
-        // H2HAdventure broker <gameLevel (1-3,4)> <desiredPlayers (2-3)> [stunserver:stunport]
+        // H2HAdventure broker [stunserver:stunport]
         needPublicIp = true;
         isBrokeredGame = true;
-        newParams.gameLevel = atoi(argv[1])-1;
-        newParams.numberPlayers = (atoi(argv[2]) <= 2 ? 2 : 3);
-        if (argc > 3) {
-            broker = Transport::parseUrl(argv[3]);
+        if (argc > 1) {
+            broker = Transport::parseUrl(argv[1]);
             if (broker.port() == 0) {
                 broker = Transport::Address(broker.ip(), RestClient::REST_PORT);
             }
@@ -146,9 +144,6 @@ void GameSetup::setCommandLineArgs(int argc, char** argv) {
         // Brokered with key information coming from the GUI
         needPublicIp = true;
         isBrokeredGame = true;
-        // TODOX: How do we get info from GUI?
-        //newParams.gameLevel = atoi(argv[1])-1;
-        //newParams.numberPlayers = (atoi(argv[2]) <= 2 ? 2 : 3);
     }
 }
 
