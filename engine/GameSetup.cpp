@@ -112,8 +112,7 @@ void GameSetup::setCommandLineArgs(int argc, char** argv) {
         newParams.gameLevel = GAME_MODE_SCRIPTING;
     } else if ((argc >= 1) && (strcmp(argv[0], "single") == 0)) {
         // Used for debugging with a single client and a faux second player.
-        // H2HAdventure single [gameLevel(1-3,4)]
-        newParams.gameLevel = (argc > 1 ? atoi(argv[1])-1 : DEFAULT_GAME_LEVEL);
+        // H2HAdventure single
         newParams.noTransport = true;
         newParams.numberPlayers = 2;
         newParams.thisPlayer = 0;
@@ -134,7 +133,6 @@ void GameSetup::setCommandLineArgs(int argc, char** argv) {
         // Used only for development.  Assumes a second dev instance is being started on the same machine and will
         // dynamically decide which port to use and which is player 1 vs player 2.
         xport.useDynamicPlayerSetup();
-        newParams.gameLevel = (argc >= 2 ? atoi(argv[1])-1 : DEFAULT_GAME_LEVEL);
         newParams.numberPlayers = 2;
     } else if ((argc >= 1) && (strcmp(argv[0], "p2p")==0)){
         // Other players' IP information will be specified on the command line.
@@ -446,12 +444,11 @@ void GameSetup::setupP2PGame(GameSetup::GameParams& newParams, int argc, char** 
     
     newParams.gameLevel = atoi(argv[1])-1;
     newParams.numberPlayers = argc-3;
-    Transport::Address addr1;
     newParams.thisPlayer = atoi(argv[2])-1;
     xport.setTransportNum(newParams.thisPlayer);
     int myInternalPort = atoi(argv[3]);
     xport.setInternalPort(myInternalPort);
-    addr1 = Transport::parseUrl(argv[4]);
+    Transport::Address addr1 = Transport::parseUrl(argv[4]);
     xport.addOtherPlayer(addr1);
     if (argc > 5) {
         Transport::Address addr2 = Transport::parseUrl(argv[5]);

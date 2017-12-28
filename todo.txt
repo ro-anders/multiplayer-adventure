@@ -1,6 +1,6 @@
 To Do
 -----
-- Does game correctly handle when someone else resets while you are eaten?
+- Pings not being sent,  If player doesn't move it says they are disconnected.
 - Windows status message flickers.  Shouldn't redraw the whole window.
 - Close button on Mac is ineffective.
 - 4 requests at once confuses broker.

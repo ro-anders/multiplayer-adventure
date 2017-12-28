@@ -201,15 +201,17 @@ bool gMute = FALSE;
     GameSetup::GameParams params;
     try {
         xport = new UdpTransport();
+        PosixUdpSocket* socket = new PosixUdpSocket();
+        xport->useSocket(socket);
         setup = new GameSetup(client, *xport);
-        setup->setCommandLineArgs(argc-1, argv+1);
         setup->setPlayerName([playerName UTF8String]);
         setup->setGameLevel(gameNum);
         setup->setNumberPlayers(desiredPlayers);
+        setup->setCommandLineArgs(argc-1, argv+1);
         GameSetup::GameParams params = setup->getSetup();
-        if (!params.noTransport) {
-            PosixUdpSocket* socket = new PosixUdpSocket();
-            xport->useSocket(socket);
+        if (params.noTransport) {
+            delete socket;
+            xport->useSocket(NULL);
         }
         
         timer = [NSTimer scheduledTimerWithTimeInterval: ADVENTURE_FRAME_PERIOD
