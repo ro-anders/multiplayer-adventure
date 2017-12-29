@@ -63,6 +63,7 @@ BEGIN_MESSAGE_MAP(CH2HAdventureDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_PLAY_BUTTON, &CH2HAdventureDlg::OnBnClickedPlayButton)
+	ON_CBN_SELCHANGE(IDC_PLAYERS_COMBO, &CH2HAdventureDlg::OnCbnSelchangePlayersCombo)
 END_MESSAGE_MAP()
 
 
@@ -124,13 +125,14 @@ void CH2HAdventureDlg::OnPaint()
 		OnDraw(pInMemDC);
 
 		// Copy bitmap to window
-		int SCREEN_MARGIN = 10;
-		const int SCREEN_TOP = 133;
-		float scale = 1;
-		int leftMargin = SCREEN_MARGIN;
-		computeScale(SCREEN_TOP, SCREEN_MARGIN, &scale, &leftMargin);
-		dc.StretchBlt(leftMargin, SCREEN_TOP, (int)(WinRect.right * scale), (int)(WinRect.bottom * scale), pInMemDC, 0, 0, WinRect.right, WinRect.bottom, SRCCOPY);
-
+		if ((setup != NULL) && (setup->isGameSetup())) {
+			int SCREEN_MARGIN = 10;
+			const int SCREEN_TOP = 76;
+			float scale = 1;
+			int leftMargin = SCREEN_MARGIN;
+			computeScale(SCREEN_TOP, SCREEN_MARGIN, &scale, &leftMargin);
+			dc.StretchBlt(leftMargin, SCREEN_TOP, (int)(WinRect.right * scale), (int)(WinRect.bottom * scale), pInMemDC, 0, 0, WinRect.right, WinRect.bottom, SRCCOPY);
+		}
 	}
 }
 
@@ -145,7 +147,7 @@ void CH2HAdventureDlg::computeScale(int SCREEN_TOP, int SCREEN_MARGIN, float* sc
 	float widthRatio = windowWidth / (float)ADVENTURE_SCREEN_WIDTH;
 
 	float minRatio = (widthRatio < heightRatio ? widthRatio : heightRatio);
-	*scale = (minRatio < 1 ? 0.5 : floor(minRatio));
+	*scale = (float)(minRatio < 1 ? 0.5 : floor(minRatio));
 	*margin = (int)(windowWidth - (*scale * ADVENTURE_SCREEN_WIDTH))/2 + SCREEN_MARGIN;
 }
 
@@ -244,12 +246,24 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 
 		CEdit* nameLabel = (CEdit*)gThis->GetDlgItem(IDC_NAME_LABEL);
 		nameLabel->ShowWindow(SW_HIDE);
+		CEdit* waitLabel = (CEdit*)gThis->GetDlgItem(IDC_WAIT_LABEL);
+		waitLabel->ShowWindow(SW_HIDE);
+		CEdit* dontWaitLabel = (CEdit*)gThis->GetDlgItem(IDC_DONT_WAIT_LABEL);
+		dontWaitLabel->ShowWindow(SW_HIDE);
 		CEdit* nameEdit = (CEdit*)gThis->GetDlgItem(IDC_NAME_EDIT);
 		nameEdit->ShowWindow(SW_HIDE);
 		CComboBox* gameCombo = (CComboBox*)gThis->GetDlgItem(IDC_GAME_COMBO);
 		gameCombo->ShowWindow(SW_HIDE);
 		CComboBox* playersCombo = (CComboBox*)gThis->GetDlgItem(IDC_PLAYERS_COMBO);
 		playersCombo->ShowWindow(SW_HIDE);
+		CCheckListBox* dragonSpeedChk = (CCheckListBox*)gThis->GetDlgItem(IDC_DRAGON_SPEED_CHECK);
+		dragonSpeedChk->ShowWindow(SW_HIDE);
+		CCheckListBox* dragonFearChk = (CCheckListBox*)gThis->GetDlgItem(IDC_DRAGON_FEAR_CHECK);
+		dragonFearChk->ShowWindow(SW_HIDE);
+		CEdit* wait1Edit = (CEdit*)gThis->GetDlgItem(IDC_WAIT1_EDIT);
+		wait1Edit->ShowWindow(SW_HIDE);
+		CEdit* wait2Edit = (CEdit*)gThis->GetDlgItem(IDC_WAIT2_EDIT);
+		wait2Edit->ShowWindow(SW_HIDE);
 		CButton* playButton = (CButton*)gThis->GetDlgItem(IDC_PLAY_BUTTON);
 		playButton->ShowWindow(SW_HIDE);
 
@@ -419,4 +433,14 @@ void Platform_DisplayStatus(const char* message, int duration) {
 	label->SetWindowText(unicodestr);
 
 	::SysFreeString(unicodestr);
+}
+
+
+void CH2HAdventureDlg::OnCbnSelchangePlayersCombo()
+{
+	CComboBox* playersCombo = (CComboBox*)this->GetDlgItem(IDC_PLAYERS_COMBO);
+	int playersSelected = playersCombo->GetCurSel();
+	playersSelected = (playersSelected < 0 ? 2 : playersSelected + 2);
+	CEdit* wait2Edit = (CEdit*)this->GetDlgItem(IDC_WAIT2_EDIT);
+	wait2Edit->ShowWindow(playersSelected == 2 ? SW_HIDE: SW_SHOW);
 }

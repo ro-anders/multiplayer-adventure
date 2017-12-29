@@ -47,4 +47,5 @@ public:
 	void OnOK();
 	void update();
 	afx_msg void OnBnClickedPlayButton();
+	afx_msg void OnCbnSelchangePlayersCombo();
 };
