@@ -260,10 +260,13 @@ void GameSetup::checkSetup() {
             break;
         }
     }
-    if (setupState == SETUP_CONNECTED) {
-        Platform_DisplayStatus("", 0);
-    }
 }
+
+void GameSetup::doSetupConnected() {
+	Platform_DisplayStatus("", 0);
+	stunServerSocket->deleteAddress(stunServerSockAddr);
+}
+
 
 void GameSetup::askForPublicAddress() {
     // First need to pick which port this game will use for UDP communication.
@@ -475,7 +478,6 @@ Transport::Address GameSetup::checkForPublicAddress() {
         buffer[numCharsRead] = '\0';
         Logger::log() << "Received \"" << buffer << "\" from STUN server." << Logger::EOM;
         publicAddress = Transport::parseUrl(buffer);
-        stunServerSocket->deleteAddress(stunServerSockAddr);
         if (!publicAddress.isValid()) {
             Logger::logError() << "Could not parse IP from STUN server message: " << buffer << Logger::EOM;
             throw std::runtime_error("Could not determine public address.");

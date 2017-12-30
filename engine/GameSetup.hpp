@@ -138,8 +138,6 @@ private:
     
     bool pollBroker();
 
-    void setupBrokeredGame(int argc, char** argv);
-    
     void setupP2PGame(GameSetup::GameParams& newParams, int argc, char** argv);
     
     bool hasExpired();
@@ -148,13 +146,11 @@ private:
     
     UdpTransport& xport;
     
-    Transport::Address determinePublicAddress(Transport::Address stunServer);
-    
     /** Send a UDP packet out on the designated port in attempt to keep firewall/NAT from reclaiming port. */
     void keepPortOpen();
 
-    
-    bool sameAsMyAddresses(Transport::Address* addresses, int numAddresses);
+	/** The game has successfully been setup and will start.  Clean up any resources from game setup. */
+	void doSetupConnected();
 
 };
 
