@@ -1,6 +1,5 @@
 To Do
 -----
-- Pings not being sent,  If player doesn't move it says they are disconnected.
 - Windows status message flickers.  Shouldn't redraw the whole window.
 - Close button on Mac is ineffective.
 - 4 requests at once confuses broker.
@@ -11,6 +10,7 @@ To Do
 - When holding bat at top of screen it switched objects and dropped the object at the top of the above screen.
   Also when it picked up an object that was at the bottom edge of the above screen it dropped its current object pretty low in this screen.
 - Dragon getting killed is heard everywhere in the game.  All other sounds mute as they get further away.
+- FIXED - Pings not being sent,  If player doesn't move it says they are disconnected.
 - FIXED - Mac runs too slow in full screen mode.  Speed up or disable full screen mode.
 - FIXED - When castle is locked objects are still wrapped from bottom of entrance room to opening of castle
 - FIXED - Make key controls the same for Mac and PC

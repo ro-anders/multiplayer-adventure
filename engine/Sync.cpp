@@ -253,7 +253,7 @@ void Sync::PullLatestMessages() {
                 break;
             case 'X':
                 switch (receiveBuffer[1]) {
-                    case 'x': {
+                    case 'X': {
                         handlePingMessage(receiveBuffer);
                         break;
                     }
