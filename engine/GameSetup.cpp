@@ -236,6 +236,7 @@ void GameSetup::checkSetup() {
                 timeoutStart = Sys::runTime();
             } else {
                 setupState = SETUP_CONNECTED;
+                doSetupConnected();
             }
             break;
         }
@@ -250,6 +251,7 @@ void GameSetup::checkSetup() {
                         newParams.shouldMute = (setupNum == 1);
                     }
                     setupState = SETUP_CONNECTED;
+                    doSetupConnected();
                 }
                 timeoutStart = currentTime;
             }
@@ -264,7 +266,9 @@ void GameSetup::checkSetup() {
 
 void GameSetup::doSetupConnected() {
 	Platform_DisplayStatus("", 0);
-	stunServerSocket->deleteAddress(stunServerSockAddr);
+    if (stunServerSocket != NULL) {
+        stunServerSocket->deleteAddress(stunServerSockAddr);
+    }
 }
 
 
