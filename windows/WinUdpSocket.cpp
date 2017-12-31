@@ -54,13 +54,17 @@ sockaddr_in* WinUdpSocket::createAddress(Transport::Address address, bool dnsLoo
 	memset((char *)socketAddr, 0, sizeof(sockaddr_in));
 
 	socketAddr->sin_family = AF_INET;
+	const char* ip = address.ip();
 	if (dnsLookup) {
-		// TODOX: DNS Lookup
-		socketAddr->sin_addr.S_un.S_addr = inet_addr(address.ip());
+		hostent *host;                   // the hostent structure    
+		host = gethostbyname(address.ip());
+		if ((host == NULL) || (!host->h_addr_list[0])) {
+			Logger::logError() << "Cannot resolve broker DNS name \"" << address.ip() << "\"" << Logger::EOM;
+		} else {
+			ip = inet_ntoa(*((struct in_addr *)host->h_addr_list[0]));
+		}
 	}
-	else {
-		socketAddr->sin_addr.S_un.S_addr = inet_addr(address.ip());
-	}
+	socketAddr->sin_addr.S_un.S_addr = inet_addr(ip);
 	socketAddr->sin_port = htons(address.port());
 	printf("Initialized = %s:%d.\n", inet_ntoa(socketAddr->sin_addr), ntohs(socketAddr->sin_port));
 

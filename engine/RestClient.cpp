@@ -3,8 +3,7 @@
 
 #include <string.h>
 
-//const char* RestClient::DEFAULT_BROKER_SERVER = "roserver.ddns.net";
-const char* RestClient::DEFAULT_BROKER_SERVER = "54.175.45.95";
+const char* RestClient::DEFAULT_BROKER_SERVER = "roserver.ddns.net";
 
 const int RestClient::STUN_PORT = 8888;
 const int RestClient::REST_PORT = 8080;
