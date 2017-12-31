@@ -2431,8 +2431,10 @@ void warnOfDropoffRejoin(int playerDroppedOff, int playerRejoined) {
             } else {
                 sprintf(message, "%sPlayer %d has disconnected.\n", firstMessage, playerDroppedOff);
             }
+            Platform_DisplayStatus(message, 5);
+        } else {
+            Platform_DisplayStatus(firstMessage, 5);
         }
-        Platform_DisplayStatus(message, 5);
     }
 }
 
