@@ -167,7 +167,9 @@ bool gMute = FALSE;
             
             if ([self CreateOffscreen])
             {
-                Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 1, 1);
+                Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel,
+                                (params.diff1Switch ? DIFFICULTY_A : DIFFICULTY_B),
+                                (params.diff2Switch ? DIFFICULTY_A : DIFFICULTY_B));
                 isGraphicsSetup = true;
             }
             // TODO: What if CreateOffscreen fails.  Silently stops working.
@@ -192,7 +194,7 @@ bool gMute = FALSE;
     mDisplayStatusExpiration = (durationSec >= 0 ? time(NULL) + durationSec : -1);
 }
 
-- (void)playGame:(NSString*)playerName :(int)gameNum :(int)desiredPlayers
+- (void)playGame:(NSString*)playerName :(int)gameNum :(int)desiredPlayers :(bool)diff1Switch :(bool)diff2Switch
 {
     int argc;
     char** argv;
@@ -206,6 +208,7 @@ bool gMute = FALSE;
         setup = new GameSetup(client, *xport);
         setup->setPlayerName([playerName UTF8String]);
         setup->setGameLevel(gameNum);
+        setup->setDifficultySwitches(diff1Switch, diff2Switch);
         setup->setNumberPlayers(desiredPlayers);
         setup->setCommandLineArgs(argc-1, argv+1);
         GameSetup::GameParams params = setup->getSetup();
@@ -213,7 +216,9 @@ bool gMute = FALSE;
             delete socket;
             xport->useSocket(NULL);
         }
-        
+        printf("Difficulty switches:\n");
+        printf(diff1Switch ? "1 = A\n" : "1 = B\n");
+        printf(diff2Switch ? "2 = A\n" : "2 = B\n");
         timer = [NSTimer scheduledTimerWithTimeInterval: ADVENTURE_FRAME_PERIOD
                                                  target: self
                                                selector: @selector(update:)
@@ -409,12 +414,6 @@ void Platform_ReadConsoleSwitches(bool* reset)
     if (reset) *reset =  (mKeyMap & KEY_RESET) | gMenuItemReset;
     
     gMenuItemReset = FALSE;
-}
-
-void Platform_ReadDifficultySwitches(int* left, int* right)
-{
-    if (left) *left = gLeftDifficulty;	// true = dragons pause before eating you
-    if (right) *right = gRightDifficulty;  // true = dragons do not run from the sword
 }
 
 void Platform_MuteSound(bool nMute)

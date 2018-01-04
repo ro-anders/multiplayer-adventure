@@ -86,7 +86,7 @@ int PosixUdpSocket::bind(int myInternalPort) {
     serv_addr.sin_port = htons(myInternalPort);
     Logger::log() << "Opening socket on port " << ntohs(serv_addr.sin_port) << Logger::EOM;
     int resp = ::bind(socketFd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-    if (resp == EADDRINUSE) {
+    if ((resp == EADDRINUSE) || (resp == -1)) { // Don't know why sometimes -1 returned when port is in use
         return Transport::TPT_BUSY;
     } else if (resp < 0) {
         Logger::logError() << "Failed to bind: " << strerror(resp) << Logger::EOM;

@@ -35,6 +35,8 @@ shouldMute(false),
 numberPlayers(0),
 thisPlayer(0),
 gameLevel(DEFAULT_GAME_LEVEL),
+diff1Switch(false),
+diff2Switch(false),
 noTransport(false),
 privatePlayerName(NULL) {
     setPlayerName("");
@@ -45,6 +47,8 @@ shouldMute(other.shouldMute),
 numberPlayers(other.numberPlayers),
 thisPlayer(other.thisPlayer),
 gameLevel(other.gameLevel),
+diff1Switch(other.diff1Switch),
+diff2Switch(other.diff2Switch),
 noTransport(other.noTransport),
 privatePlayerName(NULL) {
     setPlayerName(other.privatePlayerName);
@@ -56,6 +60,8 @@ GameSetup::GameParams& GameSetup::GameParams::operator=(const GameParams& other)
     numberPlayers = other.numberPlayers;
     thisPlayer = other.thisPlayer;
     gameLevel = other.gameLevel;
+    diff1Switch = other.diff1Switch;
+    diff2Switch = other.diff2Switch;
     noTransport = other.noTransport;
     return *this;
 }
@@ -152,6 +158,11 @@ void GameSetup::setPlayerName(const char* playerName) {
 
 void GameSetup::setGameLevel(int level) {
     newParams.gameLevel = level;
+}
+
+void GameSetup::setDifficultySwitches(bool diff1, bool diff2) {
+    newParams.diff1Switch = diff1;
+    newParams.diff2Switch = diff2;
 }
 
 void GameSetup::setNumberPlayers(int numPlayers) {
@@ -493,7 +504,7 @@ Transport::Address GameSetup::checkForPublicAddress() {
 
 bool GameSetup::hasExpired() {
     
-    const long EXPIRATION_DATE = 20171231;
+    const long EXPIRATION_DATE = 20180228;
     long time = Sys::today();
     return ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE));
     

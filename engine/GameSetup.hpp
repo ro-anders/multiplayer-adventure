@@ -36,6 +36,8 @@ public:
         int numberPlayers; // How many players are in the game
         int thisPlayer; // Which player this game is playing.
         int gameLevel; // Which game to play (refer to GAME_MODE_ enum)
+        bool diff1Switch; // First difficulty switch (fast dragons).  TRUE=A, FALSE=B
+        bool diff2Switch; // Second difficulty switch (dragons run from sword).  TRUE=A, FALSE=B
         bool noTransport; // Whether this is a real game with other players or a degenerate case that only requires one player (e.g. executing a script)
         
         GameParams();
@@ -65,6 +67,8 @@ public:
     void setPlayerName(const char* playerName);
     
     void setGameLevel(int level);
+    
+    void setDifficultySwitches(bool diff1, bool diff2);
     
     void setNumberPlayers(int numPlayers);
     

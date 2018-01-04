@@ -43,14 +43,15 @@ void Adventure_Run();
 void Platform_PaintPixel(int r, int g, int b, int x, int y, int width=1, int height=1);
 void Platform_ReadJoystick(bool* left, bool* up, bool* right, bool* down, bool* fire);
 void Platform_ReadConsoleSwitches(bool* reset);
-void Platform_ReadDifficultySwitches(int* left, int* right);
 void Platform_MuteSound(bool mute);
 void Platform_MakeSound(int sound, float volume);
 #define MAX_VOLUME              11.0f
 float Platform_Random();
 void Platform_DisplayStatus(const char* message, int durationSec);
 
-// Difficulty switch values
+// Difficulty switches
+// When the left difficulty switch is in the B position, the Dragons will hesitate before they bite you.
+// If the right difficulty switch is in the B position all Dragons will run from the sword.
 #define DIFFICULTY_A           0
 #define DIFFICULTY_B           1
 

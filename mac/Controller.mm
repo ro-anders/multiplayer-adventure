@@ -88,9 +88,13 @@ extern AdventureView* gView;
     [mNameText setHidden:TRUE];
     [_gameSelectPopup setHidden:TRUE];
     [_playersSelectPopp setHidden:TRUE];
+    [_dragonSpeedCheck setHidden:TRUE];
+    [_dragonFearCheck setHidden:TRUE];
     int gameNum = [_gameSelectPopup indexOfSelectedItem];
     int desiredPlayers = [_playersSelectPopp indexOfSelectedItem] + 2;
-    [gView playGame: [mNameText stringValue] :gameNum :desiredPlayers];
+    bool diff1Switch = [_dragonSpeedCheck state];
+    bool diff2Switch = [_dragonFearCheck state];
+    [gView playGame: [mNameText stringValue] :gameNum :desiredPlayers :diff1Switch :diff2Switch];
 }
 
 @end

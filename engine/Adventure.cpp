@@ -114,14 +114,6 @@ static int displayListIndex = 0;
 static int gameState = GAMESTATE_GAMESELECT;            // finite state machine
 #define ISGAMEACTIVE() ((gameState==GAMESTATE_ACTIVE_1) || (gameState==GAMESTATE_ACTIVE_2) || (gameState==GAMESTATE_ACTIVE_3))
 
-// Difficulty switches
-// When the left difficulty switch is in the B position, the Dragons will hesitate before they bite you.
-// If the right difficulty switch is in the B position all Dragons will run from the sword.
-#define DIFFICULTY_A           0
-#define DIFFICULTY_B           1
-static int gameDifficultyLeft = DIFFICULTY_B;           // 2600 left difficulty switch
-static int gameDifficultyRight = DIFFICULTY_B;          // 2600 right difficulty switch
-
 static int gameMapLayout = 0;                               // The board setup.  Level 1 = 0, Levels 2 & 3 = 1, Gauntlet = 2
 
 /** There are five game modes, the original three (but zero justified so game mode 0 means original level 1) and
@@ -578,8 +570,11 @@ void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport,
         surrounds[ctr] = new OBJECT(surroundName, objectGfxSurround, 0, 0, COLOR_ORANGE, OBJECT::FIXED_LOCATION, 0x07);
     }
     
-    Dragon::Difficulty difficulty = (gameMode == GAME_MODE_1 ? (initialLeftDiff == DIFFICULTY_B ?  Dragon::TRIVIAL : Dragon::EASY) :
+    Dragon::Difficulty difficulty = (gameMode == GAME_MODE_1 ?
+                                     (initialLeftDiff == DIFFICULTY_B ?  Dragon::TRIVIAL : Dragon::EASY) :
                                      (initialLeftDiff == DIFFICULTY_B ? Dragon::MODERATE : Dragon::HARD));
+    Dragon::setRunFromSword(initialRightDiff == DIFFICULTY_A);
+
     if (gameMode == GAME_MODE_SCRIPTING) difficulty = Dragon::EASY;
     Dragon::setDifficulty(difficulty);
     dragons = new Dragon*[numDragons];
@@ -798,13 +793,11 @@ void Adventure_Run()
     
     // read the console switches every frame
     bool reset = false;
-    Platform_ReadDifficultySwitches(&gameDifficultyLeft, &gameDifficultyRight);
     Platform_ReadConsoleSwitches(&reset);
     if (Robot::isOn()) {
         Robot::ControlConsoleSwitches(&reset, dragons, numDragons, objectBall);
     }
-
-	Dragon::setRunFromSword(gameDifficultyRight == DIFFICULTY_A);
+    
     // If joystick is disabled and we hit the reset switch we don't treat it as a reset but as
     // a enable the joystick.  The next time you hit the reset switch it will work as a reset.
     if (joystickDisabled && switchReset && !reset) {

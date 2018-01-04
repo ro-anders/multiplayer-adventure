@@ -27,6 +27,8 @@
 @property (assign) IBOutlet NSButton *playButton;
 @property (assign) IBOutlet NSPopUpButton *gameSelectPopup;
 @property (assign) IBOutlet NSPopUpButton *playersSelectPopp;
+@property (assign) IBOutlet NSButton *dragonSpeedCheck;
+@property (assign) IBOutlet NSButton *dragonFearCheck;
 
 - (IBAction)clickDragonsHesitate:(id)sender;
 - (IBAction)clickDragonsRun:(id)sender;

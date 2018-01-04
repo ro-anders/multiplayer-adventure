@@ -32,7 +32,7 @@
                                 </textFieldCell>
                             </textField>
                             <button verticalHuggingPriority="750" misplaced="YES" id="89X-Lz-fM1">
-                                <rect key="frame" x="240" y="365" width="81" height="32"/>
+                                <rect key="frame" x="234" y="304" width="81" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <buttonCell key="cell" type="push" title="Play" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="6mf-pb-LJR">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -52,7 +52,7 @@
                                 </textFieldCell>
                             </textField>
                             <popUpButton verticalHuggingPriority="750" misplaced="YES" id="pTF-ey-dOd" userLabel="Game Select Popup">
-                                <rect key="frame" x="18" y="369" width="95" height="26"/>
+                                <rect key="frame" x="281" y="415" width="95" height="26"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <popUpButtonCell key="cell" type="push" title="Game 1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="Lti-lp-WLI" id="tBs-km-Zgg">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -67,7 +67,7 @@
                                 </popUpButtonCell>
                             </popUpButton>
                             <popUpButton verticalHuggingPriority="750" misplaced="YES" id="5j4-W9-pqI" userLabel="Players Select Popup">
-                                <rect key="frame" x="130" y="369" width="93" height="26"/>
+                                <rect key="frame" x="403" y="415" width="93" height="26"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <popUpButtonCell key="cell" type="push" title="2 Players" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="qYB-DO-MDM" id="jV8-HK-3Cu">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -80,6 +80,22 @@
                                     </menu>
                                 </popUpButtonCell>
                             </popUpButton>
+                            <button verticalHuggingPriority="750" misplaced="YES" id="IKh-GI-EHg">
+                                <rect key="frame" x="238" y="393" width="165" height="18"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <buttonCell key="cell" type="check" title="Dragons run from lance" bezelStyle="regularSquare" imagePosition="left" inset="2" id="Pc3-2n-WO8">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                            </button>
+                            <button verticalHuggingPriority="750" misplaced="YES" id="924-ix-dyK">
+                                <rect key="frame" x="82" y="393" width="101" height="18"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <buttonCell key="cell" type="check" title="Fast dragons" bezelStyle="regularSquare" imagePosition="left" inset="2" id="BLJ-nm-n4v">
+                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                            </button>
                         </subviews>
                         <connections>
                             <outlet property="mStatusMessage" destination="VPN-BE-F8H" id="ND5-Yf-DJA"/>
@@ -187,6 +203,8 @@
         </menu>
         <customObject id="249" userLabel="Controller" customClass="Controller">
             <connections>
+                <outlet property="dragonFearCheck" destination="IKh-GI-EHg" id="rd6-cM-0nY"/>
+                <outlet property="dragonSpeedCheck" destination="924-ix-dyK" id="wha-9U-g94"/>
                 <outlet property="gameSelectPopup" destination="pTF-ey-dOd" id="2Ox-iR-XYo"/>
                 <outlet property="mMenuDragonsHesitate" destination="235" id="252"/>
                 <outlet property="mMenuDragonsRun" destination="236" id="253"/>
