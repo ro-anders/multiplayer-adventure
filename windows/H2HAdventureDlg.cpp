@@ -223,7 +223,8 @@ void CH2HAdventureDlg::update() {
 			}
 			Platform_MuteSound(params.shouldMute);
 
-			Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 1, 1);
+			Adventure_Setup(params.numberPlayers, params.thisPlayer, xport, params.gameLevel, 
+				(params.diff1Switch ? DIFFICULTY_A : DIFFICULTY_B), (params.diff2Switch ? DIFFICULTY_A : DIFFICULTY_B));
 		}
 	}
 	else {
@@ -256,9 +257,9 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		gameCombo->ShowWindow(SW_HIDE);
 		CComboBox* playersCombo = (CComboBox*)gThis->GetDlgItem(IDC_PLAYERS_COMBO);
 		playersCombo->ShowWindow(SW_HIDE);
-		CCheckListBox* dragonSpeedChk = (CCheckListBox*)gThis->GetDlgItem(IDC_DRAGON_SPEED_CHECK);
+		CButton* dragonSpeedChk = (CButton*)gThis->GetDlgItem(IDC_DRAGON_SPEED_CHECK);
 		dragonSpeedChk->ShowWindow(SW_HIDE);
-		CCheckListBox* dragonFearChk = (CCheckListBox*)gThis->GetDlgItem(IDC_DRAGON_FEAR_CHECK);
+		CButton* dragonFearChk = (CButton*)gThis->GetDlgItem(IDC_DRAGON_FEAR_CHECK);
 		dragonFearChk->ShowWindow(SW_HIDE);
 		CEdit* wait1Edit = (CEdit*)gThis->GetDlgItem(IDC_WAIT1_EDIT);
 		wait1Edit->ShowWindow(SW_HIDE);
@@ -297,6 +298,8 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		int playersSelected = playersCombo->GetCurSel();
 		playersSelected = (playersSelected < 0 ? 2 : playersSelected +2);
 		setup->setNumberPlayers(playersSelected);
+		setup->setDifficultySwitches(dragonSpeedChk->GetCheck() == BST_CHECKED,
+			dragonFearChk->GetCheck() == BST_CHECKED);
 
 		GameSetup::GameParams params = setup->getSetup();
 		if (!params.noTransport) {
