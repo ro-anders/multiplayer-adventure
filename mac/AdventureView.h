@@ -24,7 +24,8 @@
 
 - (bool)CreateOffscreen;
 
-- (void)playGame:(NSString*)playerName :(int)gameNum :(int)desiredPlayers :(bool)diff1Switch :(bool)diff2Switch;
+- (void)playGame:(NSString*)playerName :(int)gameNum :(int)desiredPlayers :(bool)diff1Switch :(bool)diff2Switch
+                :(NSString*)waitFor1 :(NSString*)waitFor2;
 
 - (IBAction)update:(id)sender;
 

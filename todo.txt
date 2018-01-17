@@ -1,5 +1,7 @@
 To Do
 -----
+- Player (and waiting for names) should be restricted to 20 characters ASCII with no commas
+- Need to detect whether in DEBUG or RELEASE state and not send so much to the log in RELEASE state
 - Windows status message flickers.  Shouldn't redraw the whole window.
 - Close button on Mac is ineffective.
 - 4 requests at once confuses broker.

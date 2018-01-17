@@ -195,6 +195,7 @@ bool gMute = FALSE;
 }
 
 - (void)playGame:(NSString*)playerName :(int)gameNum :(int)desiredPlayers :(bool)diff1Switch :(bool)diff2Switch
+                :(NSString*)waitFor1 :(NSString*)waitFor2
 {
     int argc;
     char** argv;
@@ -210,15 +211,16 @@ bool gMute = FALSE;
         setup->setGameLevel(gameNum);
         setup->setDifficultySwitches(diff1Switch, diff2Switch);
         setup->setNumberPlayers(desiredPlayers);
+        setup->addPlayerToWaitFor([waitFor1 UTF8String]);
+        if (desiredPlayers > 2) {
+            setup->addPlayerToWaitFor([waitFor2 UTF8String]);
+        }
         setup->setCommandLineArgs(argc-1, argv+1);
         GameSetup::GameParams params = setup->getSetup();
         if (params.noTransport) {
             delete socket;
             xport->useSocket(NULL);
         }
-        printf("Difficulty switches:\n");
-        printf(diff1Switch ? "1 = A\n" : "1 = B\n");
-        printf(diff2Switch ? "2 = A\n" : "2 = B\n");
         timer = [NSTimer scheduledTimerWithTimeInterval: ADVENTURE_FRAME_PERIOD
                                                  target: self
                                                selector: @selector(update:)

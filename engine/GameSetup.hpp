@@ -21,7 +21,7 @@ public:
     
     /** If no game level is specified (usually only in dev and test cases) what game level to use */
     static const int DEFAULT_GAME_LEVEL;
-    
+        
     /**
      * A holder for all the info needed to setup a game.
      * Mostly the addresses of the other players but also
@@ -38,6 +38,7 @@ public:
         int gameLevel; // Which game to play (refer to GAME_MODE_ enum)
         bool diff1Switch; // First difficulty switch (fast dragons).  TRUE=A, FALSE=B
         bool diff2Switch; // Second difficulty switch (dragons run from sword).  TRUE=A, FALSE=B
+        const char* waitingFor() {return privateWaitingFor;}
         bool noTransport; // Whether this is a real game with other players or a degenerate case that only requires one player (e.g. executing a script)
         
         GameParams();
@@ -45,9 +46,11 @@ public:
         GameParams& operator=(const GameParams&);
         bool ok();
         void setPlayerName(const char* newPlayerName);
+        void setWaitingFor(const char* newWaitingFor);
         
     private:
         char* privatePlayerName;
+        char* privateWaitingFor;
     };
     
     /**
@@ -71,6 +74,8 @@ public:
     void setDifficultySwitches(bool diff1, bool diff2);
     
     void setNumberPlayers(int numPlayers);
+    
+    void addPlayerToWaitFor(const char* playerName);
     
     /**
      * This checks to see if the game is ready to play and, if not, executes the next step in the setup process.

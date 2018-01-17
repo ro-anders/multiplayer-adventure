@@ -78,6 +78,12 @@ extern AdventureView* gView;
 	gMenuItemSelect = TRUE;
 }
 
+- (IBAction)selectGameAction:(id)sender {
+    int desiredPlayers = [_playersSelectPopup indexOfSelectedItem] + 2;
+    bool hideSecond = (desiredPlayers == 2);
+    [_wait2Text setHidden:hideSecond];
+}
+
 - (IBAction)clickReset:(id)sender
 {
 	gMenuItemReset = TRUE;
@@ -87,14 +93,19 @@ extern AdventureView* gView;
     [_playButton setHidden:TRUE];
     [mNameText setHidden:TRUE];
     [_gameSelectPopup setHidden:TRUE];
-    [_playersSelectPopp setHidden:TRUE];
+    [_playersSelectPopup setHidden:TRUE];
     [_dragonSpeedCheck setHidden:TRUE];
     [_dragonFearCheck setHidden:TRUE];
+    [_wait1Text setHidden:TRUE];
+    [_wait2Text setHidden:TRUE];
+    [_waitLabel setHidden:TRUE];
+    
     int gameNum = [_gameSelectPopup indexOfSelectedItem];
-    int desiredPlayers = [_playersSelectPopp indexOfSelectedItem] + 2;
+    int desiredPlayers = [_playersSelectPopup indexOfSelectedItem] + 2;
     bool diff1Switch = [_dragonSpeedCheck state];
     bool diff2Switch = [_dragonFearCheck state];
-    [gView playGame: [mNameText stringValue] :gameNum :desiredPlayers :diff1Switch :diff2Switch];
+    
+    [gView playGame: [mNameText stringValue] :gameNum :desiredPlayers :diff1Switch :diff2Switch :[_wait1Text stringValue] :[_wait2Text stringValue] ];
 }
 
 @end

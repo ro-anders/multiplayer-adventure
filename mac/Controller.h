@@ -26,13 +26,17 @@
 
 @property (assign) IBOutlet NSButton *playButton;
 @property (assign) IBOutlet NSPopUpButton *gameSelectPopup;
-@property (assign) IBOutlet NSPopUpButton *playersSelectPopp;
+@property (assign) IBOutlet NSPopUpButton *playersSelectPopup;
 @property (assign) IBOutlet NSButton *dragonSpeedCheck;
 @property (assign) IBOutlet NSButton *dragonFearCheck;
+@property (assign) IBOutlet NSTextField *wait1Text;
+@property (assign) IBOutlet NSTextField *wait2Text;
+@property (assign) IBOutlet NSTextField *waitLabel;
 
 - (IBAction)clickDragonsHesitate:(id)sender;
 - (IBAction)clickDragonsRun:(id)sender;
 - (IBAction)clickReset:(id)sender;
 - (IBAction)clickSelect:(id)sender;
+- (IBAction)selectGameAction:(id)sender;
 
 @end

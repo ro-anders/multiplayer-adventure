@@ -38,8 +38,10 @@ gameLevel(DEFAULT_GAME_LEVEL),
 diff1Switch(false),
 diff2Switch(false),
 noTransport(false),
-privatePlayerName(NULL) {
+privatePlayerName(NULL),
+privateWaitingFor(NULL) {
     setPlayerName("");
+    setWaitingFor("");
 }
 
 GameSetup::GameParams::GameParams(const GameParams& other) :
@@ -50,8 +52,10 @@ gameLevel(other.gameLevel),
 diff1Switch(other.diff1Switch),
 diff2Switch(other.diff2Switch),
 noTransport(other.noTransport),
-privatePlayerName(NULL) {
+privatePlayerName(NULL),
+privateWaitingFor(NULL) {
     setPlayerName(other.privatePlayerName);
+    setWaitingFor(other.privateWaitingFor);
 }
 
 GameSetup::GameParams& GameSetup::GameParams::operator=(const GameParams& other) {
@@ -62,6 +66,7 @@ GameSetup::GameParams& GameSetup::GameParams::operator=(const GameParams& other)
     gameLevel = other.gameLevel;
     diff1Switch = other.diff1Switch;
     diff2Switch = other.diff2Switch;
+    setWaitingFor(other.privateWaitingFor);
     noTransport = other.noTransport;
     return *this;
 }
@@ -76,6 +81,14 @@ void GameSetup::GameParams::setPlayerName(const char* newName) {
     }
     privatePlayerName = new char[strlen(newName)+1];
     strcpy(privatePlayerName, newName);
+}
+
+void GameSetup::GameParams::setWaitingFor(const char* newWaitingFor) {
+    if (privateWaitingFor != NULL) {
+        delete[] privateWaitingFor;
+    }
+    privateWaitingFor = new char[strlen(newWaitingFor)+1];
+    strcpy(privateWaitingFor, newWaitingFor);
 }
 
 GameSetup::GameSetup(RestClient& inClient, UdpTransport& inTransport) :
@@ -154,6 +167,22 @@ void GameSetup::setCommandLineArgs(int argc, char** argv) {
 void GameSetup::setPlayerName(const char* playerName) {
     newParams.setPlayerName(playerName);
 }
+
+void GameSetup::addPlayerToWaitFor(const char* playerName) {
+    if ((playerName != NULL) && (strlen(playerName)>0)) {
+        char buffer[ADVENTURE_MAX_NAME_LENGTH*2+5];
+        const char* oldWaitingFor = newParams.waitingFor();
+        char* copySlot = buffer;
+        if ((oldWaitingFor != NULL) && (strlen(oldWaitingFor) > 0)) {
+            strcpy(buffer, oldWaitingFor);
+            buffer[strlen(oldWaitingFor)] = ',';
+            copySlot = buffer + strlen(oldWaitingFor)+1;
+        }
+        strcpy(copySlot, playerName);
+        newParams.setWaitingFor(buffer);
+    }
+}
+
 
 
 void GameSetup::setGameLevel(int level) {
@@ -336,8 +365,9 @@ void GameSetup::craftBrokerRequest(Transport::Address) {
         sprintf(brokerRequestContent+strlen(brokerRequestContent), ",{\"ip\": \"%s\",\"port\": %d}",
                 privateAddresses.get(ctr).ip(), privateAddresses.get(ctr).port());
     }
-    sprintf(brokerRequestContent+strlen(brokerRequestContent), "], \"sessionId\": %d, \"gameToPlay\": %d, \"desiredPlayers\": %d}",
-            brokerSessionId, newParams.gameLevel, newParams.numberPlayers);
+    sprintf(brokerRequestContent+strlen(brokerRequestContent),
+            "], \"sessionId\": %d, \"gameToPlay\": %d, \"desiredPlayers\": %d, \"waitFor\":\"%s\"}",
+            brokerSessionId, newParams.gameLevel, newParams.numberPlayers, newParams.waitingFor());
 }
 
 
