@@ -90,15 +90,16 @@ int MacRestClient::request(const char* path, const char* message, char* response
     }
     // Null terminate the response
     responseBuffer[charsInBuffer] = '\0';
-    
-    std::cout << "Response = \"" << responseBuffer << "\"" << std::endl;
-    
+        
     // Cleanup resources
     close(socketFd);
     
+    int responseCode = getResponseCode(responseBuffer);
+    if (responseCode != 500) {
+        Logger::logError() << "Received error from broker:\n" << responseBuffer << Logger::EOM;
+        return -7;
+    }
     charsInBuffer = stripOffHeaders(responseBuffer, charsInBuffer);
-
-    std::cout << "Response Body = \"" << responseBuffer << "\"" << std::endl;
 
     return charsInBuffer;
 }

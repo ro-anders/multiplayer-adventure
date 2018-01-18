@@ -366,8 +366,9 @@ void GameSetup::craftBrokerRequest(Transport::Address) {
                 privateAddresses.get(ctr).ip(), privateAddresses.get(ctr).port());
     }
     sprintf(brokerRequestContent+strlen(brokerRequestContent),
-            "], \"sessionId\": %d, \"gameToPlay\": %d, \"desiredPlayers\": %d, \"waitFor\":\"%s\"}",
-            brokerSessionId, newParams.gameLevel, newParams.numberPlayers, newParams.waitingFor());
+            "], \"sessionId\": %d, \"gameToPlay\": %d, \"desiredPlayers\": %d, \"diff1Switch\": %s, \"diff2Switch\": %s, \"waitFor\":\"%s\"}",
+            brokerSessionId, newParams.gameLevel, newParams.numberPlayers,
+            (newParams.diff1Switch ? "true" : "false"), (newParams.diff2Switch ? "true" : "false"), newParams.waitingFor());
 }
 
 
@@ -377,7 +378,12 @@ bool GameSetup::pollBroker() {
     bool gameSetup = false;
     Json::Value responseJson;
     
-    client.post("/game", brokerRequestContent, response, 10000);
+    int status = client.post("/game", brokerRequestContent, response, 10000);
+    
+    if (status <= 0) {
+        Platform_DisplayStatus("Encountering error talking with the game broker.\nWill continue trying.", -1);
+        return false;
+    }
     
     std::stringstream strm(response);
     strm >> responseJson;
@@ -386,100 +392,100 @@ bool GameSetup::pollBroker() {
         // TODOX: Not sure if this is how broker becoming unreachable manifests
         // Do something intelligent.
         Platform_DisplayStatus("The game broker has stopped responding for some unknown reason.\nWill continue trying.", -1);
-    } else {
-        gameSetup = (responseJson["gameToPlay"].asInt() >= 0);
-        
-        // Expecting response of the form
-        // {
-        //   "gameToPlay": 1,
-        //   "numPlayers": 2,
-        //   "thisPlayer": 0,
-        //   "requests": [
-        //     {
-        //       "addrs": [
-        //         {
-        //           "ip": "127.0.0.1",
-        //           "port": 9999
-        //         }
-        //       ],
-        //       "sessionId": "2425783",
-        //       "gameToPlay": 1,
-        //       "desiredPlayers": 2
-        //     },
-        //     {
-        //       "addrs": [
-        //         {
-        //           "ip": "127.0.0.1",
-        //           "port": 8888
-        //         }
-        //       ],
-        //       "sessionId": "2425783",
-        //       "gameToPlay": 1,
-        //       "desiredPlayers": 2
-        //     }
-        //   ]
-        // }
-        //
-        // Where "gameToPlay" will be -1 if the game is not full yet.
-        
-        if (gameSetup) {
-            // Read in the game info
-            newParams.gameLevel = responseJson["gameToPlay"].asInt();
-            newParams.numberPlayers = responseJson["numPlayers"].asInt();
-            newParams.thisPlayer = responseJson["thisPlayer"].asInt();
-            Json::Value requests = responseJson["requests"];
-            int numRequests = requests.size();
-            char player1[256];
-            player1[0] = '\0';
-            char player2[256];
-            player2[0] = '\0';
-            char message[1024];
-            for(int plyrCtr=0; plyrCtr<numRequests; ++plyrCtr) {
-                // Going to guess there aren't more than 10 addresses
-                Transport::Address addresses[10];
-                Json::Value otherPlayer = requests[plyrCtr];
-                const char* playerName = otherPlayer["playerName"].asCString();
-                Json::Value playerAddrs = otherPlayer["addrs"];
-                int numAddresses = playerAddrs.size();
-                for (int addrCtr=0; addrCtr<numAddresses; ++addrCtr) {
-                    Json::Value nextAddress = playerAddrs[addrCtr];
-                    const char* ip = nextAddress["ip"].asCString();
-                    int port = nextAddress["port"].asInt();
-                    addresses[addrCtr] = Transport::Address(ip, port);
-                }
-                
-                if (plyrCtr != newParams.thisPlayer) {
-                    char* nameDest = (player1[0] == '\0' ? player1 : player2);
-                    strcpy(nameDest, playerName);
-                    // TODOX: Will exception if no address.  In general need better validation and error response
-                    std::cout << "Adding player " << playerName << " at " << addresses[0].ip() << ":" << addresses[0].port() << std::endl;
-                    xport.addOtherPlayer(addresses, numAddresses);
-                }
+        return false;
+    }
+    
+    gameSetup = (responseJson["gameToPlay"].asInt() >= 0);
+    
+    // Expecting response of the form
+    // {
+    //   "gameToPlay": 1,
+    //   "numPlayers": 2,
+    //   "thisPlayer": 0,
+    //   "requests": [
+    //     {
+    //       "addrs": [
+    //         {
+    //           "ip": "127.0.0.1",
+    //           "port": 9999
+    //         }
+    //       ],
+    //       "sessionId": "2425783",
+    //       "gameToPlay": 1,
+    //       "desiredPlayers": 2
+    //     },
+    //     {
+    //       "addrs": [
+    //         {
+    //           "ip": "127.0.0.1",
+    //           "port": 8888
+    //         }
+    //       ],
+    //       "sessionId": "2425783",
+    //       "gameToPlay": 1,
+    //       "desiredPlayers": 2
+    //     }
+    //   ]
+    // }
+    //
+    // Where "gameToPlay" will be -1 if the game is not full yet.
+    
+    if (gameSetup) {
+        // Read in the game info
+        newParams.gameLevel = responseJson["gameToPlay"].asInt();
+        newParams.numberPlayers = responseJson["numPlayers"].asInt();
+        newParams.thisPlayer = responseJson["thisPlayer"].asInt();
+        Json::Value requests = responseJson["requests"];
+        int numRequests = requests.size();
+        char player1[256];
+        player1[0] = '\0';
+        char player2[256];
+        player2[0] = '\0';
+        char message[1024];
+        for(int plyrCtr=0; plyrCtr<numRequests; ++plyrCtr) {
+            // Going to guess there aren't more than 10 addresses
+            Transport::Address addresses[10];
+            Json::Value otherPlayer = requests[plyrCtr];
+            const char* playerName = otherPlayer["playerName"].asCString();
+            Json::Value playerAddrs = otherPlayer["addrs"];
+            int numAddresses = playerAddrs.size();
+            for (int addrCtr=0; addrCtr<numAddresses; ++addrCtr) {
+                Json::Value nextAddress = playerAddrs[addrCtr];
+                const char* ip = nextAddress["ip"].asCString();
+                int port = nextAddress["port"].asInt();
+                addresses[addrCtr] = Transport::Address(ip, port);
             }
-            xport.setTransportNum(newParams.thisPlayer);
-            if (player2[0] == '\0') {
-                sprintf(message, "Playing game %d against %s.\nStarting momentarily.", newParams.gameLevel+1, player1);
-            } else {
-                sprintf(message, "Playing game %d against %s and %s.\nStarting momentarily.", newParams.gameLevel+1, player1, player2);
-            }
-            Platform_DisplayStatus(message, -1);
-        } else {
-            // Read just the names of the players to give a status message.
-            Json::Value requests = responseJson["requests"];
-            int numberJoined = requests.size();
-            if (numberJoined <= 1) {
-                Platform_DisplayStatus("Waiting for other players.", -1);
-            } else {
-                char msg[256];
-                int thisPlayerSlot = responseJson["thisPlayer"].asInt();
-                Json::Value otherPlayer = requests[1-thisPlayerSlot];
-                const char* otherPlayerName = otherPlayer["playerName"].asCString();
-
-                sprintf(msg, "%s has joined the game.  Waiting for third player.", otherPlayerName);
-                Platform_DisplayStatus(msg, -1);
+            
+            if (plyrCtr != newParams.thisPlayer) {
+                char* nameDest = (player1[0] == '\0' ? player1 : player2);
+                strcpy(nameDest, playerName);
+                // TODOX: Will exception if no address.  In general need better validation and error response
+                std::cout << "Adding player " << playerName << " at " << addresses[0].ip() << ":" << addresses[0].port() << std::endl;
+                xport.addOtherPlayer(addresses, numAddresses);
             }
         }
+        xport.setTransportNum(newParams.thisPlayer);
+        if (player2[0] == '\0') {
+            sprintf(message, "Playing game %d against %s.\nStarting momentarily.", newParams.gameLevel+1, player1);
+        } else {
+            sprintf(message, "Playing game %d against %s and %s.\nStarting momentarily.", newParams.gameLevel+1, player1, player2);
+        }
+        Platform_DisplayStatus(message, -1);
+    } else {
+        // Read just the names of the players to give a status message.
+        Json::Value requests = responseJson["requests"];
+        int numberJoined = requests.size();
+        if (numberJoined <= 1) {
+            Platform_DisplayStatus("Waiting for other players.", -1);
+        } else {
+            char msg[256];
+            int thisPlayerSlot = responseJson["thisPlayer"].asInt();
+            Json::Value otherPlayer = requests[1-thisPlayerSlot];
+            const char* otherPlayerName = otherPlayer["playerName"].asCString();
 
+            sprintf(msg, "%s has joined the game.  Waiting for third player.", otherPlayerName);
+            Platform_DisplayStatus(msg, -1);
+        }
     }
 
     return gameSetup;

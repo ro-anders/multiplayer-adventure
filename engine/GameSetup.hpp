@@ -108,7 +108,7 @@ private:
     UdpSocket* stunServerSocket;
     sockaddr_in* stunServerSockAddr;
     int brokerSessionId;
-    char brokerRequestContent[2000];
+    char brokerRequestContent[3000];
     
     /** The parameters of the setup game. */
     GameParams newParams;

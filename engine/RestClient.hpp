@@ -36,6 +36,9 @@ protected:
     int stripOffHeaders(char* buffer, int charsInBuffer);
     
     virtual int request(const char* path, const char* message, char* responseBuffer, int bufferLength) = 0;
+    
+    /** Parse the raw response from the REST call enough to pull out the response code */
+    int getResponseCode(const char* rawResponse);
 
 
     

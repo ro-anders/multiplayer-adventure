@@ -60,4 +60,27 @@ int RestClient::stripOffHeaders(char* buffer, int charsInBuffer) {
     }
 }
 
+/** Parse the raw response from the REST call enough to pull out the response code */
+int RestClient::getResponseCode(const char* rawResponse) {
+    // Response code is the number between the first and second space.
+    int firstSpace = 0;
+    int responseCode = -1;
+    while ((rawResponse[firstSpace] != '\0') && (rawResponse[firstSpace] != ' ')) {
+        ++firstSpace;
+    }
+    if (rawResponse[firstSpace] == ' ') {
+        int secondSpace = firstSpace+1;
+        while ((rawResponse[secondSpace] != '\0') && (rawResponse[secondSpace] != ' ')) {
+            ++secondSpace;
+        }
+        if (rawResponse[secondSpace] == ' ') {
+            char buffer[secondSpace-firstSpace];
+            strncpy(buffer, rawResponse+firstSpace+1, secondSpace-firstSpace-1);
+            responseCode = atoi(buffer);
+        }
+    }
+    return responseCode;
+}
+
+
 
