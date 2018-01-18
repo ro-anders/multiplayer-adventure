@@ -4,8 +4,6 @@ To Do
 - Need to detect whether in DEBUG or RELEASE state and not send so much to the log in RELEASE state
 - Windows status message flickers.  Shouldn't redraw the whole window.
 - Close button on Mac is ineffective.
-- 4 requests at once confuses broker.
-- Two players connect.  Game ends.  Player from same host connects and is joined with previous game.
 - Mac still has menu options that apply to Hirschberg version, not H2H version
 - PC cannot use DNS name for broker.  Needs explicit IP address.
 - When player holds an object, other players see it held in a different position

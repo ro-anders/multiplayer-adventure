@@ -95,7 +95,7 @@ int MacRestClient::request(const char* path, const char* message, char* response
     close(socketFd);
     
     int responseCode = getResponseCode(responseBuffer);
-    if (responseCode != 500) {
+    if (responseCode != 200) {
         Logger::logError() << "Received error from broker:\n" << responseBuffer << Logger::EOM;
         return -7;
     }
