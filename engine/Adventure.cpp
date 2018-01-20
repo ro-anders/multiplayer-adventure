@@ -859,7 +859,7 @@ void Adventure_Run()
 
                 if (gameState == GAMESTATE_ACTIVE_1)
                 {
-                    // Check ball collisions and move balls
+                    // Move balls
                     ThisBallMovement();
                     for(int i=0; i<numPlayers; ++i) {
                         if (i != thisPlayer) {
@@ -869,6 +869,12 @@ void Adventure_Run()
 
                     // Move the carried object
                     MoveCarriedObjects();
+
+					// Collision check the balls in their new coordinates against walls and objects
+					for (int i = 0; i < numPlayers; ++i) {
+						BALL* nextBall = gameBoard->getPlayer(i);
+						nextBall->hit = CollisionCheckBallWithEverything(nextBall, nextBall->room, nextBall->x, nextBall->y, false, &nextBall->hitObject);
+					}
 
                     // Setup the room and object
                     PrintDisplay();
@@ -880,31 +886,6 @@ void Adventure_Run()
                     // Deal with object pickup and putdown
                     PickupPutdown();
 
-                    // Check ball collisions
-                    if (!objectBall->hit)
-                    {
-                        // Make sure stuff we are carrying stays out of our way
-                        // TODO: Why do we have to check here AND in reactToCollision?  Most of the time
-                        // reactToCollision handles this, but every now and then this code is
-                        // triggered.
-                        OBJECT* carriedObject = board.getObject(objectBall->linkedObject);
-                        bool hasHitCarriedObject = (carriedObject != NULL) &&
-                            CollisionCheckBallWithObject(objectBall, carriedObject);
-                        if (hasHitCarriedObject)
-                        {
-                            int diffX = objectBall->x - objectBall->previousX;
-                            objectBall->linkedObjectX += diffX/2;
-
-                            int diffY = objectBall->y - objectBall->previousY;
-                            objectBall->linkedObjectY += diffY/2;
-                            
-                            // Adjusting how we hold an object is broadcast to other players as a pickup action
-                            PlayerPickupAction* action = new PlayerPickupAction(objectBall->linkedObject,
-                                objectBall->linkedObjectX, objectBall->linkedObjectY, OBJECT_NONE, 0, 0, 0);
-                            sync->BroadcastAction(action);
-                            
-                        }
-                    }
 					for (int i = 0; i < numPlayers; ++i) {
                         ReactToCollisionX(gameBoard->getPlayer(i));
 					}
@@ -1216,8 +1197,7 @@ void ReactToCollisionX(BALL* ball) {
 	if (ball->hit) {
         if (ball->velx != 0) {
             if ((ball->hitObject > OBJECT_NONE) && (ball->hitObject == ball->linkedObject)) {
-                int diffX = ball->velx;
-                ball->linkedObjectX += diffX / 2;
+                ball->linkedObjectX += ball->velx;
                 if (ball == objectBall) {
                     // If this is adjusting how the current player holds an object,
                     // we broadcast to other players as a pickup action
@@ -1243,8 +1223,7 @@ void ReactToCollisionY(BALL* ball) {
 	{
 		if ((ball->hitObject > OBJECT_NONE) && (ball->hitObject == ball->linkedObject))
 		{
-			int diffY = ball->vely;
-			ball->linkedObjectY += diffY / 2;
+			ball->linkedObjectY += ball->vely;
             if (ball == objectBall) {
                 // If this is adjusting how the current player holds an object,
                 // we broadcast to other players as a pickup action
@@ -1407,9 +1386,6 @@ void BallMovement(BALL* ball) {
             ball->room = roomDefs[ball->room]->roomLeft;
         }
     }
-
-    // Collision check the ball in its new coordinates against walls and objects
-    ball->hit = CollisionCheckBallWithEverything(ball, ball->room, ball->x, ball->y, false, &ball->hitObject);
     
     ball->displayedRoom = ball->room;
 
@@ -1522,6 +1498,8 @@ void moveBallIntoCastle() {
                 nextBall->displayedRoom = nextBall->room;
                 nextBall->y = ENTER_AT_BOTTOM;
                 nextBall->previousY = nextBall->y;
+				nextBall->vely = 0;
+				nextBall->velx = 0;
                 // make sure it stays unlocked in case we are walking in with the key
                 nextPort->forceOpen();
                 // Report to all the other players only if its the current player entering
