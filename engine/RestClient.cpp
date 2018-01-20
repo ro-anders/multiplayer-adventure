@@ -74,8 +74,9 @@ int RestClient::getResponseCode(const char* rawResponse) {
             ++secondSpace;
         }
         if (rawResponse[secondSpace] == ' ') {
-            char buffer[secondSpace-firstSpace];
-            strncpy(buffer, rawResponse+firstSpace+1, secondSpace-firstSpace-1);
+            char buffer[16];
+			int n = (secondSpace - firstSpace > 16 ? 16 : secondSpace - firstSpace);
+            strncpy(buffer, rawResponse+firstSpace+1, n-1);
             responseCode = atoi(buffer);
         }
     }
