@@ -2475,10 +2475,10 @@ void checkPlayers() {
             warnOfDropoffRejoin(offline, online);
             PingAction* action = new PingAction();
             sync->BroadcastAction(action);
+            sync->resetMessagesReceived();
             timeSinceLastMessageCheck = currentTime;
         }
         
-        sync->resetMessagesReceived();
         turnsSinceTimeCheck = 0;
     }
 }
