@@ -91,6 +91,9 @@ void GameSetup::GameParams::setWaitingFor(const char* newWaitingFor) {
     strcpy(privateWaitingFor, newWaitingFor);
 }
 
+const int GameSetup::CLIENT_VERSION = 1;
+
+
 GameSetup::GameSetup(RestClient& inClient, UdpTransport& inTransport) :
 client(inClient),
 xport(inTransport),
@@ -544,4 +547,42 @@ bool GameSetup::hasExpired() {
     long time = Sys::today();
     return ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE));
     
+}
+
+/**
+ * Contact the broker and see if there are any announcements to display
+ */
+bool GameSetup::checkAnnouncements() {
+    if (isBrokeredGame) {
+        char response[10000];
+        Json::Value responseJson;
+
+        int status = client.get("/status", response, 10000);
+        
+        // We just silently abort if there's any error
+        if (status > 0) {
+            std::stringstream strm(response);
+            strm >> responseJson;
+            
+            if (!responseJson.empty()) {
+                int minimumVersion = responseJson["minimumVersion"].asInt();
+                if (minimumVersion > CLIENT_VERSION) {
+                    Platform_DisplayStatus("You need to upgrade your client.  Download from\nhttp://h2hadventure.ddns.net/download", -1);
+                    return false;
+                }
+                char message[10000];
+                strcpy(message, responseJson["announcement"].asCString());
+                int anncmtLength = strlen(message);
+                if (anncmtLength > 0) {
+                    const char* link = responseJson["announcementLink"].asCString();
+                    if (strlen(link) > 0) {
+                        message[anncmtLength] = '\n';
+                        strcpy(message+anncmtLength+1, link);
+                    }
+                    Platform_DisplayStatus(message, -1);
+                }
+            }
+        }
+    }
+    return true;
 }

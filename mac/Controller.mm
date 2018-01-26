@@ -38,6 +38,19 @@ extern AdventureView* gView;
 		[mMenuDragonsRun setState:NSOnState];
 	else
 		[mMenuDragonsRun setState:NSOffState];
+    bool canPlay = [gView checkCanPlay];
+    if (!canPlay) {
+        [_playButton setEnabled:FALSE];
+        [mNameText setEnabled:FALSE];
+        [_gameSelectPopup setEnabled:FALSE];
+        [_playersSelectPopup setEnabled:FALSE];
+        [_dragonSpeedCheck setEnabled:FALSE];
+        [_dragonFearCheck setEnabled:FALSE];
+        [_wait1Text setEnabled:FALSE];
+        [_wait2Text setEnabled:FALSE];
+        [_waitLabel setEnabled:FALSE];
+
+    }
 }
 
 

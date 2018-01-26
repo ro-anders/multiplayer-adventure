@@ -36,12 +36,12 @@ short GetKeyState(unsigned short k);
 float gGfxScaler = 1.0f;
 byte* gPixelBucket = NULL;
 CGContextRef gDC = NULL;
-AdventureView* gAdvView = NULL;
 
 unsigned char mKeyMap = 0;
 
 time_t mDisplayStatusExpiration = -1;
 UdpTransport* xport = NULL;
+PosixUdpSocket* xportSocket = NULL;
 MacRestClient client;
 
 GameSetup* setup;
@@ -76,7 +76,7 @@ bool gMute = FALSE;
     [super initWithFrame:frameRect];
     
     gView = self;
-    
+
     // Randomize the random number generator
     timeval time;
     gettimeofday(&time, NULL);
@@ -88,6 +88,22 @@ bool gMute = FALSE;
     Logger::log() << "Logging setup at " << Sys::datetime() << "." << Logger::EOM;
     
     return self;
+}
+
+- (bool) checkCanPlay
+{
+    // Check with the broker for announcements
+    xport = new UdpTransport();
+    xportSocket = new PosixUdpSocket();
+    xport->useSocket(xportSocket);
+    setup = new GameSetup(client, *xport);
+    int argc;
+    char** argv;
+    Args_GetArgs(&argc, &argv);
+    setup->setCommandLineArgs(argc-1, argv+1);
+    // TODO: Handle disabling play button
+    bool canPlay = setup->checkAnnouncements();
+    return canPlay;
 }
 
 - (void) dealloc
@@ -144,8 +160,6 @@ bool gMute = FALSE;
 {
     static bool isGraphicsSetup = false;
     
-    gAdvView = self;
-    
     // Dismiss current display message when it is time
     if (mDisplayStatusExpiration >= 0) {
         time_t currentTime = time(NULL);
@@ -197,16 +211,8 @@ bool gMute = FALSE;
 - (void)playGame:(NSString*)playerName :(int)gameNum :(int)desiredPlayers :(bool)diff1Switch :(bool)diff2Switch
                 :(NSString*)waitFor1 :(NSString*)waitFor2
 {
-    int argc;
-    char** argv;
-    Args_GetArgs(&argc, &argv);
-    
     GameSetup::GameParams params;
     try {
-        xport = new UdpTransport();
-        PosixUdpSocket* socket = new PosixUdpSocket();
-        xport->useSocket(socket);
-        setup = new GameSetup(client, *xport);
         setup->setPlayerName([playerName UTF8String]);
         setup->setGameLevel(gameNum);
         setup->setDifficultySwitches(diff1Switch, diff2Switch);
@@ -215,11 +221,11 @@ bool gMute = FALSE;
         if (desiredPlayers > 2) {
             setup->addPlayerToWaitFor([waitFor2 UTF8String]);
         }
-        setup->setCommandLineArgs(argc-1, argv+1);
         GameSetup::GameParams params = setup->getSetup();
         if (params.noTransport) {
-            delete socket;
             xport->useSocket(NULL);
+            delete xportSocket;
+            xportSocket = NULL;
         }
         timer = [NSTimer scheduledTimerWithTimeInterval: ADVENTURE_FRAME_PERIOD
                                                  target: self
@@ -470,7 +476,7 @@ float Platform_Random()
 }
 
 void Platform_DisplayStatus(const char* message, int durationSec) {
-    [gAdvView displayStatus:message :durationSec];
+    [gView displayStatus:message :durationSec];
 }
 
 

@@ -95,12 +95,21 @@ public:
      */
     GameParams getSetup();
     
+    /**
+     * Check with the broker for any announcements and display them.
+     * The announcements may contain a critical upgrade announcement in which case the game should not
+     * continue.  This returns whether the game can continue or not.
+     */
+    bool checkAnnouncements();
+    
 private:
     
     /** Milliseconds to wait for communications with broker before timing out. */
     static const int STUN_TIMEOUT; // How long to wait for broker to respond with public ip (in ms).
     static const int BROKER_PERIOD; // Ms between requesting from btoker status of game setup
     static const int UDP_HANDSHAKE_PERIOD; // Ms between sending/checking UDP packets with initial connection handshake
+    
+    static const int CLIENT_VERSION;
     
     Transport::Address stunServer;
     Transport::Address broker;
