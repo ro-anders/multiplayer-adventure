@@ -72,43 +72,6 @@ extern AdventureView* gView;
     [_helpLink setAttributedTitle:colorTitle3];
 }
 
-- (IBAction)clickDragonsHesitate:(id)sender
-{
-	// toggle the check mark and value
-	int state = [mMenuDragonsHesitate state];
-	if (state == NSOnState)
-	{
-		gLeftDifficulty = FALSE;
-		[mMenuDragonsHesitate setState:NSOffState];
-	}
-	else
-	{
-		gLeftDifficulty = TRUE;
-		[mMenuDragonsHesitate setState:NSOnState];
-	}
-}
-
-- (IBAction)clickDragonsRun:(id)sender
-{
-	// toggle the check mark and value
-	int state = [mMenuDragonsRun state];
-	if (state == NSOnState)
-	{
-		gRightDifficulty = TRUE;
-		[mMenuDragonsRun setState:NSOffState];
-	}
-	else
-	{
-		gRightDifficulty = FALSE;
-		[mMenuDragonsRun setState:NSOnState];
-	}
-}
-
-- (IBAction)clickSelect:(id)sender
-{
-	gMenuItemSelect = TRUE;
-}
-
 - (IBAction)selectGameAction:(id)sender {
     int desiredPlayers = [_playersSelectPopup indexOfSelectedItem] + 2;
     bool hideSecond = (desiredPlayers == 2);
@@ -125,11 +88,6 @@ extern AdventureView* gView;
 
 - (IBAction)clickHelpLink:(id)sender {
     [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://h2hadventure.ddns.net/home/help"]];
-}
-
-- (IBAction)clickReset:(id)sender
-{
-	gMenuItemReset = TRUE;
 }
 
 - (IBAction)clickPlay:(id)sender {

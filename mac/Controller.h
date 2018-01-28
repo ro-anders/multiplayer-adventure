@@ -36,10 +36,6 @@
 @property (assign) IBOutlet NSButton *chatLink;
 @property (assign) IBOutlet NSButton *helpLink;
 
-- (IBAction)clickDragonsHesitate:(id)sender;
-- (IBAction)clickDragonsRun:(id)sender;
-- (IBAction)clickReset:(id)sender;
-- (IBAction)clickSelect:(id)sender;
 - (IBAction)selectGameAction:(id)sender;
 - (IBAction)clickCoordinateLink:(id)sender;
 - (IBAction)clickChatLink:(id)sender;

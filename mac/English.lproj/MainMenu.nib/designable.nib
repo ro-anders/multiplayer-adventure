@@ -235,51 +235,8 @@
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem title="Options" id="233">
-                    <menu key="submenu" title="Options" id="234">
-                        <items>
-                            <menuItem title="Game Reset" keyEquivalent="1" id="255">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="clickReset:" target="249" id="257"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Game Select" keyEquivalent="2" id="256">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="clickSelect:" target="249" id="258"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" id="254">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                            </menuItem>
-                            <menuItem title="Dragons Hesitate Between Attacks" id="235">
-                                <connections>
-                                    <action selector="clickDragonsHesitate:" target="249" id="250"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Dragons Run From The Sword" id="236">
-                                <connections>
-                                    <action selector="clickDragonsRun:" target="249" id="251"/>
-                                </connections>
-                            </menuItem>
-                        </items>
-                    </menu>
-                </menuItem>
-                <menuItem title="Help" id="103">
-                    <menu key="submenu" title="Help" id="106">
-                        <items>
-                            <menuItem title="Game Instructions" id="111">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="makeKeyAndOrderFront:" target="260" id="263"/>
-                                </connections>
-                            </menuItem>
-                        </items>
-                    </menu>
-                </menuItem>
             </items>
-            <point key="canvasLocation" x="-249" y="584"/>
+            <point key="canvasLocation" x="-308" y="-31"/>
         </menu>
         <customObject id="249" userLabel="Controller" customClass="Controller">
             <connections>
@@ -290,8 +247,6 @@
                 <outlet property="dragonSpeedCheck" destination="924-ix-dyK" id="wha-9U-g94"/>
                 <outlet property="gameSelectPopup" destination="pTF-ey-dOd" id="2Ox-iR-XYo"/>
                 <outlet property="helpLink" destination="OCD-RC-R7n" id="bOO-12-rJu"/>
-                <outlet property="mMenuDragonsHesitate" destination="235" id="252"/>
-                <outlet property="mMenuDragonsRun" destination="236" id="253"/>
                 <outlet property="mNameText" destination="TFq-w4-kLP" id="i79-SI-U6f"/>
                 <outlet property="playButton" destination="89X-Lz-fM1" id="K1L-YC-1Uj"/>
                 <outlet property="playersSelectPopup" destination="5j4-W9-pqI" id="PEN-77-hte"/>
@@ -300,48 +255,6 @@
                 <outlet property="waitLabel" destination="xKw-nf-jzA" id="jsn-7O-1tw"/>
             </connections>
         </customObject>
-        <window title="Adventure:Revisited Game Instructions" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="260" userLabel="helpPanel" customClass="NSPanel">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="296" y="421" width="689" height="225"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1280" height="832"/>
-            <view key="contentView" id="261">
-                <rect key="frame" x="0.0" y="0.0" width="689" height="225"/>
-                <autoresizingMask key="autoresizingMask"/>
-                <subviews>
-                    <textField verticalHuggingPriority="750" id="268">
-                        <rect key="frame" x="20" y="-26" width="649" height="231"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" id="272">
-                            <font key="font" metaFont="label"/>
-                            <string key="title"> The short version of the instructions are:
-
-   1. Select a game with the '2' key on your keyboard. There are 3 different games with increasing difficulty. Game 1 is the easiest.
-   2. Once you have selected the proper game level, press the '1' key on your keyboard to begin the game.
-   3. Use the arrow keys and spacebar to move around, and to drop objects.
-
-Your goal is to find the Enchanted Chalice and return it to the Yellow Castle, avoiding the dragons along the way! If a dragon eats you, you may restart the game where you left off by pressing the '1' key on your keyboard (START GAME), but any dragons you've killed will come back to life. All other items will remain where you left them (aside from items moved by the bat of course). 
-
-There are complete instructions to the game on my website http://www.peterhirschberg.com!</string>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
-                    <button verticalHuggingPriority="750" id="269">
-                        <rect key="frame" x="287" y="12" width="114" height="32"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                        <buttonCell key="cell" type="push" title="Thanks" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="273">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="performClose:" target="260" id="270"/>
-                        </connections>
-                    </button>
-                </subviews>
-            </view>
-            <point key="canvasLocation" x="-76" y="797"/>
-        </window>
         <userDefaultsController representsSharedInstance="YES" id="ZDV-FS-lOV"/>
     </objects>
 </document>
