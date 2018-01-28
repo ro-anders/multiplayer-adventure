@@ -32,11 +32,17 @@
 @property (assign) IBOutlet NSTextField *wait1Text;
 @property (assign) IBOutlet NSTextField *wait2Text;
 @property (assign) IBOutlet NSTextField *waitLabel;
+@property (assign) IBOutlet NSButton *coordinateLink;
+@property (assign) IBOutlet NSButton *chatLink;
+@property (assign) IBOutlet NSButton *helpLink;
 
 - (IBAction)clickDragonsHesitate:(id)sender;
 - (IBAction)clickDragonsRun:(id)sender;
 - (IBAction)clickReset:(id)sender;
 - (IBAction)clickSelect:(id)sender;
 - (IBAction)selectGameAction:(id)sender;
+- (IBAction)clickCoordinateLink:(id)sender;
+- (IBAction)clickChatLink:(id)sender;
+- (IBAction)clickHelpLink:(id)sender;
 
 @end

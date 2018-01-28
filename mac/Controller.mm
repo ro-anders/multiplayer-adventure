@@ -49,10 +49,28 @@ extern AdventureView* gView;
         [_wait1Text setEnabled:FALSE];
         [_wait2Text setEnabled:FALSE];
         [_waitLabel setEnabled:FALSE];
-
     }
-}
+    
+    NSColor *linkColor = [NSColor blueColor];
 
+    NSMutableAttributedString *colorTitle1 = [[NSMutableAttributedString alloc] initWithAttributedString:[_coordinateLink attributedTitle]];
+    NSRange titleRange1 = NSMakeRange(0, [colorTitle1 length]);
+    [colorTitle1 addAttribute:NSForegroundColorAttributeName value:linkColor range:titleRange1];
+    [colorTitle1 addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:titleRange1];
+    [_coordinateLink setAttributedTitle:colorTitle1];
+
+    NSMutableAttributedString *colorTitle2 = [[NSMutableAttributedString alloc] initWithAttributedString:[_chatLink attributedTitle]];
+    NSRange titleRange2 = NSMakeRange(0, [colorTitle2 length]);
+    [colorTitle2 addAttribute:NSForegroundColorAttributeName value:linkColor range:titleRange2];
+    [colorTitle2 addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:titleRange2];
+    [_chatLink setAttributedTitle:colorTitle2];
+
+    NSMutableAttributedString *colorTitle3 = [[NSMutableAttributedString alloc] initWithAttributedString:[_helpLink attributedTitle]];
+    NSRange titleRange3 = NSMakeRange(0, [colorTitle3 length]);
+    [colorTitle3 addAttribute:NSForegroundColorAttributeName value:linkColor range:titleRange3];
+    [colorTitle3 addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:titleRange3];
+    [_helpLink setAttributedTitle:colorTitle3];
+}
 
 - (IBAction)clickDragonsHesitate:(id)sender
 {
@@ -95,6 +113,18 @@ extern AdventureView* gView;
     int desiredPlayers = [_playersSelectPopup indexOfSelectedItem] + 2;
     bool hideSecond = (desiredPlayers == 2);
     [_wait2Text setHidden:hideSecond];
+}
+
+- (IBAction)clickCoordinateLink:(id)sender {
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://h2hadventure.ddns.net/home/coordinate"]];
+}
+
+- (IBAction)clickChatLink:(id)sender {
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://h2hadventure.ddns.net/home/audiochat"]];
+}
+
+- (IBAction)clickHelpLink:(id)sender {
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://h2hadventure.ddns.net/home/help"]];
 }
 
 - (IBAction)clickReset:(id)sender
