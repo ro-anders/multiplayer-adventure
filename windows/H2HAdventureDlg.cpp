@@ -267,6 +267,8 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		wait2Edit->ShowWindow(SW_HIDE);
 		CButton* playButton = (CButton*)gThis->GetDlgItem(IDC_PLAY_BUTTON);
 		playButton->ShowWindow(SW_HIDE);
+		gThis->GetDlgItem(IDC_MFCLINK1)->ShowWindow(SW_HIDE);
+		gThis->GetDlgItem(IDC_MFCLINK2)->ShowWindow(SW_HIDE);
 
 		xport = new UdpTransport();
 		setup = new GameSetup(*client, *xport);
