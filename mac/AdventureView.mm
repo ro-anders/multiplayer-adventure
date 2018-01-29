@@ -455,7 +455,7 @@ void Platform_MakeSound(int nSound, float volume)
                 sound = [NSSound soundNamed:@"dragondie"];
                 break;
             case SOUND_GLOW:
-                sound = [NSSound soundNamed:@"pickup"];
+                sound = [NSSound soundNamed:@"glow"];
                 break;
         }
         

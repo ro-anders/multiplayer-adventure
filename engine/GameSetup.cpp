@@ -256,6 +256,7 @@ void GameSetup::checkSetup() {
                 keepPortOpen();
                 bool nowConnected = pollBroker();
                 if (nowConnected) {
+                    Platform_MakeSound(SOUND_GLOW, MAX_VOLUME);
                     timeoutStart = Sys::runTime() + 10000; // Usingg 'timeoutStart' as a timeout end.  Bad.
                     setupState = SETUP_PAUSE_BEFORE_CONNECTING;
                 } else {
