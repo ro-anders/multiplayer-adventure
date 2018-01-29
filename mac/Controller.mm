@@ -100,7 +100,10 @@ extern AdventureView* gView;
     [_wait1Text setHidden:TRUE];
     [_wait2Text setHidden:TRUE];
     [_waitLabel setHidden:TRUE];
-    
+    [_coordinateLink setHidden:TRUE];
+    [_chatLink setHidden:TRUE];
+    [_helpLink setHidden:TRUE];
+
     int gameNum = [_gameSelectPopup indexOfSelectedItem];
     int desiredPlayers = [_playersSelectPopup indexOfSelectedItem] + 2;
     bool diff1Switch = [_dragonSpeedCheck state];
