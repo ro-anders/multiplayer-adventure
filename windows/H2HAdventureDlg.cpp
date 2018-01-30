@@ -81,6 +81,11 @@ BOOL CH2HAdventureDlg::OnInitDialog()
 	// TODO: Add extra initialization here
 	Logger::setup(Logger::FILE, Logger::INFO);
 
+	CComboBox* playersCombo = (CComboBox*)GetDlgItem(IDC_PLAYERS_COMBO);
+	playersCombo->SetCurSel(0);
+	CComboBox* gameCombo = (CComboBox*)GetDlgItem(IDC_GAME_COMBO);
+	gameCombo->SetCurSel(0);
+
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
