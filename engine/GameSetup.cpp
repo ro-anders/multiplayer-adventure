@@ -322,7 +322,6 @@ void GameSetup::askForPublicAddress() {
     
     // Now send a packet on that port.
     stunServerSockAddr = stunServerSocket->createAddress(stunServer, true);
-    Logger::log("Sending message to STUN server");
     stunServerSocket->writeData("Hello", 5, stunServerSockAddr);
     
     stunServerSocket->setBlocking(false);
@@ -331,7 +330,7 @@ void GameSetup::askForPublicAddress() {
 
 void GameSetup::keepPortOpen() {
     if (stunServerSockAddr != NULL) {
-        stunServerSocket->writeData("Ping", 5, stunServerSockAddr);
+        stunServerSocket->writeData("Hello"/*Ping*/, 5, stunServerSockAddr);
     }
 }
 
@@ -435,6 +434,8 @@ bool GameSetup::pollBroker() {
     // Where "gameToPlay" will be -1 if the game is not full yet.
     
     if (gameSetup) {
+        // VERBOSE LOGGING
+        Logger::log() << "Received start game from broker:\n" << response << Logger::EOM;
         // Read in the game info
         newParams.gameLevel = responseJson["gameToPlay"].asInt();
         newParams.numberPlayers = responseJson["numPlayers"].asInt();
@@ -464,7 +465,6 @@ bool GameSetup::pollBroker() {
                 char* nameDest = (player1[0] == '\0' ? player1 : player2);
                 strcpy(nameDest, playerName);
                 // TODOX: Will exception if no address.  In general need better validation and error response
-                std::cout << "Adding player " << playerName << " at " << addresses[0].ip() << ":" << addresses[0].port() << std::endl;
                 xport.addOtherPlayer(addresses, numAddresses);
             }
         }
@@ -537,6 +537,8 @@ Transport::Address GameSetup::checkForPublicAddress() {
             Logger::logError() << "Could not parse IP from STUN server message: " << buffer << Logger::EOM;
             throw std::runtime_error("Could not determine public address.");
         }
+    } else if (numCharsRead < -1) {
+        Logger::logError() << "Encountered error " << numCharsRead << " looking for STUN server response." << Logger::EOM;
     }
     
     return publicAddress;

@@ -84,7 +84,6 @@ int PosixUdpSocket::bind(int myInternalPort) {
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     serv_addr.sin_port = htons(myInternalPort);
-    Logger::log() << "Opening socket on port " << ntohs(serv_addr.sin_port) << Logger::EOM;
     int resp = ::bind(socketFd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
     if ((resp == EADDRINUSE) || (resp == -1)) { // Don't know why sometimes -1 returned when port is in use
         return Transport::TPT_BUSY;
@@ -128,13 +127,17 @@ void PosixUdpSocket::setTimeout(int seconds) {
  */
 int PosixUdpSocket::writeData(const char* data, int numBytes, sockaddr_in* recipient)
 {
-    int numSent = sendto(socketFd, data, numBytes, 0, (struct sockaddr *)recipient, sizeof(sockaddr_in));
+    int numSent = ::sendto(socketFd, data, numBytes, 0, (struct sockaddr *)recipient, sizeof(sockaddr_in));
     if (numSent < 0) {
         Logger::logError() << "UDP write failed with error: " << strerror(errno) << Logger::EOM;
     }
     return numSent;
 }
 
+/**
+ * Reads off the socket.
+ * Returns number of bytes read or -1 if no data or a negative error code if an error was encounterd.
+ */
 int PosixUdpSocket::readData(char *buffer, int bufferLength, Transport::Address* source) {
     static char tmpString[INET6_ADDRSTRLEN];
     int n;
@@ -146,7 +149,7 @@ int PosixUdpSocket::readData(char *buffer, int bufferLength, Transport::Address*
         struct sockaddr_in source_addr;
         socklen_t source_addr_len = sizeof(source_addr);
         memset((char *) &source_addr, 0, sizeof(source_addr));
-        n = recvfrom(socketFd, buffer, bufferLength, 0, (struct sockaddr*)&source_addr, &source_addr_len);
+        n = ::recvfrom(socketFd, buffer, bufferLength, 0, (struct sockaddr*)&source_addr, &source_addr_len);
         inet_ntop(AF_INET, &source_addr.sin_addr, tmpString, INET6_ADDRSTRLEN);
         *source = Transport::Address(tmpString, ntohs(source_addr.sin_port));
     }

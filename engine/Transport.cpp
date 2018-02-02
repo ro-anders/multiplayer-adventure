@@ -151,7 +151,7 @@ int Transport::getPacket(char* buffer, int bufferLength) {
     
     int charsInPacket = 0;
     if (hitError) {
-		Logger::logError("ERROR reading from socket");
+        Logger::logError() << "ERROR " << hitError << " reading game packets from socket" << Logger::EOM;
     } else if (ranOutOfData) {
         charsInPacket = 0;
         buffer[0] = '\0';
@@ -226,9 +226,9 @@ void Transport::testTransport(Transport& t) {
         for(int ctr=0;ctr<NUM_MESSAGES;++ctr) {
             char buffer[256];
             int charsReceived = t.getPacket(buffer, 256);
-            if (charsReceived < 0) {
+            if (charsReceived < -1) {
                 perror("Error receiving packet");
-            } else if (charsReceived == 0) {
+            } else if (charsReceived <= 0) {
                 printf("Received no data.\n");
             } else if (buffer[0] == 'U') {
                 // Part of the UDP setup.  Ignore.

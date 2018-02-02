@@ -199,6 +199,8 @@ int UdpTransport::writeData(const char* data, int numBytes, int recipient) {
         List<struct sockaddr_in*>& socketList = otherMachines[ctr].sockaddrs;
         int mostCharsWrittenToClient = -1;
         for(int ctr2=0; ctr2<socketList.size(); ++ctr2) {
+            // VERBOSE LOGGING
+            Logger::log() << "Sending UDP packet \"" << data << "\" to " << otherMachines[ctr].possibleAddrs.get(ctr2).ip() << ":" << otherMachines[ctr].possibleAddrs.get(ctr2).port() << Logger::EOM;
             int charsWritten = socket->writeData(data, numBytes, socketList.get(ctr2));
             if (charsWritten > mostCharsWrittenToClient) {
                 mostCharsWrittenToClient = charsWritten;
@@ -234,7 +236,7 @@ void UdpTransport::punchHole() {
                 appendDataToBuffer(recvBuffer, bytes);
             } else {
                 if (bytes != 10) {
-                    Logger::logError() << "Read packet of unexpected length.\n" <<
+                    Logger::logError() << "Read packet from " << from.ip() << ":" << from.port() << " of unexpected length.\n" <<
                     "Message=" << recvBuffer << ".  Bytes read=" << bytes << Logger::EOM;
                 }
                 // Figure out the sender.  The third character will be the machine number.
@@ -243,7 +245,8 @@ void UdpTransport::punchHole() {
                 // Three machine games need to map a 0, 1, or 2 to their array of machines 0 or 1.
                 int senderInt = senderChar - '0';
                 if ((senderInt == transportNum) && (getDynamicPlayerSetupNumber() == NOT_DYNAMIC_PLAYER_SETUP)) {
-                    Logger::logError("Received UDP setup message trying to acquire same slot as this game.");
+                    Logger::logError() << "Received UDP setup message from " << from.ip() << ":" << from.port() << " trying to acquire slot " <<
+                    senderInt  << " which is same slot as this game." << Logger::EOM;
                 } else {
                     int senderIndex = (senderInt <= transportNum ? senderInt : senderInt-1);
                     
@@ -258,8 +261,8 @@ void UdpTransport::punchHole() {
                         
                         if (states[senderIndex] == RECVD_NOTHING) {
                             states[senderIndex] = RECVD_MESSAGE;
-                            Logger::log() << "Received message from " << from.ip() << ":" <<
-                            from.port() << ".  Waiting for ack." << Logger::EOM;
+                            Logger::log() << "Received first connect message for slot " <<  senderIndex << " from " << from.ip() << ":" <<
+                            from.port() << ".  Will wait for ack." << Logger::EOM;
                         }
                         // See if they have received ours and this is the first time we have seen them receive ours
                         if ((recvBuffer[1] != RECVD_NOTHING[1]) && (states[senderIndex] != RECVD_ACK)) {
@@ -267,7 +270,7 @@ void UdpTransport::punchHole() {
                             states[senderIndex] = RECVD_ACK;
                             justAcked[senderIndex] = true;
                             connected = states[1-senderIndex] == RECVD_ACK;
-                            Logger::log() << "Connected with " << from.ip() << ":" <<
+                            Logger::log() << "Slot " << senderIndex << " connected with " << from.ip() << ":" <<
                             from.port() << Logger::EOM;
                             // If this is a test case, figure out who is player one.
                             if (getDynamicPlayerSetupNumber() == PLAYER_NOT_YET_DETERMINED) {
@@ -280,6 +283,9 @@ void UdpTransport::punchHole() {
             
             // Check for more messages.
             bytes = socket->readData(recvBuffer, READ_BUFFER_LENGTH, from);
+        }
+        if (bytes < -1) {
+            Logger::logError() << "Hit error " << bytes << " listening for UDP punching packets."  << Logger::EOM;
         }
         
         // Now send a packet to each other machine.  Don't send if we're not initialized or we're all connected.
@@ -307,20 +313,24 @@ void UdpTransport::reduceClientToOneAddress(int clientNum, Client& otherMachine,
         found = (otherMachine.possibleAddrs.get(ctr) == from ? ctr : -1);
     }
     if (found < 0) {
-        Logger::log() << "Received message for " << clientNum << " from unexpected address "  << from.ip() <<
+        Logger::log() << "Received message for slot " << clientNum << " from unexpected address "  << from.ip() <<
             ":" << from.port() << Logger::EOM;
-    } else {
-        struct sockaddr_in* keep = otherMachine.sockaddrs.get(found);
-        for(int ctr=0; ctr<otherMachine.sockaddrs.size(); ++ctr) {
-            if (ctr != found) {
-                socket->deleteAddress(otherMachine.sockaddrs.get(ctr));
-            }
-        }
-        otherMachine.sockaddrs.clear();
-        otherMachine.possibleAddrs.clear();
+        // This may be their firewall decided to use a different port.  Go ahead and use it.
+        // Is this the wisest idea?
         otherMachine.possibleAddrs.add(from);
-        otherMachine.sockaddrs.add(keep);
+        otherMachine.sockaddrs.add(socket->createAddress(from));
+        found = otherMachine.possibleAddrs.size()-1;
     }
+    struct sockaddr_in* keep = otherMachine.sockaddrs.get(found);
+    for(int ctr=0; ctr<otherMachine.sockaddrs.size(); ++ctr) {
+        if (ctr != found) {
+            socket->deleteAddress(otherMachine.sockaddrs.get(ctr));
+        }
+    }
+    otherMachine.sockaddrs.clear();
+    otherMachine.possibleAddrs.clear();
+    otherMachine.possibleAddrs.add(from);
+    otherMachine.sockaddrs.add(keep);
 }
 
 void UdpTransport::compareNumbers(int myRandomNumber, char* theirMessage, int otherIndex) {
