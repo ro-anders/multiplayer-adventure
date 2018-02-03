@@ -1649,7 +1649,7 @@ void PrintDisplay()
 
         for (int cx=0; cx<20; cx++)
         {
-            bool bit=false;
+            byte bit=false;
 
             if (cx < 4)
                 bit = pf0 & shiftreg[cx];
@@ -1658,7 +1658,7 @@ void PrintDisplay()
             else
                 bit = pf2 & shiftreg[cx];
 
-            if (bit)
+            if (bit != 0)
             {
                 Platform_PaintPixel(color.r, color.g, color.b, cx*cell_width, ypos*cell_height, cell_width, cell_height);
                 if (mirror)
@@ -2195,7 +2195,7 @@ bool CollisionCheckBallWithWalls(int room, int x, int y)
 
         for (int cx=0; cx<20; cx++)
         {
-            bool bit=false;
+            byte bit=false;
 
             if (cx < 4)
                 bit = pf0 & shiftreg[cx];
@@ -2204,7 +2204,7 @@ bool CollisionCheckBallWithWalls(int room, int x, int y)
             else
                 bit = pf2 & shiftreg[cx];
 
-            if (bit)
+            if (bit != 0)
             {
                 if (Board::HitTestRects(x-4,(y-4),8,8,cx*cell_width,(ypos*cell_height), cell_width, cell_height))
                 {

@@ -338,7 +338,7 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 			socket = NULL;
 		}
 		//Adventure_Setup(2, 0, NULL, 0, 1, 1);
-		DWORD timerId = ::timeSetEvent(ADVENTURE_FRAME_PERIOD*1000, 1000, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
+		DWORD timerId = ::timeSetEvent((UINT)(ADVENTURE_FRAME_PERIOD*1000), 1000, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
 		gameStarted = TRUE;
 	}
 }
