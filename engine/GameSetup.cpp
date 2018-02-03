@@ -210,10 +210,7 @@ void GameSetup::checkSetup() {
     long currentTime;
     switch (setupState) {
         case SETUP_INIT: {
-            if (hasExpired()) {
-                Platform_DisplayStatus("Beta versions only work for a limited time.\nThis version has expired.", -1);
-                setupState = SETUP_FAILED;
-            } else if (needPublicIp) {
+            if (needPublicIp) {
                 setupState = SETUP_REQUEST_PUBLIC_IP;
             } else if (isBrokeredGame) {
                 setupState = SETUP_MAKE_BROKER_REQUEST;
@@ -542,14 +539,6 @@ Transport::Address GameSetup::checkForPublicAddress() {
     }
     
     return publicAddress;
-}
-
-bool GameSetup::hasExpired() {
-    
-    const long EXPIRATION_DATE = 20180228;
-    long time = Sys::today();
-    return ((EXPIRATION_DATE > 0) && (time > EXPIRATION_DATE));
-    
 }
 
 /**

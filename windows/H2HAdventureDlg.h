@@ -7,6 +7,7 @@
 class UdpTransport;
 class RestClient;
 class GameSetup;
+class WinUdpSocket;
 
 // CH2HAdventureDlg dialog
 class CH2HAdventureDlg : public CDialogEx
@@ -33,13 +34,16 @@ protected:
 	UdpTransport* xport;
 	GameSetup* setup;
 	RestClient* client;
+	WinUdpSocket* socket;
 
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
 	void OnDraw(CDC* pDC);
+
 	void DrawPixel(CDC* pDC, int r, int g, int b, int x, int y, int width, int height);
 	void computeScale(int SCREEN_TOP, int SCREEN_MARGIN, float* scale, int* margin);
+	BOOL checkCanPlay();
 
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()

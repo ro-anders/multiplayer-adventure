@@ -158,8 +158,6 @@ private:
 
     void setupP2PGame(GameSetup::GameParams& newParams, int argc, char** argv);
     
-    bool hasExpired();
-
     RestClient& client;
     
     UdpTransport& xport;

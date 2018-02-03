@@ -52,6 +52,7 @@ CH2HAdventureDlg::CH2HAdventureDlg(CWnd* pParent /*=NULL*/)
 	xport = NULL;
 	setup = NULL;
 	client = new WinRestClient();
+	socket = NULL;
 }
 
 void CH2HAdventureDlg::DoDataExchange(CDataExchange* pDX)
@@ -73,6 +74,8 @@ BOOL CH2HAdventureDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
+	gThis = this;
+
 	// Set the icon for this dialog.  The framework does this automatically
 	//  when the application's main window is not a dialog
 	SetIcon(m_hIcon, TRUE);			// Set big icon
@@ -85,6 +88,19 @@ BOOL CH2HAdventureDlg::OnInitDialog()
 	playersCombo->SetCurSel(0);
 	CComboBox* gameCombo = (CComboBox*)GetDlgItem(IDC_GAME_COMBO);
 	gameCombo->SetCurSel(0);
+
+	BOOL canPlay = checkCanPlay();
+	if (!canPlay) {
+		GetDlgItem(IDC_NAME_EDIT)->EnableWindow(FALSE);
+		GetDlgItem(IDC_GAME_COMBO)->EnableWindow(FALSE);
+		GetDlgItem(IDC_PLAYERS_COMBO)->EnableWindow(FALSE);
+		GetDlgItem(IDC_DRAGON_SPEED_CHECK)->EnableWindow(FALSE);
+		GetDlgItem(IDC_DRAGON_FEAR_CHECK)->EnableWindow(FALSE);
+		GetDlgItem(IDC_WAIT1_EDIT)->EnableWindow(FALSE);
+		GetDlgItem(IDC_WAIT2_EDIT)->EnableWindow(FALSE);
+		GetDlgItem(IDC_PLAY_BUTTON)->EnableWindow(FALSE);
+	}
+
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -139,6 +155,34 @@ void CH2HAdventureDlg::OnPaint()
 			dc.StretchBlt(leftMargin, SCREEN_TOP, (int)(WinRect.right * scale), (int)(WinRect.bottom * scale), pInMemDC, 0, 0, WinRect.right, WinRect.bottom, SRCCOPY);
 		}
 	}
+}
+
+BOOL CH2HAdventureDlg::checkCanPlay() {
+	xport = new UdpTransport();
+	socket = new WinUdpSocket();
+	xport->useSocket(socket);
+	setup = new GameSetup(*client, *xport);
+
+	// Read the command line and pass it in to setup.
+	USES_CONVERSION;
+	LPCWSTR wholeCommandLine = GetCommandLine();
+	int argc = 0;
+	LPWSTR* parsedCommandLine = CommandLineToArgvW(wholeCommandLine, &argc);
+	char** argv = new char*[argc];
+	for (int ctr = 0; ctr < argc; ++ctr) {
+		const char* argStr = W2A(parsedCommandLine[ctr]);
+		argv[ctr] = new char[strlen(argStr) + 1];
+		strcpy(argv[ctr], argStr);
+	}
+	setup->setCommandLineArgs(argc - 1, argv + 1);
+	for (int ctr = 0; ctr < argc; ++ctr) {
+		delete[] argv[ctr];
+	}
+	delete[] argv;
+	// TODO: Handle disabling play button
+	bool canPlay = setup->checkAnnouncements();
+	return canPlay;
+
 }
 
 void CH2HAdventureDlg::computeScale(int SCREEN_TOP, int SCREEN_MARGIN, float* scale, int* margin) {
@@ -248,8 +292,6 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 {
 	if (!gameStarted) {
 
-		gThis = this;
-
 		CEdit* nameLabel = (CEdit*)gThis->GetDlgItem(IDC_NAME_LABEL);
 		nameLabel->ShowWindow(SW_HIDE);
 		CEdit* waitLabel = (CEdit*)gThis->GetDlgItem(IDC_WAIT_LABEL);
@@ -275,26 +317,7 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		gThis->GetDlgItem(IDC_MFCLINK1)->ShowWindow(SW_HIDE);
 		gThis->GetDlgItem(IDC_MFCLINK2)->ShowWindow(SW_HIDE);
 
-		xport = new UdpTransport();
-		setup = new GameSetup(*client, *xport);
-
-		// Read the command line and pass it in to setup.
 		USES_CONVERSION;
-		LPCWSTR wholeCommandLine = GetCommandLine();
-		int argc = 0;
-		LPWSTR* parsedCommandLine = CommandLineToArgvW(wholeCommandLine, &argc);
-		char** argv = new char*[argc];
-		for (int ctr = 0; ctr < argc; ++ctr) {
-			const char* argStr = W2A(parsedCommandLine[ctr]);
-			argv[ctr] = new char[strlen(argStr) + 1];
-			strcpy(argv[ctr], argStr);
-		}
-		setup->setCommandLineArgs(argc -1, argv+1);
-		for (int ctr = 0; ctr < argc; ++ctr) {
-			delete[] argv[ctr];
-		}
-		delete[] argv;
-
 		WCHAR buffer[100];
 		nameEdit->GetWindowTextW(buffer, 100);
 		const char* name = W2A(buffer);
@@ -309,9 +332,10 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 			dragonFearChk->GetCheck() == BST_CHECKED);
 
 		GameSetup::GameParams params = setup->getSetup();
-		if (!params.noTransport) {
-			WinUdpSocket* socket = new WinUdpSocket();
-			xport->useSocket(socket);
+		if (params.noTransport) {
+			xport->useSocket(NULL);
+			delete socket;
+			socket = NULL;
 		}
 		//Adventure_Setup(2, 0, NULL, 0, 1, 1);
 		DWORD timerId = ::timeSetEvent(ADVENTURE_FRAME_PERIOD*1000, 1000, (LPTIMECALLBACK)TimerWindowProc, NULL, TIME_PERIODIC);
