@@ -319,6 +319,8 @@ void GameSetup::askForPublicAddress() {
     
     // Now send a packet on that port.
     stunServerSockAddr = stunServerSocket->createAddress(stunServer, true);
+    // VERBOSE LOGGING
+    Logger::log() << "Sending UDP packet \"" << "Hello" << "\" to " << stunServer.ip() << ":" << stunServer.port() << Logger::EOM;
     stunServerSocket->writeData("Hello", 5, stunServerSockAddr);
     
     stunServerSocket->setBlocking(false);
@@ -327,6 +329,8 @@ void GameSetup::askForPublicAddress() {
 
 void GameSetup::keepPortOpen() {
     if (stunServerSockAddr != NULL) {
+        // VERBOSE LOGGING
+        Logger::log() << "Sending UDP packet \"" << "Hello" << "\" to " << stunServer.ip() << ":" << stunServer.port() << Logger::EOM;
         stunServerSocket->writeData("Hello"/*Ping*/, 5, stunServerSockAddr);
     }
 }
