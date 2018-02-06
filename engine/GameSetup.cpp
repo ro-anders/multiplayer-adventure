@@ -248,6 +248,8 @@ void GameSetup::checkSetup() {
             break;
         }
         case SETUP_WAITING_FOR_BROKERING: {
+            // VERBOSE LOGGING
+            checkForPublicAddress();
             currentTime = Sys::runTime();
             if (currentTime-timeoutStart > BROKER_PERIOD) {
                 keepPortOpen();
