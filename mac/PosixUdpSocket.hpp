@@ -42,6 +42,11 @@ public:
     void setTimeout(int seconds);
 
     /**
+     * Restrict the number of hops UDP packets will take before aborting.
+     */
+    void setTTL(int hops);
+
+    /**
      * Send data on the socket.
      * data - data to send
      * numBytes - number of bytes to send (does not assume data is null terminated)

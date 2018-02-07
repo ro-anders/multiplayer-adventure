@@ -50,6 +50,11 @@ public:
     virtual void setTimeout(int seconds) = 0;
     
     /**
+     * Restrict the number of hops UDP packets will take before aborting.
+     */
+    virtual void setTTL(int hops) = 0;
+    
+    /**
      * Pull data off the socket - non-blocking.  If connected to multiple machines, will
      * return data from either machine.
      */

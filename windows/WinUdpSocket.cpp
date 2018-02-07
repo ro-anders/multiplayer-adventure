@@ -129,6 +129,9 @@ void WinUdpSocket::setTimeout(int seconds) {
 	// TODOX: Implement
 }
 
+void WinUdpSocket::setTTL(int hops) {
+    setsockopt (socketFd, SOL_IP, IP_TTL, &hops, sizeof(hops));
+}
 
 /**
 * Send data on the socket.

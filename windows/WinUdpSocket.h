@@ -43,6 +43,8 @@ public:
 	*/
 	void setTimeout(int seconds);
 
+    void setTTL(int hops);
+
 	/**
 	* Send data on the socket.
 	* data - data to send

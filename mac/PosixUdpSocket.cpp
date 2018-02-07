@@ -117,6 +117,10 @@ void PosixUdpSocket::setTimeout(int seconds) {
     }
 }
 
+void PosixUdpSocket::setTTL(int hops) {
+    ::setsockopt(socketFd, IPPROTO_IP, IP_TTL, &hops, sizeof(hops));
+}
+
 
 
 /**

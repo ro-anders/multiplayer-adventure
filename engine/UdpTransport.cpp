@@ -214,13 +214,15 @@ int UdpTransport::writeData(const char* data, int numBytes, int recipient) {
 }
 
 void UdpTransport::punchHole() {
+    static int numTimesCalled = -1;
+    ++numTimesCalled;
     
     // Since this is UDP and NATs may be involved, our messages may be blocked until the other game sends
     // packets to us.  So we must enter a loop constantly sending a message and checking if we are getting their
     // messages.  The owner of this class handles the looping, but this is one instance of the loop.
     
     if (!connected) {
-
+        
         char sendBuffer[16] = "";
         const int READ_BUFFER_LENGTH = 200;
         char recvBuffer[READ_BUFFER_LENGTH];
@@ -288,13 +290,27 @@ void UdpTransport::punchHole() {
             Logger::logError() << "Hit error " << bytes << " listening for UDP punching packets."  << Logger::EOM;
         }
         
-        // Now send a packet to each other machine.  Don't send if we're not initialized or we're all connected.
+        // Now send a packet to each other machine.
+        
+        // We prime our NAT by sending out the first few messages with a short TTL expecting they won't get to the other machines.
+        // Then later send out messages with a more realistic TTL.
+        if (numTimesCalled < 10) {
+            socket->setTTL(5);
+        } else {
+            socket->setTTL(255);
+        }
+        
+        // Don't send if we're not initialized or we're all connected.
         // Note, we may look all connected, but if we just got acknowledged we need to send one more message.
         for(int ctr=0; ctr<numOtherMachines; ++ctr) {
             if (justAcked[ctr] || ((states[ctr] != NOT_YET_INITIATED) && (states[ctr] != RECVD_ACK))) {
                 sprintf(sendBuffer, "%s%d%06ld", states[ctr], transportNum, randomNum);
                 writeData(sendBuffer, strlen(sendBuffer)+1, ctr);
             }
+        }
+        
+        if (connected) {
+            socket->setTTL(255);
         }
     }
 }
