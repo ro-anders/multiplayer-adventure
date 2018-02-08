@@ -294,7 +294,7 @@ void UdpTransport::punchHole() {
         
         // We prime our NAT by sending out the first few messages with a short TTL expecting they won't get to the other machines.
         // Then later send out messages with a more realistic TTL.
-        if (numTimesCalled < 10) {
+        if (numTimesCalled < 20) {
             socket->setTTL(5);
         } else {
             socket->setTTL(255);
