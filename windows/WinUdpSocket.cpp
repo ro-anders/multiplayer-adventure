@@ -130,7 +130,7 @@ void WinUdpSocket::setTimeout(int seconds) {
 }
 
 void WinUdpSocket::setTTL(int hops) {
-    setsockopt (socketFd, SOL_IP, IP_TTL, &hops, sizeof(hops));
+    setsockopt (socketFd, IPPROTO_IP, IP_TTL, (const char*)&hops, sizeof(hops));
 }
 
 /**
