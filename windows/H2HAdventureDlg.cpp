@@ -315,7 +315,8 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		CButton* playButton = (CButton*)gThis->GetDlgItem(IDC_PLAY_BUTTON);
 		playButton->ShowWindow(SW_HIDE);
 		gThis->GetDlgItem(IDC_MFCLINK1)->ShowWindow(SW_HIDE);
-		gThis->GetDlgItem(IDC_MFCLINK2)->ShowWindow(SW_HIDE);
+        gThis->GetDlgItem(IDC_MFCLINK2)->ShowWindow(SW_HIDE);
+        gThis->GetDlgItem(IDC_MFCLINK3)->ShowWindow(SW_HIDE);
 
 		USES_CONVERSION;
 		WCHAR buffer[100];
