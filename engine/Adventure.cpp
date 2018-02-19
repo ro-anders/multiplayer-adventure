@@ -954,14 +954,13 @@ void Adventure_Run()
                 displayWinningRoom = true;
             }
 
+            // Increment the last object drawn
+            if (sync->getFrameNumber() % 3 == 0) {
+                ++displayListIndex;
+            }
+
             // Display the room and objects
             PrintDisplay();
-
-            // Go to game selection screen on select or reset button
-            if (switchReset && !reset)
-            {
-                gameState = GAMESTATE_GAMESELECT;
-            }
         }
     }
 

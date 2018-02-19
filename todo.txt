@@ -10,6 +10,8 @@ To Do
 - When holding bat at top of screen it switched objects and dropped the object at the top of the above screen.
   Also when it picked up an object that was at the bottom edge of the above screen it dropped its current object pretty low in this screen.
 - Dragon getting killed is heard everywhere in the game.  All other sounds mute as they get further away.
+- FIXED - After you win the game, you can reset and move around
+- FIXED - After you win the game, you can only see two objects
 - FIXED - Mac still has menu options that apply to Hirschberg version, not H2H version
 - FIXED - Doesn't adjust carried object when you are too close vertically.  Leads to huge horizontal adjustments.
 - FIXED - Ping seems to be every 900 frames on Mac and 1200 on Windows
