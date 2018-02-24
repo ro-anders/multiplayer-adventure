@@ -479,6 +479,9 @@ void Platform_DisplayStatus(const char* message, int durationSec) {
     [gView displayStatus:message :durationSec];
 }
 
+void Platform_ReportToServer(const char* message) {
+    setup->reportToServer(message);
+}
 
 
 

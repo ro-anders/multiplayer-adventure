@@ -470,6 +470,9 @@ void Platform_DisplayStatus(const char* message, int duration) {
 	::SysFreeString(unicodestr);
 }
 
+void Platform_ReportToServer(const char* message) {
+    setup->reportToServer(message);
+}
 
 void CH2HAdventureDlg::OnCbnSelchangePlayersCombo()
 {

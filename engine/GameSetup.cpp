@@ -373,7 +373,7 @@ void GameSetup::craftBrokerRequest(Transport::Address) {
 
 
 bool GameSetup::pollBroker() {
-    // TODOX: How do we report the broker bexoming unreachable
+    // TODOX: How do we report the broker becoming unreachable
     char response[10000];
     bool gameSetup = false;
     Json::Value responseJson;
@@ -492,7 +492,24 @@ bool GameSetup::pollBroker() {
     return gameSetup;
 }
 
-// TODOX: Get rid of this method.  It should be broken up into other methods.
+// Post a status back to the broker.
+void GameSetup::reportToServer(const char* message) {
+    char postBody[10000];
+    sprintf(postBody, "{\"player\":\"%s\",\"message\":\"%s\"}", newParams.playerName(),
+            message);
+
+    char response[10000];
+    
+    int status = client.post("/status", postBody, response, 10000);
+    
+    if (status <= 0) {
+        Logger::logError() << "Encountered error " << status << " reporting status back to server." << Logger::EOM;
+    }
+
+    return;
+}
+
+
 void GameSetup::setupP2PGame(GameSetup::GameParams& newParams, int argc, char** argv) {
     // Other players' IP information will be specified on the command line.
     // H2HAdventure p2p <gameLevel(1-3,4)> <thisPlayer(1-3)> <myinternalport> <theirip>:<theirport> [<thirdip>:<thirdport>]

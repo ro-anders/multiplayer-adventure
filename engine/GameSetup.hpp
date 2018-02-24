@@ -84,6 +84,8 @@ public:
      */
     void checkSetup();
     
+    void reportToServer(const char* message);
+    
     /**
      * True if the game has been all setup and is ready to play.  False if still being setup.
      */
@@ -155,7 +157,7 @@ private:
     void craftBrokerRequest(Transport::Address);
     
     bool pollBroker();
-
+    
     void setupP2PGame(GameSetup::GameParams& newParams, int argc, char** argv);
     
     RestClient& client;

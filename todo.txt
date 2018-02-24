@@ -1,5 +1,6 @@
 To Do
 -----
+- Greeen dragon immediately attacks player 2.  Move him to further point on original path.
 - In gauntlet once green and yellow dragon overlap, they never un-overlap
 - One local player and one remote player with same local address will break connection
 - Player (and waiting for names) should be restricted to 20 characters ASCII with no commas
