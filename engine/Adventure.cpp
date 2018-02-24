@@ -454,7 +454,7 @@ static const byte game2Objects [] =
     OBJECT_NUMBER, NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00, // Starting number
     OBJECT_REDDRAGON, BLACK_MAZE_2, 0x50, 0x20, 0x00, 3, 3, // Red Dragon
     OBJECT_YELLOWDRAGON, RED_MAZE_4, 0x50, 0x20, 0x00, 3, 3, // Yellow Dragon
-    OBJECT_GREENDRAGON, BLUE_MAZE_5, 0x50, 0x20, 0x00, 3, 3, // Green Dragon
+    OBJECT_GREENDRAGON, BLUE_MAZE_3, 0x50, 0x20, 0x00, 3, 3, // Green Dragon
     OBJECT_SWORD, GOLD_CASTLE, 0x20, 0x20, 0x00, 0x00, 0x00, // Sword
     OBJECT_BRIDGE, WHITE_MAZE_3, 0x40, 0x40, 0x00, 0x00, 0x00, // Bridge
     OBJECT_YELLOWKEY, WHITE_MAZE_2, 0x20, 0x40, 0x00, 0x00, 0x00, // Yellow Key

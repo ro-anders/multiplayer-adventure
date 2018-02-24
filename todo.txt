@@ -1,6 +1,5 @@
 To Do
 -----
-- Greeen dragon immediately attacks player 2.  Move him to further point on original path.
 - In gauntlet once green and yellow dragon overlap, they never un-overlap
 - One local player and one remote player with same local address will break connection
 - Player (and waiting for names) should be restricted to 20 characters ASCII with no commas
@@ -11,6 +10,7 @@ To Do
 - When holding bat at top of screen it switched objects and dropped the object at the top of the above screen.
   Also when it picked up an object that was at the bottom edge of the above screen it dropped its current object pretty low in this screen.
 - Dragon getting killed is heard everywhere in the game.  All other sounds mute as they get further away.
+- FIXED - Green dragon immediately attacks player 2.  Move him to further point on original path.
 - FIXED - After you win the game, you can reset and move around
 - FIXED - After you win the game, you can only see two objects
 - FIXED - Mac still has menu options that apply to Hirschberg version, not H2H version
