@@ -110,6 +110,7 @@ private:
     static const int STUN_TIMEOUT; // How long to wait for broker to respond with public ip (in ms).
     static const int BROKER_PERIOD; // Ms between requesting from btoker status of game setup
     static const int UDP_HANDSHAKE_PERIOD; // Ms between sending/checking UDP packets with initial connection handshake
+    static const int UDP_HANDSHAKE_TIMEOUT; // How long to wait before giving up on peer-to-peer connection.
     
     static const int CLIENT_VERSION;
     
@@ -149,6 +150,9 @@ private:
     /** If there is a timeout in play (e.g. we've just sent a UDP to the broker
      * and are waiting for a UDP response) this is when the timeout started. */
     long timeoutStart;
+    
+    /** How long before giving up on making a connection. */
+    long connectionDeadline;
     
     void askForPublicAddress();
     

@@ -16,6 +16,8 @@ const int GameSetup::DEFAULT_GAME_LEVEL = GAME_MODE_1;
 const int GameSetup::STUN_TIMEOUT = 30000; // In milliseconds
 const int GameSetup::BROKER_PERIOD = 10000; // In milliseconds
 const int GameSetup::UDP_HANDSHAKE_PERIOD = 1000; // In milliseconds
+const int GameSetup::UDP_HANDSHAKE_TIMEOUT = 60000; // In milliseconds
+
 
 const int GameSetup::SETUP_INIT = 0;
 const int GameSetup::SETUP_REQUEST_PUBLIC_IP = 1;
@@ -105,6 +107,7 @@ needPublicIp(false),
 isBrokeredGame(false),
 isConnectTest(false),
 timeoutStart(0),
+connectionDeadline(0),
 brokerSessionId((int)(Sys::random() * 10000000)),
 stunServerSocket(NULL),
 stunServerSockAddr(NULL) {}
@@ -275,6 +278,7 @@ void GameSetup::checkSetup() {
                 xport.connect();
                 setupState = SETUP_CONNECTING_WITH_PLAYERS;
                 timeoutStart = Sys::runTime();
+                connectionDeadline = (isBrokeredGame ? timeoutStart + UDP_HANDSHAKE_TIMEOUT : 0);
             } else {
                 setupState = SETUP_CONNECTED;
                 doSetupConnected();
@@ -295,6 +299,11 @@ void GameSetup::checkSetup() {
                     doSetupConnected();
                 }
                 timeoutStart = currentTime;
+            } else if (currentTime > connectionDeadline) {
+                Platform_DisplayStatus("Failed to create peer-to-peer connection with other players.\n"
+                                       "Your firewall or another player's firewall may not allow peer-to-peer connection.\n"
+                                       "If you think it is your firewall, being the last player to connect sometimes works.", -1);
+                setupState = SETUP_FAILED;
             }
             break;
         }
@@ -576,7 +585,7 @@ bool GameSetup::checkAnnouncements() {
             if (!responseJson.empty()) {
                 int minimumVersion = responseJson["minimumVersion"].asInt();
                 if (minimumVersion > CLIENT_VERSION) {
-                    Platform_DisplayStatus("You need to upgrade your client.  Download from\nhttp://h2hadventure.ddns.net/download", -1);
+                    Platform_DisplayStatus("You need to upgrade your client.  Download from\nhttp://h2hadventure.com/download", -1);
                     return false;
                 }
                 char message[10000];

@@ -79,15 +79,15 @@ extern AdventureView* gView;
 }
 
 - (IBAction)clickCoordinateLink:(id)sender {
-    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://h2hadventure.ddns.net/home/coordinate"]];
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://h2hadventure.com/home/coordinate"]];
 }
 
 - (IBAction)clickChatLink:(id)sender {
-    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://h2hadventure.ddns.net/home/audiochat"]];
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://h2hadventure.com/home/audiochat"]];
 }
 
 - (IBAction)clickHelpLink:(id)sender {
-    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://h2hadventure.ddns.net/home/help"]];
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://h2hadventure.com/home/help"]];
 }
 
 - (IBAction)clickPlay:(id)sender {
