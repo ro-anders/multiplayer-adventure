@@ -319,8 +319,8 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
         gThis->GetDlgItem(IDC_MFCLINK3)->ShowWindow(SW_HIDE);
 
 		USES_CONVERSION;
-		WCHAR buffer[100];
-		nameEdit->GetWindowTextW(buffer, 100);
+		WCHAR buffer[ADVENTURE_MAX_NAME_LENGTH];
+		nameEdit->GetWindowTextW(buffer, ADVENTURE_MAX_NAME_LENGTH);
 		const char* name = W2A(buffer);
 		setup->setPlayerName(name);
 		int gameSelected = gameCombo->GetCurSel();
@@ -331,6 +331,15 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		setup->setNumberPlayers(playersSelected);
 		setup->setDifficultySwitches(dragonSpeedChk->GetCheck() == BST_CHECKED,
 			dragonFearChk->GetCheck() == BST_CHECKED);
+		wait1Edit->GetWindowTextW(buffer, ADVENTURE_MAX_NAME_LENGTH);
+		const char* wait1 = W2A(buffer);
+		setup->addPlayerToWaitFor(wait1);
+		if (playersSelected > 2) {
+			wait2Edit->GetWindowTextW(buffer, ADVENTURE_MAX_NAME_LENGTH);
+			const char* wait2 = W2A(buffer);
+			setup->addPlayerToWaitFor(wait2);
+		}
+
 
 		GameSetup::GameParams params = setup->getSetup();
 		if (params.noTransport) {
@@ -471,7 +480,7 @@ void Platform_DisplayStatus(const char* message, int duration) {
 }
 
 void Platform_ReportToServer(const char* message) {
-    setup->reportToServer(message);
+	gThis->setup->reportToServer(message);
 }
 
 void CH2HAdventureDlg::OnCbnSelchangePlayersCombo()

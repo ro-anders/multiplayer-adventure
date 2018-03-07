@@ -32,7 +32,6 @@ protected:
 	CDC* pInMemDC;
 	BOOL gameStarted;
 	UdpTransport* xport;
-	GameSetup* setup;
 	RestClient* client;
 	WinUdpSocket* socket;
 
@@ -48,6 +47,7 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
+	GameSetup* setup;
 	void OnOK();
 	void update();
 	afx_msg void OnBnClickedPlayButton();
