@@ -585,7 +585,7 @@ bool GameSetup::checkAnnouncements() {
             if (!responseJson.empty()) {
                 int minimumVersion = responseJson["minimumVersion"].asInt();
                 if (minimumVersion > CLIENT_VERSION) {
-                    Platform_DisplayStatus("You need to upgrade your client.  Download from\nhttp://h2hadventure.com/download", -1);
+                    Platform_DisplayAnnouncement("\nYou need to download the latest client.", "http://h2hadventure.com/download");
                     return false;
                 }
                 char message[10000];
@@ -593,11 +593,7 @@ bool GameSetup::checkAnnouncements() {
                 int anncmtLength = strlen(message);
                 if (anncmtLength > 0) {
                     const char* link = responseJson["announcementLink"].asCString();
-                    if (strlen(link) > 0) {
-                        message[anncmtLength] = '\n';
-                        strcpy(message+anncmtLength+1, link);
-                    }
-                    Platform_DisplayStatus(message, -1);
+					Platform_DisplayAnnouncement(message, link);
                 }
             }
         }

@@ -48,6 +48,7 @@ void Platform_MakeSound(int sound, float volume);
 #define MAX_VOLUME              11.0f
 float Platform_Random();
 void Platform_DisplayStatus(const char* message, int durationSec);
+void Platform_DisplayAnnouncement(const char* message, const char* link);
 void Platform_ReportToServer(const char* message);
 
 // Difficulty switches

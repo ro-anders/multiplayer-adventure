@@ -314,6 +314,8 @@ void CH2HAdventureDlg::OnBnClickedPlayButton()
 		wait2Edit->ShowWindow(SW_HIDE);
 		CButton* playButton = (CButton*)gThis->GetDlgItem(IDC_PLAY_BUTTON);
 		playButton->ShowWindow(SW_HIDE);
+		gThis->GetDlgItem(IDC_ANNOUNCEMENT_LABEL)->ShowWindow(SW_HIDE);
+		gThis->GetDlgItem(IDC_ANNOUNCEMENT_LINK)->ShowWindow(SW_HIDE);
 		gThis->GetDlgItem(IDC_MFCLINK1)->ShowWindow(SW_HIDE);
         gThis->GetDlgItem(IDC_MFCLINK2)->ShowWindow(SW_HIDE);
         gThis->GetDlgItem(IDC_MFCLINK3)->ShowWindow(SW_HIDE);
@@ -477,6 +479,34 @@ void Platform_DisplayStatus(const char* message, int duration) {
 	label->SetWindowText(unicodestr);
 
 	::SysFreeString(unicodestr);
+}
+
+void Platform_DisplayAnnouncement(const char* announcement, const char* link) {
+	int anncmtLength = strlen(announcement);
+	if (anncmtLength > 0) {
+		int a = lstrlenA(announcement);
+		BSTR unicodestr = SysAllocStringLen(NULL, a);
+		::MultiByteToWideChar(CP_ACP, 0, announcement, a, unicodestr, a);
+		CWnd* label = gThis->GetDlgItem(IDC_ANNOUNCEMENT_LABEL);
+		label->ShowWindow(SW_SHOW);
+		label->SetWindowText(unicodestr);
+		::SysFreeString(unicodestr);
+
+		CFont *m_Font1 = new CFont;
+		m_Font1->CreatePointFont(160, _T("Arial Bold"));
+		label->SetFont(m_Font1);
+
+		a = lstrlenA(link);
+		unicodestr = SysAllocStringLen(NULL, a);
+		::MultiByteToWideChar(CP_ACP, 0, link, a, unicodestr, a);
+		CLinkCtrl* link = (CLinkCtrl*)gThis->GetDlgItem(IDC_ANNOUNCEMENT_LINK);
+		link->ShowWindow(SW_SHOW);
+		link->SetWindowText(unicodestr);
+		link->SetItemUrl(0, unicodestr);
+		::SysFreeString(unicodestr);
+
+
+	}
 }
 
 void Platform_ReportToServer(const char* message) {
