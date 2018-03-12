@@ -172,8 +172,30 @@
                                     <action selector="clickChatLink:" target="249" id="irq-cG-WPn"/>
                                 </connections>
                             </button>
+                            <textField hidden="YES" verticalHuggingPriority="750" misplaced="YES" id="2hi-BG-ikj">
+                                <rect key="frame" x="18" y="97" width="477" height="57"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" alignment="left" title="Welcome to H2H Adventure." id="N1e-b9-7ty">
+                                    <font key="font" metaFont="systemBold" size="23"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <button hidden="YES" verticalHuggingPriority="750" misplaced="YES" id="LnK-Zh-oqk">
+                                <rect key="frame" x="36" y="68" width="365" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <buttonCell key="cell" type="bevel" title="http://h2hadventure.com" bezelStyle="rounded" alignment="left" imageScaling="proportionallyDown" inset="2" id="4Vu-sS-sHM">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system" size="17"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="clickAnnouncementLink:" target="206" id="GES-Pg-WHf"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <connections>
+                            <outlet property="mAnnouncementLink" destination="LnK-Zh-oqk" id="fbu-5t-Dqb"/>
+                            <outlet property="mAnnouncementMessage" destination="2hi-BG-ikj" id="Xdq-Vt-A4X"/>
                             <outlet property="mStatusMessage" destination="VPN-BE-F8H" id="ND5-Yf-DJA"/>
                         </connections>
                     </customView>

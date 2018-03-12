@@ -115,6 +115,10 @@ bool gMute = FALSE;
     [super dealloc];
 }
 
+- (IBAction)clickAnnouncementLink:(id)sender {
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:[mAnnouncementLink title]]];
+}
+
 - (bool)CreateOffscreen
 {
     NSRect rectWindow = [self bounds];
@@ -208,9 +212,30 @@ bool gMute = FALSE;
     mDisplayStatusExpiration = (durationSec >= 0 ? time(NULL) + durationSec : -1);
 }
 
+-(void)displayAnnouncement:(const char*)announcement :(const char*)link
+{
+    NSString *nsstring1 = [NSString stringWithUTF8String:announcement];
+    [mAnnouncementMessage setStringValue:nsstring1];
+    [mAnnouncementMessage setHidden:NO];
+
+    NSString *nsstring2 = [NSString stringWithUTF8String:link];
+    [mAnnouncementLink setTitle:nsstring2];
+    NSColor *linkColor = [NSColor blueColor];
+    
+    NSMutableAttributedString *colorTitle = [[NSMutableAttributedString alloc] initWithAttributedString:[mAnnouncementLink attributedTitle]];
+    NSRange titleRange = NSMakeRange(0, [colorTitle length]);
+    [colorTitle addAttribute:NSForegroundColorAttributeName value:linkColor range:titleRange];
+    [colorTitle addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:titleRange];
+    [mAnnouncementLink setAttributedTitle:colorTitle];
+    [mAnnouncementLink setHidden:NO];
+}
+
+
 - (void)playGame:(NSString*)playerName :(int)gameNum :(int)desiredPlayers :(bool)diff1Switch :(bool)diff2Switch
                 :(NSString*)waitFor1 :(NSString*)waitFor2
 {
+    [mAnnouncementMessage setHidden:YES];
+    [mAnnouncementLink setHidden:YES];
     GameSetup::GameParams params;
     try {
         setup->setPlayerName([playerName UTF8String]);
@@ -478,6 +503,11 @@ float Platform_Random()
 void Platform_DisplayStatus(const char* message, int durationSec) {
     [gView displayStatus:message :durationSec];
 }
+
+void Platform_DisplayAnnouncement(const char* announcement, const char* link) {
+    [gView displayAnnouncement:announcement :link];
+}
+
 
 void Platform_ReportToServer(const char* message) {
     setup->reportToServer(message);

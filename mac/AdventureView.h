@@ -20,7 +20,11 @@
 {
     NSTimer *timer;
     IBOutlet NSTextField *mStatusMessage;
+    IBOutlet NSTextField *mAnnouncementMessage;
+    IBOutlet NSButton *mAnnouncementLink;
+    
 }
+- (IBAction)clickAnnouncementLink:(id)sender;
 
 - (bool)CreateOffscreen;
 
