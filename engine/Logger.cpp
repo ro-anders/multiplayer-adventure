@@ -67,11 +67,9 @@ void Logger::logError(const char* message) {
 Logger& Logger::operator<<(const char* message) {
 	if (destination != OFF) {
 		int msgLen = strlen(message);
-		// TODO: Don't silently fail.  Expand the buffer.
-		if (charsInBuffer + msgLen <= bufferSize) {
-			strcpy(buffer + charsInBuffer, message);
-			charsInBuffer += msgLen;
-		}
+        checkBufferSize(msgLen);
+        strcpy(buffer + charsInBuffer, message);
+        charsInBuffer += msgLen;
 	}
 	return *this;
 }
@@ -82,10 +80,9 @@ Logger& Logger::operator<<(const char* message) {
 Logger& Logger::operator<<(long number) {
 	if (destination != OFF) {
 		// TODO: Don't silently fail.  Expand the buffer.
-		if (charsInBuffer + 20 /* Max long is 20 digits */ <= bufferSize) {
-			int numChars = sprintf(buffer + charsInBuffer, "%ld", number);
-			charsInBuffer += numChars;
-		}
+        checkBufferSize(20 /* Max long is 20 digits */);
+        int numChars = sprintf(buffer + charsInBuffer, "%ld", number);
+        charsInBuffer += numChars;
 	}
 	return *this;
 }
@@ -136,9 +133,9 @@ Logger::Logger(int inDestination) :
     
     if (destination == FILE) {
 #ifdef WIN32
-        logFile = fopen("adventure.log", "a");
+        logFile = fopen("adventure.log", "w");
 #else
-        logFile = fopen("/tmp/adventure.log", "a");
+        logFile = fopen("/tmp/adventure.log", "w");
 #endif
     }
 }
@@ -151,4 +148,16 @@ void Logger::sendMessage(const char* message) {
         fprintf(logFile, "%s\n", message);
         fflush(logFile);
     }
+}
+
+void Logger::checkBufferSize(int moreData) {
+    if (charsInBuffer + moreData >= bufferSize) {
+        int newBufferSize = charsInBuffer + moreData + 1024;
+        char* newBuffer = new char[newBufferSize];
+        strcpy(newBuffer, buffer);
+        delete[] buffer;
+        buffer = newBuffer;
+        bufferSize = newBufferSize;
+    }
+
 }

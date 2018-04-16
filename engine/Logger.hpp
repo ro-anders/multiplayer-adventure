@@ -101,5 +101,11 @@ private:
 	 * Actually send the log message to the destination. 
 	 */
 	void sendMessage(const char* message);
+    
+    /**
+     * Make sure the internal buffer has enough space.
+     */
+    void checkBufferSize(int moreData);
+
 
 };
