@@ -848,6 +848,8 @@ void Adventure_Run()
                 WinGame(objectBall->room);
                 PlayerWinAction* won = new PlayerWinAction(objectBall->room);
                 sync->BroadcastAction(won);
+                // Report back to the server.
+                Platform_ReportToServer("Has won a game");
             }
             else
             {
@@ -1190,10 +1192,6 @@ void WinGame(int winRoom) {
     
     // Play the sound
     Platform_MakeSound(SOUND_WON, MAX_VOLUME);
-    
-    // Report back to the server.
-    Platform_ReportToServer("Has won a game");
-
 }
 
 void ReactToCollisionX(BALL* ball) {
