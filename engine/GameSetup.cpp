@@ -439,6 +439,7 @@ bool GameSetup::pollBroker() {
     //
     // Where "gameToPlay" will be -1 if the game is not full yet.
     
+    const char* castleColors[3]={"gold", "copper", "jade"};
     if (gameSetup) {
         // VERBOSE LOGGING
         Logger::log() << "Received start game from broker:\n" << response << Logger::EOM;
@@ -448,9 +449,9 @@ bool GameSetup::pollBroker() {
         newParams.thisPlayer = responseJson["thisPlayer"].asInt();
         Json::Value requests = responseJson["requests"];
         int numRequests = requests.size();
-        char player1[256];
+        char player1[356];
         player1[0] = '\0';
-        char player2[256];
+        char player2[356];
         player2[0] = '\0';
         char message[1024];
         for(int plyrCtr=0; plyrCtr<numRequests; ++plyrCtr) {
@@ -469,16 +470,16 @@ bool GameSetup::pollBroker() {
             
             if (plyrCtr != newParams.thisPlayer) {
                 char* nameDest = (player1[0] == '\0' ? player1 : player2);
-                strcpy(nameDest, playerName);
+                sprintf(nameDest, "%s is in the %s castle", playerName, castleColors[plyrCtr]);
                 // TODOX: Will exception if no address.  In general need better validation and error response
                 xport.addOtherPlayer(addresses, numAddresses);
             }
         }
         xport.setTransportNum(newParams.thisPlayer);
         if (player2[0] == '\0') {
-            sprintf(message, "Playing game %d against %s.\nStarting momentarily.", newParams.gameLevel+1, player1);
+            sprintf(message, "Playing game %d.  You are in the %s castle\n%s.", newParams.gameLevel+1, castleColors[newParams.thisPlayer], player1);
         } else {
-            sprintf(message, "Playing game %d against %s and %s.\nStarting momentarily.", newParams.gameLevel+1, player1, player2);
+            sprintf(message, "Playing game %d.  You are in the %s castle.\n%s.\n%s.", newParams.gameLevel+1, castleColors[newParams.thisPlayer], player1, player2);
         }
         Platform_DisplayStatus(message, -1);
     } else {
