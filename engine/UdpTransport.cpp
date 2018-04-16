@@ -199,9 +199,10 @@ int UdpTransport::writeData(const char* data, int numBytes, int recipient) {
         List<struct sockaddr_in*>& socketList = otherMachines[ctr].sockaddrs;
         int mostCharsWrittenToClient = -1;
         for(int ctr2=0; ctr2<socketList.size(); ++ctr2) {
-            // VERBOSE LOGGING
-            Logger::log() << "Sending UDP packet \"" << data << "\" to " << otherMachines[ctr].possibleAddrs.get(ctr2).ip() << ":" << otherMachines[ctr].possibleAddrs.get(ctr2).port() << Logger::EOM;
             int charsWritten = socket->writeData(data, numBytes, socketList.get(ctr2));
+            if (charsWritten < 0) {
+                Logger::logError()  << "Error sending UDP packet \"" << data << "\" to " << otherMachines[ctr].possibleAddrs.get(ctr2).ip() << ":" << otherMachines[ctr].possibleAddrs.get(ctr2).port() << Logger::EOM;
+            }
             if (charsWritten > mostCharsWrittenToClient) {
                 mostCharsWrittenToClient = charsWritten;
             }
