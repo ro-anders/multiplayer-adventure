@@ -93,7 +93,7 @@ void GameSetup::GameParams::setWaitingFor(const char* newWaitingFor) {
     strcpy(privateWaitingFor, newWaitingFor);
 }
 
-const int GameSetup::CLIENT_VERSION = 100;
+const int GameSetup::CLIENT_VERSION = 101;
 
 
 GameSetup::GameSetup(RestClient& inClient, UdpTransport& inTransport) :
