@@ -1374,8 +1374,8 @@ void BallMovement(BALL* ball) {
             ball->x = ENTER_AT_LEFT;
 
             // Figure out the room to the right (which might be the secret room)
-            ball->room = (ball->room == MAIN_HALL_RIGHT ? ROBINETT_ROOM :
-                             roomDefs[ball->room]->roomRight);
+            ball->room = (ball->room == MAIN_HALL_RIGHT && board[OBJECT_DOT]->room == MAIN_HALL_RIGHT ?
+                          ROBINETT_ROOM : roomDefs[ball->room]->roomRight);
         }
     } else if (ball->x < LEFT_EDGE) {
         // Can't diagonally switch rooms.  If trying, only allow changing rooms vertically
