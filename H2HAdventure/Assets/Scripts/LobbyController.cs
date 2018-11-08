@@ -35,7 +35,7 @@ public class LobbyController : MonoBehaviour {
     }
 
     public void SubmitNewGame(NewGameInfo info) {
-        localLobbyPlayer.CmdHostGame(gamePrefab, info.numPlayers);
+        localLobbyPlayer.CmdHostGame(gamePrefab, info.numPlayers, info.gameNumber, "client-" + localLobbyPlayer.GetComponent<NetworkIdentity>().netId);
         Debug.Log("Submitted new game");
     }
 

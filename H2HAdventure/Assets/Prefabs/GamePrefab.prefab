@@ -130,18 +130,19 @@ MonoBehaviour:
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 14
+    m_FontSize: 12
     m_FontStyle: 0
     m_BestFit: 0
-    m_MinSize: 10
+    m_MinSize: 1
     m_MaxSize: 40
     m_Alignment: 0
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: abbie + <empty>
+  m_Text: abbie + <empty> + hfjklshfgjsfhgfshglfshjkghfskfshksfghj fhdskjfh hsfgjl
+    s
 --- !u!114 &114185308277293566
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -154,6 +155,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   text: {fileID: 114126174124305022}
+  playerOne: 
+  playerTwo: 
+  playerThree: 
+  numPlayers: 0
+  gameNumber: 0
 --- !u!114 &114252161744013592
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -331,8 +337,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 109, y: 0}
-  m_SizeDelta: {x: 118.9, y: 30}
+  m_AnchoredPosition: {x: 128.1, y: 2}
+  m_SizeDelta: {x: 66.7, y: 23.4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224509591849171468
 RectTransform:
@@ -367,8 +373,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -80.425, y: 0}
-  m_SizeDelta: {x: 160.85, y: 30}
+  m_AnchoredPosition: {x: -33.05, y: 0.00001812}
+  m_SizeDelta: {x: 255.6, y: 40.8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224741199300667354
 RectTransform:

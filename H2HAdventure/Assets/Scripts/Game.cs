@@ -8,8 +8,20 @@ public class Game : NetworkBehaviour {
 
     public Text text;
 
+    [SyncVar(hook = "OnChangePlayerOne")]
+    public string playerOne;
+
+    [SyncVar(hook = "OnChangePlayerTwo")]
+    public string playerTwo;
+
+    [SyncVar(hook = "OnChangePlayerThree")]
+    public string playerThree;
+
     [SyncVar(hook = "OnChangeNumPlayers")]
     public int numPlayers;
+
+    [SyncVar(hook = "OnChangeGameNumber")]
+    public int gameNumber;
 
     void Start()
     {
@@ -17,9 +29,52 @@ public class Game : NetworkBehaviour {
         gameObject.transform.SetParent(GameList.transform);
     }
 
-    void OnChangeNumPlayers(int newNumPlayers) {
-        Debug.Log("Updating game num players from " + numPlayers + " to " + newNumPlayers);
-        text.text = newNumPlayers + " player game";
+    private void RefreshGraphic()
+    {
+        string playerList = playerOne;
+        if (playerTwo != "")
+        {
+            playerList += (playerThree != "" ? ", " : " and ");
+            playerList += playerTwo;
+            if (playerThree != "")
+            {
+                playerList += " and " + playerThree;
+            }
+
+        }
+        text.text = numPlayers + " player game #" + (gameNumber + 1) + " with " + playerList;
     }
+
+    void OnChangePlayerOne(string newPlayerOne)
+    {
+        Debug.Log("Syncing playerOne from \"" + playerOne + "\" to \"" + newPlayerOne + "\"");
+        playerOne = newPlayerOne;
+        RefreshGraphic();
+    }
+
+    void OnChangePlayerTwo(string newPlayerTwo)
+    {
+        playerTwo = newPlayerTwo;
+        RefreshGraphic();
+    }
+
+    void OnChangePlayerThree(string newPlayerThree)
+    {
+        playerThree = newPlayerThree;
+        RefreshGraphic();
+    }
+
+    void OnChangeNumPlayers(int newNumPlayers)
+    {
+        numPlayers = newNumPlayers;
+        RefreshGraphic();
+    }
+
+    void OnChangeGameNumber(int newGameNumber)
+    {
+        gameNumber = newGameNumber;
+        RefreshGraphic();
+    }
+
 
 }

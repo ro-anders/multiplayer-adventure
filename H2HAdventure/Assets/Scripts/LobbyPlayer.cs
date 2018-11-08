@@ -9,7 +9,7 @@ public class LobbyPlayer : NetworkBehaviour {
 	void Start () {
         Text thisText = this.GetComponent<Text>();
         NetworkIdentity id = this.GetComponent<NetworkIdentity>();
-        thisText.text = "Client: " + id.netId;
+        thisText.text = "client-" + id.netId;
         Debug.Log("New client.  Adding to list.");
         GameObject LobbyPlayerList = GameObject.FindGameObjectWithTag("LobbyPlayerParent");
         gameObject.transform.SetParent(LobbyPlayerList.transform);
@@ -23,10 +23,12 @@ public class LobbyPlayer : NetworkBehaviour {
     }
 
     [Command]
-    public void CmdHostGame(GameObject gamePrefab, int numPlayers) {
+    public void CmdHostGame(GameObject gamePrefab, int numPlayers, int gameNumber, string hostPlayer) {
         GameObject gameGO = Instantiate(gamePrefab);
         Game game = gameGO.GetComponent<Game>();
         game.numPlayers = numPlayers;
+        game.gameNumber = gameNumber;
+        game.playerOne = hostPlayer;
     }
 
 }
