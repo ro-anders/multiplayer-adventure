@@ -73,6 +73,8 @@ GameObject:
   - component: {fileID: 224741199300667354}
   - component: {fileID: 222254600641392976}
   - component: {fileID: 114252161744013592}
+  - component: {fileID: 114185308277293566}
+  - component: {fileID: 114421104213872028}
   m_Layer: 5
   m_Name: GamePrefab
   m_TagString: Untagged
@@ -140,6 +142,18 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: abbie + <empty>
+--- !u!114 &114185308277293566
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1954551626859292}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9d744baed0b04538a7513db26c049b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  text: {fileID: 114126174124305022}
 --- !u!114 &114252161744013592
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -208,6 +222,38 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+--- !u!114 &114421104213872028
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1954551626859292}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 62
+    i1: 49
+    i2: 159
+    i3: 96
+    i4: 122
+    i5: 150
+    i6: 100
+    i7: 160
+    i8: 121
+    i9: 57
+    i10: 59
+    i11: 161
+    i12: 108
+    i13: 146
+    i14: 170
+    i15: 145
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 0
 --- !u!114 &114566541147489348
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -340,7 +386,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 166.8}
-  m_SizeDelta: {x: 0, y: -333.5}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 349, y: 55.8}
   m_Pivot: {x: 0.5, y: 0.5}

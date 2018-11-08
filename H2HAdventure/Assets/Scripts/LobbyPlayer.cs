@@ -6,7 +6,6 @@ using UnityEngine.UI;
 
 public class LobbyPlayer : NetworkBehaviour {
 
-	// Use this for initialization
 	void Start () {
         Text thisText = this.GetComponent<Text>();
         NetworkIdentity id = this.GetComponent<NetworkIdentity>();
@@ -14,12 +13,20 @@ public class LobbyPlayer : NetworkBehaviour {
         Debug.Log("New client.  Adding to list.");
         GameObject LobbyPlayerList = GameObject.FindGameObjectWithTag("LobbyPlayerParent");
         gameObject.transform.SetParent(LobbyPlayerList.transform);
+        // The lobby controller needs someway to talk to the server, so it uses
+        // the LobbyPlayer representing the local player
+        if (isLocalPlayer) {
+            GameObject lobbyControllerGO = GameObject.FindGameObjectWithTag("LobbyController");
+            LobbyController lobbyController = lobbyControllerGO.GetComponent<LobbyController>();
+            lobbyController.setLocalLobbyPlayer(this);
+        }
     }
 
-    // Update is called once per frame
-    void Update () {
-		
-	}
-
+    [Command]
+    public void CmdHostGame(GameObject gamePrefab, int numPlayers) {
+        GameObject gameGO = Instantiate(gamePrefab);
+        Game game = gameGO.GetComponent<Game>();
+        game.numPlayers = numPlayers;
+    }
 
 }

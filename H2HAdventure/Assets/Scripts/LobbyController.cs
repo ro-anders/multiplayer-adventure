@@ -17,9 +17,15 @@ public class LobbyController : MonoBehaviour {
     public NetworkManager lobbyManager;
     public GameObject newGamePanel;
     public Button hostButton;
+    public GameObject gamePrefab;
 
     private const string LOBBY_MATCH_NAME = "h2hlobby";
     private bool isHost = false;
+    private LobbyPlayer localLobbyPlayer;
+
+    public void setLocalLobbyPlayer(LobbyPlayer inLocalLobbyPlayer) {
+        localLobbyPlayer = inLocalLobbyPlayer;
+    }
 
     public void CloseNewGameDialog(bool submitted) {
         newGamePanel.SetActive(false);
@@ -29,6 +35,7 @@ public class LobbyController : MonoBehaviour {
     }
 
     public void SubmitNewGame(NewGameInfo info) {
+        localLobbyPlayer.CmdHostGame(gamePrefab, info.numPlayers);
         Debug.Log("Submitted new game");
     }
 
