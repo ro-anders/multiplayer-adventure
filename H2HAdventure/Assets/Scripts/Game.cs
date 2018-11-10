@@ -27,6 +27,7 @@ public class Game : NetworkBehaviour {
     {
         GameObject GameList = GameObject.FindGameObjectWithTag("GameParent");
         gameObject.transform.SetParent(GameList.transform);
+        RefreshGraphic();
     }
 
     private void RefreshGraphic()
@@ -47,7 +48,6 @@ public class Game : NetworkBehaviour {
 
     void OnChangePlayerOne(string newPlayerOne)
     {
-        Debug.Log("Syncing playerOne from \"" + playerOne + "\" to \"" + newPlayerOne + "\"");
         playerOne = newPlayerOne;
         RefreshGraphic();
     }

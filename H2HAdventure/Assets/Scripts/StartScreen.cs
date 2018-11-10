@@ -16,7 +16,6 @@ public class StartScreen : MonoBehaviour {
 	}
 
     public void OnPlayClicked() {
-        Debug.Log("Play Now clicked");
         SceneManager.LoadScene("Lobby");
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -35,7 +36,7 @@ public class LobbyController : MonoBehaviour {
     }
 
     public void SubmitNewGame(NewGameInfo info) {
-        localLobbyPlayer.CmdHostGame(gamePrefab, info.numPlayers, info.gameNumber, "client-" + localLobbyPlayer.GetComponent<NetworkIdentity>().netId);
+        localLobbyPlayer.CmdHostGame(info.numPlayers, info.gameNumber, "client-" + localLobbyPlayer.GetComponent<NetworkIdentity>().netId);
         Debug.Log("Submitted new game");
     }
 
@@ -46,7 +47,12 @@ public class LobbyController : MonoBehaviour {
 
     public void OnLocalStartPressed() {
         hostButton.interactable = true;
-        lobbyManager.StartHost();
+        NetworkClient client = null;
+        client = lobbyManager.StartHost();
+        if (client == null)
+        {
+            client = lobbyManager.StartClient();
+        }
     }
 
     public void OnNetworkedStartPressed() {
