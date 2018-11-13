@@ -155,9 +155,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   text: {fileID: 114126174124305022}
-  playerOne: 
-  playerTwo: 
-  playerThree: 
+  playerOne: 4294967295
+  playerTwo: 4294967295
+  playerThree: 4294967295
   numPlayers: 0
   gameNumber: 0
 --- !u!114 &114252161744013592
@@ -225,7 +225,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 114068097771929594}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 114185308277293566}
+        m_MethodName: OnActionButtonPressed
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &114421104213872028

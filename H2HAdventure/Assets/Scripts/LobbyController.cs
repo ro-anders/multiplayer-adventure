@@ -13,19 +13,23 @@ public class NewGameInfo {
     public bool dragonsRunFromSword;
 }
 
-public class LobbyController : MonoBehaviour {
+public class LobbyController : MonoBehaviour
+{
 
     public NetworkManager lobbyManager;
     public GameObject newGamePanel;
     public Button hostButton;
     public GameObject gamePrefab;
+    public GameObject gameList;
 
     private const string LOBBY_MATCH_NAME = "h2hlobby";
-    private bool isHost = false;
     private LobbyPlayer localLobbyPlayer;
 
-    public void setLocalLobbyPlayer(LobbyPlayer inLocalLobbyPlayer) {
-        localLobbyPlayer = inLocalLobbyPlayer;
+
+    public LobbyPlayer LocalLobbyPlayer
+    {
+        get { return localLobbyPlayer; }
+        set { localLobbyPlayer = value; }
     }
 
     public void CloseNewGameDialog(bool submitted) {
@@ -36,8 +40,25 @@ public class LobbyController : MonoBehaviour {
     }
 
     public void SubmitNewGame(NewGameInfo info) {
-        localLobbyPlayer.CmdHostGame(info.numPlayers, info.gameNumber, "client-" + localLobbyPlayer.GetComponent<NetworkIdentity>().netId);
-        Debug.Log("Submitted new game");
+        localLobbyPlayer.CmdHostGame(info.numPlayers, info.gameNumber, localLobbyPlayer.GetComponent<NetworkIdentity>().netId.Value);
+    }
+
+    public void PlayerJoinGame(LobbyPlayer player, uint gameId) {
+        Game[] games = gameList.GetComponentsInChildren<Game>();
+        Debug.Log("Searching for game #" + gameId + " in list of " + games.Length + " games");
+        Game found = null;
+        for (int i = 0; (i < games.Length) && (found == null); ++i) {
+            if (games[i].gameId == gameId) {
+                found = games[i];
+            }
+        }
+        if (found != null) {
+            found.Join(player.Id);
+            Debug.Log("Client #" + player.Id + " joined " + found.playerOne + "'s game");
+        } else {
+            Debug.Log("Could not find game #" + gameId + " in list of " + games.Length + " games");
+        }
+
     }
 
     public void OnHostPressed() {
@@ -91,7 +112,6 @@ public class LobbyController : MonoBehaviour {
                 // No one has hosted yet.  Try to host.
                 lobbyManager.matchMaker.CreateMatch(LOBBY_MATCH_NAME, (uint)100, true,
                                     "", "", "", 0, 0, lobbyManager.OnMatchCreate);
-                isHost = true;
             }
             else
             {
