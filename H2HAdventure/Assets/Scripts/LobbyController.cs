@@ -47,7 +47,7 @@ public class LobbyController : MonoBehaviour
     }
 
     public void SubmitNewGame(NewGameInfo info) {
-        localLobbyPlayer.CmdHostGame(info.numPlayers, info.gameNumber, localLobbyPlayer.GetComponent<NetworkIdentity>().netId.Value);
+        localLobbyPlayer.CmdHostGame(info.numPlayers, info.gameNumber, localLobbyPlayer.GetComponent<NetworkIdentity>().netId.Value, localLobbyPlayer.playerName);
     }
 
     public void PlayerJoinGame(LobbyPlayer player, uint gameId) {
@@ -60,7 +60,7 @@ public class LobbyController : MonoBehaviour
             }
         }
         if (found != null) {
-            found.Join(player.Id);
+            found.Join(player.Id, player.playerName);
             Debug.Log("Client #" + player.Id + " joined " + found.playerOne + "'s game");
         } else {
             Debug.Log("Could not find game #" + gameId + " in list of " + games.Length + " games");

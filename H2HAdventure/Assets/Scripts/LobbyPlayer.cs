@@ -39,13 +39,14 @@ public class LobbyPlayer : NetworkBehaviour
     }
 
     [Command]
-    public void CmdHostGame(int numPlayers, int gameNumber, uint hostPlayerId)
+    public void CmdHostGame(int numPlayers, int gameNumber, uint hostPlayerId, string hostPlayerName)
     {
         GameObject gameGO = Instantiate(lobbyController.gamePrefab);
         Game game = gameGO.GetComponent<Game>();
         game.numPlayers = numPlayers;
         game.gameNumber = gameNumber;
         game.playerOne = hostPlayerId;
+        game.playerOneName = hostPlayerName;
         NetworkServer.Spawn(gameGO);
     }
 
