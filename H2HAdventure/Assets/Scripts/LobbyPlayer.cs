@@ -9,6 +9,9 @@ public class LobbyPlayer : NetworkBehaviour
 
     public LobbyController lobbyController;
 
+    [SyncVar(hook = "OnChangePlayerName")]
+    public string playerName = "";
+
     public uint Id
     {
         get { return this.GetComponent<NetworkIdentity>().netId.Value; }
@@ -16,8 +19,6 @@ public class LobbyPlayer : NetworkBehaviour
 
     void Start()
     {
-        Text thisText = this.GetComponent<Text>();
-        thisText.text = "client-" + Id;
         GameObject LobbyPlayerList = GameObject.FindGameObjectWithTag("LobbyPlayerParent");
         gameObject.transform.SetParent(LobbyPlayerList.transform);
         // The lobby controller needs someway to talk to the server, so it uses
@@ -27,7 +28,14 @@ public class LobbyPlayer : NetworkBehaviour
         if (isLocalPlayer)
         {
             lobbyController.LocalLobbyPlayer = this;
+            CmdSetPlayerName(lobbyController.ThisPlayerName);
         }
+        RefreshDisplay();
+    }
+
+    [Command]
+    public void CmdSetPlayerName(string name) {
+        playerName = name;
     }
 
     [Command]
@@ -47,4 +55,14 @@ public class LobbyPlayer : NetworkBehaviour
         lobbyController.PlayerJoinGame(this, gameId);
     }
 
+    private void RefreshDisplay() {
+        Text thisText = this.GetComponent<Text>();
+        thisText.text = ((playerName != null) && (playerName != "") ? playerName : "unknown-" + Id);
+    }
+
+    private void OnChangePlayerName(string newPlayerName) {
+        Debug.Log("Player name changed from \"" + playerName + "\" to \"" + newPlayerName + "\"");
+        playerName = newPlayerName;
+        RefreshDisplay();
+    }
 }

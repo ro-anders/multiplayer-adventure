@@ -155,6 +155,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   text: {fileID: 114126174124305022}
+  gameId: 0
   playerOne: 4294967295
   playerTwo: 4294967295
   playerThree: 4294967295
@@ -270,7 +271,7 @@ MonoBehaviour:
     i14: 170
     i15: 145
   m_ServerOnly: 0
-  m_LocalPlayerAuthority: 1
+  m_LocalPlayerAuthority: 0
 --- !u!114 &114566541147489348
 MonoBehaviour:
   m_ObjectHideFlags: 1

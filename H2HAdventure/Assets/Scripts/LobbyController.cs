@@ -23,6 +23,7 @@ public class LobbyController : MonoBehaviour
     public GameObject gameList;
 
     private const string LOBBY_MATCH_NAME = "h2hlobby";
+    private string thisPlayerName;
     private LobbyPlayer localLobbyPlayer;
 
 
@@ -30,6 +31,12 @@ public class LobbyController : MonoBehaviour
     {
         get { return localLobbyPlayer; }
         set { localLobbyPlayer = value; }
+    }
+
+    public string ThisPlayerName 
+    {
+        get { return thisPlayerName; }
+        set { thisPlayerName = value; }
     }
 
     public void CloseNewGameDialog(bool submitted) {
