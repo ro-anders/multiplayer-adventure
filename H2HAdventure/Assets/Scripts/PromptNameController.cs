@@ -10,7 +10,10 @@ public class PromptNameController : MonoBehaviour {
     public LobbyController parent;
 
     public void OnOkPressed() {
-        parent.ThisPlayerName = nameInput.text;
-        thisPanel.SetActive(false);
+        if (nameInput.text.Trim() != "")
+        {
+            parent.GotPlayerName(nameInput.text.Trim());
+            thisPanel.SetActive(false);
+        }
     }
 }

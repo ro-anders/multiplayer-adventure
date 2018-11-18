@@ -41,19 +41,30 @@ public class LobbyPlayer : NetworkBehaviour
     [Command]
     public void CmdHostGame(int numPlayers, int gameNumber, uint hostPlayerId, string hostPlayerName)
     {
+        System.Random rand = new System.Random();
         GameObject gameGO = Instantiate(lobbyController.gamePrefab);
         Game game = gameGO.GetComponent<Game>();
         game.numPlayers = numPlayers;
         game.gameNumber = gameNumber;
         game.playerOne = hostPlayerId;
         game.playerOneName = hostPlayerName;
+        game.playerMapping = rand.Next(1, 7);
+        if (SessionInfo.NetworkSetup == SessionInfo.Network.MATCHMAKER) {
+            game.connectionkey = "h2h-" + hostPlayerId + "-" + rand.Next(100);
+        } else {
+            game.connectionkey = (30000 + rand.Next(100) * 100 + hostPlayerId).ToString();
+        }
         NetworkServer.Spawn(gameGO);
     }
 
     [Command]
     public void CmdJoinGame(uint gameId) {
-        Debug.Log("Client " + Id + " is joining game #" + gameId);
         lobbyController.PlayerJoinGame(this, gameId);
+    }
+
+    [Command]
+    public void CmdLeaveGame(uint gameId) {
+        lobbyController.PlayerLeaveGame(this, gameId);
     }
 
     private void RefreshDisplay() {
@@ -62,7 +73,6 @@ public class LobbyPlayer : NetworkBehaviour
     }
 
     private void OnChangePlayerName(string newPlayerName) {
-        Debug.Log("Player name changed from \"" + playerName + "\" to \"" + newPlayerName + "\"");
         playerName = newPlayerName;
         RefreshDisplay();
     }

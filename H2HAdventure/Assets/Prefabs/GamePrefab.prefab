@@ -154,11 +154,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9d744baed0b04538a7513db26c049b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  actionButton: {fileID: 114314440288614250}
   text: {fileID: 114126174124305022}
   gameId: 0
   playerOne: 4294967295
+  playerOneName: --
   playerTwo: 4294967295
+  playerTwoName: --
   playerThree: 4294967295
+  playerThreeName: --
   numPlayers: 0
   gameNumber: 0
 --- !u!114 &114252161744013592

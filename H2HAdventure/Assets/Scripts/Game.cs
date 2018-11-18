@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class Game : NetworkBehaviour
 {
-
+    public Button actionButton;
     public Text text;
 
     private static readonly uint NO_PLAYER = NetworkInstanceId.Invalid.Value;
@@ -38,6 +38,13 @@ public class Game : NetworkBehaviour
     [SyncVar(hook = "OnChangeGameNumber")]
     public int gameNumber;
 
+    [SyncVar]
+    public string connectionkey;
+
+    [SyncVar]
+    public int playerMapping;
+
+
     private LobbyPlayer localPlayer;
     private LobbyPlayer LocalPlayer {
         get {
@@ -62,6 +69,7 @@ public class Game : NetworkBehaviour
     private void RefreshGraphic()
     {
         uint me = (LocalPlayer != null ? LocalPlayer.Id : NO_PLAYER);
+        bool isInGame = (me != NO_PLAYER) && ((me == playerOne) || (me == playerTwo) || (me == playerThree));
         string playerList = (playerOne == me ? "you" : playerOneName);
         if (playerTwo != NO_PLAYER)
         {
@@ -74,28 +82,57 @@ public class Game : NetworkBehaviour
 
         }
         text.text = numPlayers + " player game #" + (gameNumber + 1) + " with " + playerList;
+        if (isInGame) {
+            actionButton.gameObject.SetActive(true);
+            actionButton.GetComponentInChildren<Text>().text = "Cancel";
+        } else if ((playerThree != NO_PLAYER) || ((numPlayers == 2) && (playerTwo != NO_PLAYER))) {
+            actionButton.gameObject.SetActive(false);
+        } else {
+            actionButton.gameObject.SetActive(true);
+            actionButton.GetComponentInChildren<Text>().text = "Join";
+        }
     }
 
     public void Join(uint player, string playerName) {
         if (playerTwo == NO_PLAYER) {
             playerTwo = player;
             playerTwoName = playerName;
-            Debug.Log("Joined game");
         }
         else if ((numPlayers > 2) && (playerThree == NO_PLAYER)) {
             playerThree = player;
             playerThreeName = playerName;
-            Debug.Log("Joined game");
-        } else {
-            Debug.Log("Did not join game");
         }
-
     }
+
+    public void Leave(uint player)
+    {
+        if (playerTwo == player)
+        {
+            playerTwo = playerThree;
+            playerThree = NO_PLAYER;
+            playerTwoName = playerThreeName;
+            playerThreeName = UNKNOWN_NAME;
+        }
+        else if (playerThree == player)
+        {
+            playerThree = NO_PLAYER;
+            playerThreeName = UNKNOWN_NAME;
+        }
+    }
+
 
     public void OnActionButtonPressed()
     {
-        Debug.Log("Calling CmdJoinGame on server");
-        LocalPlayer.CmdJoinGame(gameId);
+        uint me = LocalPlayer.Id;
+        bool isInGame = (me != NO_PLAYER) && ((me == playerOne) || (me == playerTwo) || (me == playerThree));
+        if (isInGame)
+        {
+            LocalPlayer.CmdLeaveGame(gameId);
+        }
+        else
+        {
+            LocalPlayer.CmdJoinGame(gameId);
+        }
     }
 
     void OnChangePlayerOne(uint newPlayerOne)

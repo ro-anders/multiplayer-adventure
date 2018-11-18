@@ -16,6 +16,12 @@ public class StartScreen : MonoBehaviour {
 	}
 
     public void OnPlayClicked() {
+        SessionInfo.NetworkSetup = SessionInfo.Network.MATCHMAKER;
+        SceneManager.LoadScene("Lobby");
+    }
+
+    public void OnTestClicked() {
+        SessionInfo.NetworkSetup = SessionInfo.Network.ALL_LOCAL;
         SceneManager.LoadScene("Lobby");
     }
 }
