@@ -63,6 +63,11 @@ public class LobbyPlayer : NetworkBehaviour
     }
 
     [Command]
+    public void CmdSignalStartingGame(uint gameId) {
+        lobbyController.PlayerReadyToStartGame(this, gameId);
+    }
+
+    [Command]
     public void CmdLeaveGame(uint gameId) {
         lobbyController.PlayerLeaveGame(this, gameId);
     }

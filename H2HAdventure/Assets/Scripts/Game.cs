@@ -44,17 +44,30 @@ public class Game : NetworkBehaviour
     [SyncVar]
     public int playerMapping;
 
+    /** When enough players have joined, we notify each player to start the game
+     * but wait for an ack before disconnecting anything.  This is the number 
+     * of players that have acked. */
+    private int numPlayersReady = 0;
 
     private LobbyPlayer localPlayer;
-    private LobbyPlayer LocalPlayer {
-        get {
-            if (localPlayer == null) {
+    private LobbyPlayer LocalPlayer
+    {
+        get
+        {
+            if (localPlayer == null)
+            {
                 GameObject lobbyControllerGO = GameObject.FindGameObjectWithTag("LobbyController");
                 LobbyController lobbyController = lobbyControllerGO.GetComponent<LobbyController>();
                 localPlayer = lobbyController.LocalLobbyPlayer;
             }
             return localPlayer;
         }
+    }
+
+    public bool IsInGame(uint player)
+    {
+        return ((player != NO_PLAYER) &&
+                ((playerOne == player) || (playerTwo == player) || (playerThree == player)));
     }
 
     void Start()
@@ -66,10 +79,36 @@ public class Game : NetworkBehaviour
         RefreshGraphic();
     }
 
+    [ClientRpc]
+    public void RpcStartGame()
+    {
+        Debug.Log(localPlayer.playerName + " is starting " + playerOneName + "'s game");
+        localPlayer.CmdSignalStartingGame(this.gameId);
+        // Regular clients disconnect from the lobby and start playing immediately.
+        // But the host of the lobby has to wait until getting an ack from the other
+        // players before disconnecting.
+        if (isClient)
+        {
+            GameObject lobbyControllerGO = GameObject.FindGameObjectWithTag("LobbyController");
+            LobbyController lobbyController = lobbyControllerGO.GetComponent<LobbyController>();
+            lobbyController.StartGame(this);
+        }
+    }
+
+    public void readyToPlay(LobbyPlayer player)
+    {
+        uint playerId = player.Id;
+        if ((playerId == playerOne) || (playerId == playerTwo) || 
+            ((playerThree != NO_PLAYER) && (playerId == playerThree))) {
+            ++numPlayersReady;
+        }
+
+    }
+
     private void RefreshGraphic()
     {
         uint me = (LocalPlayer != null ? LocalPlayer.Id : NO_PLAYER);
-        bool isInGame = (me != NO_PLAYER) && ((me == playerOne) || (me == playerTwo) || (me == playerThree));
+        bool amInGame = IsInGame(me);
         string playerList = (playerOne == me ? "you" : playerOneName);
         if (playerTwo != NO_PLAYER)
         {
@@ -82,26 +121,38 @@ public class Game : NetworkBehaviour
 
         }
         text.text = numPlayers + " player game #" + (gameNumber + 1) + " with " + playerList;
-        if (isInGame) {
+        if (amInGame)
+        {
             actionButton.gameObject.SetActive(true);
             actionButton.GetComponentInChildren<Text>().text = "Cancel";
-        } else if ((playerThree != NO_PLAYER) || ((numPlayers == 2) && (playerTwo != NO_PLAYER))) {
+        }
+        else if ((playerThree != NO_PLAYER) || ((numPlayers == 2) && (playerTwo != NO_PLAYER)))
+        {
             actionButton.gameObject.SetActive(false);
-        } else {
+        }
+        else
+        {
             actionButton.gameObject.SetActive(true);
             actionButton.GetComponentInChildren<Text>().text = "Join";
         }
     }
 
-    public void Join(uint player, string playerName) {
-        if (playerTwo == NO_PLAYER) {
+    public bool Join(uint player, string playerName)
+    {
+        bool gameReady = false;
+        if (playerTwo == NO_PLAYER)
+        {
             playerTwo = player;
             playerTwoName = playerName;
+            gameReady = (numPlayers == 2);
         }
-        else if ((numPlayers > 2) && (playerThree == NO_PLAYER)) {
+        else if ((numPlayers > 2) && (playerThree == NO_PLAYER))
+        {
             playerThree = player;
             playerThreeName = playerName;
+            gameReady = true;
         }
+        return gameReady;
     }
 
     public void Leave(uint player)

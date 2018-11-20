@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.Match;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class NewGameInfo {
@@ -101,8 +102,16 @@ public class LobbyController : MonoBehaviour
             }
         }
         if (found != null) {
-            found.Join(player.Id, player.playerName);
+            bool gameReady = found.Join(player.Id, player.playerName);
+            if (gameReady) {
+                Debug.Log("Starting " + found.playerOneName + "'s game");
+                found.RpcSignalStartGame();
+            }
         } 
+    }
+
+    public void PlayerReadyToStartGame() {
+
     }
 
     public void PlayerLeaveGame(LobbyPlayer player, uint gameId) {
@@ -180,6 +189,22 @@ public class LobbyController : MonoBehaviour
     public virtual void OnMatchJoined(bool success, string extendedInfo, MatchInfo matchInfo) {
         lobbyManager.OnMatchJoined(success, extendedInfo, matchInfo);
         hostButton.interactable = true;
+    }
+
+    public void StartGame(Game gameToPlay) {
+        SessionInfo.GameToPlay = gameToPlay;
+        // Disconnect from the lobby before switching to 
+        if (SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) {
+            if (localLobbyPlayer.isClient) {
+                lobbyManager.StopClient();
+            } else {
+                lobbyManager.StopHost();
+            }
+        } else {
+            Debug.Log("Matchmaker disconnect not implemented yet.");
+            throw new Exception("Matchmaker disconnect not implemented yet.");
+        }
+        SceneManager.LoadScene("Game");
     }
 
 }
