@@ -64,6 +64,7 @@ public class LobbyPlayer : NetworkBehaviour
 
     [Command]
     public void CmdSignalStartingGame(uint gameId) {
+        Debug.Log(this.playerName + " got start game command");
         lobbyController.PlayerReadyToStartGame(this, gameId);
     }
 

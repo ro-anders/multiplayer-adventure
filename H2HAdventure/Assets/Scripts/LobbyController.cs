@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.Match;
+using UnityEngine.Networking.Types;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -27,6 +28,8 @@ public class LobbyController : MonoBehaviour
     private const string LOBBY_MATCH_NAME = "h2hlobby";
     private string thisPlayerName = "";
     private LobbyPlayer localLobbyPlayer;
+    private ulong matchNetwork;
+    private NodeID matchNode;
 
 
     public LobbyPlayer LocalLobbyPlayer
@@ -105,13 +108,44 @@ public class LobbyController : MonoBehaviour
             bool gameReady = found.Join(player.Id, player.playerName);
             if (gameReady) {
                 Debug.Log("Starting " + found.playerOneName + "'s game");
-                found.RpcSignalStartGame();
+                found.RpcStartGame();
             }
         } 
     }
 
-    public void PlayerReadyToStartGame() {
-
+    public void PlayerReadyToStartGame(LobbyPlayer player, uint gameId)
+    {
+        Game[] games = gameList.GetComponentsInChildren<Game>();
+        Game found = null;
+        for (int i = 0; (i < games.Length) && (found == null); ++i)
+        {
+            if (games[i].gameId == gameId)
+            {
+                found = games[i];
+            }
+        }
+        if (found != null)
+        {
+            bool allPlayersReady = found.readyToPlay(player);
+            if (allPlayersReady)
+            {
+                // If one of the game's players is the player hosting the
+                // lobby, they delayed starting the game until the other
+                // players had acked.
+                if (found.IsInGame(localLobbyPlayer.Id))
+                {
+                    Debug.Log("All players are ready to start game.  Shutting down lobby.");
+                    StartGame(found);
+                } else {
+                    Debug.Log("Game started for players other than host.  Don't need to shut down lobby.");
+                }
+                NetworkServer.Destroy(found.gameObject);
+            } else {
+                Debug.Log("Still waiting for more players to signal start.");
+            }
+        } else {
+            Debug.Log("Received signal that " + player.playerName + "is ready to start unknown game #" + gameId);
+        }
     }
 
     public void PlayerLeaveGame(LobbyPlayer player, uint gameId) {
@@ -182,11 +216,14 @@ public class LobbyController : MonoBehaviour
 
     public void OnMatchCreate(bool success, string extendedInfo, MatchInfo matchInfo)
     {
+        matchNetwork = (ulong)matchInfo.networkId;
         lobbyManager.OnMatchCreate(success, extendedInfo, matchInfo);
         hostButton.interactable = true;
     }
 
     public virtual void OnMatchJoined(bool success, string extendedInfo, MatchInfo matchInfo) {
+        matchNetwork = (ulong)matchInfo.networkId;
+        matchNode = matchInfo.nodeId;
         lobbyManager.OnMatchJoined(success, extendedInfo, matchInfo);
         hostButton.interactable = true;
     }
@@ -195,14 +232,20 @@ public class LobbyController : MonoBehaviour
         SessionInfo.GameToPlay = gameToPlay;
         // Disconnect from the lobby before switching to 
         if (SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) {
-            if (localLobbyPlayer.isClient) {
-                lobbyManager.StopClient();
-            } else {
+            if (localLobbyPlayer.isServer) {
                 lobbyManager.StopHost();
+            } else {
+                lobbyManager.StopClient();
             }
         } else {
-            Debug.Log("Matchmaker disconnect not implemented yet.");
-            throw new Exception("Matchmaker disconnect not implemented yet.");
+            if (localLobbyPlayer.isServer)
+            {
+                lobbyManager.matchMaker.DestroyMatch((NetworkID)matchNetwork, 0, lobbyManager.OnDestroyMatch);
+            }
+            else
+            {
+                lobbyManager.matchMaker.DropConnection((NetworkID)matchNetwork, matchNode, 0, lobbyManager.OnDropConnection);
+            }
         }
         SceneManager.LoadScene("Game");
     }

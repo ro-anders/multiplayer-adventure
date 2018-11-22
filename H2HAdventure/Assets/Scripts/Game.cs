@@ -87,22 +87,27 @@ public class Game : NetworkBehaviour
         // Regular clients disconnect from the lobby and start playing immediately.
         // But the host of the lobby has to wait until getting an ack from the other
         // players before disconnecting.
-        if (isClient)
+        if (!isServer)
         {
+            Debug.Log("Not the host so can start game immediately.");
             GameObject lobbyControllerGO = GameObject.FindGameObjectWithTag("LobbyController");
             LobbyController lobbyController = lobbyControllerGO.GetComponent<LobbyController>();
             lobbyController.StartGame(this);
         }
     }
 
-    public void readyToPlay(LobbyPlayer player)
+    /**
+     * Marks a player as ready to play.  Returns true if all players are now
+     * ready to play. 
+     */
+    public bool readyToPlay(LobbyPlayer player)
     {
         uint playerId = player.Id;
         if ((playerId == playerOne) || (playerId == playerTwo) || 
             ((playerThree != NO_PLAYER) && (playerId == playerThree))) {
             ++numPlayersReady;
         }
-
+        return numPlayersReady >= numPlayers;
     }
 
     private void RefreshGraphic()

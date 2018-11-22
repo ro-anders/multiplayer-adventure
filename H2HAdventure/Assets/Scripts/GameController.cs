@@ -2,12 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Networking.Match;
 using UnityEngine.UI;
 
 public class GameController : MonoBehaviour {
 
     public GameNetworkManager networkManager;
     public Text gameStartText;
+
+    bool needMatch = false;
+    string matchName;
+    bool waitingOnListMatch = false;
 
 	// Use this for initialization
 	void Start () {
@@ -23,11 +28,78 @@ public class GameController : MonoBehaviour {
                 networkManager.networkPort = int.Parse(SessionInfo.GameToPlay.connectionkey);
                 networkManager.StartClient();
             }
+        } else if (SessionInfo.NetworkSetup == SessionInfo.Network.MATCHMAKER) {
+            matchName = "h2h-" + SessionInfo.GameToPlay.connectionkey;
+            if (networkManager.matchMaker == null)
+            {
+                networkManager.StartMatchMaker();
+            }
+            if (isHosting) {
+                networkManager.matchMaker.CreateMatch(matchName, (uint)100, true,
+                                    "", "", "", 0, 0, OnMatchCreate);
+            } else {
+                needMatch = true;
+            }
         }
 	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (needMatch && !waitingOnListMatch)
+        {
+            networkManager.matchMaker.ListMatches(0, 20, "", true, 0, 0, onMatchList);
+            waitingOnListMatch = true;
+        }
+    }
+
+    public void OnMatchCreate(bool success, string extendedInfo, MatchInfo matchInfo)
+    {
+        Debug.Log("Now hosting h2h game");
+    }
+
+    private void onMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> matchList)
+    {
+        if (!success)
+        {
+            Debug.Log("Error looking for match.");
+            // Try again
+            waitingOnListMatch = false;
+        }
+        else
+        {
+            MatchInfoSnapshot found = null;
+            if (matchList.Count > 0)
+            {
+                // There should be only one match ever - the default one
+                // but we check just in case
+                foreach (MatchInfoSnapshot match in matchList)
+                {
+                    if (match.name.Equals(matchName))
+                    {
+                        found = match;
+                        break;
+                    }
+                }
+            }
+            if (found == null)
+            {
+                // No one has hosted yet.  Try again.
+                waitingOnListMatch = false;
+            }
+            else
+            {
+                networkManager.matchMaker.JoinMatch(found.networkId, "", "", "", 0, 0, OnMatchJoined);
+            }
+        }
+    }
+
+    public virtual void OnMatchJoined(bool success, string extendedInfo, MatchInfo matchInfo)
+    {
+        Debug.Log("Now joined h2h game");
+        needMatch = false;
+    }
+
+
+
 }
