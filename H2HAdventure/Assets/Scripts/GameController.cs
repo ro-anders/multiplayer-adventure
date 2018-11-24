@@ -15,7 +15,7 @@ public class GameController : MonoBehaviour {
     bool waitingOnListMatch = false;
 
 	// Use this for initialization
-	public void SetupNetwork () {
+	void Start() {
 
         bool isHosting = SessionInfo.GameToPlay.playerOne == SessionInfo.ThisPlayerId;
         if (SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) {
