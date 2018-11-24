@@ -15,7 +15,7 @@ public class GameController : MonoBehaviour {
     bool waitingOnListMatch = false;
 
 	// Use this for initialization
-	void Start () {
+	public void SetupNetwork () {
 
         bool isHosting = SessionInfo.GameToPlay.playerOne == SessionInfo.ThisPlayerId;
         if (SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) {
@@ -29,14 +29,14 @@ public class GameController : MonoBehaviour {
                 networkManager.StartClient();
             }
         } else if (SessionInfo.NetworkSetup == SessionInfo.Network.MATCHMAKER) {
-            matchName = "h2h-" + SessionInfo.GameToPlay.connectionkey;
+            matchName = SessionInfo.GameToPlay.connectionkey;
             if (networkManager.matchMaker == null)
             {
                 networkManager.StartMatchMaker();
             }
             if (isHosting) {
                 networkManager.matchMaker.CreateMatch(matchName, (uint)100, true,
-                                    "", "", "", 0, 0, OnMatchCreate);
+                                    "", "", "", 0, 1, OnMatchCreate);
             } else {
                 needMatch = true;
             }
@@ -48,17 +48,19 @@ public class GameController : MonoBehaviour {
     {
         if (needMatch && !waitingOnListMatch)
         {
-            networkManager.matchMaker.ListMatches(0, 20, "", true, 0, 0, onMatchList);
+            networkManager.matchMaker.ListMatches(0, 20, "", true, 0, 1, OnMatchList);
             waitingOnListMatch = true;
         }
     }
 
     public void OnMatchCreate(bool success, string extendedInfo, MatchInfo matchInfo)
     {
-        Debug.Log("Now hosting h2h game");
+        networkManager.OnMatchCreate(success, extendedInfo, matchInfo);
+        Debug.Log("Now hosting h2h game " + matchName);
+        gameStartText.text = "Waiting for players to join " + matchName + " match";
     }
 
-    private void onMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> matchList)
+    private void OnMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> matchList)
     {
         if (!success)
         {
@@ -68,6 +70,7 @@ public class GameController : MonoBehaviour {
         }
         else
         {
+            Debug.Log("Queried and found " + matchList.Count + " matches");
             MatchInfoSnapshot found = null;
             if (matchList.Count > 0)
             {
@@ -79,6 +82,8 @@ public class GameController : MonoBehaviour {
                     {
                         found = match;
                         break;
+                    } else {
+                        Debug.Log("Ignoring match named " + match.name);
                     }
                 }
             }
@@ -89,13 +94,14 @@ public class GameController : MonoBehaviour {
             }
             else
             {
-                networkManager.matchMaker.JoinMatch(found.networkId, "", "", "", 0, 0, OnMatchJoined);
+                networkManager.matchMaker.JoinMatch(found.networkId, "", "", "", 0, 1, OnMatchJoined);
             }
         }
     }
 
     public virtual void OnMatchJoined(bool success, string extendedInfo, MatchInfo matchInfo)
     {
+        networkManager.OnMatchJoined(success, extendedInfo, matchInfo);
         Debug.Log("Now joined h2h game");
         needMatch = false;
     }

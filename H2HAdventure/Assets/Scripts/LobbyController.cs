@@ -75,7 +75,7 @@ public class LobbyController : MonoBehaviour
             {
                 lobbyManager.StartMatchMaker();
             }
-            lobbyManager.matchMaker.ListMatches(0, 20, "", true, 0, 0, onMatchList);
+            lobbyManager.matchMaker.ListMatches(0, 20, "", true, 0, 2, onMatchList);
         }
     }
 
@@ -183,7 +183,7 @@ public class LobbyController : MonoBehaviour
         if (!success)
         {
             Debug.Log("Error looking for default Lobby match.");
-            // we are going to refresh it again
+            // TODO: FIX0001
         }
         else
         {
@@ -205,27 +205,76 @@ public class LobbyController : MonoBehaviour
             {
                 // No one has hosted yet.  Try to host.
                 lobbyManager.matchMaker.CreateMatch(LOBBY_MATCH_NAME, (uint)100, true,
-                                    "", "", "", 0, 0, OnMatchCreate);
+                                    "", "", "", 0, 2, OnMatchCreate);
             }
             else
             {
-                lobbyManager.matchMaker.JoinMatch(found.networkId, "", "", "", 0, 0, lobbyManager.OnMatchJoined);
+                lobbyManager.matchMaker.JoinMatch(found.networkId, "", "", "", 0, 2, OnMatchJoined);
             }
         }
     }
 
     public void OnMatchCreate(bool success, string extendedInfo, MatchInfo matchInfo)
     {
-        matchNetwork = (ulong)matchInfo.networkId;
-        lobbyManager.OnMatchCreate(success, extendedInfo, matchInfo);
-        hostButton.interactable = true;
+        if (!success)
+        {
+            Debug.Log("Error creating lobby's default match.");
+            // TODO: FIX0001
+        }
+        else
+        {
+            matchNetwork = (ulong)matchInfo.networkId;
+            lobbyManager.OnMatchCreate(success, extendedInfo, matchInfo);
+            hostButton.interactable = true;
+        }
     }
 
     public virtual void OnMatchJoined(bool success, string extendedInfo, MatchInfo matchInfo) {
-        matchNetwork = (ulong)matchInfo.networkId;
-        matchNode = matchInfo.nodeId;
-        lobbyManager.OnMatchJoined(success, extendedInfo, matchInfo);
-        hostButton.interactable = true;
+        if (!success)
+        {
+            Debug.Log("Error joining lobby");
+            // TODO: FIX0001
+        }
+        else
+        {
+            Debug.Log("Joined lobby!");
+            matchNetwork = (ulong)matchInfo.networkId;
+            matchNode = matchInfo.nodeId;
+            lobbyManager.OnMatchJoined(success, extendedInfo, matchInfo);
+            hostButton.interactable = true;
+        }
+    }
+
+    public void OnDropConnection(bool success, string extendedInfo)
+    {
+        if (!success)
+        {
+            // Just report and try to continue with joining game.
+            // Theoretically possible that lobby has already been brought down because
+            // player hosting lobby has moved on to connecting to game
+            Debug.Log("Error trying to disconnect from lobby");
+        } else {
+            Debug.Log("Disconnected from lobby");
+        }
+        lobbyManager.OnDropConnection(success, extendedInfo);
+        ShutdownNetworkManager();
+        SceneManager.LoadScene("Game");
+    }
+
+    public void OnDestroyMatch(bool success, string extendedInfo)
+    {
+        if (!success)
+        {
+            // Just report and continue with joining game.
+            Debug.Log("Error trying to shutdown lobby");
+        }
+        else
+        {
+            Debug.Log("Shutdown lobby");
+        }
+        lobbyManager.OnDestroyMatch(success, extendedInfo);
+        ShutdownNetworkManager();
+        SceneManager.LoadScene("Game");
     }
 
     public void StartGame(Game gameToPlay) {
@@ -237,17 +286,23 @@ public class LobbyController : MonoBehaviour
             } else {
                 lobbyManager.StopClient();
             }
-        } else {
+            SceneManager.LoadScene("Game");
+        }
+        else {
             if (localLobbyPlayer.isServer)
             {
-                lobbyManager.matchMaker.DestroyMatch((NetworkID)matchNetwork, 0, lobbyManager.OnDestroyMatch);
+                lobbyManager.matchMaker.DestroyMatch((NetworkID)matchNetwork, 0, OnDestroyMatch);
             }
             else
             {
-                lobbyManager.matchMaker.DropConnection((NetworkID)matchNetwork, matchNode, 0, lobbyManager.OnDropConnection);
+                lobbyManager.matchMaker.DropConnection((NetworkID)matchNetwork, matchNode, 0, OnDropConnection);
             }
         }
-        SceneManager.LoadScene("Game");
+    }
+
+    private void ShutdownNetworkManager() {
+        Destroy(lobbyManager);
+        NetworkManager.Shutdown();
     }
 
 }
