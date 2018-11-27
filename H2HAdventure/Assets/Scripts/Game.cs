@@ -8,6 +8,7 @@ public class Game : NetworkBehaviour
 {
     public Button actionButton;
     public Text text;
+    public Text playerText;
 
     private static readonly uint NO_PLAYER = NetworkInstanceId.Invalid.Value;
     private static readonly string UNKNOWN_NAME = "--";
@@ -114,18 +115,18 @@ public class Game : NetworkBehaviour
     {
         uint me = (LocalPlayer != null ? LocalPlayer.Id : NO_PLAYER);
         bool amInGame = IsInGame(me);
-        string playerList = (playerOne == me ? "you" : playerOneName);
+        string playerList = (playerOne == me ? "you" : playerOneName) + "\n";
         if (playerTwo != NO_PLAYER)
         {
-            playerList += (playerThree != NO_PLAYER ? ", " : " and ");
-            playerList += (playerTwo == me ? "you" : playerTwoName);
+            playerList += (playerTwo == me ? "you" : playerTwoName) + "\n";
             if (playerThree != NO_PLAYER)
             {
-                playerList += " and " + (playerThree == me ? "you" : playerThreeName);
+                playerList += (playerThree == me ? "you" : playerThreeName) + "\n";
             }
 
         }
-        text.text = numPlayers + " player game #" + (gameNumber + 1) + " with " + playerList;
+        text.text = "Game " + (gameNumber + 1) + "\n  " + numPlayers + " players";
+        playerText.text = playerList;
         if (amInGame)
         {
             actionButton.gameObject.SetActive(true);
