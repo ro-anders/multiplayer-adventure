@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
+// TODO: Can we get rid of this class?
+
 public class GameNetworkManager : NetworkManager {
 
 	// Use this for initialization

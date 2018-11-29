@@ -22,12 +22,15 @@ public class LobbyController : MonoBehaviour
     public GameObject newGamePanel;
     public GameObject promptNamePanel;
     public Button hostButton;
+    public InputField chatInput;
     public GameObject gamePrefab;
+    public GameObject chatPrefab;
     public GameObject gameList;
 
     private const string LOBBY_MATCH_NAME = "h2hlobby";
     private string thisPlayerName = "";
     private LobbyPlayer localLobbyPlayer;
+    private ChatSync localChatSync;
     private ulong matchNetwork;
     private NodeID matchNode;
 
@@ -35,11 +38,10 @@ public class LobbyController : MonoBehaviour
     public LobbyPlayer LocalLobbyPlayer
     {
         get { return localLobbyPlayer; }
-        set 
-        { 
-            localLobbyPlayer = value; 
-            SessionInfo.ThisPlayerId = value.GetComponent<NetworkIdentity>().netId.Value;
-        }
+    }
+
+    public ChatSync ChatSync {
+        set { localChatSync = value; }
     }
 
     public string ThisPlayerName 
@@ -58,6 +60,16 @@ public class LobbyController : MonoBehaviour
             promptNamePanel.SetActive(true);
         } else {
             ConnectToLobby();
+        }
+    }
+
+    public void OnConnectedToLobby(LobbyPlayer inLocalLobbyPlayer) {
+        localLobbyPlayer = inLocalLobbyPlayer;
+        SessionInfo.ThisPlayerId = localLobbyPlayer.GetComponent<NetworkIdentity>().netId.Value;
+        if (localLobbyPlayer.isServer) {
+            // The lobby has just been created on the host.  So setup stuff that the lobby needs
+            GameObject chatSyncGO = Instantiate(chatPrefab);
+            NetworkServer.Spawn(chatSyncGO);
         }
     }
 
@@ -94,6 +106,13 @@ public class LobbyController : MonoBehaviour
 
     public void SubmitNewGame(NewGameInfo info) {
         localLobbyPlayer.CmdHostGame(info.numPlayers, info.gameNumber, localLobbyPlayer.GetComponent<NetworkIdentity>().netId.Value, localLobbyPlayer.playerName);
+    }
+
+    public void PostChat(LobbyPlayer player, string message) {
+        if (localChatSync != null)
+        {
+            localChatSync.PostToChat(player, message);
+        }
     }
 
     public void PlayerJoinGame(LobbyPlayer player, uint gameId) {
@@ -176,6 +195,14 @@ public class LobbyController : MonoBehaviour
     public void OnHostPressed() {
         hostButton.interactable = false;
         newGamePanel.SetActive(true);
+    }
+
+    public void OnChatPostPressed() {
+        if (chatInput.text != "")
+        {
+            localLobbyPlayer.CmdPostChat(chatInput.text);
+            chatInput.text = "";
+        }
     }
 
     private void onMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> matchList)

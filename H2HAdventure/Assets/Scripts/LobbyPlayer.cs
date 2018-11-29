@@ -27,7 +27,7 @@ public class LobbyPlayer : NetworkBehaviour
         lobbyController = lobbyControllerGO.GetComponent<LobbyController>();
         if (isLocalPlayer)
         {
-            lobbyController.LocalLobbyPlayer = this;
+            lobbyController.OnConnectedToLobby(this);
             CmdSetPlayerName(lobbyController.ThisPlayerName);
         }
         RefreshDisplay();
@@ -71,6 +71,11 @@ public class LobbyPlayer : NetworkBehaviour
     [Command]
     public void CmdLeaveGame(uint gameId) {
         lobbyController.PlayerLeaveGame(this, gameId);
+    }
+
+    [Command]
+    public void CmdPostChat(string message) {
+        lobbyController.PostChat(this, message);
     }
 
     private void RefreshDisplay() {
