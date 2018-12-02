@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+// Controller for the modal dialog that appears in the lobby scene.  Lets you specify 
+// configuration of a new game.
 public class NewGameController : MonoBehaviour {
 
     public LobbyController lobbyController;

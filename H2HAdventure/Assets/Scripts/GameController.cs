@@ -40,6 +40,9 @@ public class GameController : MonoBehaviour {
             } else {
                 needMatch = true;
             }
+        } else if (SessionInfo.NetworkSetup == SessionInfo.Network.NONE)
+        {
+            needMatch = false;
         }
 	}
 

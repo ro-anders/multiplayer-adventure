@@ -6,7 +6,8 @@ public class SessionInfo {
     public enum Network
     {
         MATCHMAKER,
-        ALL_LOCAL
+        ALL_LOCAL,
+        NONE
     }
 
     private static uint thisPlayerId;
