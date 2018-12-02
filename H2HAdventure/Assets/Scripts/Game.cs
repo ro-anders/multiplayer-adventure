@@ -240,5 +240,14 @@ public class Game : NetworkBehaviour
         RefreshGraphic();
     }
 
+    public override string ToString()
+    {
+        return "Game #" + gameNumber + ", " + numPlayers + " players: " + playerOneName + (playerTwo == NO_PLAYER ? "" :
+            (playerThree == NO_PLAYER ? "" : ", " + playerThreeName) + " and " + playerTwoName);
+        
+
+   
+
+    }
 
 }

@@ -18,6 +18,8 @@ public class NewGameInfo {
 public class LobbyController : MonoBehaviour
 {
 
+    public const string GAME_SCENE = "FauxGame";
+
     public NetworkManager lobbyManager;
     public GameObject newGamePanel;
     public GameObject promptNamePanel;
@@ -285,7 +287,7 @@ public class LobbyController : MonoBehaviour
         }
         lobbyManager.OnDropConnection(success, extendedInfo);
         ShutdownNetworkManager();
-        SceneManager.LoadScene("Game");
+        SceneManager.LoadScene(GAME_SCENE);
     }
 
     public void OnDestroyMatch(bool success, string extendedInfo)
@@ -301,10 +303,11 @@ public class LobbyController : MonoBehaviour
         }
         lobbyManager.OnDestroyMatch(success, extendedInfo);
         ShutdownNetworkManager();
-        SceneManager.LoadScene("Game");
+        SceneManager.LoadScene(GAME_SCENE);
     }
 
     public void StartGame(Game gameToPlay) {
+        Debug.Log("Playing game " + gameToPlay);
         SessionInfo.GameToPlay = gameToPlay;
         // Disconnect from the lobby before switching to 
         if (SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) {
@@ -313,7 +316,7 @@ public class LobbyController : MonoBehaviour
             } else {
                 lobbyManager.StopClient();
             }
-            SceneManager.LoadScene("Game");
+            SceneManager.LoadScene(GAME_SCENE);
         }
         else {
             if (localLobbyPlayer.isServer)

@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 using UnityEngine.Networking.Match;
 using UnityEngine.UI;
 
-public class GameController : MonoBehaviour {
+public class FauxGameController : MonoBehaviour {
 
     public GameNetworkManager networkManager;
     public Text gameStartText;
@@ -16,7 +16,7 @@ public class GameController : MonoBehaviour {
 
 	// Use this for initialization
 	void Start() {
-
+        Debug.Log("Playing game " + SessionInfo.GameToPlay);
         bool isHosting = SessionInfo.GameToPlay.playerOne == SessionInfo.ThisPlayerId;
         if (SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) {
             if (isHosting) {
