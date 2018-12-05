@@ -308,7 +308,7 @@ public class LobbyController : MonoBehaviour
 
     private IEnumerator ShutdownLocalNetwork()
     {
-        yield return new WaitForSeconds(0.5);
+        yield return new WaitForSeconds(0.5f);
         if (localLobbyPlayer.isServer)
         {
             lobbyManager.StopHost();
