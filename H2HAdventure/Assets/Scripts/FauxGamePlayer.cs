@@ -13,7 +13,7 @@ public class FauxGamePlayer : NetworkBehaviour
     // Use this for initialization
     void Start () {
         GameObject playerList = GameObject.FindGameObjectWithTag("LobbyPlayerParent");
-        gameObject.transform.SetParent(playerList.transform);
+        gameObject.transform.SetParent(playerList.transform, false);
         GameObject gameControllerGO = GameObject.FindGameObjectWithTag("GameController");
         FauxGameController gameController = gameControllerGO.GetComponent<FauxGameController>();
         gameController.RegisterNewPlayer(this);

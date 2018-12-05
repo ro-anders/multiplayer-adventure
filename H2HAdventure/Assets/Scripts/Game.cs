@@ -76,7 +76,7 @@ public class Game : NetworkBehaviour
         gameId = this.GetComponent<NetworkIdentity>().netId.Value;
 
         GameObject GameList = GameObject.FindGameObjectWithTag("GameParent");
-        gameObject.transform.SetParent(GameList.transform);
+        gameObject.transform.SetParent(GameList.transform, false);
         RefreshGraphic();
     }
 

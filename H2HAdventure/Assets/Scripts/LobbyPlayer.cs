@@ -20,7 +20,7 @@ public class LobbyPlayer : NetworkBehaviour
     void Start()
     {
         GameObject LobbyPlayerList = GameObject.FindGameObjectWithTag("LobbyPlayerParent");
-        gameObject.transform.SetParent(LobbyPlayerList.transform);
+        gameObject.transform.SetParent(LobbyPlayerList.transform, false);
         // The lobby controller needs someway to talk to the server, so it uses
         // the LobbyPlayer representing the local player
         GameObject lobbyControllerGO = GameObject.FindGameObjectWithTag("LobbyController");

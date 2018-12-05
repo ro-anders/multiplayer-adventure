@@ -16,7 +16,7 @@ public class ChatSync : NetworkBehaviour
 	void Start () {
         chatText = "No messages";
         GameObject textGameObj = GameObject.FindGameObjectWithTag("ChatText");
-        gameObject.transform.SetParent(textGameObj.transform.parent);
+        gameObject.transform.SetParent(textGameObj.transform.parent, false);
         chatTextUI = textGameObj.GetComponent<Text>();
         GameObject lobbyControllerGO = GameObject.FindGameObjectWithTag("LobbyController");
         LobbyController lobbyController = lobbyControllerGO.GetComponent<LobbyController>();
