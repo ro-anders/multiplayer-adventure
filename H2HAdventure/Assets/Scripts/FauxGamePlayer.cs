@@ -14,6 +14,9 @@ public class FauxGamePlayer : NetworkBehaviour
     void Start () {
         GameObject playerList = GameObject.FindGameObjectWithTag("LobbyPlayerParent");
         gameObject.transform.SetParent(playerList.transform);
+        GameObject gameControllerGO = GameObject.FindGameObjectWithTag("GameController");
+        FauxGameController gameController = gameControllerGO.GetComponent<FauxGameController>();
+        gameController.RegisterNewPlayer(this);
         if (isLocalPlayer)
         {
             CmdSetPlayerName(SessionInfo.ThisPlayerName);

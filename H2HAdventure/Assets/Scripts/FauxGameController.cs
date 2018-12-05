@@ -13,10 +13,11 @@ public class FauxGameController : MonoBehaviour {
     bool needMatch = false;
     string matchName;
     bool waitingOnListMatch = false;
+    int numPlayersConnected = 0;
 
 	// Use this for initialization
 	void Start() {
-        Debug.Log("Playing game " + SessionInfo.GameToPlay);
+        Debug.Log("Playing game " + SessionInfo.GameToPlay + " using network " + SessionInfo.NetworkSetup);
         bool isHosting = SessionInfo.GameToPlay.playerOne == SessionInfo.ThisPlayerId;
         if (SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) {
             if (isHosting) {
@@ -33,7 +34,7 @@ public class FauxGameController : MonoBehaviour {
             if (networkManager.matchMaker == null)
             {
                 networkManager.StartMatchMaker();
-            }
+            }   
             if (isHosting) {
                 networkManager.matchMaker.CreateMatch(matchName, (uint)100, true,
                                     "", "", "", 0, 1, OnMatchCreate);
@@ -42,6 +43,8 @@ public class FauxGameController : MonoBehaviour {
             }
         } else if (SessionInfo.NetworkSetup == SessionInfo.Network.NONE)
         {
+            Debug.Log("Running in single player mode");
+            gameStartText.text = "Running in single player mode";
             needMatch = false;
         }
 	}
@@ -109,6 +112,20 @@ public class FauxGameController : MonoBehaviour {
         needMatch = false;
     }
 
-
+    public void  RegisterNewPlayer(FauxGamePlayer player)
+    {
+        numPlayersConnected++;
+        Debug.Log("Player connected.  Have " + numPlayersConnected + " of " + SessionInfo.GameToPlay.numPlayers);
+        if (numPlayersConnected == SessionInfo.GameToPlay.numPlayers)
+        {
+            gameStartText.text = "All players joined.  Game started.";
+        }
+        else
+        {
+            gameStartText.text = "Waiting for " + 
+                (SessionInfo.GameToPlay.numPlayers-numPlayersConnected) +
+                " more players.";
+        }
+    }
 
 }

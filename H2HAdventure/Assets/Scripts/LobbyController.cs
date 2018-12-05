@@ -306,17 +306,27 @@ public class LobbyController : MonoBehaviour
         SceneManager.LoadScene(GAME_SCENE);
     }
 
+    private IEnumerator ShutdownLocalNetwork()
+    {
+        yield return new WaitForSeconds(0.5);
+        if (localLobbyPlayer.isServer)
+        {
+            lobbyManager.StopHost();
+        }
+        else
+        {
+            lobbyManager.StopClient();
+        }
+        ShutdownNetworkManager();
+        SceneManager.LoadScene(GAME_SCENE);
+    }
+
     public void StartGame(Game gameToPlay) {
         Debug.Log("Playing game " + gameToPlay);
         SessionInfo.GameToPlay = gameToPlay;
         // Disconnect from the lobby before switching to 
         if (SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) {
-            if (localLobbyPlayer.isServer) {
-                lobbyManager.StopHost();
-            } else {
-                lobbyManager.StopClient();
-            }
-            SceneManager.LoadScene(GAME_SCENE);
+            StartCoroutine(ShutdownLocalNetwork());
         }
         else {
             if (localLobbyPlayer.isServer)

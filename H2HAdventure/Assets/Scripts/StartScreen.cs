@@ -10,11 +10,6 @@ public class StartScreen : MonoBehaviour {
 		
 	}
 	
-	// Update is called once per frame
-	void Update () {
-		
-	}
-
     public void OnPlayClicked() {
         SessionInfo.NetworkSetup = SessionInfo.Network.MATCHMAKER;
         SceneManager.LoadScene("Lobby");
