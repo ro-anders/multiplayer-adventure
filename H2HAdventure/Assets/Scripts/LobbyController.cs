@@ -18,7 +18,7 @@ public class NewGameInfo {
 public class LobbyController : MonoBehaviour
 {
 
-    public const string GAME_SCENE = "FauxGame";
+    public const string GAME_SCENE = "AdvGame";
 
     public NetworkManager lobbyManager;
     public GameObject newGamePanel;
