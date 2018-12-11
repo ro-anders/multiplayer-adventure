@@ -763,7 +763,6 @@ namespace GameEngine
             {
                 p = game2Objects;
             }
-            UnityEngine.Debug.Log("There are " + p.GetLength(0) + " objects to initialize");
 
             for (int ctr = 0; ctr < p.GetLength(0); ++ctr)
             {
