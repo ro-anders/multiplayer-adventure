@@ -43,12 +43,12 @@ public class LobbyPlayer : NetworkBehaviour
     {
         System.Random rand = new System.Random();
         GameObject gameGO = Instantiate(lobbyController.gamePrefab);
-        Game game = gameGO.GetComponent<Game>();
+        GameInLobby game = gameGO.GetComponent<GameInLobby>();
         game.numPlayers = numPlayers;
         game.gameNumber = gameNumber;
         game.playerOne = hostPlayerId;
         game.playerOneName = hostPlayerName;
-        game.playerMapping = rand.Next(1, 7);
+        game.playerMapping = rand.Next(0, (numPlayers == 2 ? 2 : 6));
         if (SessionInfo.NetworkSetup == SessionInfo.Network.MATCHMAKER) {
             game.connectionkey = "h2h-" + hostPlayerId + "-" + rand.Next(100);
         } else {

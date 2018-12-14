@@ -6,20 +6,91 @@ using UnityEngine.Networking;
 
 public class PlayerSync : NetworkBehaviour
 {
-    public int slot = -1;
 
-    public UnityTransport xport;
+    [SyncVar(hook = "OnChangePlayerName")]
+    public string playerName = "";
+
+    [SyncVar(hook = "OnChangePlayerId")]
+    public uint playerId = GameInLobby.NO_PLAYER;
+
+    private int slot = -1;
+
+    private UnityTransport xport;
+    private UnityAdventureView controller;
 
     // Use this for initialization
     void Start()
     {
-        Initialize();
-        CmdAssignSlot();
+        GameObject gameController = GameObject.FindGameObjectWithTag("GameController");
+        xport = gameController.GetComponent<UnityTransport>();
+        controller = gameController.GetComponent<UnityAdventureView>();
+        if (isLocalPlayer)
+        {
+            deduceSlot(SessionInfo.ThisPlayerId);
+            CmdSetPlayerId(SessionInfo.ThisPlayerId);
+            CmdSetPlayerName(SessionInfo.ThisPlayerName);
+        } else if (playerId != GameInLobby.NO_PLAYER)
+        {                // Not sure if this ever gets called.
+            Debug.Log("THIS GETS CALLED!!!!!!!!!  Called with " + playerName + "(" + playerId + ")");
+
+            if (!SessionInfo.GameToPlay.IsInGame(playerId))
+            {
+                Debug.Log("Unexpected player id:" + playerId);
+            }
+            else
+            {
+                deduceSlot(playerId);
+                if (playerName != null)
+                {
+                    Debug.Log("PlayerSync constructor registering player" + playerName + "(" + playerId + ")");
+                    xport = controller.RegisterNewPlayer(this);
+                }
+            }
+        } 
     }
 
-    void Initialize() {
-        GameObject quadGameObject = GameObject.Find("Quad");
-        xport = quadGameObject.GetComponent<UnityTransport>();
+    void OnChangePlayerId(uint newPlayerId)
+    {
+        Debug.Log("Setting player id to " + newPlayerId);
+        if (newPlayerId != playerId)
+        {
+            if (!SessionInfo.GameToPlay.IsInGame(newPlayerId))
+            {
+                Debug.Log("Unexpected player id:" + newPlayerId);
+            } else {
+                playerId = newPlayerId;
+                deduceSlot(playerId);
+                if (playerName != "")
+                {
+                    Debug.Log("Player \"" + playerName + "\"'s ID changed to " + newPlayerId + ". Registering player.");
+                    xport = controller.RegisterNewPlayer(this);
+                }
+            }
+        }
+    }
+
+    void OnChangePlayerName(string newPlayerName)
+    {
+        Debug.Log("Setting player name to " + newPlayerName);
+        if (newPlayerName != playerName)
+        {
+            playerName = newPlayerName;
+            if (playerId != GameInLobby.NO_PLAYER)
+            {
+                UnityEngine.Debug.Log("Player " + playerId + "'s name changed to " + newPlayerName + ". Registering player.");
+                xport = controller.RegisterNewPlayer(this);
+            }
+        }
+    }
+
+    private void deduceSlot(uint playerIdToCheck)
+    {
+        slot = -1;
+        uint[] players = SessionInfo.GameToPlay.GetPlayersInGameOrder();
+        for (int ctr = 0; (ctr < players.Length) && (slot == -1); ++ctr)
+        {
+            slot = (playerIdToCheck == players[ctr] ? ctr : -1);
+        }
     }
 
     public int getSlot() {
@@ -27,36 +98,21 @@ public class PlayerSync : NetworkBehaviour
     }
 
     [Command]
-    public void CmdAssignSlot() {
-        if (slot < 0) {
-            if (xport == null) {
-                Initialize();
-            }
-            slot = xport.assignPlayerSlot();
-            // This code is repeated from client RPC
-            xport.registerSync(this);
-            Debug.Log("Player #" + slot + " setup." +
-                      (isLocalPlayer ? " This is the local player." : "") +
-                      (isServer ? " This is on the server." : ""));
-        }
-        RpcAssignSlot(slot);
+    public void CmdSetPlayerId(uint id)
+    {
+        playerId = id;
+    }
+
+    [Command]
+    public void CmdSetPlayerName(string name)
+    {
+        playerName = name;
     }
 
     [ClientRpc]
-    public void RpcAssignSlot(int inSlot) {
-        if (slot < 0)
-        {
-            slot = inSlot;
-            if (xport == null)
-            {
-                Initialize();
-            }
-            // Repeat this code in server CMD
-            xport.registerSync(this);
-            Debug.Log("Player #" + slot + " setup." +
-                      (isLocalPlayer ? " This is the local player." : "") +
-                      (isServer ? " This is on the server." : ""));
-        }
+    public void RpcStartGame()
+    {
+        controller.StartGame();
     }
 
     [Command]
@@ -68,10 +124,6 @@ public class PlayerSync : NetworkBehaviour
     [ClientRpc]
     public void RpcReceiveBroadcast(int[] dataPacket)
     {
-        if (xport == null)
-        {
-            Initialize();
-        }
         xport.receiveBroadcast(slot, dataPacket);
     }
 

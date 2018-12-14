@@ -26,7 +26,7 @@ public class StartScreen : MonoBehaviour {
         SessionInfo.NetworkSetup = SessionInfo.Network.NONE;
         SessionInfo.ThisPlayerId = 12;
         SessionInfo.ThisPlayerName = "adam";
-        SessionInfo.GameToPlay = new Game();
+        SessionInfo.GameToPlay = new GameInLobby();
         SessionInfo.GameToPlay.gameId = 11;
         SessionInfo.GameToPlay.playerOne = SessionInfo.ThisPlayerId;
         SessionInfo.GameToPlay.playerOneName = SessionInfo.ThisPlayerName;

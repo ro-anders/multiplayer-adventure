@@ -19,6 +19,7 @@ public class LobbyController : MonoBehaviour
 {
 
     public const string GAME_SCENE = "AdvGame";
+    //public const string GAME_SCENE = "FauxGame";
 
     public NetworkManager lobbyManager;
     public GameObject newGamePanel;
@@ -117,9 +118,13 @@ public class LobbyController : MonoBehaviour
         }
     }
 
+    /**
+     * Add a player to a game.
+     * This method is only executed on the lobby host.
+     */    
     public void PlayerJoinGame(LobbyPlayer player, uint gameId) {
-        Game[] games = gameList.GetComponentsInChildren<Game>();
-        Game found = null;
+        GameInLobby[] games = gameList.GetComponentsInChildren<GameInLobby>();
+        GameInLobby found = null;
         for (int i = 0; (i < games.Length) && (found == null); ++i) {
             if (games[i].gameId == gameId) {
                 found = games[i];
@@ -129,15 +134,19 @@ public class LobbyController : MonoBehaviour
             bool gameReady = found.Join(player.Id, player.playerName);
             if (gameReady) {
                 Debug.Log("Starting " + found.playerOneName + "'s game");
-                found.RpcStartGame();
+                found.markReadyToPlay();
             }
         } 
     }
 
+    /**
+     * Mark that this player has all the information needed to start this
+     * game.
+     */    
     public void PlayerReadyToStartGame(LobbyPlayer player, uint gameId)
     {
-        Game[] games = gameList.GetComponentsInChildren<Game>();
-        Game found = null;
+        GameInLobby[] games = gameList.GetComponentsInChildren<GameInLobby>();
+        GameInLobby found = null;
         for (int i = 0; (i < games.Length) && (found == null); ++i)
         {
             if (games[i].gameId == gameId)
@@ -147,7 +156,7 @@ public class LobbyController : MonoBehaviour
         }
         if (found != null)
         {
-            bool allPlayersReady = found.readyToPlay(player);
+            bool allPlayersReady = found.markReadyToPlay(player);
             if (allPlayersReady)
             {
                 // If one of the game's players is the player hosting the
@@ -170,8 +179,8 @@ public class LobbyController : MonoBehaviour
     }
 
     public void PlayerLeaveGame(LobbyPlayer player, uint gameId) {
-        Game[] games = gameList.GetComponentsInChildren<Game>();
-        Game found = null;
+        GameInLobby[] games = gameList.GetComponentsInChildren<GameInLobby>();
+        GameInLobby found = null;
         for (int i = 0; (i < games.Length) && (found == null); ++i)
         {
             if (games[i].gameId == gameId)
@@ -321,9 +330,10 @@ public class LobbyController : MonoBehaviour
         SceneManager.LoadScene(GAME_SCENE);
     }
 
-    public void StartGame(Game gameToPlay) {
-        Debug.Log("Playing game " + gameToPlay);
+    public void StartGame(GameInLobby gameToPlay) {
         SessionInfo.GameToPlay = gameToPlay;
+        Debug.Log(SessionInfo.ThisPlayerName + "(" + SessionInfo.ThisPlayerId + 
+        ") is playing game " + SessionInfo.GameToPlay);
         // Disconnect from the lobby before switching to 
         if (SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) {
             StartCoroutine(ShutdownLocalNetwork());

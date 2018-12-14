@@ -4,43 +4,77 @@ using System.Collections.Generic;
 using UnityEngine;
 using GameEngine;
 
-public class UnityAdventureView: MonoBehaviour, AdventureView
+public class UnityAdventureView : MonoBehaviour, AdventureView
 {
     public AdventureAudio adv_audio;
     public AdventureDirectional adv_input;
     public RenderTextureDrawer screenRenderer;
+
+    private UnityTransport xport;
 
     private const int DRAW_AREA_WIDTH = 320;
     private const int DRAW_AREA_HEIGHT = 256;
 
     private AdventureGame gameEngine;
 
-    private int localPlayerSlot = -1;
+    private PlayerSync localPlayer;
+
+    private bool gameStarted = false;
+    private int numPlayersReady = 0;
 
     void Start() {
+        xport = this.gameObject.GetComponent<UnityTransport>();
         if (SessionInfo.NetworkSetup == SessionInfo.Network.NONE) {
             AdventureSetup(0);
+            gameStarted = true;
         }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (localPlayerSlot == -1)
-        {
-            Debug.Log("Trying to update without a local player.");
-        }
-        else
+        if (gameStarted)
         {
             AdventureUpdate();
         }
     }
 
+    public UnityTransport RegisterNewPlayer(PlayerSync newPlayer)
+    {
+        if (newPlayer.isLocalPlayer)
+        {
+            localPlayer = newPlayer;
+        }
+        xport.registerSync(newPlayer);
+        if (newPlayer.isServer)
+        {
+            ++numPlayersReady;
+            if (numPlayersReady >= SessionInfo.GameToPlay.numPlayers)
+            {
+                StartCoroutine(SignalStartGame());
+            }
+        }
+        return xport;
+    }
+
+    private IEnumerator SignalStartGame()
+    {
+        const float GAME_START_BANNER_TIME = 3f;
+        yield return new WaitForSeconds(GAME_START_BANNER_TIME);
+        localPlayer.RpcStartGame();
+    }
+
+
+
+    public void StartGame()
+    {
+        AdventureSetup(localPlayer.getSlot());
+        gameStarted = true;
+    }
+
     public void AdventureSetup(int inLocalPlayerSlot) {
         Debug.Log("Starting game.");
-        localPlayerSlot = inLocalPlayerSlot;
-        Transport xport = this.gameObject.GetComponent<UnityTransport>();
-        gameEngine = new AdventureGame(this, 2, localPlayerSlot, null/*xport*/, 1, false, false);
+        gameEngine = new AdventureGame(this, 2, inLocalPlayerSlot, null/*xport*/, 1, false, false);
     }
 
     public void AdventureUpdate() {

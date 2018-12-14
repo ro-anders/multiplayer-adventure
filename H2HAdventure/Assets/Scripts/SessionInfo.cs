@@ -12,7 +12,7 @@ public class SessionInfo {
 
     private static uint thisPlayerId;
     private static string thisPlayerName;
-    private static Game gameToPlay;
+    private static GameInLobby gameToPlay;
     private static Network networkSetup;
 
 
@@ -41,7 +41,7 @@ public class SessionInfo {
         }
     }
 
-    public static Game GameToPlay
+    public static GameInLobby GameToPlay
     {
         get
         {
