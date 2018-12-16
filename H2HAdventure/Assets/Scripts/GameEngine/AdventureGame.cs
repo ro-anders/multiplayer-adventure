@@ -526,7 +526,7 @@ namespace GameEngine
             SyncWithOthers();
             ////            checkPlayers();
 
-            ////            // read the console switches every frame
+            // read the console switches every frame
             bool reset = false;
             view.Platform_ReadConsoleSwitches(ref reset);
 

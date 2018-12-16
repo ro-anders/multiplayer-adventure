@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class AdventureDirectional : MonoBehaviour
 {
+    bool hasResetBeenPressed = false;
 
 #if UNITY_STANDALONE || UNITY_WEBPLAYER
 #else
@@ -62,8 +63,14 @@ public class AdventureDirectional : MonoBehaviour
     }
 
     public bool getResetButton() {
-        return Input.GetKey(KeyCode.Return);
+        bool returnVal = hasResetBeenPressed || Input.GetKey(KeyCode.Return);
+        hasResetBeenPressed = false;
+        return returnVal;
     }
 
+    public void OnResetPressed()
+    {
+        hasResetBeenPressed = true;
+    }
 
 }
