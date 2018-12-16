@@ -1083,6 +1083,7 @@ namespace GameEngine
                 }
                 else if (joyDown)
                 {
+                    UnityEngine.Debug.Log("Moving down");
                     newVelY = -6;
                 }
                 objectBall.vely = newVelY;
@@ -1106,6 +1107,7 @@ namespace GameEngine
 
             if (!joystickDisabled && ((objectBall.velx != prevVelX) || (objectBall.vely != prevVelY)))
             {
+                UnityEngine.Debug.Log("Syncing move action (" + objectBall.velx + "," + objectBall.vely + ")");
                 PlayerMoveAction moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
                 sync.BroadcastAction(moveAction);
             }

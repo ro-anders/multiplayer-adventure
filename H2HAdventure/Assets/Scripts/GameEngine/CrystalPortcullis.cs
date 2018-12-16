@@ -28,8 +28,6 @@ namespace GameEngine
             keys = inKeys;
             keysNeeded = TOTAL_KEYS_NEEDED;
             color = COLOR.CRYSTAL;
-            Logger.log("Setting crystal gate to color " + COLOR.toString(color));
-
         }
 
         /**

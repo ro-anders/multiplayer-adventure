@@ -249,6 +249,10 @@ namespace GameEngine
                 {
                     transport.send(action);
                 }
+                else
+                {
+                    UnityEngine.Debug.Log("TRANSPORT IS NULL!");
+                }
             }
 
         }

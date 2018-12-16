@@ -74,7 +74,9 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
 
     public void AdventureSetup(int inLocalPlayerSlot) {
         Debug.Log("Starting game.");
-        gameEngine = new AdventureGame(this, 2, inLocalPlayerSlot, null/*xport*/, 1, false, false);
+        GameInLobby game = SessionInfo.GameToPlay;
+        UnityTransport xportToUse = (SessionInfo.NetworkSetup == SessionInfo.Network.NONE ? null : xport);
+        gameEngine = new AdventureGame(this, game.numPlayers, inLocalPlayerSlot, xportToUse, game.gameNumber, false, false);
     }
 
     public void AdventureUpdate() {
