@@ -4,6 +4,28 @@ using System.Collections.Generic;
 using UnityEngine;
 using GameEngine;
 
+public class Rectangle
+{
+    public Rectangle(int r, int g, int b, int x, int y, int width, int height)
+    {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+
+    }
+    public readonly int r;
+    public readonly int g;
+    public readonly int b;
+    public readonly int x;
+    public readonly int y;
+    public readonly int width;
+    public readonly int height;
+}
+
 public class UnityAdventureView : MonoBehaviour, AdventureView
 {
     public AdventureAudio adv_audio;
@@ -22,7 +44,16 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
     private bool gameStarted = false;
     private int numPlayersReady = 0;
 
+    private List<Rectangle>[] rectsToDisplay = new List<Rectangle>[2];
+    private int displayThisOne = -1;
+    private int displaying = -1;
+    private int paintInThisOne = -1;
+    private int maxNumRects = 0;
+
     void Start() {
+        rectsToDisplay[0] = new List<Rectangle>();
+        rectsToDisplay[1] = new List<Rectangle>();
+
         xport = this.gameObject.GetComponent<UnityTransport>();
         if (SessionInfo.NetworkSetup == SessionInfo.Network.NONE) {
             AdventureSetup(0);
@@ -30,13 +61,20 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    // Update is called 60 times per second
+    void FixedUpdate()
     {
         if (gameStarted)
         {
             AdventureUpdate();
         }
+    }
+
+    // Update is called up to 60 times per second, but may be slower depending
+    // on device and load
+    void Update()
+    {
+        PaintRectangles();
     }
 
     public UnityTransport RegisterNewPlayer(PlayerSync newPlayer)
@@ -80,23 +118,60 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
     }
 
     public void AdventureUpdate() {
-        screenRenderer.StartUpdate();
+        // Setup which list of rectangles to fill
+        paintInThisOne = (displayThisOne == -1 ? 0 :
+          (displaying >= 0 ? 1-displaying : 1-displayThisOne));
+
         gameEngine.Adventure_Run();
-        screenRenderer.EndUpdate();
+
+        if (rectsToDisplay[paintInThisOne].Count > maxNumRects)
+        {
+            maxNumRects = rectsToDisplay[paintInThisOne].Count;
+            Debug.Log("Painted " + maxNumRects + " rectangles.");
+        }
+        displayThisOne = paintInThisOne;
+        paintInThisOne = -1;
+
     }
 
     public void Platform_PaintPixel(int r, int g, int b, int x, int y, int width, int height)
     {
-        Color color = new Color(r/256.0f, g/256.0f, b/256.0f);
-        for (int i = 0; i < width; ++i)
-            for (int j = 0; j < height; ++j) {
-                int xi = x + i;
-                int yj = y + j;
-                if ((xi >= 0) && (xi < DRAW_AREA_WIDTH) && (yj >= 0) && (yj < DRAW_AREA_HEIGHT)) {
+        rectsToDisplay[paintInThisOne].Add(new Rectangle(r, g, b, x, y, width, height));
+    }
 
-                    screenRenderer.SetPixel(x + i, y + j, color);
-                }
+    public void PaintRectangles()
+    {
+        if (displayThisOne >= 0)
+        {
+            displaying = displayThisOne;
+            List<Rectangle> displayRects = rectsToDisplay[displaying];
+            screenRenderer.StartUpdate();
+            for (int ctr = 0; ctr < displayRects.Count; ++ctr)
+            {
+                Rectangle rect = displayRects[ctr];
+                Color color = new Color(rect.r / 256.0f, rect.g / 256.0f, rect.b / 256.0f);
+                for (int i = 0; i < rect.width; ++i)
+                    for (int j = 0; j < rect.height; ++j)
+                    {
+                        int xi = rect.x + i;
+                        int yj = rect.y + j;
+                        if ((xi >= 0) && (xi < DRAW_AREA_WIDTH) && (yj >= 0) && (yj < DRAW_AREA_HEIGHT))
+                        {
+
+                            screenRenderer.SetPixel(rect.x + i, rect.y + j, color);
+                        }
+                    }
             }
+            screenRenderer.EndUpdate();
+            displayRects.Clear();
+            // If the other list of rects has been filled while we were painting
+            // we setup to use that next time.  Otherwise wait for a list to be filled.
+            if (displaying == displayThisOne)
+            {
+                displayThisOne = -1;
+            }
+            displaying = -1;
+        }
     }
 
     public void Platform_ReadJoystick(ref bool joyLeft, ref bool joyUp, ref bool joyRight, ref bool joyDown, ref bool joyFire) {

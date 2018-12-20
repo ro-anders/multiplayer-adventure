@@ -33,7 +33,7 @@ namespace GameEngine
         private const int ADVENTURE_TOTAL_SCREEN_HEIGHT = Adv.ADVENTURE_TOTAL_SCREEN_HEIGHT;
         private const double ADVENTURE_FRAME_PERIOD = Adv.ADVENTURE_FRAME_PERIOD;
         private const int ADVENTURE_MAX_NAME_LENGTH = Adv.ADVENTURE_MAX_NAME_LENGTH;
-        private const int MAX_OBJECTS = 16;                      // Should be plenty
+        private const int MAX_OBJECTS = 32;                      // Should be plenty
         private const int MAX_DISPLAYABLE_OBJECTS = 2;             // The 2600 only has 2 Player (sprite) objects. Accuracy will be compromised if this is changed!
         private static bool SHOW_OBJECT_FLICKER = true;
 
@@ -1083,7 +1083,6 @@ namespace GameEngine
                 }
                 else if (joyDown)
                 {
-                    UnityEngine.Debug.Log("Moving down");
                     newVelY = -6;
                 }
                 objectBall.vely = newVelY;
@@ -1107,7 +1106,6 @@ namespace GameEngine
 
             if (!joystickDisabled && ((objectBall.velx != prevVelX) || (objectBall.vely != prevVelY)))
             {
-                UnityEngine.Debug.Log("Syncing move action (" + objectBall.velx + "," + objectBall.vely + ")");
                 PlayerMoveAction moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
                 sync.BroadcastAction(moveAction);
             }
