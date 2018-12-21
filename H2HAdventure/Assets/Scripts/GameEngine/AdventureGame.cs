@@ -1733,24 +1733,31 @@ namespace GameEngine
             {
                 // Look for items in the magnet matrix that are in the same room as the magnet
                 OBJECT objct = gameBoard[magnetMatrix[i]];
-                if ((magnetMatrix[i] != objectBall.linkedObject) && (objct.room == magnet.room) && (objct.exists()))
+                if ((objct.room == magnet.room) && (objct.exists()))
                 {
-                    // horizontal axis
-                    if (objct.x < magnet.x)
-                        objct.x++;
-                    else if (objct.x > magnet.x)
-                        objct.x--;
+                    bool held = false;
+                    for(int playerCtr=0; playerCtr<numPlayers && !held; ++playerCtr)
+                    {
+                        held = gameBoard.getPlayer(playerCtr).linkedObject == magnetMatrix[i];
+                    }
+                    if (!held)
+                    {
+                        // horizontal axis
+                        if (objct.x < magnet.x)
+                            objct.x++;
+                        else if (objct.x > magnet.x)
+                            objct.x--;
 
-                    // vertical axis - offset by the height of the magnet so items stick to the "bottom"
-                    if (objct.y < (magnet.y - magnet.gfxData[0].Length))
-                        objct.y++;
-                    else if (objct.y > (magnet.y - magnet.gfxData[0].Length))
-                        objct.y--;
+                        // vertical axis - offset by the height of the magnet so items stick to the "bottom"
+                        if (objct.y < (magnet.y - magnet.gfxData[0].Length))
+                            objct.y++;
+                        else if (objct.y > (magnet.y - magnet.gfxData[0].Length))
+                            objct.y--;
+                    }
 
                     // Only attract the first item found in the matrix
                     break;
                 }
-                ++i;
             }
         }
 
