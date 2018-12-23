@@ -44,16 +44,18 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
     private bool gameStarted = false;
     private int numPlayersReady = 0;
 
-    private List<Rectangle>[] rectsToDisplay = new List<Rectangle>[2];
-    private int displayThisOne = -1;
-    private int displaying = -1;
-    private int paintInThisOne = -1;
-    private int maxNumRects = 0;
+    // We hold a big buffer of rectangles as compactly as possible, so we
+    // convert a Rectange (red, green, blue, x, y, width, length) and store
+    // them serially in a 1D array
+    private const short RECTSIZE = 7;
+    private const int RECTS_START_SIZE = 3000;
+    private short[] rectsToDisplay = new short[RECTS_START_SIZE * RECTSIZE];
+    int rectsBufferSize = RECTS_START_SIZE;
+    int numRects = 0;
+    bool painting = false;
+    bool displaying = false;
 
     void Start() {
-        rectsToDisplay[0] = new List<Rectangle>();
-        rectsToDisplay[1] = new List<Rectangle>();
-
         xport = this.gameObject.GetComponent<UnityTransport>();
         if (SessionInfo.NetworkSetup == SessionInfo.Network.NONE) {
             AdventureSetup(0);
@@ -74,7 +76,7 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
     // on device and load
     void Update()
     {
-        PaintRectangles();
+        DisplayRectangles();
     }
 
     public UnityTransport RegisterNewPlayer(PlayerSync newPlayer)
@@ -118,59 +120,70 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
     }
 
     public void AdventureUpdate() {
-        // Setup which list of rectangles to fill
-        paintInThisOne = (displayThisOne == -1 ? 0 :
-          (displaying >= 0 ? 1-displaying : 1-displayThisOne));
-
-        gameEngine.Adventure_Run();
-
-        if (rectsToDisplay[paintInThisOne].Count > maxNumRects)
+        // Pretty sure this is single threaded and paint and display loops can't
+        // overlap, but put this in to check that.
+        if (displaying)
         {
-            maxNumRects = rectsToDisplay[paintInThisOne].Count;
-            Debug.Log("Painted " + maxNumRects + " rectangles.");
+            Debug.Log("AdventureUpdate called while in the middle of display loop");
         }
-        displayThisOne = paintInThisOne;
-        paintInThisOne = -1;
-
+        painting = true;
+        numRects = 0;
+        gameEngine.Adventure_Run();
+        painting = false;
     }
 
     public void Platform_PaintPixel(int r, int g, int b, int x, int y, int width, int height)
     {
-        rectsToDisplay[paintInThisOne].Add(new Rectangle(r, g, b, x, y, width, height));
+        if (numRects >= rectsBufferSize)
+        {
+            int newBufferSize = 2 * rectsBufferSize;
+            short[] newArray = new short[newBufferSize];
+            rectsToDisplay.CopyTo(newArray, 0);
+            rectsToDisplay = newArray;
+            rectsBufferSize = newBufferSize;
+        }
+        int at = numRects * RECTSIZE;
+        rectsToDisplay[at] = (short)r;
+        rectsToDisplay[at + 1] = (short)g;
+        rectsToDisplay[at + 2] = (short)b;
+        rectsToDisplay[at + 3] = (short)x;
+        rectsToDisplay[at + 4] = (short)y;
+        rectsToDisplay[at + 5] = (short)width;
+        rectsToDisplay[at + 6] = (short)height;
+        ++numRects;
     }
 
-    public void PaintRectangles()
+    public void DisplayRectangles()
     {
-        if (displayThisOne >= 0)
+        // Pretty sure this is single threaded and paint and display loops can't
+        // overlap, but put this in to check that.
+        if (painting)
         {
-            displaying = displayThisOne;
-            List<Rectangle> displayRects = rectsToDisplay[displaying];
+            Debug.Log("DisplayRectangles called while in the middle of paint loop");
+        }
+        if (numRects >= 0)
+        {
+            displaying = true;
             screenRenderer.StartUpdate();
-            for (int ctr = 0; ctr < displayRects.Count; ++ctr)
+            for (int ctr = 0; ctr < numRects; ++ctr)
             {
-                Rectangle rect = displayRects[ctr];
-                Color color = new Color(rect.r / 256.0f, rect.g / 256.0f, rect.b / 256.0f);
-                for (int i = 0; i < rect.width; ++i)
-                    for (int j = 0; j < rect.height; ++j)
+                int at = ctr * RECTSIZE;
+                Color color = new Color(rectsToDisplay[at] / 256.0f, rectsToDisplay[at+1] / 256.0f, rectsToDisplay[at + 2] / 256.0f);
+                for (int i = 0; i < rectsToDisplay[at + 5]; ++i)
+                    for (int j = 0; j < rectsToDisplay[at + 6]; ++j)
                     {
-                        int xi = rect.x + i;
-                        int yj = rect.y + j;
+                        int xi = rectsToDisplay[at + 3] + i;
+                        int yj = rectsToDisplay[at + 4] + j;
                         if ((xi >= 0) && (xi < DRAW_AREA_WIDTH) && (yj >= 0) && (yj < DRAW_AREA_HEIGHT))
                         {
 
-                            screenRenderer.SetPixel(rect.x + i, rect.y + j, color);
+                            screenRenderer.SetPixel(xi, yj, color);
                         }
                     }
             }
             screenRenderer.EndUpdate();
-            displayRects.Clear();
-            // If the other list of rects has been filled while we were painting
-            // we setup to use that next time.  Otherwise wait for a list to be filled.
-            if (displaying == displayThisOne)
-            {
-                displayThisOne = -1;
-            }
-            displaying = -1;
+            numRects = 0;
+            displaying = false;
         }
     }
 
