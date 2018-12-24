@@ -46,6 +46,7 @@ public class StartScreen : MonoBehaviour {
             directConnectPanel.SetActive(false);
             SessionInfo.NetworkSetup = SessionInfo.Network.DIRECT_CONNECT;
             SessionInfo.DirectConnectIp = ip;
+            SceneManager.LoadScene("Lobby");
         }
     }
 
