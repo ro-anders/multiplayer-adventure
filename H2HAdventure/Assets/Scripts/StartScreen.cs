@@ -2,8 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class StartScreen : MonoBehaviour {
+
+    public const int DIRECT_CONNECT_PORT = 1980;
+    public GameObject directConnectPanel;
+    public InputField directConnectIp;
 
 	// Use this for initialization
 	void Start () {
@@ -19,6 +24,29 @@ public class StartScreen : MonoBehaviour {
     {
         SessionInfo.NetworkSetup = SessionInfo.Network.ALL_LOCAL;
         SceneManager.LoadScene("Lobby");
+    }
+
+    public void OnDirectConnectClicked()
+    {
+        directConnectPanel.SetActive(true);
+    }
+
+    public void OnDirectConnectHostPressed()
+    {
+        directConnectPanel.SetActive(false);
+        SessionInfo.NetworkSetup = SessionInfo.Network.DIRECT_CONNECT;
+        SessionInfo.DirectConnectIp = SessionInfo.DIRECT_CONNECT_HOST_FLAG;
+        SceneManager.LoadScene("Lobby");
+    }
+
+    public void OnDirectConnectConnectToHostPressed()
+    {
+        string ip = directConnectIp.text;
+        if ((ip != null) && (ip.Trim() != "")) {
+            directConnectPanel.SetActive(false);
+            SessionInfo.NetworkSetup = SessionInfo.Network.DIRECT_CONNECT;
+            SessionInfo.DirectConnectIp = ip;
+        }
     }
 
     public void OnTestSingleClicked()

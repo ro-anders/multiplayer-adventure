@@ -6,14 +6,18 @@ public class SessionInfo {
     public enum Network
     {
         MATCHMAKER,
+        DIRECT_CONNECT,
         ALL_LOCAL,
         NONE
     }
+
+    public const string DIRECT_CONNECT_HOST_FLAG = "host";
 
     private static uint thisPlayerId;
     private static string thisPlayerName;
     private static GameInLobby gameToPlay;
     private static Network networkSetup;
+    private static string directConnectIp;
 
 
     public static uint ThisPlayerId
@@ -64,4 +68,15 @@ public class SessionInfo {
         }
     }
 
+    public static string DirectConnectIp
+    {
+        get
+        {
+            return directConnectIp;
+        }
+        set
+        {
+            directConnectIp = value;
+        }
+    }
 }

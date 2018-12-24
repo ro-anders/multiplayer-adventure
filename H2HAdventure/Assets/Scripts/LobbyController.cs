@@ -18,8 +18,8 @@ public class NewGameInfo {
 public class LobbyController : MonoBehaviour
 {
 
-    public const string GAME_SCENE = "AdvGame";
-    //public const string GAME_SCENE = "FauxGame";
+    //public const string GAME_SCENE = "AdvGame";
+    public const string GAME_SCENE = "FauxGame";
 
     public NetworkManager lobbyManager;
     public GameObject newGamePanel;
@@ -77,7 +77,8 @@ public class LobbyController : MonoBehaviour
     }
 
     public void ConnectToLobby() {
-        if (SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) {
+        if (SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL)
+        {
             NetworkClient client = null;
             client = lobbyManager.StartHost();
             if (client == null)
@@ -85,7 +86,23 @@ public class LobbyController : MonoBehaviour
                 client = lobbyManager.StartClient();
             }
             hostButton.interactable = true;
-        } else if (SessionInfo.NetworkSetup == SessionInfo.Network.MATCHMAKER) {
+        }
+        else if (SessionInfo.NetworkSetup == SessionInfo.Network.DIRECT_CONNECT)
+        {
+            NetworkClient client = null;
+            if (SessionInfo.DirectConnectIp == SessionInfo.DIRECT_CONNECT_HOST_FLAG)
+            {
+                lobbyManager.networkAddress = "127.0.0.1";
+                lobbyManager.networkPort = 1980;
+                client = lobbyManager.StartHost();
+            } else {
+                lobbyManager.networkAddress = SessionInfo.DirectConnectIp;
+                lobbyManager.networkPort = 1980;
+                client = lobbyManager.StartClient();
+            }
+            hostButton.interactable = true;
+        }
+        else if (SessionInfo.NetworkSetup == SessionInfo.Network.MATCHMAKER) {
             if (lobbyManager.matchMaker == null)
             {
                 lobbyManager.StartMatchMaker();
@@ -335,7 +352,8 @@ public class LobbyController : MonoBehaviour
         Debug.Log(SessionInfo.ThisPlayerName + "(" + SessionInfo.ThisPlayerId + 
         ") is playing game " + SessionInfo.GameToPlay);
         // Disconnect from the lobby before switching to 
-        if (SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) {
+        if ((SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) ||
+            (SessionInfo.NetworkSetup == SessionInfo.Network.DIRECT_CONNECT)) {
             StartCoroutine(ShutdownLocalNetwork());
         }
         else {

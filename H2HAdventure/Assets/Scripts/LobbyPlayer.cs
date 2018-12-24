@@ -85,6 +85,7 @@ public class LobbyPlayer : NetworkBehaviour
 
     private void OnChangePlayerName(string newPlayerName) {
         playerName = newPlayerName;
+        Debug.Log(newPlayerName + " connected to lobby");
         RefreshDisplay();
     }
 }

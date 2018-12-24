@@ -19,29 +19,55 @@ public class FauxGameController : MonoBehaviour {
 	void Start() {
         Debug.Log("Playing game " + SessionInfo.GameToPlay + " using network " + SessionInfo.NetworkSetup);
         bool isHosting = SessionInfo.GameToPlay.playerOne == SessionInfo.ThisPlayerId;
-        if (SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) {
-            if (isHosting) {
+        if (SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL)
+        {
+            if (isHosting)
+            {
                 networkManager.networkPort = int.Parse(SessionInfo.GameToPlay.connectionkey);
                 networkManager.serverBindAddress = "127.0.0.1";
                 networkManager.serverBindToIP = true;
                 networkManager.StartHost();
-            } else {
+            }
+            else
+            {
                 networkManager.networkPort = int.Parse(SessionInfo.GameToPlay.connectionkey);
                 networkManager.StartClient();
             }
-        } else if (SessionInfo.NetworkSetup == SessionInfo.Network.MATCHMAKER) {
+        }
+        else if (SessionInfo.NetworkSetup == SessionInfo.Network.DIRECT_CONNECT)
+        {
+            if (SessionInfo.DirectConnectIp == SessionInfo.DIRECT_CONNECT_HOST_FLAG)
+            {
+                networkManager.networkPort = 1981;
+                networkManager.serverBindAddress = "127.0.0.1";
+                networkManager.serverBindToIP = true;
+                networkManager.StartHost();
+            }
+            else
+            {
+                networkManager.networkPort = 1981;
+                networkManager.networkAddress = SessionInfo.DirectConnectIp;
+                networkManager.StartClient();
+            }
+        }
+        else if (SessionInfo.NetworkSetup == SessionInfo.Network.MATCHMAKER)
+        {
             matchName = SessionInfo.GameToPlay.connectionkey;
             if (networkManager.matchMaker == null)
             {
                 networkManager.StartMatchMaker();
-            }   
-            if (isHosting) {
+            }
+            if (isHosting)
+            {
                 networkManager.matchMaker.CreateMatch(matchName, (uint)100, true,
                                     "", "", "", 0, 1, OnMatchCreate);
-            } else {
+            }
+            else
+            {
                 needMatch = true;
             }
-        } else if (SessionInfo.NetworkSetup == SessionInfo.Network.NONE)
+        }
+        else if (SessionInfo.NetworkSetup == SessionInfo.Network.NONE)
         {
             Debug.Log("Running in single player mode");
             gameStartText.text = "Running in single player mode";
