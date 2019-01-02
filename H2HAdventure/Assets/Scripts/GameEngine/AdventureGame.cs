@@ -72,6 +72,8 @@ namespace GameEngine
 
         private OBJECT[] surrounds;
 
+        private Random randomGen = new Random();
+
         /** We wait a few seconds between when the game comes up connected and when the game actually starts.
          This is the countdown timer. */
         private int timeToStartGame;
@@ -427,8 +429,8 @@ namespace GameEngine
         {
             sync.PullLatestMessages();
 
-            ////            // Check for any setup messages first.
-            ////            handleSetupMessages();
+            // Check for any setup messages first.
+            handleSetupMessages();
 
             // Move all the other players
             OtherBallMovement();
@@ -778,19 +780,19 @@ namespace GameEngine
                 toInit.init(room, xpos, ypos, state, movementX, movementY);
             }
 
-            ////            // Hide the jade key if only 2 player
-            ////            if (numPlayers <= 2)
-            ////            {
-            ////                board[OBJECT_JADEKEY].setExists(false);
-            ////                board[OBJECT_JADEKEY].randomPlacement = OBJECT::FIXED_LOCATION;
-            ////            }
+            // Hide the jade key if only 2 player
+            if (numPlayers <= 2)
+            {
+                gameBoard[Board.OBJECT_JADEKEY].setExists(false);
+                gameBoard[Board.OBJECT_JADEKEY].randomPlacement = OBJECT.RandomizedLocations.FIXED_LOCATION;
+            }
 
-            ////            // Put objects in random rooms for level 3.
-            ////            // Only first player does this and then broadcasts to other players.
-            ////            if ((gameMode == GAME_MODE_3) && (thisPlayer == 0))
-            ////            {
-            ////                randomizeRoomObjects();
-            ////            }
+            // Put objects in random rooms for level 3.
+            // Only first player does this and then broadcasts to other players.
+            if ((gameMode == GAME_MODE_3) && (thisPlayer == 0))
+            {
+                randomizeRoomObjects();
+            }
 
             // Open the gates if running the gauntlet
             if (gameMode == GAME_MODE_GAUNTLET)
@@ -802,116 +804,102 @@ namespace GameEngine
             }
         }
 
-        ////        /**
-        ////         * Puts all the objects in random locations.
-        ////         * This follows a different algorithm than the original game.
-        ////         * We don't use the original algorithm because
-        ////         * 1) it had a vulnerability that the gold key could be in the black 
-        ////         * castle while the black key was in the gold castle
-        ////         * 2) with three times the number of home castles the algorithm was three
-        ////         * times more likely to be deadlocked
-        ////         */
-        ////        void randomizeRoomObjects()
-        ////        {
-        ////            int numRooms = gameMap.getNumRooms();
-        ////            Portcullis* blackCastle = (Portcullis*)board[OBJECT_BLACK_PORT];
-        ////            Portcullis* whiteCastle = (Portcullis*)board[OBJECT_WHITE_PORT];
+        /**
+         * Puts all the objects in random locations.
+         * This follows a different algorithm than the original game.
+         * We don't use the original algorithm because
+         * 1) it had a vulnerability that the gold key could be in the black 
+         * castle while the black key was in the gold castle
+         * 2) with three times the number of home castles the algorithm was three
+         * times more likely to be deadlocked
+         */
+        void randomizeRoomObjects()
+        {
+            int numRooms = gameMap.getNumRooms();
+            Portcullis blackCastle = (Portcullis)gameBoard[Board.OBJECT_BLACK_PORT];
+            Portcullis whiteCastle = (Portcullis)gameBoard[Board.OBJECT_WHITE_PORT];
 
-        ////            // Run through all the objects in the game.  The ones that shouldn't be
-        ////            // randomized will have their random location flag turned off.
-        ////            int numObjects = gameBoard.getNumObjects();
-        ////            // TODO: Bug in win4dows requires we reseed now.
-        ////            Sys::randomized = false;
-        ////            for (int objCtr = 0; objCtr < numObjects; ++objCtr)
-        ////            {
-        ////                OBJECT* nextObj = gameBoard.getObject(objCtr);
-        ////                if (nextObj.randomPlacement != OBJECT::FIXED_LOCATION)
-        ////                {
-        ////                    bool ok = false;
-        ////                    while (!ok)
-        ////                    {
-        ////                        int randomKey = (int)(Sys::random() * numRooms);
-        ////                        ROOM* randomRoom = gameMap.getRoom(randomKey);
+            // Run through all the objects in the game.  The ones that shouldn't be
+            // randomized will have their random location flag turned off.
+            int numObjects = gameBoard.getNumObjects();
+            for (int objCtr = 0; objCtr < numObjects; ++objCtr)
+            {
+                OBJECT nextObj = gameBoard.getObject(objCtr);
+                if (nextObj.randomPlacement != OBJECT.RandomizedLocations.FIXED_LOCATION)
+                {
+                    bool ok = false;
+                    while (!ok)
+                    {
+                        int randomKey = randomGen.Next(numRooms);
+                        ROOM randomRoom = gameMap.getRoom(randomKey);
 
-        ////                        // Make sure the object isn't put in a hidden room
-        ////                        ok = randomRoom.visibility != ROOM::HIDDEN;
+                        // Make sure the object isn't put in a hidden room
+                        ok = randomRoom.visibility != ROOM.RandomVisibility.HIDDEN;
 
-        ////                        // if the object can only be in the open, make sure that it's put in the open.
-        ////                        ok = ok && ((nextObj.randomPlacement != OBJECT::OUT_IN_OPEN) || (randomRoom.visibility == ROOM::OPEN));
+                        // if the object can only be in the open, make sure that it's put in the open.
+                        ok = ok && ((nextObj.randomPlacement != OBJECT.RandomizedLocations.OUT_IN_OPEN) || (randomRoom.visibility == ROOM.RandomVisibility.OPEN));
 
-        ////                        // Make sure chalice is in a castle
-        ////                        if (ok && (objCtr == OBJECT_CHALISE))
-        ////                        {
-        ////                            ok = (blackCastle.containsRoom(randomKey) || whiteCastle.containsRoom(randomKey));
-        ////                        }
+                        // Make sure chalice is in a castle
+                        if (ok && (objCtr == Board.OBJECT_CHALISE))
+                        {
+                            ok = (blackCastle.containsRoom(randomKey) || whiteCastle.containsRoom(randomKey));
+                        }
 
-        ////                        // Make sure white key not in white castle.
-        ////                        if (ok && (objCtr == OBJECT_WHITEKEY))
-        ////                        {
-        ////                            ok = ok && !whiteCastle.containsRoom(randomKey);
-        ////                        }
+                        // Make sure white key not in white castle.
+                        if (ok && (objCtr == Board.OBJECT_WHITEKEY))
+                        {
+                            ok = ok && !whiteCastle.containsRoom(randomKey);
+                        }
 
-        ////                        // Make sure white and black key not cyclical
-        ////                        // We happen to know that the white key is placed first, so set the black.
-        ////                        if (ok && (objCtr == OBJECT_BLACKKEY))
-        ////                        {
-        ////                            if (blackCastle.containsRoom(board[OBJECT_WHITEKEY].room))
-        ////                            {
-        ////                                ok = !whiteCastle.containsRoom(randomKey);
-        ////                            }
-        ////                            // Also make sure black key not in black castle
-        ////                            ok = ok && !blackCastle.containsRoom(randomKey);
-        ////                        }
+                        // Make sure white and black key not cyclical
+                        // We happen to know that the white key is placed first, so set the black.
+                        if (ok && (objCtr == Board.OBJECT_BLACKKEY))
+                        {
+                            if (blackCastle.containsRoom(gameBoard[Board.OBJECT_WHITEKEY].room))
+                            {
+                                ok = !whiteCastle.containsRoom(randomKey);
+                            }
+                            // Also make sure black key not in black castle
+                            ok = ok && !blackCastle.containsRoom(randomKey);
+                        }
 
-        ////                        // There are parts of the white castle not accessible without the bridge, but the bat
-        ////                        // can get stuff out of there.  So make sure, if the black key is in the white castle
-        ////                        // that the bat is not in the black castle.
-        ////                        if (ok && (objCtr == OBJECT_BAT))
-        ////                        {
-        ////                            if (whiteCastle.containsRoom(board[OBJECT_BLACKKEY].room))
-        ////                            {
-        ////                                ok = !blackCastle.containsRoom(randomKey);
-        ////                            }
-        ////                        }
+                        // There are parts of the white castle not accessible without the bridge, but the bat
+                        // can get stuff out of there.  So make sure, if the black key is in the white castle
+                        // that the bat is not in the black castle.
+                        if (ok && (objCtr == Board.OBJECT_BAT))
+                        {
+                            if (whiteCastle.containsRoom(gameBoard[Board.OBJECT_BLACKKEY].room))
+                            {
+                                ok = !blackCastle.containsRoom(randomKey);
+                            }
+                        }
 
-        ////                        if (ok)
-        ////                        {
-        ////                            nextObj.room = randomKey;
-        ////                            ObjectMoveAction* action = new ObjectMoveAction(objCtr, randomKey, nextObj.x, nextObj.y);
-        ////                            sync.BroadcastAction(action);
-        ////                        }
-        ////                    }
-        ////                }
-        ////            }
+                        if (ok)
+                        {
+                            nextObj.room = randomKey;
+                            ObjectMoveAction action = new ObjectMoveAction(objCtr, randomKey, nextObj.x, nextObj.y);
+                            sync.BroadcastAction(action);
+                        }
+                    }
+                }
+            }
+        }
 
-        ////            // Print out where everything was randomized to
-        ////            // Only for debugging - keep commented out
-        ////#if 0
-        ////    for(int objCtr=0; objCtr < numObjects; ++objCtr) {
-        ////        OBJECT* nextObj = gameBoard.getObject(objCtr);
-        ////        if (nextObj.randomPlacement != OBJECT::FIXED_LOCATION) {
-        ////            printf("%s placed in %s.\n", nextObj.label, gameMap.getRoom(nextObj.room).label);
-        ////        }
-        ////    }
-        ////#endif
-
-        ////        }
-
-        ////        /**
-        ////         * If this was a randomized game, look for another game to define where the objects are placed.
-        ////         */
-        ////        void handleSetupMessages()
-        ////        {
-        ////            ObjectMoveAction* nextMsg = sync.GetNextSetupAction();
-        ////            while (nextMsg != NULL)
-        ////            {
-        ////                OBJECT* toSetup = board[nextMsg.object];
-        ////                toSetup.room = nextMsg.room;
-        ////                toSetup.x = nextMsg.x;
-        ////                toSetup.y = nextMsg.y;
-        ////                nextMsg = sync.GetNextSetupAction();
-        ////            }
-        ////        }
+        /**
+         * If this was a randomized game, look for another game to define where the objects are placed.
+         */
+        void handleSetupMessages()
+        {
+            ObjectMoveAction nextMsg = sync.GetNextSetupAction();
+            while (nextMsg != null)
+            {
+                OBJECT toSetup = gameBoard[nextMsg.objct];
+                toSetup.room = nextMsg.room;
+                toSetup.x = nextMsg.x;
+                toSetup.y = nextMsg.y;
+                nextMsg = sync.GetNextSetupAction();
+            }
+        }
 
         float volumeAtDistance(int room)
         {

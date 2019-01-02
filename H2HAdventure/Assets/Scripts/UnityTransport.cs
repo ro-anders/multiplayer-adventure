@@ -140,7 +140,6 @@ public class UnityTransport : MonoBehaviour, Transport
     void Transport.send(RemoteAction action)
     {
         action.setSender(thisPlayer.getSlot());
-        Debug.Log("Sending " + action.typeCode.ToString("g") + " message for player " + action.sender);
         thisPlayer.CmdBroadcast(action.serialize());
     }
 
@@ -201,7 +200,6 @@ public class UnityTransport : MonoBehaviour, Transport
         else
         {
             RemoteAction nextAction = receviedActions.Dequeue();
-            Debug.Log("Received " + nextAction.typeCode + " action from player #" + nextAction.sender + ".");
             return nextAction;
         }
     }

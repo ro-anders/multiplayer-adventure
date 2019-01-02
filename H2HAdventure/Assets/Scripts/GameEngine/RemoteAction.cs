@@ -414,16 +414,17 @@ namespace GameEngine
         }
         public override int[] serialize()
         {
-            int[] serialized = { (int)CODE, sender, room, x, y };
+            int[] serialized = { (int)CODE, sender, objct, room, x, y };
             return serialized;
         }
 
         public override void deserialize(int[] serialized)
         {
             sender = serialized[1];
-            room = serialized[2];
-            x = serialized[3];
-            y = serialized[4];
+            objct = serialized[2];
+            room = serialized[3];
+            x = serialized[4];
+            y = serialized[5];
         }
     }
 

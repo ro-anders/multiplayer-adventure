@@ -54,7 +54,7 @@ public class StartScreen : MonoBehaviour {
     {
         SessionInfo.NetworkSetup = SessionInfo.Network.NONE;
         SessionInfo.ThisPlayerId = 12;
-        SessionInfo.ThisPlayerName = "adam";
+        SessionInfo.ThisPlayerName = "abbie";
         SessionInfo.GameToPlay = new GameInLobby();
         SessionInfo.GameToPlay.gameId = 11;
         SessionInfo.GameToPlay.playerOne = SessionInfo.ThisPlayerId;
@@ -62,7 +62,7 @@ public class StartScreen : MonoBehaviour {
         SessionInfo.GameToPlay.playerTwo = 13;
         SessionInfo.GameToPlay.playerTwoName = "ben";
         SessionInfo.GameToPlay.playerThree = 14;
-        SessionInfo.GameToPlay.playerThreeName = "calvin";
+        SessionInfo.GameToPlay.playerThreeName = "chris";
         SessionInfo.GameToPlay.numPlayers = 3;
         SessionInfo.GameToPlay.gameNumber = 0;
         SceneManager.LoadScene(LobbyController.GAME_SCENE);

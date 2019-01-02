@@ -58,7 +58,7 @@ namespace GameEngine
             ConfigureMaze(numPlayers, gameMapLayout);
         }
 
-        int getNumRooms()
+        public int getNumRooms()
         {
             return numRooms;
         }
