@@ -779,7 +779,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 97.6, y: 24.603}
+  m_AnchoredPosition: {x: 97.600006, y: 24.603027}
   m_SizeDelta: {x: -195.2, y: 49.195}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &485251054
@@ -1466,6 +1466,7 @@ GameObject:
   - component: {fileID: 1069304498}
   - component: {fileID: 1069304500}
   - component: {fileID: 1069304499}
+  - component: {fileID: 1069304501}
   m_Layer: 5
   m_Name: IntroOuterPanel
   m_TagString: Untagged
@@ -1526,6 +1527,22 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1069304497}
   m_CullTransparentMesh: 0
+--- !u!114 &1069304501
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1069304497}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df02c5598c005406d9090fffc8bce61f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameDescription: {fileID: 1906020073}
+  p1Description: {fileID: 1937515494}
+  p2Description: {fileID: 2011264293}
+  p3Description: {fileID: 454370974}
+  helpMessage: {fileID: 651462204}
 --- !u!1 &1133016974
 GameObject:
   m_ObjectHideFlags: 0
@@ -1709,7 +1726,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -7.3999634, y: 18.799988}
+  m_AnchoredPosition: {x: -7.3999634, y: 18.800049}
   m_SizeDelta: {x: 42.449997, y: 30}
   m_Pivot: {x: 1, y: 0}
 --- !u!114 &1304550077
@@ -1972,7 +1989,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -21.425, y: 17.65001}
+  m_AnchoredPosition: {x: -21.424995, y: 17.649902}
   m_SizeDelta: {x: -56.850006, y: 32.300003}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &1516042773
@@ -2195,6 +2212,7 @@ MonoBehaviour:
   adv_audio: {fileID: 0}
   adv_input: {fileID: 1349559598}
   screenRenderer: {fileID: 422320390}
+  introPanel: {fileID: 1069304501}
 --- !u!114 &1816688590
 MonoBehaviour:
   m_ObjectHideFlags: 0

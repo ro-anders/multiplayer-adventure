@@ -31,6 +31,7 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
     public AdventureAudio adv_audio;
     public AdventureDirectional adv_input;
     public RenderTextureDrawer screenRenderer;
+    public IntroPanelController introPanel;
 
     private UnityTransport xport;
 
@@ -57,9 +58,9 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
 
     void Start() {
         xport = this.gameObject.GetComponent<UnityTransport>();
+        introPanel.Show();
         if (SessionInfo.NetworkSetup == SessionInfo.Network.NONE) {
-            AdventureSetup(0);
-            gameStarted = true;
+            StartGame();
         }
     }
 
@@ -104,11 +105,10 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
         localPlayer.RpcStartGame();
     }
 
-
-
     public void StartGame()
     {
-        AdventureSetup(localPlayer.getSlot());
+        introPanel.Hide();
+        AdventureSetup(localPlayer == null ? 0 : localPlayer.getSlot());
         gameStarted = true;
     }
 
