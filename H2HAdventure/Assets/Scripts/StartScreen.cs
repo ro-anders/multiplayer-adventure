@@ -50,6 +50,11 @@ public class StartScreen : MonoBehaviour {
         }
     }
 
+    public void OnDirectConnectBackPressed()
+    {
+        directConnectPanel.SetActive(false);
+    }
+
     public void OnTestSingleClicked()
     {
         SessionInfo.NetworkSetup = SessionInfo.Network.NONE;

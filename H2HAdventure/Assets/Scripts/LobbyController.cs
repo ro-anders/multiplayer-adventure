@@ -31,11 +31,13 @@ public class LobbyController : MonoBehaviour
     public GameObject gameList;
 
     private const string LOBBY_MATCH_NAME = "h2hlobby";
-    private string thisPlayerName = "";
     private LobbyPlayer localLobbyPlayer;
     private ChatSync localChatSync;
     private ulong matchNetwork;
     private NodeID matchNode;
+    /** When we leave the scene we store the next scene because
+     * we have to disconnect first in an asynchronous callback. */
+    private String nextSceneName;
 
 
     public LobbyPlayer LocalLobbyPlayer
@@ -49,10 +51,9 @@ public class LobbyController : MonoBehaviour
 
     public string ThisPlayerName 
     {
-        get { return thisPlayerName; }
+        get { return SessionInfo.ThisPlayerName; }
         set 
         { 
-            thisPlayerName = value;
             SessionInfo.ThisPlayerName = value;
         }
     }
@@ -315,7 +316,7 @@ public class LobbyController : MonoBehaviour
         }
         lobbyManager.OnDropConnection(success, extendedInfo);
         ShutdownNetworkManager();
-        SceneManager.LoadScene(GAME_SCENE);
+        SceneManager.LoadScene(nextSceneName);
     }
 
     public void OnDestroyMatch(bool success, string extendedInfo)
@@ -331,7 +332,7 @@ public class LobbyController : MonoBehaviour
         }
         lobbyManager.OnDestroyMatch(success, extendedInfo);
         ShutdownNetworkManager();
-        SceneManager.LoadScene(GAME_SCENE);
+        SceneManager.LoadScene(nextSceneName);
     }
 
     private IEnumerator ShutdownLocalNetwork()
@@ -346,7 +347,12 @@ public class LobbyController : MonoBehaviour
             lobbyManager.StopClient();
         }
         ShutdownNetworkManager();
-        SceneManager.LoadScene(GAME_SCENE);
+        SceneManager.LoadScene(nextSceneName);
+    }
+
+    public void OnBackPressed()
+    {
+        SwitchToScene("Start");
     }
 
     public void StartGame(GameInLobby gameToPlay) {
@@ -354,11 +360,20 @@ public class LobbyController : MonoBehaviour
         Debug.Log(SessionInfo.ThisPlayerName + "(" + SessionInfo.ThisPlayerId + 
         ") is playing game " + SessionInfo.GameToPlay);
         // Disconnect from the lobby before switching to 
+        SwitchToScene(GAME_SCENE);
+    }
+
+    private void SwitchToScene(string sceneName)
+    {
+        nextSceneName = sceneName;
+        // Disconnect from the lobby
         if ((SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) ||
-            (SessionInfo.NetworkSetup == SessionInfo.Network.DIRECT_CONNECT)) {
+            (SessionInfo.NetworkSetup == SessionInfo.Network.DIRECT_CONNECT))
+        {
             StartCoroutine(ShutdownLocalNetwork());
         }
-        else {
+        else
+        {
             if (localLobbyPlayer.isServer)
             {
                 lobbyManager.matchMaker.DestroyMatch((NetworkID)matchNetwork, 0, OnDestroyMatch);
