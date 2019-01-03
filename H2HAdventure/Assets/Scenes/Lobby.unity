@@ -1426,7 +1426,7 @@ GameObject:
   - component: {fileID: 572264012}
   - component: {fileID: 572264013}
   m_Layer: 5
-  m_Name: DiffBToggle
+  m_Name: Diff2Toggle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1496,7 +1496,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Toggle+ToggleEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_IsOn: 1
+  m_IsOn: 0
 --- !u!1 &572882078
 GameObject:
   m_ObjectHideFlags: 0
@@ -1615,7 +1615,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 225.4, y: -1.8300171}
+  m_AnchoredPosition: {x: 225.4, y: -1.8300781}
   m_SizeDelta: {x: -463.1, y: -14.35}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &633359253
@@ -2983,7 +2983,7 @@ MonoBehaviour:
   m_LineType: 0
   m_HideMobileInput: 0
   m_CharacterValidation: 0
-  m_CharacterLimit: 0
+  m_CharacterLimit: 16
   m_OnEndEdit:
     m_PersistentCalls:
       m_Calls: []
@@ -3067,8 +3067,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 9, y: -0.5}
-  m_SizeDelta: {x: -28, y: -3}
+  m_AnchoredPosition: {x: 22.1, y: -1}
+  m_SizeDelta: {x: -1.8, y: -2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1527379765
 MonoBehaviour:
@@ -3611,8 +3611,8 @@ MonoBehaviour:
   lobbyController: {fileID: 2000194505}
   numPlayersDropdown: {fileID: 1930635163}
   gameNumberDropdown: {fileID: 1926175340}
-  diffAToggle: {fileID: 1779273245}
-  diffBToggle: {fileID: 572264013}
+  diff1Toggle: {fileID: 1779273245}
+  diff2Toggle: {fileID: 572264013}
 --- !u!1 &1714035128
 GameObject:
   m_ObjectHideFlags: 0
@@ -4187,7 +4187,7 @@ GameObject:
   - component: {fileID: 1779273244}
   - component: {fileID: 1779273245}
   m_Layer: 5
-  m_Name: DiffAToggle
+  m_Name: Diff1Toggle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4257,7 +4257,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Toggle+ToggleEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  m_IsOn: 1
+  m_IsOn: 0
 --- !u!1 &1785493013
 GameObject:
   m_ObjectHideFlags: 0

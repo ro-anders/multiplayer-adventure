@@ -100,7 +100,7 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
 
     private IEnumerator SignalStartGame()
     {
-        const float GAME_START_BANNER_TIME = 3f;
+        const float GAME_START_BANNER_TIME = 10f;
         yield return new WaitForSeconds(GAME_START_BANNER_TIME);
         localPlayer.RpcStartGame();
     }
@@ -116,7 +116,8 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
         Debug.Log("Starting game.");
         GameInLobby game = SessionInfo.GameToPlay;
         UnityTransport xportToUse = (SessionInfo.NetworkSetup == SessionInfo.Network.NONE ? null : xport);
-        gameEngine = new AdventureGame(this, game.numPlayers, inLocalPlayerSlot, xportToUse, game.gameNumber, false, false);
+        gameEngine = new AdventureGame(this, game.numPlayers, inLocalPlayerSlot, xportToUse, 
+            game.gameNumber, game.diff1 == DIFF.A, game.diff2 == DIFF.A);
     }
 
     public void AdventureUpdate() {

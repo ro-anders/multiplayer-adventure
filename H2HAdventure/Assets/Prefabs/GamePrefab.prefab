@@ -158,7 +158,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: "Game 1\n  3 Players\n  Fast Dragons\n  Run from Lance"
+  m_Text: "Game 1\n  3 Players\n  Fast Dragons\n  Run from Sword"
 --- !u!114 &114185308277293566
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -182,6 +182,9 @@ MonoBehaviour:
   playerThreeName: --
   numPlayers: 0
   gameNumber: 0
+  diff1: 0
+  diff2: 0
+  isReadyToPlay: 0
   connectionkey: 
   playerMapping: 0
 --- !u!114 &114252161744013592

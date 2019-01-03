@@ -4,6 +4,13 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
+public enum DIFF
+{
+    NOT_SET,
+    A,
+    B
+}
+
 public class GameInLobby : NetworkBehaviour
 {
     public Button actionButton;
@@ -47,6 +54,12 @@ public class GameInLobby : NetworkBehaviour
 
     [SyncVar(hook = "OnChangeGameNumber")]
     public int gameNumber = -1;
+
+    [SyncVar(hook = "OnChangeDiff1")]
+    public DIFF diff1 = DIFF.NOT_SET;
+
+    [SyncVar(hook = "OnChangeDiff2")]
+    public DIFF diff2 = DIFF.NOT_SET;
 
     [SyncVar(hook = "OnChangeIsReadyToPlay")]
     public bool isReadyToPlay = false;
@@ -136,6 +149,8 @@ public class GameInLobby : NetworkBehaviour
             (playerTwoName != UNKNOWN_NAME) &&
             (numPlayers != 0) &&
             (gameNumber != -1) &&
+            (diff1 != DIFF.NOT_SET) &&
+            (diff2 != DIFF.NOT_SET) &&
             (connectionkey != "") &&
             (playerMapping != -1);
         if (numPlayers > 2)
@@ -190,6 +205,14 @@ public class GameInLobby : NetworkBehaviour
 
         }
         text.text = "Game " + (gameNumber + 1) + "\n  " + numPlayers + " players";
+        if (diff1 == DIFF.A)
+        {
+            text.text += "\n  Fast dragons";
+        }
+        if (diff2 == DIFF.A)
+        {
+            text.text += "\n  Run from sword";
+        }
         playerText.text = playerList;
         if (amInGame)
         {
@@ -342,6 +365,26 @@ public class GameInLobby : NetworkBehaviour
         }
     }
 
+    void OnChangeDiff1(DIFF newDiff1)
+    {
+        diff1 = newDiff1;
+        RefreshGraphic();
+        if (IsReadyToPlay())
+        {
+            StartGame();
+        }
+    }
+
+    void OnChangeDiff2(DIFF newDiff2)
+    {
+        diff2 = newDiff2;
+        RefreshGraphic();
+        if (IsReadyToPlay())
+        {
+            StartGame();
+        }
+    }
+
     void OnChangeConnectionKey(string newConnectionKey)
     {
         connectionkey = newConnectionKey;
@@ -371,8 +414,11 @@ public class GameInLobby : NetworkBehaviour
 
     public override string ToString()
     {
-        return "Game #" + gameNumber + ", " + numPlayers +
-            ", players: " + playerOneName + "(" + playerOne + ") and " +
+        return "Game #" + gameNumber + 
+            (diff1 == DIFF.A ? 
+                (diff2 == DIFF.A ? " (FD, RFS), " : " (FD), ") :
+                (diff2 == DIFF.A ? " (RFS), " : ", ")) +
+            numPlayers + " players: " + playerOneName + "(" + playerOne + ") and " +
              playerTwoName + "(" + playerTwo + ")" +
             (numPlayers == 2 ? "" : " and " + playerThreeName + "(" + playerThree + ")");
     }

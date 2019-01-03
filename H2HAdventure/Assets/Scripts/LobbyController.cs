@@ -125,7 +125,9 @@ public class LobbyController : MonoBehaviour
 
 
     public void SubmitNewGame(NewGameInfo info) {
-        localLobbyPlayer.CmdHostGame(info.numPlayers, info.gameNumber, localLobbyPlayer.GetComponent<NetworkIdentity>().netId.Value, localLobbyPlayer.playerName);
+        localLobbyPlayer.CmdHostGame(info.numPlayers, info.gameNumber, 
+            info.fastDragons, info.dragonsRunFromSword,
+            localLobbyPlayer.GetComponent<NetworkIdentity>().netId.Value, localLobbyPlayer.playerName);
     }
 
     public void PostChat(LobbyPlayer player, string message) {

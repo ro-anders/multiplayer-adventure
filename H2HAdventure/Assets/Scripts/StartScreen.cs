@@ -65,6 +65,8 @@ public class StartScreen : MonoBehaviour {
         SessionInfo.GameToPlay.playerThreeName = "chris";
         SessionInfo.GameToPlay.numPlayers = 3;
         SessionInfo.GameToPlay.gameNumber = 0;
+        SessionInfo.GameToPlay.diff1 = DIFF.B;
+        SessionInfo.GameToPlay.diff2 = DIFF.B;
         SceneManager.LoadScene(LobbyController.GAME_SCENE);
     }
 }

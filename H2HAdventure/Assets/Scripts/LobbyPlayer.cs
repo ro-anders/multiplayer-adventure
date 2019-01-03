@@ -39,13 +39,16 @@ public class LobbyPlayer : NetworkBehaviour
     }
 
     [Command]
-    public void CmdHostGame(int numPlayers, int gameNumber, uint hostPlayerId, string hostPlayerName)
+    public void CmdHostGame(int numPlayers, int gameNumber, bool diff1, bool diff2,
+        uint hostPlayerId, string hostPlayerName)
     {
         System.Random rand = new System.Random();
         GameObject gameGO = Instantiate(lobbyController.gamePrefab);
         GameInLobby game = gameGO.GetComponent<GameInLobby>();
         game.numPlayers = numPlayers;
         game.gameNumber = gameNumber;
+        game.diff1 = (diff1 ? DIFF.A : DIFF.B);
+        game.diff2 = (diff2 ? DIFF.A : DIFF.B);
         game.playerOne = hostPlayerId;
         game.playerOneName = hostPlayerName;
         game.playerMapping = rand.Next(0, (numPlayers == 2 ? 2 : 6));

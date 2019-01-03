@@ -10,16 +10,16 @@ public class NewGameController : MonoBehaviour {
     public LobbyController lobbyController;
     public Dropdown numPlayersDropdown;
     public Dropdown gameNumberDropdown;
-    public Toggle diffAToggle;
-    public Toggle diffBToggle;
+    public Toggle diff1Toggle;
+    public Toggle diff2Toggle;
 
 
     public void OnOkPressed() {
         NewGameInfo info = new NewGameInfo();
         info.numPlayers = numPlayersDropdown.value + 2;
         info.gameNumber = gameNumberDropdown.value;
-        info.fastDragons = diffAToggle.isOn;
-        info.dragonsRunFromSword = diffBToggle.isOn;
+        info.fastDragons = diff1Toggle.isOn;
+        info.dragonsRunFromSword = diff2Toggle.isOn;
         lobbyController.SubmitNewGame(info);
         lobbyController.CloseNewGameDialog(true);
     }
