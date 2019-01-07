@@ -12,9 +12,16 @@ public class StartScreen : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		
-	}
-	
+        // Show dev resources when in dev mode
+        GameObject[] devObjects = GameObject.FindGameObjectsWithTag("dev_only");
+        Debug.Log("Found " + devObjects.Length + " dev objects");
+        foreach(GameObject devObj in devObjects)
+        {
+            devObj.SetActive(SessionInfo.DEV_MODE);
+        }
+
+    }
+
     public void OnPlayClicked() {
         SessionInfo.NetworkSetup = SessionInfo.Network.MATCHMAKER;
         SceneManager.LoadScene("Lobby");
@@ -72,6 +79,6 @@ public class StartScreen : MonoBehaviour {
         SessionInfo.GameToPlay.gameNumber = 0;
         SessionInfo.GameToPlay.diff1 = DIFF.B;
         SessionInfo.GameToPlay.diff2 = DIFF.B;
-        SceneManager.LoadScene(LobbyController.GAME_SCENE);
+        SceneManager.LoadScene(SessionInfo.GAME_SCENE);
     }
 }

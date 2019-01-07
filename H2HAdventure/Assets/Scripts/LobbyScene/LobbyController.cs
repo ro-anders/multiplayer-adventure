@@ -18,9 +18,6 @@ public class NewGameInfo {
 public class LobbyController : MonoBehaviour
 {
 
-    public const string GAME_SCENE = "AdvGame";
-    //public const string GAME_SCENE = "FauxGame";
-
     public NetworkManager lobbyManager;
     public GameObject newGamePanel;
     public GameObject promptNamePanel;
@@ -360,7 +357,7 @@ public class LobbyController : MonoBehaviour
         Debug.Log(SessionInfo.ThisPlayerName + "(" + SessionInfo.ThisPlayerId + 
         ") is playing game " + SessionInfo.GameToPlay);
         // Disconnect from the lobby before switching to 
-        SwitchToScene(GAME_SCENE);
+        SwitchToScene(SessionInfo.GAME_SCENE);
     }
 
     private void SwitchToScene(string sceneName)

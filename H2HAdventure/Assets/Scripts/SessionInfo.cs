@@ -3,6 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class SessionInfo {
+
+    // If true, show some other options only for developers
+    public const bool DEV_MODE = true;
+
+    // Which scene to take users to once game is established.
+    public const string GAME_SCENE = "AdvGame";
+    //public const string GAME_SCENE = "FauxGame";
+
     public enum Network
     {
         MATCHMAKER,
