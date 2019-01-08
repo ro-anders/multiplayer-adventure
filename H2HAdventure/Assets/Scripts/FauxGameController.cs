@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class FauxGameController : MonoBehaviour {
 
-    public GameNetworkManager networkManager;
+    public NetworkManager networkManager;
     public Text gameStartText;
 
     bool needMatch = false;
