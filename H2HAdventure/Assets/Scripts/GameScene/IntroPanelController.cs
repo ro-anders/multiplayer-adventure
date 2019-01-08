@@ -32,10 +32,11 @@ public class IntroPanelController : MonoBehaviour {
                 gameDescription.text += "dragons run from sword";
             }
         }
-        p1Description.text = SessionInfo.GameToPlay.playerOneName + " is in the gold castle";
-        p2Description.text = SessionInfo.GameToPlay.playerTwoName + " is in the copper castle";
+        string[] names = SessionInfo.GameToPlay.GetPlayerNamesInGameOrder();
+        p1Description.text = names[0] + " is in the gold castle";
+        p2Description.text = names[1] + " is in the copper castle";
         p3Description.text = (SessionInfo.GameToPlay.numPlayers < 3 ?
-            "" : SessionInfo.GameToPlay.playerThreeName + " is in the jade castle");
+            "" : names[2] + " is in the jade castle");
         helpMessage.text = "Arrow keys move.  Space key drops.";
         helpMessage.text += "\nHit Respawn button if you get eaten.";
     }

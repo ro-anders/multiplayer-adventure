@@ -114,6 +114,24 @@ public class GameInLobby : NetworkBehaviour
         return ordered;
     }
 
+    public string[] GetPlayerNamesInGameOrder()
+    {
+        string[] unordered = (numPlayers == 2 ? new string[] { playerOneName, playerTwoName } :
+          new string[] { playerOneName, playerTwoName, playerThreeName });
+        int[] ordering = { permutations[playerMapping, 0], permutations[playerMapping, 1], permutations[playerMapping, 2] };
+        string[] ordered = (numPlayers == 2 ?
+            new string[] {
+                unordered[ordering[0]],
+                unordered[ordering[1]]
+            } :
+            new string[] {
+                unordered[ordering[0]],
+                unordered[ordering[1]],
+                unordered[ordering[2]]
+            });
+        return ordered;
+    }
+
     public int indexOf(string playerName)
     {
         return (playerOneName == playerName ? 0 :

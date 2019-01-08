@@ -898,6 +898,7 @@ GameObject:
   - component: {fileID: 485251056}
   - component: {fileID: 485251055}
   - component: {fileID: 485251054}
+  - component: {fileID: 485251057}
   m_Layer: 5
   m_Name: RosterPanel
   m_TagString: Untagged
@@ -982,6 +983,20 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 485251052}
   m_CullTransparentMesh: 0
+--- !u!114 &485251057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 485251052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 588d4bef76fe74ac696744f2b28b27ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerLabel1: {fileID: 1943991033}
+  playerLabel2: {fileID: 839750053}
+  playerLabel3: {fileID: 313764348}
 --- !u!1 &568972934
 GameObject:
   m_ObjectHideFlags: 0
@@ -1630,7 +1645,7 @@ RectTransform:
   m_Children:
   - {fileID: 1133016975}
   m_Father: {fileID: 1602219068}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -2260,8 +2275,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 1069304498}
   - {fileID: 2078267139}
+  - {fileID: 1069304498}
   - {fileID: 422320389}
   - {fileID: 1816688588}
   - {fileID: 1349559597}
@@ -2700,7 +2715,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1602219068}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
