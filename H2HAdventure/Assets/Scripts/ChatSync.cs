@@ -15,19 +15,21 @@ public class ChatSync : NetworkBehaviour
 	// Use this for initialization
 	void Start () {
         chatText = "No messages";
-        GameObject textGameObj = GameObject.FindGameObjectWithTag("ChatText");
-        gameObject.transform.SetParent(textGameObj.transform.parent, false);
-        chatTextUI = textGameObj.GetComponent<Text>();
-        GameObject lobbyControllerGO = GameObject.FindGameObjectWithTag("LobbyController");
-        LobbyController lobbyController = lobbyControllerGO.GetComponent<LobbyController>();
-        lobbyController.ChatSync = this;
+        GameObject chatTextGameObject = GameObject.Find("Chat Text").gameObject;
+        chatTextUI = chatTextGameObject.GetComponent<Text>();
+        gameObject.transform.SetParent(chatTextGameObject.transform.parent, false);
+
+        GameObject chatGameObject = GameObject.FindGameObjectWithTag("ChatController");
+        ChatPanelController chatPanelController = chatGameObject.GetComponent<ChatPanelController>();
+        chatPanelController.ChatSync = this;
 
         RefreshGraphic();
     }
 
-    public void PostToChat(LobbyPlayer player, string message) {
+    // Only called on server
+    public void BroadcastMessage(string playerName, string message) {
         // TODO: Escape markdown tags
-        chatPosts.Add("<b>" + player.playerName + ":</b> " + message);
+        chatPosts.Add("<b>" + playerName + ":</b> " + message);
         // We only keep the last 10 messages
         while (chatPosts.Count > 10) {
             chatPosts.RemoveAt(0);

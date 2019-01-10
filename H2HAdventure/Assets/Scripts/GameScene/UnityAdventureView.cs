@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using GameEngine;
+using UnityEngine.Networking;
 
 public class Rectangle
 {
@@ -32,6 +33,7 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
     public AdventureDirectional adv_input;
     public RenderTextureDrawer screenRenderer;
     public IntroPanelController introPanel;
+    public GameObject chatPrefab;
 
     private UnityTransport xport;
 
@@ -85,6 +87,10 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
         if (newPlayer.isLocalPlayer)
         {
             localPlayer = newPlayer;
+            if (newPlayer.isServer)
+            {
+                OnNetworkManagerSetup();
+            }
         }
         xport.registerSync(newPlayer);
         if (newPlayer.isServer)
@@ -110,6 +116,13 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
         introPanel.Hide();
         AdventureSetup(localPlayer == null ? 0 : localPlayer.getSlot());
         gameStarted = true;
+    }
+
+    // Called only on server
+    private void OnNetworkManagerSetup()
+    {
+        GameObject chatSyncGO = Instantiate(chatPrefab);
+        NetworkServer.Spawn(chatSyncGO);
     }
 
     public void AdventureSetup(int inLocalPlayerSlot) {

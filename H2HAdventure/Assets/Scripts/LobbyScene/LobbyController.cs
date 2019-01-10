@@ -15,21 +15,19 @@ public class NewGameInfo {
     public bool dragonsRunFromSword;
 }
 
-public class LobbyController : MonoBehaviour
+public class LobbyController : MonoBehaviour, ChatSubmitter
 {
 
     public NetworkManager lobbyManager;
+    public ChatPanelController chatPanel;
     public GameObject newGamePanel;
     public GameObject promptNamePanel;
     public Button hostButton;
-    public InputField chatInput;
     public GameObject gamePrefab;
-    public GameObject chatPrefab;
     public GameObject gameList;
 
     private const string LOBBY_MATCH_NAME = "h2hlobby";
     private LobbyPlayer localLobbyPlayer;
-    private ChatSync localChatSync;
     private ulong matchNetwork;
     private NodeID matchNode;
     /** When we leave the scene we store the next scene because
@@ -42,10 +40,6 @@ public class LobbyController : MonoBehaviour
         get { return localLobbyPlayer; }
     }
 
-    public ChatSync ChatSync {
-        set { localChatSync = value; }
-    }
-
     public string ThisPlayerName 
     {
         get { return SessionInfo.ThisPlayerName; }
@@ -55,8 +49,14 @@ public class LobbyController : MonoBehaviour
         }
     }
 
+    public ChatPanelController GetChatPanelController()
+    {
+        return chatPanel;
+    }
+
     public void Start()
     {
+        chatPanel.ChatSubmitter = this;
         if (SessionInfo.ThisPlayerName == null) {
             promptNamePanel.SetActive(true);
         } else {
@@ -68,9 +68,7 @@ public class LobbyController : MonoBehaviour
         localLobbyPlayer = inLocalLobbyPlayer;
         SessionInfo.ThisPlayerId = localLobbyPlayer.GetComponent<NetworkIdentity>().netId.Value;
         if (localLobbyPlayer.isServer) {
-            // The lobby has just been created on the host.  So setup stuff that the lobby needs
-            GameObject chatSyncGO = Instantiate(chatPrefab);
-            NetworkServer.Spawn(chatSyncGO);
+            chatPanel.ServerSetup();
         }
     }
 
@@ -87,16 +85,15 @@ public class LobbyController : MonoBehaviour
         }
         else if (SessionInfo.NetworkSetup == SessionInfo.Network.DIRECT_CONNECT)
         {
-            NetworkClient client = null;
             if (SessionInfo.DirectConnectIp == SessionInfo.DIRECT_CONNECT_HOST_FLAG)
             {
                 lobbyManager.networkAddress = "127.0.0.1";
                 lobbyManager.networkPort = 1980;
-                client = lobbyManager.StartHost();
+                lobbyManager.StartHost();
             } else {
                 lobbyManager.networkAddress = SessionInfo.DirectConnectIp;
                 lobbyManager.networkPort = 1980;
-                client = lobbyManager.StartClient();
+                lobbyManager.StartClient();
             }
             hostButton.interactable = true;
         }
@@ -128,11 +125,9 @@ public class LobbyController : MonoBehaviour
             localLobbyPlayer.GetComponent<NetworkIdentity>().netId.Value, localLobbyPlayer.playerName);
     }
 
-    public void PostChat(LobbyPlayer player, string message) {
-        if (localChatSync != null)
-        {
-            localChatSync.PostToChat(player, message);
-        }
+    public void PostChat(string message)
+    {
+        localLobbyPlayer.CmdPostChat(message);
     }
 
     /**
@@ -223,14 +218,6 @@ public class LobbyController : MonoBehaviour
     public void OnHostPressed() {
         hostButton.interactable = false;
         newGamePanel.SetActive(true);
-    }
-
-    public void OnChatPostPressed() {
-        if (chatInput.text != "")
-        {
-            localLobbyPlayer.CmdPostChat(chatInput.text);
-            chatInput.text = "";
-        }
     }
 
     private void onMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> matchList)

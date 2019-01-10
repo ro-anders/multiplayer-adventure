@@ -1559,7 +1559,8 @@ MonoBehaviour:
   m_PlayerSpawnMethod: 0
   m_OfflineScene: 
   m_OnlineScene: 
-  m_SpawnPrefabs: []
+  m_SpawnPrefabs:
+  - {fileID: 1608151135211504, guid: 54c2465b95f4d481a94661ff9e013bf0, type: 2}
   m_CustomConfig: 0
   m_MaxConnections: 4
   m_ConnectionConfig:
@@ -1602,7 +1603,7 @@ MonoBehaviour:
     m_MaxTimerTimeout: 12000
     m_MinNetSimulatorTimeout: 1
     m_MaxNetSimulatorTimeout: 12000
-  m_Channels: 
+  m_Channels: 0500000000000000
   m_UseWebSockets: 0
   m_UseSimulator: 0
   m_SimulatedLatency: 1
@@ -2373,6 +2374,7 @@ MonoBehaviour:
   adv_input: {fileID: 1349559598}
   screenRenderer: {fileID: 422320390}
   introPanel: {fileID: 1069304501}
+  chatPrefab: {fileID: 1608151135211504, guid: 54c2465b95f4d481a94661ff9e013bf0, type: 2}
 --- !u!114 &1816688590
 MonoBehaviour:
   m_ObjectHideFlags: 0

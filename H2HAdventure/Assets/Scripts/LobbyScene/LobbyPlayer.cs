@@ -78,7 +78,7 @@ public class LobbyPlayer : NetworkBehaviour
 
     [Command]
     public void CmdPostChat(string message) {
-        lobbyController.PostChat(this, message);
+        lobbyController.GetChatPanelController().BroadcastChatMessage(playerName, message);
     }
 
     private void RefreshDisplay() {

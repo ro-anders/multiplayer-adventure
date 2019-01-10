@@ -7,8 +7,8 @@ TagManager:
   - LobbyPlayerParent
   - GameParent
   - LobbyController
-  - ChatText
   - dev_only
+  - ChatController
   layers:
   - Default
   - TransparentFX

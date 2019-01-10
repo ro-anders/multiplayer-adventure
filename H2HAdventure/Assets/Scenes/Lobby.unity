@@ -1154,8 +1154,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2000194505}
-        m_MethodName: OnChatPostPressed
+      - m_Target: {fileID: 633359255}
+        m_MethodName: OnPostPressed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1589,9 +1589,10 @@ GameObject:
   - component: {fileID: 633359252}
   - component: {fileID: 633359254}
   - component: {fileID: 633359253}
+  - component: {fileID: 633359255}
   m_Layer: 5
   m_Name: ChatPanel
-  m_TagString: Untagged
+  m_TagString: ChatController
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1602,7 +1603,7 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 633359251}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -1610,13 +1611,13 @@ RectTransform:
   - {fileID: 1895906784}
   - {fileID: 1743835749}
   - {fileID: 511778002}
-  m_Father: {fileID: 1715093224}
-  m_RootOrder: 2
+  m_Father: {fileID: 1460501749}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 225.4, y: -1.8300781}
-  m_SizeDelta: {x: -463.1, y: -14.35}
+  m_AnchoredPosition: {x: -0.019989014, y: -4.830082}
+  m_SizeDelta: {x: 0, y: 9.65}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &633359253
 MonoBehaviour:
@@ -1652,6 +1653,18 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 633359251}
   m_CullTransparentMesh: 0
+--- !u!114 &633359255
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 633359251}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6785a8713f1744d3a4836043f2ed45d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chatPrefab: {fileID: 1608151135211504, guid: 54c2465b95f4d481a94661ff9e013bf0, type: 2}
 --- !u!1 &681685778
 GameObject:
   m_ObjectHideFlags: 0
@@ -3233,6 +3246,76 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1403348284}
   m_CullTransparentMesh: 0
+--- !u!1 &1460501748
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1460501749}
+  - component: {fileID: 1460501751}
+  - component: {fileID: 1460501750}
+  m_Layer: 5
+  m_Name: ChatContainerPanel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1460501749
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1460501748}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 633359252}
+  m_Father: {fileID: 1715093224}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 225.42, y: 3}
+  m_SizeDelta: {x: -463.1, y: -24}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1460501750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1460501748}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_RaycastTarget: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
+      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+--- !u!222 &1460501751
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1460501748}
+  m_CullTransparentMesh: 0
 --- !u!1 &1527379763
 GameObject:
   m_ObjectHideFlags: 0
@@ -3915,7 +3998,7 @@ RectTransform:
   m_Children:
   - {fileID: 2055183969}
   - {fileID: 759825734}
-  - {fileID: 633359252}
+  - {fileID: 1460501749}
   - {fileID: 1661474076}
   - {fileID: 1797593030}
   - {fileID: 842113115}
@@ -4130,7 +4213,7 @@ GameObject:
   - component: {fileID: 1743835751}
   - component: {fileID: 1743835750}
   m_Layer: 5
-  m_Name: InputField
+  m_Name: Chat Input
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4892,7 +4975,7 @@ GameObject:
   - component: {fileID: 1895906785}
   m_Layer: 5
   m_Name: Chat Text
-  m_TagString: ChatText
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5533,12 +5616,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lobbyManager: {fileID: 1993903114}
+  chatPanel: {fileID: 633359255}
   newGamePanel: {fileID: 1661474075}
   promptNamePanel: {fileID: 1797593029}
   hostButton: {fileID: 1777091937}
-  chatInput: {fileID: 1743835750}
   gamePrefab: {fileID: 1954551626859292, guid: 3e319f607a9664a079393ba16c92aa91, type: 2}
-  chatPrefab: {fileID: 1608151135211504, guid: 54c2465b95f4d481a94661ff9e013bf0, type: 2}
   gameList: {fileID: 759825733}
 --- !u!1 &2030019964
 GameObject:
