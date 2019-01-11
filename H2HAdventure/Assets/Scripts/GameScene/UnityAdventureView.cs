@@ -27,13 +27,13 @@ public class Rectangle
     public readonly int height;
 }
 
-public class UnityAdventureView : MonoBehaviour, AdventureView
+public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
 {
     public AdventureAudio adv_audio;
     public AdventureDirectional adv_input;
     public RenderTextureDrawer screenRenderer;
     public IntroPanelController introPanel;
-    public GameObject chatPrefab;
+    public ChatPanelController chatPanel;
 
     private UnityTransport xport;
 
@@ -59,6 +59,7 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
     bool displaying = false;
 
     void Start() {
+        chatPanel.ChatSubmitter = this;
         xport = this.gameObject.GetComponent<UnityTransport>();
         introPanel.Show();
         if (SessionInfo.NetworkSetup == SessionInfo.Network.NONE) {
@@ -81,6 +82,12 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
     {
         DisplayRectangles();
     }
+
+    public ChatPanelController GetChatPanelController()
+    {
+        return chatPanel;
+    }
+
 
     public UnityTransport RegisterNewPlayer(PlayerSync newPlayer)
     {
@@ -121,8 +128,7 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
     // Called only on server
     private void OnNetworkManagerSetup()
     {
-        GameObject chatSyncGO = Instantiate(chatPrefab);
-        NetworkServer.Spawn(chatSyncGO);
+        chatPanel.ServerSetup();
     }
 
     public void AdventureSetup(int inLocalPlayerSlot) {
@@ -144,6 +150,11 @@ public class UnityAdventureView : MonoBehaviour, AdventureView
         numRects = 0;
         gameEngine.Adventure_Run();
         painting = false;
+    }
+
+    public void PostChat(string message)
+    {
+        localPlayer.CmdPostChat(message);
     }
 
     public void Platform_PaintPixel(int r, int g, int b, int x, int y, int width, int height)

@@ -127,4 +127,12 @@ public class PlayerSync : NetworkBehaviour
         xport.receiveBroadcast(slot, dataPacket);
     }
 
+    [Command]
+    public void CmdPostChat(string message)
+    {
+        controller.GetChatPanelController().BroadcastChatMessage(playerName, message);
+    }
+
+
+
 }

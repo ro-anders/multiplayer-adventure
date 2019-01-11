@@ -8,8 +8,8 @@ public class SessionInfo {
     public const bool DEV_MODE = true;
 
     // Which scene to take users to once game is established.
-    //public const string GAME_SCENE = "AdvGame";
-    public const string GAME_SCENE = "FauxGame";
+    public const string GAME_SCENE = "AdvGame";
+    //public const string GAME_SCENE = "FauxGame";
 
     public enum Network
     {
