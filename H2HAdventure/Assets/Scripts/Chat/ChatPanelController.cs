@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
-public class ChatPanelController : MonoBehaviour {
+public class ChatPanelController : MonoBehaviour
+{
 
     public GameObject chatPrefab;
 
@@ -23,10 +24,25 @@ public class ChatPanelController : MonoBehaviour {
     }
 
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
         GameObject chatInputGameObject = GameObject.Find("Chat Input").gameObject;
         chatInput = chatInputGameObject.GetComponent<InputField>();
-	}
+    }
+
+    private bool enterKeySubmits;
+    void Update()
+    {
+        if (enterKeySubmits && Input.GetKey(KeyCode.Return))
+        {
+            OnPostPressed();
+            enterKeySubmits = false;
+        }
+        else
+        {
+            enterKeySubmits = chatInput.isFocused;
+        }
+    }
 
     // Only called on server
     public void ServerSetup()

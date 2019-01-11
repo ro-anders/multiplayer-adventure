@@ -63,7 +63,7 @@ public class AdventureDirectional : MonoBehaviour
     }
 
     public bool getResetButton() {
-        bool returnVal = hasResetBeenPressed || Input.GetKey(KeyCode.Return);
+        bool returnVal = hasResetBeenPressed;
         hasResetBeenPressed = false;
         return returnVal;
     }
