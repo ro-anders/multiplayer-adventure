@@ -2372,6 +2372,7 @@ MonoBehaviour:
   screenRenderer: {fileID: 422320390}
   introPanel: {fileID: 1069304501}
   chatPanel: {fileID: 1825680986}
+  respawnButton: {fileID: 568972936}
 --- !u!114 &1816688590
 MonoBehaviour:
   m_ObjectHideFlags: 0

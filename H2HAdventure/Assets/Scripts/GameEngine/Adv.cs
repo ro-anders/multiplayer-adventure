@@ -28,6 +28,12 @@ namespace GameEngine
         GLOW
     }
 
+    public enum GAME_CHANGES
+    {
+        GAME_STARTED,
+        GAME_ENDED
+    }
+
     public static class MAX
     {
         public const float VOLUME = 11.0f;

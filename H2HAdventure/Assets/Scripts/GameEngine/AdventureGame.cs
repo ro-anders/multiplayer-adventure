@@ -594,6 +594,7 @@ namespace GameEngine
                     {
                         EasterEgg.endGauntlet();
                         gameState = GAMESTATE_WIN;
+                        view.Platform_GameChange(GAME_CHANGES.GAME_ENDED);
                         winningRoom = objectBall.displayedRoom;
                     }
                     else
@@ -975,6 +976,7 @@ namespace GameEngine
             gameState = GAMESTATE_WIN;
             winFlashTimer = 0xff;
             winningRoom = winRoom;
+            view.Platform_GameChange(GAME_CHANGES.GAME_ENDED);
 
             // Play the sound
             view.Platform_MakeSound(SOUND.WON, MAX.VOLUME);
@@ -2538,7 +2540,8 @@ namespace GameEngine
             {Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Copper Key
             {Board.OBJECT_JADEKEY, Map.JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Jade Key
             {Board.OBJECT_BLACKKEY, Map.SOUTHEAST_ROOM, 0x20, 0x40, 0x00, 0x00, 0x00}, // Black Key
-            {Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
+            //{Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
+            {Board.OBJECT_CHALISE, Map.MAIN_HALL_CENTER, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
             {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x80, 0x20, 0x00, 0x00, 0x00} // Magnet
         };
 

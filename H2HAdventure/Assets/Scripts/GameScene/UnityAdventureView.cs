@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using GameEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Rectangle
 {
@@ -34,6 +36,7 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
     public RenderTextureDrawer screenRenderer;
     public IntroPanelController introPanel;
     public ChatPanelController chatPanel;
+    public Button respawnButton;
 
     private UnityTransport xport;
 
@@ -80,6 +83,13 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
     // on device and load
     void Update()
     {
+        // If the transport has been gracefully shutdown it means we are trying
+        // to return to the lobby and just waiting for the network to be cleanly shutdown.
+        if ((xport != null) && (xport.ConnectionState == UnityTransport.ConnectionStates.SHUTDOWN))
+        {
+            string nextScene = (SessionInfo.NetworkSetup == SessionInfo.Network.NONE ? "Start" : "Lobby");
+            SceneManager.LoadScene(nextScene);
+        }
         DisplayRectangles();
     }
 
@@ -155,6 +165,11 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
     public void PostChat(string message)
     {
         localPlayer.CmdPostChat(message);
+    }
+
+    public void OnQuitPressed()
+    {
+        xport.Disconnect();
     }
 
     public void Platform_PaintPixel(int r, int g, int b, int x, int y, int width, int height)
@@ -243,5 +258,14 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
         Debug.Log("Message for player: " + message);
     }
 
+    public void Platform_GameChange(GAME_CHANGES change)
+    {
+        if (change == GAME_CHANGES.GAME_ENDED)
+        {
+            // Change the Respawn button to a Quit button
+            respawnButton.GetComponentInChildren<Text>().text = "Quit";
+            respawnButton.onClick.AddListener(OnQuitPressed);
+        }
+    }
 
 }

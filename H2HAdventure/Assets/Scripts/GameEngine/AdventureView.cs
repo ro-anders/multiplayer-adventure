@@ -15,5 +15,7 @@ namespace GameEngine
         void Platform_ReportToServer(string message);
 
         void Platform_DisplayStatus(string message, int durationSecs);
+
+        void Platform_GameChange(GAME_CHANGES change);
     }
 }

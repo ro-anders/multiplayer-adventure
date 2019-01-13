@@ -322,7 +322,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     private IEnumerator ShutdownLocalNetwork()
     {
         yield return new WaitForSeconds(0.5f);
-        if (localLobbyPlayer.isServer)
+        if ((localLobbyPlayer != null) && (localLobbyPlayer.isServer))
         {
             lobbyManager.StopHost();
         }
@@ -358,7 +358,13 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
         }
         else
         {
-            if (localLobbyPlayer.isServer)
+            if ((localLobbyPlayer == null) || (lobbyManager.matchMaker == null))
+            {
+                // Host has already disconnected.
+                ShutdownNetworkManager();
+                SceneManager.LoadScene(nextSceneName);
+            }
+            else if (localLobbyPlayer.isServer)
             {
                 lobbyManager.matchMaker.DestroyMatch((NetworkID)matchNetwork, 0, OnDestroyMatch);
             }

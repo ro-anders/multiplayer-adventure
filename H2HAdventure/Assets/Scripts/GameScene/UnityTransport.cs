@@ -4,13 +4,28 @@ using GameEngine;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.Match;
+using UnityEngine.Networking.Types;
 
 public class UnityTransport : MonoBehaviour, Transport
 {
+    public enum ConnectionStates
+    {
+        INITIATING,
+        CONNECTED,
+        SHUTDOWN
+    }
+
     public NetworkManager networkManager;
     private string matchName; // The unique name of the game in Unity's matchmaker
     private bool needMatch = false; // Whether we are using matchmaker and need to setup a match
     private bool waitingOnListMatch = false; // Whether we are waiting for Unity to setup a match
+    private ulong matchNetwork; // Identifies the matchmaker match so we can disconnect cleanly later
+    private NodeID matchNode;  // Identifies the matchmaker host so we can disconnect cleanly later
+    private ConnectionStates state = ConnectionStates.INITIATING;
+    public ConnectionStates ConnectionState
+    {
+        get { return state; }
+    }
 
     private PlayerSync thisPlayer;
 
@@ -29,11 +44,13 @@ public class UnityTransport : MonoBehaviour, Transport
                 networkManager.serverBindAddress = "127.0.0.1";
                 networkManager.serverBindToIP = true;
                 networkManager.StartHost();
+                state = ConnectionStates.CONNECTED;
             }
             else
             {
                 networkManager.networkPort = int.Parse(SessionInfo.GameToPlay.connectionkey);
                 networkManager.StartClient();
+                state = ConnectionStates.CONNECTED;
             }
         }
         else if (SessionInfo.NetworkSetup == SessionInfo.Network.MATCHMAKER)
@@ -57,6 +74,7 @@ public class UnityTransport : MonoBehaviour, Transport
         {
             Debug.Log("Running in single player mode");
             needMatch = false;
+            state = ConnectionStates.CONNECTED;
         }
     }
 
@@ -70,10 +88,71 @@ public class UnityTransport : MonoBehaviour, Transport
         }
     }
 
+    public void Disconnect()
+    {
+        // Disconnect from the match so we can return to the lobby
+        if (SessionInfo.NetworkSetup == SessionInfo.Network.NONE)
+        {
+            state = ConnectionStates.SHUTDOWN;
+        }
+        else if ((SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) ||
+            (SessionInfo.NetworkSetup == SessionInfo.Network.DIRECT_CONNECT))
+        {
+            StartCoroutine(ShutdownLocalNetwork());
+        }
+        else
+        {
+            if ((thisPlayer == null) || (networkManager.matchMaker == null))
+            {
+                // Host has already disconnected.
+                ShutdownNetworkManager();
+                state = ConnectionStates.SHUTDOWN;
+            }
+            else if (thisPlayer.isServer)
+            {
+                networkManager.matchMaker.DestroyMatch((NetworkID)matchNetwork, 0, OnDestroyMatch);
+            }
+            else
+            {
+                networkManager.matchMaker.DropConnection((NetworkID)matchNetwork, matchNode, 0, OnDropConnection);
+            }
+        }
+    }
+
+    private IEnumerator ShutdownLocalNetwork()
+    {
+        yield return new WaitForSeconds(0.5f);
+        if ((thisPlayer != null) && (thisPlayer.isServer))
+        {
+            networkManager.StopHost();
+        }
+        else
+        {
+            networkManager.StopClient();
+        }
+        ShutdownNetworkManager();
+        state = ConnectionStates.SHUTDOWN;
+    }
+
+    private void ShutdownNetworkManager()
+    {
+        Destroy(networkManager);
+        NetworkManager.Shutdown();
+    }
+
     public void OnMatchCreate(bool success, string extendedInfo, MatchInfo matchInfo)
     {
-        networkManager.OnMatchCreate(success, extendedInfo, matchInfo);
-        Debug.Log("Now hosting h2h game " + matchName);
+        if (!success)
+        {
+            Debug.Log("Error creating Adventure game match.");
+            // TODO: FIX0001
+        }
+        else
+        {
+            matchNetwork = (ulong)matchInfo.networkId;
+            networkManager.OnMatchCreate(success, extendedInfo, matchInfo);
+            Debug.Log("Now hosting h2h game " + matchName);
+        }
     }
 
     private void OnMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> matchList)
@@ -119,11 +198,54 @@ public class UnityTransport : MonoBehaviour, Transport
 
     public virtual void OnMatchJoined(bool success, string extendedInfo, MatchInfo matchInfo)
     {
-        networkManager.OnMatchJoined(success, extendedInfo, matchInfo);
-        Debug.Log("Now joined h2h game");
-        needMatch = false;
+        if (!success)
+        {
+            Debug.Log("Error joining lobby");
+            // TODO: FIX0001
+        }
+        else
+        {
+            matchNetwork = (ulong)matchInfo.networkId;
+            matchNode = matchInfo.nodeId;
+            networkManager.OnMatchJoined(success, extendedInfo, matchInfo);
+            Debug.Log("Now joined h2h game");
+            needMatch = false;
+        }
     }
 
+    public void OnDropConnection(bool success, string extendedInfo)
+    {
+        if (!success)
+        {
+            // Just report and try to continue with leaving the game.
+            // Theoretically possible that match has already been brought down because
+            // player hosting match has moved back to lobby
+            Debug.Log("Error trying to disconnect from match");
+        }
+        else
+        {
+            Debug.Log("Disconnected from match");
+        }
+        networkManager.OnDropConnection(success, extendedInfo);
+        ShutdownNetworkManager();
+        state = ConnectionStates.SHUTDOWN;
+    }
+
+    public void OnDestroyMatch(bool success, string extendedInfo)
+    {
+        if (!success)
+        {
+            // Just report and continue with joining game.
+            Debug.Log("Error trying to shutdown match");
+        }
+        else
+        {
+            Debug.Log("Shutdown match");
+        }
+        networkManager.OnDestroyMatch(success, extendedInfo);
+        ShutdownNetworkManager();
+        state = ConnectionStates.SHUTDOWN;
+    }
 
 
     public void registerSync(PlayerSync inPlayerSync)
