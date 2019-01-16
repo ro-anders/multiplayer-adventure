@@ -13,9 +13,11 @@ public class IntroPanelController : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        gameDescription.text = "Playing " + (SessionInfo.GameToPlay.gameNumber == 3 ?
-            "The Gauntlet" :
-            "Game #" + (SessionInfo.GameToPlay.gameNumber + 1));
+        gameDescription.text = "Playing " + 
+            (SessionInfo.GameToPlay.gameNumber < 3 ? "Game #" + (SessionInfo.GameToPlay.gameNumber + 1) :
+            (SessionInfo.GameToPlay.gameNumber < 6 ? "Cooperative Game #" + (SessionInfo.GameToPlay.gameNumber - 2) :
+            (SessionInfo.GameToPlay.gameNumber == 6 ? "role-based cooperative game" : "The Gauntlet"
+            )));
         if ((SessionInfo.GameToPlay.diff1 == DIFF.A) || (SessionInfo.GameToPlay.diff2 == DIFF.A))
         {
             gameDescription.text += "\nwith ";
@@ -33,10 +35,13 @@ public class IntroPanelController : MonoBehaviour {
             }
         }
         string[] names = SessionInfo.GameToPlay.GetPlayerNamesInGameOrder();
-        p1Description.text = names[0] + " is in the gold castle";
-        p2Description.text = names[1] + " is in the copper castle";
+        string p1Text = (SessionInfo.GameToPlay.gameNumber < 3 ? "in the gold castle" : " the solid square");
+        string p2Text = (SessionInfo.GameToPlay.gameNumber < 3 ? "in the copper castle" : " the donut");
+        string p3Text = (SessionInfo.GameToPlay.gameNumber < 3 ? "in the jade castle" : " the 'I'");
+        p1Description.text = names[0] + " is " + p1Text;
+        p2Description.text = names[1] + " is " + p2Text;
         p3Description.text = (SessionInfo.GameToPlay.numPlayers < 3 ?
-            "" : names[2] + " is in the jade castle");
+            "" : names[2] + " is " + p3Text);
         helpMessage.text = "Arrow keys move.  Space key drops.";
         helpMessage.text += "\nHit Respawn button if you get eaten.";
     }

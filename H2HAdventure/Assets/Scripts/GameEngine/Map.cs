@@ -3,6 +3,10 @@ namespace GameEngine
 {
     public class Map
     {
+        public const int MAP_LAYOUT_SMALL = 0;
+        public const int MAP_LAYOUT_BIG = 1;
+        public const int MAP_LAYOUT_GAUNTLET = 2;
+
         public const int NUMBER_ROOM = 0x00;
         public const int MAIN_HALL_LEFT = 0x01;
         public const int MAIN_HALL_CENTER = 0x02;
@@ -154,11 +158,11 @@ namespace GameEngine
                 roomDefs[JADE_FOYER].visibility = ROOM.RandomVisibility.IN_CASTLE;
             }
 
-            if (gameMapLayout == Adv.GAME_MODE_1)
+            if (gameMapLayout == MAP_LAYOUT_SMALL)
             {
                 // This is the default setup, so don't need to do anything.
             }
-            else if (gameMapLayout == Adv.GAME_MODE_GAUNTLET)
+            else if (gameMapLayout == MAP_LAYOUT_GAUNTLET)
             {
                 // Make the right side of the main hall a dead end.
                 roomDefs[MAIN_HALL_RIGHT].roomUp = BLUE_MAZE_3;
@@ -167,7 +171,7 @@ namespace GameEngine
             }
             else
             {
-                // Games 2 or 3.
+                // Games with the big map.
                 // Connect the lower half of the world.
                 roomDefs[MAIN_HALL_LEFT].roomDown = WHITE_CASTLE;
                 roomDefs[MAIN_HALL_CENTER].roomDown = GOLD_CASTLE;

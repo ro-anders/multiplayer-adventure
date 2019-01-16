@@ -14,7 +14,11 @@ namespace GameEngine
         public const int GAME_MODE_1 = 0;
         public const int GAME_MODE_2 = 1;
         public const int GAME_MODE_3 = 2;
-        public const int GAME_MODE_GAUNTLET = 3;
+        public const int GAME_MODE_C_1 = 3;
+        public const int GAME_MODE_C_2 = 4;
+        public const int GAME_MODE_C_3 = 5;
+        public const int GAME_MODE_ROLE_PLAY = 6;
+        public const int GAME_MODE_GAUNTLET = 7;
     }
 
     public enum SOUND

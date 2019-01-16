@@ -222,7 +222,10 @@ public class GameInLobby : NetworkBehaviour
             }
 
         }
-        text.text = "Game " + (gameNumber + 1) + "\n  " + numPlayers + " players";
+        string gameTitle = (gameNumber < 3 ? "Game " + (gameNumber + 1) :
+            (gameNumber < 6 ? "Coop " + (gameNumber - 2) : 
+            (gameNumber == 6 ? "Coop X" : "Gauntlet")));
+        text.text =  gameTitle + "\n  " + numPlayers + " players";
         if (diff1 == DIFF.A)
         {
             text.text += "\n  Fast dragons";

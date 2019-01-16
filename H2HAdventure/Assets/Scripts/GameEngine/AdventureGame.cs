@@ -22,11 +22,6 @@ namespace GameEngine
 
     public class AdventureGame
     {
-        public const int GAME_MODE_1 = 0;
-        public const int GAME_MODE_2 = 1;
-        public const int GAME_MODE_3 = 2;
-        public const int GAME_MODE_GAUNTLET = 3;
-
         private const int ADVENTURE_SCREEN_WIDTH = Adv.ADVENTURE_SCREEN_WIDTH;
         private const int ADVENTURE_SCREEN_HEIGHT = Adv.ADVENTURE_SCREEN_HEIGHT;
         private const int ADVENTURE_OVERSCAN = Adv.ADVENTURE_OVERSCAN;
@@ -84,8 +79,11 @@ namespace GameEngine
         private Portcullis[] ports;
 
 
-        /** There are four game modes, the original three (but zero justified so game mode 0 means original level 1) and
-         * a new fourth, gameMode 3, which I call The Gauntlet. */
+        /** There are a bunch of game modes
+         * 0-2 are competitive version of the original three
+         * 3-5 are cooperative version of the original three
+         * 6 is a role playing cooperative version that Glynn requested       
+         * 7 is a version which I call The Gauntlet. */
         private int gameMode = 0;
 
         private ROOM[] roomDefs;
@@ -109,7 +107,9 @@ namespace GameEngine
             timeToStartGame = 60 * 3;
 
             // The map for game 3 is the same as 2.
-            gameMapLayout = (gameMode == Adv.GAME_MODE_3 ? Adv.GAME_MODE_2 : gameMode);
+            gameMapLayout = (gameMode == Adv.GAME_MODE_GAUNTLET ? Map.MAP_LAYOUT_SMALL :
+                (gameMode == Adv.GAME_MODE_1 || gameMode == Adv.GAME_MODE_C_1 ? Map.MAP_LAYOUT_SMALL :
+                Map.MAP_LAYOUT_BIG));
             gameMap = new Map(numPlayers, gameMapLayout);
             roomDefs = gameMap.roomDefs;
             gameBoard = new Board(Adv.ADVENTURE_SCREEN_WIDTH, Adv.ADVENTURE_SCREEN_HEIGHT, gameMap, view);
@@ -121,7 +121,7 @@ namespace GameEngine
                 surrounds[ctr] = new OBJECT("surround" + ctr, objectGfxSurround, new byte[0], 0, COLOR.ORANGE, OBJECT.RandomizedLocations.FIXED_LOCATION, 0x07);
             }
 
-            Dragon.Difficulty difficulty = (gameMode == GAME_MODE_1 ?
+            Dragon.Difficulty difficulty = (gameMode == Adv.GAME_MODE_1 || gameMode == Adv.GAME_MODE_C_1 ?
                                              (leftDifficultyOn ? Dragon.Difficulty.EASY : Dragon.Difficulty.TRIVIAL) :
                                              (leftDifficultyOn ? Dragon.Difficulty.HARD : Dragon.Difficulty.MODERATE));
             Dragon.setRunFromSword(rightDifficultyOn);
@@ -196,11 +196,11 @@ namespace GameEngine
             // Setup the players
 
             gameBoard.addPlayer(new BALL(0, ports[0]), thisPlayer == 0);
-            Portcullis p2Home = (gameMode == GAME_MODE_GAUNTLET ? ports[0] : ports[4]);
+            Portcullis p2Home = (gameMode <= Adv.GAME_MODE_3 ? ports[4] : ports[0]);
             gameBoard.addPlayer(new BALL(1, p2Home), thisPlayer == 1);
             if (numPlayers > 2)
             {
-                Portcullis p3Home = (gameMode == GAME_MODE_GAUNTLET ? ports[0] : ports[5]);
+                Portcullis p3Home = (gameMode <= Adv.GAME_MODE_3 ? ports[5] : ports[0]);
                 gameBoard.addPlayer(new BALL(2, p3Home), thisPlayer == 2);
             }
             objectBall = gameBoard.getPlayer(thisPlayer);
@@ -605,7 +605,7 @@ namespace GameEngine
                         if (EasterEgg.shouldStartGauntlet(sync.getFrameNumber()))
                         {
                             EasterEgg.startGauntlet();
-                            gameMode = GAME_MODE_GAUNTLET;
+                            gameMode = Adv.GAME_MODE_GAUNTLET;
                         }
 
                         if (gameState == GAMESTATE_ACTIVE_1)
@@ -677,7 +677,7 @@ namespace GameEngine
                                     sync.BroadcastAction(dragonAction);
                                 }
                                 // In gauntlet mode, getting eaten immediately triggers a reset.
-                                if ((gameMode == GAME_MODE_GAUNTLET) && (dragon.state == Dragon.EATEN) && (dragon.eaten == objectBall))
+                                if ((gameMode == Adv.GAME_MODE_GAUNTLET) && (dragon.state == Dragon.EATEN) && (dragon.eaten == objectBall))
                                 {
                                     ResetPlayer(objectBall);
                                     // Broadcast to everyone else
@@ -754,11 +754,11 @@ namespace GameEngine
 
             // Read the object initialization table for the current game level
             int[,] p = new int[0, 0];
-            if (gameMode == GAME_MODE_1)
+            if((gameMode == Adv.GAME_MODE_1) || (gameMode == Adv.GAME_MODE_C_1))
             {
                 p = game1Objects;
             }
-            else if (gameMode == GAME_MODE_GAUNTLET)
+            else if (gameMode == Adv.GAME_MODE_GAUNTLET)
             {
                 p = gameGauntletObjects;
             }
@@ -790,13 +790,16 @@ namespace GameEngine
 
             // Put objects in random rooms for level 3.
             // Only first player does this and then broadcasts to other players.
-            if ((gameMode == GAME_MODE_3) && (thisPlayer == 0))
+            bool gameRandomized = ((gameMode == Adv.GAME_MODE_3) ||
+              (gameMode == Adv.GAME_MODE_C_3) ||
+              (gameMode == Adv.GAME_MODE_ROLE_PLAY));
+            if (gameRandomized && (thisPlayer == 0))
             {
                 randomizeRoomObjects();
             }
 
             // Open the gates if running the gauntlet
-            if (gameMode == GAME_MODE_GAUNTLET)
+            if (gameMode == Adv.GAME_MODE_GAUNTLET)
             {
                 Portcullis blackPort = (Portcullis)gameBoard[Board.OBJECT_BLACK_PORT];
                 blackPort.setState(Portcullis.OPEN_STATE, true);
@@ -935,7 +938,7 @@ namespace GameEngine
         bool checkWonGame()
         {
             bool won = false;
-            if (gameMode == GAME_MODE_GAUNTLET)
+            if (gameMode == Adv.GAME_MODE_GAUNTLET)
             {
                 won = (objectBall.isGlowing() && (objectBall.room == objectBall.homeGate.insideRoom));
                 if (won && (EasterEgg.eggState == EGG_STATE.IN_GAUNTLET))
@@ -1365,7 +1368,7 @@ namespace GameEngine
                             sync.BroadcastAction(moveAction);
                         }
                         // If entering the black castle in the gauntlet, glow.
-                        if ((gameMode == GAME_MODE_GAUNTLET) && (nextPort == gameBoard[Board.OBJECT_BLACK_PORT]) && !nextBall.isGlowing())
+                        if ((gameMode == Adv.GAME_MODE_GAUNTLET) && (nextPort == gameBoard[Board.OBJECT_BLACK_PORT]) && !nextBall.isGlowing())
                         {
                             nextBall.setGlowing(true);
                             view.Platform_MakeSound(SOUND.GLOW, volumeAtDistance(nextBall.room));
