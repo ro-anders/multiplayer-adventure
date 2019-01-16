@@ -110,7 +110,7 @@ namespace GameEngine
             gameMapLayout = (gameMode == Adv.GAME_MODE_GAUNTLET ? Map.MAP_LAYOUT_SMALL :
                 (gameMode == Adv.GAME_MODE_1 || gameMode == Adv.GAME_MODE_C_1 ? Map.MAP_LAYOUT_SMALL :
                 Map.MAP_LAYOUT_BIG));
-            gameMap = new Map(numPlayers, gameMapLayout);
+            gameMap = new Map(numPlayers, gameMapLayout, gameMode > Adv.GAME_MODE_3);
             roomDefs = gameMap.roomDefs;
             gameBoard = new Board(Adv.ADVENTURE_SCREEN_WIDTH, Adv.ADVENTURE_SCREEN_HEIGHT, gameMap, view);
             EasterEgg.setup(view, gameBoard);

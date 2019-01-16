@@ -55,11 +55,11 @@ namespace GameEngine
 
         private int[,] distances = new int[0, 0];
 
-        public Map(int numPlayers, int gameMapLayout)
+        public Map(int numPlayers, int gameMapLayout, bool isCooperative)
         {
             roomDefs = new ROOM[numRooms];
             defaultRooms();
-            ConfigureMaze(numPlayers, gameMapLayout);
+            ConfigureMaze(numPlayers, gameMapLayout, isCooperative);
         }
 
         public int getNumRooms()
@@ -93,9 +93,9 @@ namespace GameEngine
             addRoom(WHITE_MAZE_1, new ROOM(roomGfxMazeEntry, ROOM.FLAG_NONE, COLOR.LTGRAY,                       // 0x0A
                                            MAIN_HALL_RIGHT, WHITE_MAZE_2, WHITE_MAZE_2, WHITE_MAZE_2, "White Maze 1"));
             addRoom(WHITE_MAZE_3, new ROOM(roomGfxMazeSide, ROOM.FLAG_NONE, COLOR.LTGRAY,                        // 0x0B
-                                           WHITE_MAZE_2, SOUTH_HALL_RIGHT, COPPER_CASTLE, SOUTH_HALL_LEFT, "White Maze 3"));
+                                           WHITE_MAZE_2, SOUTH_HALL_RIGHT, BLACK_INNERMOST_ROOM, SOUTH_HALL_LEFT, "White Maze 3"));
             addRoom(SOUTH_HALL_RIGHT, new ROOM(roomGfxSideCorridor, ROOM.FLAG_RIGHTTHINWALL, COLOR.LTCYAN,       // 0x0C
-                                               COPPER_CASTLE, SOUTH_HALL_LEFT, SOUTHEAST_ROOM, WHITE_MAZE_3, "South Hall Right"));
+                                               BLACK_INNERMOST_ROOM, SOUTH_HALL_LEFT, SOUTHEAST_ROOM, WHITE_MAZE_3, "South Hall Right"));
             addRoom(SOUTH_HALL_LEFT, new ROOM(roomGfxSideCorridor, ROOM.FLAG_LEFTTHINWALL, COLOR.DKGREEN,        // 0x0D
                                               0x0F, 0x0B, 0x0E, 0x0C, "South Hall Left"));                         // 0x0E
             addRoom(SOUTHWEST_ROOM, new ROOM(roomGfxTopEntryRoom, ROOM.FLAG_NONE, COLOR.CYAN,
@@ -146,11 +146,20 @@ namespace GameEngine
                                             CRYSTAL_FOYER, CRYSTAL_FOYER, CRYSTAL_FOYER, CRYSTAL_FOYER, "Crystal Foyer", ROOM.RandomVisibility.HIDDEN));
         }
 
-        void ConfigureMaze(int numPlayers, int gameMapLayout)
+        void ConfigureMaze(int numPlayers, int gameMapLayout, bool isCooperative)
         {
+            // Remove the Copper Castle in cooperative games
+            if (isCooperative)
+            {
+                // Remove the copper castle
+                roomDefs[MAIN_HALL_RIGHT].graphicsData = roomGfxLeftOfName;
+                roomDefs[MAIN_HALL_RIGHT].roomUp = BLUE_MAZE_3;
+                roomDefs[COPPER_CASTLE].visibility = ROOM.RandomVisibility.HIDDEN;
+                roomDefs[COPPER_FOYER].visibility = ROOM.RandomVisibility.HIDDEN;
+            }
 
             // Add the Jade Castle if 3 players
-            if (numPlayers > 2)
+            if ((numPlayers > 2) && !isCooperative)
             {
                 roomDefs[BLUE_MAZE_2].roomUp = JADE_CASTLE;
                 roomDefs[BLUE_MAZE_2].graphicsData = roomGfxBlueMaze1B;
@@ -160,7 +169,7 @@ namespace GameEngine
 
             if (gameMapLayout == MAP_LAYOUT_SMALL)
             {
-                // This is the default setup, so don't need to do anything.
+                // This is the default.  Nothing to do.
             }
             else if (gameMapLayout == MAP_LAYOUT_GAUNTLET)
             {
@@ -179,14 +188,27 @@ namespace GameEngine
                 roomDefs[SOUTHEAST_ROOM].roomUp = SOUTH_HALL_RIGHT;
 
                 // Move the Copper Castle to the White Maze
-                roomDefs[MAIN_HALL_RIGHT].graphicsData = roomGfxLeftOfName;
-                roomDefs[MAIN_HALL_RIGHT].roomUp = BLUE_MAZE_3;
-                roomDefs[COPPER_CASTLE].roomDown = SOUTH_HALL_RIGHT;
-                roomDefs[COPPER_CASTLE].roomUp = SOUTHEAST_ROOM;
-                roomDefs[COPPER_CASTLE].roomRight = BLUE_MAZE_4;
-                roomDefs[COPPER_CASTLE].roomLeft = BLUE_MAZE_1;
-                roomDefs[BLACK_CASTLE].roomLeft = COPPER_CASTLE;
-                roomDefs[BLACK_CASTLE].roomRight = COPPER_CASTLE;
+                // (or the Black Castle's innermost room if its cooperative)
+                if (!isCooperative)
+                {
+                    roomDefs[MAIN_HALL_RIGHT].graphicsData = roomGfxLeftOfName;
+                    roomDefs[MAIN_HALL_RIGHT].roomUp = BLUE_MAZE_3;
+                    roomDefs[COPPER_CASTLE].roomDown = SOUTH_HALL_RIGHT;
+                    roomDefs[COPPER_CASTLE].roomUp = SOUTHEAST_ROOM;
+                    roomDefs[COPPER_CASTLE].roomRight = BLUE_MAZE_4;
+                    roomDefs[COPPER_CASTLE].roomLeft = BLUE_MAZE_1;
+                    roomDefs[WHITE_MAZE_3].roomDown = COPPER_CASTLE;
+                    roomDefs[SOUTH_HALL_RIGHT].roomUp = COPPER_CASTLE;
+                    roomDefs[BLACK_CASTLE].roomLeft = COPPER_CASTLE;
+                    roomDefs[BLACK_CASTLE].roomRight = COPPER_CASTLE;
+                }
+                else
+                {
+                    roomDefs[BLACK_INNERMOST_ROOM].roomDown = SOUTH_HALL_RIGHT;
+                    roomDefs[BLACK_INNERMOST_ROOM].roomUp = SOUTHEAST_ROOM;
+                    roomDefs[BLACK_INNERMOST_ROOM].roomRight = BLUE_MAZE_4;
+                    roomDefs[BLACK_INNERMOST_ROOM].roomLeft = BLUE_MAZE_1;
+                }
 
                 // Put the Black Maze in the Black Castle
                 roomDefs[BLACK_FOYER].roomUp = BLACK_MAZE_ENTRY;
@@ -327,7 +349,7 @@ namespace GameEngine
         // Setup map for Easter Egg gauntlet.
         public void easterEggLayout2()
         {
-            // Block of Jade Castle
+            // Block off Jade Castle
             roomDefs[BLUE_MAZE_2].roomUp = MAIN_HALL_RIGHT;
             roomDefs[BLUE_MAZE_2].graphicsData = roomGfxBlueMaze1;
 
