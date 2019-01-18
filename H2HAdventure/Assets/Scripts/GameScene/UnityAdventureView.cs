@@ -131,7 +131,17 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
     public void StartGame()
     {
         introPanel.Hide();
-        AdventureSetup(localPlayer == null ? 0 : localPlayer.getSlot());
+        int localPlayerSlot = 0;
+        if (localPlayer == null)
+        {
+            localPlayerSlot = (SessionInfo.ThisPlayerId == SessionInfo.GameToPlay.playerOne ? 0 :
+             (SessionInfo.ThisPlayerId == SessionInfo.GameToPlay.playerTwo ? 1 : 2));
+        }
+        else
+        {
+            localPlayerSlot = localPlayer.getSlot();
+        }
+        AdventureSetup(localPlayerSlot);
         gameStarted = true;
     }
 

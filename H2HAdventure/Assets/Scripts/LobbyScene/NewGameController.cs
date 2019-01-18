@@ -27,4 +27,29 @@ public class NewGameController : MonoBehaviour {
     public void OnCancelPressed() {
         lobbyController.CloseNewGameDialog(false);
     }
+
+    public void OnGameTypeChanged()
+    {
+        if (gameNumberDropdown.value == 6)
+        {
+            numPlayersDropdown.value = 1;
+            numPlayersDropdown.interactable = false;
+            diff1Toggle.isOn = true;
+            diff1Toggle.interactable = false;
+            diff1Toggle.GetComponentInChildren<Text>().text = "Respawning, fast dragons"; 
+            diff2Toggle.isOn = true;
+            diff2Toggle.interactable = false;
+            diff2Toggle.GetComponentInChildren<Text>().text = "Dragons much smarter with sword";
+        }
+        else
+        {
+            numPlayersDropdown.interactable = true;
+            diff1Toggle.interactable = true;
+            diff1Toggle.GetComponentInChildren<Text>().text = "Fast dragons";
+            diff2Toggle.interactable = true;
+            diff2Toggle.GetComponentInChildren<Text>().text = "Dragons run from sword";
+        }
+    }
+
+
 }

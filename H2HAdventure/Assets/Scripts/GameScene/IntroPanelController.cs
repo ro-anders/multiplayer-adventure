@@ -35,21 +35,27 @@ public class IntroPanelController : MonoBehaviour {
             }
         }
         string[] names = SessionInfo.GameToPlay.GetPlayerNamesInGameOrder();
-        string p1Text = (SessionInfo.GameToPlay.gameNumber < 3 ? "in the gold castle" : " the solid square");
-        string p2Text = (SessionInfo.GameToPlay.gameNumber < 3 ? "in the copper castle" : " the donut");
-        string p3Text = (SessionInfo.GameToPlay.gameNumber < 3 ? "in the jade castle" : " the 'I'");
+        string p1Text = (SessionInfo.GameToPlay.gameNumber < 3 ? "in the gold castle" :
+            (SessionInfo.GameToPlay.gameNumber == 6 ? "the fighter" : " the solid square"));
+        string p2Text = (SessionInfo.GameToPlay.gameNumber < 3 ? "in the copper castle" :
+            (SessionInfo.GameToPlay.gameNumber == 6 ? "the theif" : " the donut"));
+        string p3Text = (SessionInfo.GameToPlay.gameNumber < 3 ? "in the jade castle" :
+            (SessionInfo.GameToPlay.gameNumber == 6 ? "the cleric" : " the 'I'"));
         p1Description.text = names[0] + " is " + p1Text;
         p2Description.text = names[1] + " is " + p2Text;
         p3Description.text = (SessionInfo.GameToPlay.numPlayers < 3 ?
             "" : names[2] + " is " + p3Text);
-        helpMessage.text = "Arrow keys move.  Space key drops.";
-        helpMessage.text += "\nHit Respawn button if you get eaten.";
+        if (SessionInfo.GameToPlay.gameNumber == 6)
+        {
+            helpMessage.text = "Each player has objects only they can carry.";
+            helpMessage.text += "\nCleric must be present to Respawn.";
+        }
+        else
+        {
+            helpMessage.text = "Arrow keys move.  Space key drops.";
+            helpMessage.text += "\nHit Respawn button if you get eaten.";
+        }
     }
-
-    // Update is called once per frame
-    void Update () {
-		
-	}
 
     public void Show()
     {

@@ -18,7 +18,13 @@ namespace GameEngine
         public const int EATEN = 3;
         public const int ROAR = 4;
 
+        private const int WARY_DISTANCE = 50;
+        private const int RESURRECTION_WAIT = 1800;
+
+
         private static bool runFromSword = false;
+        private static bool waryOfSword = false; // My own crazy ideas
+        private static bool respawningDragons = false;
 
         public BALL eaten;
 
@@ -54,34 +60,38 @@ namespace GameEngine
             eaten = null;
         }
 
-public static void setRunFromSword(bool willRunFromSword)
-{
-    runFromSword = willRunFromSword;
-}
+        public static void setRunFromSword(bool willRunFromSword)
+        {
+            runFromSword = willRunFromSword;
+        }
 
-/*
-        * Reset's the dragon's bite timer.
-        * */
-private void resetTimer()
-{
-    timer = 0xFC - dragonResetTime;
-}
+        public static void setSuperDragons()
+        {
+            respawningDragons = true;
+            waryOfSword = true;
+        }
 
-void decrementTimer()
-{
-    --timer;
-}
+        public void respawn()
+        {
+            state = STALKING;
+            timer = 0;
+        }
 
-bool timerExpired()
-{
-    return (timer <= 0);
-}
+        private void decrementTimer()
+        {
+            --timer;
+        }
+
+        private bool timerExpired()
+        {
+            return (timer <= 0);
+        }
 
 public void roar(int atRoom, int atX, int atY)
 {
     state = ROAR;
 
-    resetTimer();
+    timer = 0xFC - dragonResetTime;
 
     // Set the dragon's position to the same as the ball
     room = atRoom;
@@ -132,6 +142,7 @@ public void syncAction(DragonStateAction action, float volume)
         if ((state != EATEN) && (state != DEAD))
         {
             state = DEAD;
+            timer = (respawningDragons ? RESURRECTION_WAIT : 0);
             room = action.room;
             x = action.posx;
             y = action.posy;
@@ -199,6 +210,7 @@ public void syncAction(DragonMoveAction action)
                 {
                     // Set the State to 01 (Dead)
                     dragon.state = DEAD;
+                    dragon.timer = (respawningDragons ? RESURRECTION_WAIT : 0);
 
                     // Notify others
                     actionTaken = new DragonStateAction(dragon.dragonNumber, DEAD, dragon.room, dragon.x, dragon.y,
@@ -212,6 +224,7 @@ public void syncAction(DragonMoveAction action)
                 {
                     // Go through the dragon's object matrix
                     // Difficulty switch determines flee or don't flee from sword
+                    BALL closest = closestBall();
                     int matrixStart = (runFromSword ? 0 : 2);
                     for (int matrixCtr = matrixStart; matrixCtr < matrix.Length; matrixCtr += 2) {
                         int seekDir = 0; // 1 is seeking, -1 is fleeing
@@ -227,9 +240,24 @@ public void syncAction(DragonMoveAction action)
                             // get the object it is fleeing
                             if ((fleeObjectPtr.room == dragon.room) && (fleeObjectPtr.exists()))
                             {
-                                seekDir = -1;
-                                seekX = fleeObjectPtr.x;
-                                seekY = fleeObjectPtr.y;
+                                UnityEngine.Debug.Log(this.label + " should run from " + fleeObjectPtr.label + " in the same room");
+                                bool shouldRun = true;
+                                // When dragons are wary of sword, they only run from it
+                                // if they are really close to it or there is no one to go for
+                                if ((fleeObject == Board.OBJECT_SWORD) && (waryOfSword) && (closest != null))
+                                {
+                                    UnityEngine.Debug.Log("But dragon is " + (waryOfSword ? "" : "not ") + "wary and there is " + (closest == null ? "no other " : "another ") + "player in the room");
+                                    int distanceToSword = distanceTo(fleeObjectPtr);
+                                    UnityEngine.Debug.Log("Sword is " + distanceToSword + " away");
+                                    shouldRun = (distanceToSword * speed < WARY_DISTANCE);
+
+                                }
+                                if (shouldRun)
+                                {
+                                    seekDir = -1;
+                                    seekX = fleeObjectPtr.x;
+                                    seekY = fleeObjectPtr.y;
+                                }
                             }
                         }
                         else
@@ -239,7 +267,6 @@ public void syncAction(DragonMoveAction action)
                             {
                                 if (seekObject == Board.OBJECT_BALL)
                                 {
-                                    BALL closest = closestBall();
                                     if (closest != null)
                                     {
                                         seekDir = 1;
@@ -345,8 +372,18 @@ public void syncAction(DragonMoveAction action)
                         dragon.state = STALKING;
                     }
                 }
+            } 
+            else if (dragon.state == DEAD)
+            {
+                if (respawningDragons)
+                {
+                    dragon.decrementTimer();
+                    if (dragon.timerExpired())
+                    {
+                        dragon.respawn();
+                    }
+                }
             }
-            // else dead!
 
             return actionTaken;
         }
@@ -356,13 +393,15 @@ public void syncAction(DragonMoveAction action)
 */
 BALL closestBall()
 {
+     // This finds the closest ball unless dragons are wary of the sword, then
+     // it finds the closest ball not carrying the sword
     int shortestDistance = 10000; // Some big number greater than the diagnol of the board
     BALL found = null;
     int numPlayers = board.getNumPlayers();
     for (int ctr = 0; ctr < numPlayers; ++ctr)
     {
         BALL nextBall = board.getPlayer(ctr);
-        if (nextBall.room == room)
+        if ((nextBall.room == room) && ((!waryOfSword) || nextBall.linkedObject != Board.OBJECT_SWORD))
         {
             int dist = nextBall.distanceTo(x, y);
             if (dist < shortestDistance)
@@ -374,6 +413,37 @@ BALL closestBall()
     }
     return found;
 }
+
+        public int distanceTo(OBJECT other)
+        {
+            // Figure out the distance (which is really the max difference along one axis)
+            int xdist = 0;
+            if (this.x < other.x)
+            {
+                // Measure from the dragon's right side to the object's left side
+                xdist = other.x - (this.x + 8);
+            }
+            else
+            {
+                // Measure from the object's right side to the dragon's left side
+                int width = 8 * (other.size / 2 + 1);
+                xdist = this.x - (other.x + width);
+            }
+            int ydist = 0;
+            if (this.y < other.y)
+            {
+                // Measure from the dragon's top to the object's bottom
+                ydist = (other.y-other.gfxData[other.state].Length) - this.y;
+            }
+            else
+            {
+                // Measure from the object's top to the dragon's bottom
+                ydist = this.y-this.gfxData[this.state].Length - other.y;
+            }
+            int dist = (xdist > ydist ? xdist : ydist);
+            return dist;
+        }
+
 
         private static byte[][] objectGfxDragon = new byte[][]
         { new byte[] {

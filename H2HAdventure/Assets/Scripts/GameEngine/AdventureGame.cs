@@ -45,6 +45,7 @@ namespace GameEngine
         private const int GAMEOPTION_NO_HIDE_KEY_IN_CASTLE = 4;
 
 
+
         private AdventureView view;
 
         private int winFlashTimer = 0;
@@ -85,6 +86,7 @@ namespace GameEngine
          * 6 is a role playing cooperative version that Glynn requested       
          * 7 is a version which I call The Gauntlet. */
         private int gameMode = 0;
+        private bool isCooperative = false;
 
         private ROOM[] roomDefs;
         private Map gameMap;
@@ -104,13 +106,14 @@ namespace GameEngine
             numPlayers = inNumPlayers;
             thisPlayer = inThisPlayer;
             gameMode = inGameNum;
+            isCooperative = (gameMode > Adv.GAME_MODE_3);
             timeToStartGame = 60 * 3;
 
             // The map for game 3 is the same as 2.
             gameMapLayout = (gameMode == Adv.GAME_MODE_GAUNTLET ? Map.MAP_LAYOUT_SMALL :
                 (gameMode == Adv.GAME_MODE_1 || gameMode == Adv.GAME_MODE_C_1 ? Map.MAP_LAYOUT_SMALL :
                 Map.MAP_LAYOUT_BIG));
-            gameMap = new Map(numPlayers, gameMapLayout, gameMode > Adv.GAME_MODE_3);
+            gameMap = new Map(numPlayers, gameMapLayout, isCooperative);
             roomDefs = gameMap.roomDefs;
             gameBoard = new Board(Adv.ADVENTURE_SCREEN_WIDTH, Adv.ADVENTURE_SCREEN_HEIGHT, gameMap, view);
             EasterEgg.setup(view, gameBoard);
@@ -127,6 +130,10 @@ namespace GameEngine
             Dragon.setRunFromSword(rightDifficultyOn);
 
             Dragon.setDifficulty(difficulty);
+            if (gameMode == Adv.GAME_MODE_ROLE_PLAY)
+            {
+                Dragon.setSuperDragons();
+            }
             dragons = new Dragon[numDragons];
             dragons[0] = new Dragon("grindle", 0, COLOR.LIMEGREEN, 2, greenDragonMatrix);
             dragons[1] = new Dragon("yorgle", 1, COLOR.YELLOW, 2, yellowDragonMatrix);
@@ -194,16 +201,22 @@ namespace GameEngine
             gameBoard.addObject(Board.OBJECT_MAGNET, new OBJECT("magnet", objectGfxMagnet, new byte[0], 0, COLOR.BLACK));
 
             // Setup the players
-
-            gameBoard.addPlayer(new BALL(0, ports[0]), thisPlayer == 0);
-            Portcullis p2Home = (gameMode <= Adv.GAME_MODE_3 ? ports[4] : ports[0]);
-            gameBoard.addPlayer(new BALL(1, p2Home), thisPlayer == 1);
+            bool useAltIcons = (gameMode == Adv.GAME_MODE_ROLE_PLAY);
+            UnityEngine.Debug.Log((useAltIcons ? "" : "not ") + " using alt icons when game mode = " + gameMode);
+            gameBoard.addPlayer(new BALL(0, ports[0], useAltIcons), thisPlayer == 0);
+            Portcullis p2Home = (isCooperative ? ports[0] : ports[4]);
+            gameBoard.addPlayer(new BALL(1, p2Home, useAltIcons), thisPlayer == 1);
             if (numPlayers > 2)
             {
-                Portcullis p3Home = (gameMode <= Adv.GAME_MODE_3 ? ports[5] : ports[0]);
-                gameBoard.addPlayer(new BALL(2, p3Home), thisPlayer == 2);
+                Portcullis p3Home = (isCooperative ? ports[0] : ports[5]);
+                gameBoard.addPlayer(new BALL(2, p3Home, useAltIcons), thisPlayer == 2);
             }
             objectBall = gameBoard.getPlayer(thisPlayer);
+
+            if (gameMode == Adv.GAME_MODE_ROLE_PLAY)
+            {
+                setupRolePlay();
+            }
 
             // Setup the transport
             transport = inTransport;
@@ -363,14 +376,17 @@ namespace GameEngine
 
         }
 
-
-
-
-
-
-
-
-
+        private void setupRolePlay()
+        {
+            gameBoard.getObject(Board.OBJECT_SWORD).setPrivateToPlayer(0);
+            gameBoard.getObject(Board.OBJECT_YELLOWKEY).setPrivateToPlayer(1);
+            gameBoard.getObject(Board.OBJECT_WHITEKEY).setPrivateToPlayer(1);
+            gameBoard.getObject(Board.OBJECT_BLACKKEY).setPrivateToPlayer(1);
+            gameBoard.getObject(Board.OBJECT_MAGNET).setPrivateToPlayer(1);
+            gameBoard.getObject(Board.OBJECT_BRIDGE).setPrivateToPlayer(2);
+            gameBoard.getObject(Board.OBJECT_CHALISE).setPrivateToPlayer(2);
+            gameBoard.getObject(Board.OBJECT_DOT).setPrivateToPlayer(2);
+        }
 
 
         void addAllRoomsToPort(Portcullis port, int firstRoom, int lastRoom)
@@ -415,7 +431,7 @@ namespace GameEngine
                 Dragon dragon = dragons[ctr];
                 if (dragon.state == Dragon.DEAD)
                 {
-                    dragon.state = Dragon.STALKING;
+                    dragon.respawn();
                 }
                 else if (dragon.eaten == ball)
                 {
@@ -545,11 +561,15 @@ namespace GameEngine
             {
                 if (gameState != GAMESTATE_GAMESELECT)
                 {
-                    ResetPlayer(objectBall);
-                    // Broadcast to everyone else
-                    PlayerResetAction action = new PlayerResetAction();
-                    sync.BroadcastAction(action);
-
+                    // In the role playing version, the cleric has to be on the screen
+                    // to reset
+                    if ((gameMode != Adv.GAME_MODE_ROLE_PLAY) || (gameBoard.getPlayer(2).room == objectBall.room))
+                    {
+                        ResetPlayer(objectBall);
+                        // Broadcast to everyone else
+                        PlayerResetAction action = new PlayerResetAction();
+                        sync.BroadcastAction(action);
+                    }
                 }
             }
             else
@@ -781,18 +801,23 @@ namespace GameEngine
                 toInit.init(room, xpos, ypos, state, movementX, movementY);
             }
 
-            // Hide the jade key if only 2 player
-            if (numPlayers <= 2)
+            // Hide the jade if only 2 player and both new keys if cooperative
+            if ((numPlayers <= 2) || (isCooperative))
             {
                 gameBoard[Board.OBJECT_JADEKEY].setExists(false);
                 gameBoard[Board.OBJECT_JADEKEY].randomPlacement = OBJECT.RandomizedLocations.FIXED_LOCATION;
+            }
+            if (isCooperative)
+            {
+                gameBoard[Board.OBJECT_COPPERKEY].setExists(false);
+                gameBoard[Board.OBJECT_COPPERKEY].randomPlacement = OBJECT.RandomizedLocations.FIXED_LOCATION;
             }
 
             // Put objects in random rooms for level 3.
             // Only first player does this and then broadcasts to other players.
             bool gameRandomized = ((gameMode == Adv.GAME_MODE_3) ||
-              (gameMode == Adv.GAME_MODE_C_3) ||
-              (gameMode == Adv.GAME_MODE_ROLE_PLAY));
+              (gameMode == Adv.GAME_MODE_C_3) /* RPDB ||
+              (gameMode == Adv.GAME_MODE_ROLE_PLAY)*/);
             if (gameRandomized && (thisPlayer == 0))
             {
                 randomizeRoomObjects();
@@ -2543,8 +2568,7 @@ namespace GameEngine
             {Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Copper Key
             {Board.OBJECT_JADEKEY, Map.JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Jade Key
             {Board.OBJECT_BLACKKEY, Map.SOUTHEAST_ROOM, 0x20, 0x40, 0x00, 0x00, 0x00}, // Black Key
-            //{Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
-            {Board.OBJECT_CHALISE, Map.MAIN_HALL_CENTER, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
+            {Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
             {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x80, 0x20, 0x00, 0x00, 0x00} // Magnet
         };
 
@@ -2564,7 +2588,8 @@ namespace GameEngine
             {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00}, // Robinett message
             {Board. OBJECT_NUMBER, Map.NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00}, // Starting number
             {Board.OBJECT_REDDRAGON, Map.BLACK_MAZE_2, 0x50, 0x20, 0x00, 3, 3}, // Red Dragon
-            {Board.OBJECT_YELLOWDRAGON, Map.RED_MAZE_4, 0x50, 0x20, 0x00, 3, 3}, // Yellow Dragon
+            //RPDB {Board.OBJECT_YELLOWDRAGON, Map.RED_MAZE_4, 0x50, 0x20, 0x00, 3, 3}, // Yellow Dragon
+            {Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0, 0}, // Yellow Dragon
             // Commented out sections are for easy testing of Easter Egg
             #if DEBUG_EASTEREGG
             {Board.OBJECT_GREENDRAGON, Map.NUMBER_ROOM, 0x50, 0x20, 0x00, 3, 3}, // Green Dragon
@@ -2587,7 +2612,8 @@ namespace GameEngine
             {Board.OBJECT_CRYSTALKEY1, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 1
             {Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
             {Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
-            {Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x20, 0x20, 0x00, 0, -3}, // Bat
+            // RPDB {Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x20, 0x20, 0x00, 0, -3}, // Bat
+            {Board.OBJECT_BAT, Map.NUMBER_ROOM, 0x20, 0x20, 0x00, 0, -3}, // Bat
             #if DEBUG_EASTEREGG
             {Board.OBJECT_DOT, Map.MAIN_HALL_RIGHT, 0x20, 0x10, 0x00, 0x00, 0x00}, // Dot
             #else

@@ -25,7 +25,7 @@ namespace GameEngine
             * gold castle where you win. */
         private bool glowing;
 
-        public BALL(int inPlayerNum, Portcullis inHomeGate)
+        public BALL(int inPlayerNum, Portcullis inHomeGate, bool altIcons)
         {
             playerNum = inPlayerNum;
             room = 0;
@@ -42,7 +42,9 @@ namespace GameEngine
             linkedObjectY = 0;
             hit = false;
             hitObject = Board.OBJECT_NONE;
-            gfxData = ((playerNum == 0 ? ballGfxSolid : (playerNum == 1 ? ballGfxOne : ballGfxTwo)));
+            gfxData = (altIcons ? 
+                (playerNum == 0 ? ballGfxShield : (playerNum == 1 ? ballGfxSmall : ballGfxCross)) :
+                (playerNum == 0 ? ballGfxSolid : (playerNum == 1 ? ballGfxOne : ballGfxTwo)));
             homeGate = inHomeGate;
             glowing = false;
         }
@@ -113,6 +115,43 @@ namespace GameEngine
             0x18,                  //    XX
             0xFF,                  // XXXXXXXX
             0xFF                   // XXXXXXXX
+        };
+
+        private readonly byte[] ballGfxShield = new byte[]
+        {
+            0xFF,                  // XXXXXXXX
+            0xFF,                  // XXXXXXXX
+            0xFF,                  // XXXXXXXX
+            0xFF,                  // XXXXXXXX
+            0xFF,                  //  XXXXXX
+            0x7E,                  //  XXXXXX
+            0x3C,                  //   XXXX
+            0x18                   //    XX
+        };
+
+        private readonly byte[] ballGfxSmall = new byte[]
+        {
+            0x00,                  //         
+            0x00,                  //         
+            0x7E,                  //  XXXXXX
+            0x7E,                  //  XXXXXX
+            0x7E,                  //  XXXXXX
+            0x7E,                  //  XXXXXX
+            0x00,                  //         
+            0x00                   //         
+        };
+
+
+        private readonly byte[] ballGfxCross = new byte[]
+        {
+            0x18,                  //    XX
+            0x18,                  //    XX
+            0x18,                  //    XX
+            0xFF,                  // XXXXXXXX
+            0xFF,                  // XXXXXXXX
+            0x18,                  //    XX
+            0x18,                  //    XX
+            0x18                   //    XX
         };
 
 
