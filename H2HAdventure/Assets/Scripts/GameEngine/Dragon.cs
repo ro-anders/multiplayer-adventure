@@ -19,7 +19,7 @@ namespace GameEngine
         public const int ROAR = 4;
 
         private const int WARY_DISTANCE = 50;
-        private const int RESURRECTION_WAIT = 1800;
+        private const int RESURRECTION_WAIT = 1200; // One minute
 
 
         private static bool runFromSword = false;
