@@ -431,7 +431,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4000014238669240, guid: 8ddfffabe89a8424aa93f1d72eda77a5, type: 2}
       propertyPath: m_RootOrder
-      value: 8
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 4000014238669240, guid: 8ddfffabe89a8424aa93f1d72eda77a5, type: 2}
       propertyPath: m_LocalScale.x
@@ -1877,7 +1877,7 @@ MonoBehaviour:
   m_OnlineScene: 
   m_SpawnPrefabs:
   - {fileID: 1608151135211504, guid: 54c2465b95f4d481a94661ff9e013bf0, type: 2}
-  m_CustomConfig: 0
+  m_CustomConfig: 1
   m_MaxConnections: 4
   m_ConnectionConfig:
     m_PacketSize: 1440
@@ -1919,7 +1919,7 @@ MonoBehaviour:
     m_MaxTimerTimeout: 12000
     m_MinNetSimulatorTimeout: 1
     m_MaxNetSimulatorTimeout: 12000
-  m_Channels: 0500000000000000
+  m_Channels: 05000000000000000500000000000000
   m_UseWebSockets: 0
   m_UseSimulator: 0
   m_SimulatedLatency: 1
@@ -2363,7 +2363,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.002319336, y: -0.000061035156}
+  m_AnchoredPosition: {x: 0.002319336, y: 0}
   m_SizeDelta: {x: -28.446, y: -65.94}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1258670252

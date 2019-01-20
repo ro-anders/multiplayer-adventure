@@ -115,7 +115,7 @@ namespace GameEngine
                 Map.MAP_LAYOUT_BIG));
             gameMap = new Map(numPlayers, gameMapLayout, isCooperative);
             roomDefs = gameMap.roomDefs;
-            gameBoard = new Board(Adv.ADVENTURE_SCREEN_WIDTH, Adv.ADVENTURE_SCREEN_HEIGHT, gameMap, view);
+            gameBoard = new Board(gameMap, view);
             EasterEgg.setup(view, gameBoard);
 
             surrounds = new OBJECT[numPlayers];

@@ -151,15 +151,11 @@ namespace GameEngine
         private BALL[] players;
         private int currentPlayer;
 
-        public int screenWidth;
-        public int screenHeight;
         public Map map;
         private AdventureView view;
 
-        public Board(int inScreenWidth, int inScreenHeight, Map inMap, AdventureView inView)
+        public Board(Map inMap, AdventureView inView)
         {
-            screenWidth = inScreenWidth;
-            screenHeight = inScreenHeight;
             map = inMap;
             view = inView;
 
@@ -327,12 +323,12 @@ namespace GameEngine
                                 if ((rowByte2 & (1 << (7 - bit2))) > 0)
                                 {
                                     int wrappedX1 = objectX1 + (bit1 * 2 * objectSize1);
-                                    if (wrappedX1 >= screenWidth)
-                                        wrappedX1 -= screenWidth;
+                                    if (wrappedX1 >= Adv.ADVENTURE_SCREEN_WIDTH)
+                                        wrappedX1 -= Adv.ADVENTURE_SCREEN_WIDTH;
 
                                     int wrappedX2 = objectX2 + (bit2 * 2 * objectSize2);
-                                    if (wrappedX2 >= screenWidth)
-                                        wrappedX2 -= screenWidth;
+                                    if (wrappedX2 >= Adv.ADVENTURE_SCREEN_WIDTH)
+                                        wrappedX2 -= Adv.ADVENTURE_SCREEN_WIDTH;
 
                                     if (HitTestRects(wrappedX1, objectY1, 2 * objectSize1, 2, wrappedX2, objectY2, 2 * objectSize2, 2))
                                         // The objects are touching
@@ -382,8 +378,8 @@ namespace GameEngine
                         // test this pixel for intersection
 
                         int wrappedX = objectX + (bit * 2 * objectSize);
-                        if (wrappedX >= screenWidth)
-                            wrappedX -= screenWidth;
+                        if (wrappedX >= Adv.ADVENTURE_SCREEN_WIDTH)
+                            wrappedX -= Adv.ADVENTURE_SCREEN_WIDTH;
 
                         if (HitTestRects(x, y, width, height, wrappedX, objectY, 2 * objectSize, 2))
                             return true;
