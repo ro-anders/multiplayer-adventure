@@ -10,6 +10,7 @@ public class TalkButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     private static Color unpressedColor = new Color(1, 1, 1);
 
     public ChatPanelController controller;
+    public Button lockButton;
 
     private bool pressed = false;
     private bool locked = false;
@@ -18,6 +19,18 @@ public class TalkButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     void Start()
     {
         thisButton = GetComponent<Button>();
+    }
+
+    public void SetEnabled(bool inEnabled)
+    {
+        if (!inEnabled)
+        {
+            MakeLookUnpressed();
+            locked = false;
+            pressed = false;
+        }
+        thisButton.interactable = inEnabled;
+        lockButton.interactable = inEnabled;
     }
 
     public void MakeLookPressed()
@@ -40,10 +53,13 @@ public class TalkButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        locked = false;
-        pressed = true;
-        MakeLookPressed();
-        controller.OnTalkPressed();
+        if (thisButton.interactable)
+        {
+            locked = false;
+            pressed = true;
+            MakeLookPressed();
+            controller.OnTalkPressed();
+        }
     }
 
     public void OnPointerUp(PointerEventData eventData)

@@ -1329,6 +1329,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controller: {fileID: 633359255}
+  lockButton: {fileID: 1719456678}
 --- !u!1 &511778001
 GameObject:
   m_ObjectHideFlags: 0
@@ -1920,6 +1921,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chatPrefab: {fileID: 1608151135211504, guid: 54c2465b95f4d481a94661ff9e013bf0, type: 2}
+  voiceController: {fileID: 1938639926}
   voiceBroadcast: {fileID: 222649376}
   voiceReceipt: {fileID: 222649375}
   talkButton: {fileID: 485636821}
@@ -2203,7 +2205,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -353.3, y: -225.00002}
+  m_AnchoredPosition: {x: -353.3, y: -222}
   m_SizeDelta: {x: 85.4, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &842113116
@@ -3444,7 +3446,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1398486936}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 633359255}
+        m_MethodName: OnSilencePressed
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &1398486936
@@ -4524,7 +4537,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 22.15, y: -213}
+  m_AnchoredPosition: {x: 11, y: -213}
   m_SizeDelta: {x: 44.3, y: 21.9}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1719456678
@@ -6083,6 +6096,10 @@ Prefab:
       propertyPath: m_LocalScale.z
       value: 1.032258
       objectReference: {fileID: 0}
+    - target: {fileID: 1000010435831806, guid: 8ddfffabe89a8424aa93f1d72eda77a5, type: 2}
+      propertyPath: m_Name
+      value: Dissonance
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8ddfffabe89a8424aa93f1d72eda77a5, type: 2}
   m_IsPrefabAsset: 0
@@ -6091,6 +6108,12 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4000014238669240, guid: 8ddfffabe89a8424aa93f1d72eda77a5,
     type: 2}
   m_PrefabInternal: {fileID: 1938639924}
+--- !u!114 &1938639926 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114000013759243398, guid: 8ddfffabe89a8424aa93f1d72eda77a5,
+    type: 2}
+  m_PrefabInternal: {fileID: 1938639924}
+  m_Script: {fileID: 11500000, guid: 8cb4dc319de88dc4cb76c47aafb46b1c, type: 3}
 --- !u!1 &1990767879
 GameObject:
   m_ObjectHideFlags: 0

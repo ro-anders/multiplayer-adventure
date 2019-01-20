@@ -9,6 +9,7 @@ public class ChatPanelController : MonoBehaviour
 {
 
     public GameObject chatPrefab;
+    public DissonanceComms voiceController;
     public VoiceBroadcastTrigger voiceBroadcast;
     public VoiceReceiptTrigger voiceReceipt;
     public TalkButton talkButton;
@@ -16,6 +17,7 @@ public class ChatPanelController : MonoBehaviour
     private InputField chatInput;
     private ChatSubmitter submitter;
     private ChatSync localChatSync;
+    private bool voiceChatEnabled = true;
 
     public ChatSubmitter ChatSubmitter
     {
@@ -83,5 +85,13 @@ public class ChatPanelController : MonoBehaviour
     public void OnTalkReleased()
     {
         voiceBroadcast.Mode = CommActivationMode.None;
+    }
+
+    public void OnSilencePressed()
+    {
+        voiceChatEnabled = !voiceChatEnabled;
+        talkButton.SetEnabled(voiceChatEnabled);
+        voiceController.IsMuted = !voiceChatEnabled;
+        voiceController.IsDeafened = !voiceChatEnabled;
     }
 }
