@@ -13,6 +13,7 @@ public class ChatPanelController : MonoBehaviour
     public VoiceBroadcastTrigger voiceBroadcast;
     public VoiceReceiptTrigger voiceReceipt;
     public TalkButton talkButton;
+    public Button silenceButton;
 
     private InputField chatInput;
     private ChatSubmitter submitter;
@@ -34,6 +35,11 @@ public class ChatPanelController : MonoBehaviour
     {
         GameObject chatInputGameObject = GameObject.Find("Chat Input").gameObject;
         chatInput = chatInputGameObject.GetComponent<InputField>();
+        if (SessionInfo.NetworkSetup == SessionInfo.Network.NONE)
+        {
+            SetVoiceEnabled(false);
+            silenceButton.interactable = false;
+        }
     }
 
     private bool enterKeySubmits;
@@ -48,6 +54,14 @@ public class ChatPanelController : MonoBehaviour
         {
             enterKeySubmits = chatInput.isFocused;
         }
+    }
+
+    public void SetVoiceEnabled(bool isEnabled)
+    {
+        voiceChatEnabled = isEnabled;
+        talkButton.SetEnabled(isEnabled);
+        voiceController.IsMuted = !isEnabled;
+        voiceController.IsDeafened = !isEnabled;
     }
 
     // Only called on server
@@ -89,9 +103,7 @@ public class ChatPanelController : MonoBehaviour
 
     public void OnSilencePressed()
     {
-        voiceChatEnabled = !voiceChatEnabled;
-        talkButton.SetEnabled(voiceChatEnabled);
-        voiceController.IsMuted = !voiceChatEnabled;
-        voiceController.IsDeafened = !voiceChatEnabled;
+        SetVoiceEnabled(!voiceChatEnabled);
     }
+
 }
