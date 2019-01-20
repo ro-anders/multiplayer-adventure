@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using Dissonance;
 
 public class ChatPanelController : MonoBehaviour
 {
 
     public GameObject chatPrefab;
+    public VoiceBroadcastTrigger voiceBroadcast;
+    public VoiceReceiptTrigger voiceReceipt;
+    public TalkButton talkButton;
 
     private InputField chatInput;
     private ChatSubmitter submitter;
@@ -69,5 +73,15 @@ public class ChatPanelController : MonoBehaviour
             submitter.PostChat(chatInput.text);
             chatInput.text = "";
         }
+    }
+
+    public void OnTalkPressed()
+    {
+        voiceBroadcast.Mode = CommActivationMode.VoiceActivation;
+    }
+
+    public void OnTalkReleased()
+    {
+        voiceBroadcast.Mode = CommActivationMode.None;
     }
 }
