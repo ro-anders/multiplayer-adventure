@@ -34,6 +34,7 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
     public AdventureAudio adv_audio;
     public AdventureDirectional adv_input;
     public RenderTextureDrawer screenRenderer;
+    public RawImage screen;
     public IntroPanelController introPanel;
     public ChatPanelController chatPanel;
     public Button respawnButton;
@@ -41,8 +42,8 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
 
     private UnityTransport xport;
 
-    private const int DRAW_AREA_WIDTH = 320;
-    private const int DRAW_AREA_HEIGHT = 256;
+    private const int DRAW_AREA_WIDTH = Adv.ADVENTURE_SCREEN_WIDTH;
+    private const int DRAW_AREA_HEIGHT = Adv.ADVENTURE_SCREEN_HEIGHT;
 
     private AdventureGame gameEngine;
 
@@ -94,7 +95,11 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
         float scale1 = maxWidth / DRAW_AREA_WIDTH;
         float scale2 = maxHeight / DRAW_AREA_HEIGHT;
         float newScale = (scale1 <= scale2 ? scale1 : scale2);
-        // TODO: Finish this
+        if (Math.Abs(scale - newScale)>0.01)
+        {
+            RectTransform screenRect = screen.GetComponent<RectTransform>();
+            screenRect.sizeDelta = new Vector2(newScale*DRAW_AREA_WIDTH, newScale*DRAW_AREA_HEIGHT);
+        }
 
         // If the transport has been gracefully shutdown it means we are trying
         // to return to the lobby and just waiting for the network to be cleanly shutdown.
@@ -207,6 +212,7 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
         }
         int at = numRects * RECTSIZE;
         // Range checking and overscan adjustment
+        y = y - Adv.ADVENTURE_OVERSCAN;
         if ((x > DRAW_AREA_WIDTH) || (x + width < 0) || 
             (y > DRAW_AREA_HEIGHT) || (y+height < 0)) 
         {

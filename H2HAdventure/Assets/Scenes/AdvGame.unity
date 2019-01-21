@@ -3182,6 +3182,7 @@ MonoBehaviour:
   adv_audio: {fileID: 7873009}
   adv_input: {fileID: 1349559598}
   screenRenderer: {fileID: 422320390}
+  screen: {fileID: 2078267140}
   introPanel: {fileID: 1069304501}
   chatPanel: {fileID: 1258670250}
   respawnButton: {fileID: 568972936}
@@ -3532,7 +3533,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 320, y: 256}
+  m_SizeDelta: {x: 320, y: 240}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2078267140
 MonoBehaviour:
