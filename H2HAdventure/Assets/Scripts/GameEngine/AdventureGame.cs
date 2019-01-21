@@ -816,8 +816,8 @@ namespace GameEngine
             // Put objects in random rooms for level 3.
             // Only first player does this and then broadcasts to other players.
             bool gameRandomized = ((gameMode == Adv.GAME_MODE_3) ||
-              (gameMode == Adv.GAME_MODE_C_3) /* RPDB ||
-              (gameMode == Adv.GAME_MODE_ROLE_PLAY)*/);
+              (gameMode == Adv.GAME_MODE_C_3) ||
+              (gameMode == Adv.GAME_MODE_ROLE_PLAY));
             if (gameRandomized && (thisPlayer == 0))
             {
                 randomizeRoomObjects();
@@ -2588,8 +2588,7 @@ namespace GameEngine
             {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00}, // Robinett message
             {Board. OBJECT_NUMBER, Map.NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00}, // Starting number
             {Board.OBJECT_REDDRAGON, Map.BLACK_MAZE_2, 0x50, 0x20, 0x00, 3, 3}, // Red Dragon
-            //RPDB {Board.OBJECT_YELLOWDRAGON, Map.RED_MAZE_4, 0x50, 0x20, 0x00, 3, 3}, // Yellow Dragon
-            {Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0, 0}, // Yellow Dragon
+            {Board.OBJECT_YELLOWDRAGON, Map.RED_MAZE_4, 0x50, 0x20, 0x00, 3, 3}, // Yellow Dragon
             // Commented out sections are for easy testing of Easter Egg
             #if DEBUG_EASTEREGG
             {Board.OBJECT_GREENDRAGON, Map.NUMBER_ROOM, 0x50, 0x20, 0x00, 3, 3}, // Green Dragon
@@ -2612,8 +2611,7 @@ namespace GameEngine
             {Board.OBJECT_CRYSTALKEY1, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 1
             {Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
             {Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
-            // RPDB {Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x20, 0x20, 0x00, 0, -3}, // Bat
-            {Board.OBJECT_BAT, Map.NUMBER_ROOM, 0x20, 0x20, 0x00, 0, -3}, // Bat
+            {Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x20, 0x20, 0x00, 0, -3}, // Bat
             #if DEBUG_EASTEREGG
             {Board.OBJECT_DOT, Map.MAIN_HALL_RIGHT, 0x20, 0x10, 0x00, 0x00, 0x00}, // Dot
             #else
