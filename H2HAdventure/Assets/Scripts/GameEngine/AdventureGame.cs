@@ -226,8 +226,7 @@ namespace GameEngine
             // because we may be broadcasting randomized locations to other machines
             SetupRoomObjects();
 
-            ResetPlayers(); //// TEMP
-            ////Logger.log("Player " + thisPlayer + " starting game at " + Sys::datetime() + ".");
+            ResetPlayers();
         }
 
         public void PrintDisplay()

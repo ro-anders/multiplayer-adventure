@@ -38,6 +38,8 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
     public IntroPanelController introPanel;
     public ChatPanelController chatPanel;
     public Button respawnButton;
+    public GameObject messagePanel;
+    public Text messageText;
     private GameObject gamePanel;
 
     private UnityTransport xport;
@@ -304,6 +306,24 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
 
     public void Platform_DisplayStatus(string message, int durationSecs) {
         Debug.Log("Message for player: " + message);
+        StartCoroutine(DisplayStatus(message, durationSecs));
+    }
+
+    private IEnumerator DisplayStatus(string message, int durationSecs)
+    {
+        messagePanel.SetActive(true);
+        messageText.text = message;
+        if (durationSecs > 0)
+        {
+            yield return new WaitForSeconds(durationSecs);
+            // Check to make sure another message hasn't come along
+            // superceding this one.
+            if (messageText.text == message)
+            {
+                messageText.text = "";
+                messagePanel.SetActive(false);
+            }
+        }
     }
 
     public void Platform_GameChange(GAME_CHANGES change)

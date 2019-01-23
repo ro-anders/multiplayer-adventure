@@ -240,15 +240,12 @@ public void syncAction(DragonMoveAction action)
                             // get the object it is fleeing
                             if ((fleeObjectPtr.room == dragon.room) && (fleeObjectPtr.exists()))
                             {
-                                UnityEngine.Debug.Log(this.label + " should run from " + fleeObjectPtr.label + " in the same room");
                                 bool shouldRun = true;
                                 // When dragons are wary of sword, they only run from it
                                 // if they are really close to it or there is no one to go for
                                 if ((fleeObject == Board.OBJECT_SWORD) && (waryOfSword) && (closest != null))
                                 {
-                                    UnityEngine.Debug.Log("But dragon is " + (waryOfSword ? "" : "not ") + "wary and there is " + (closest == null ? "no other " : "another ") + "player in the room");
                                     int distanceToSword = distanceTo(fleeObjectPtr);
-                                    UnityEngine.Debug.Log("Sword is " + distanceToSword + " away");
                                     shouldRun = (distanceToSword * speed < WARY_DISTANCE);
 
                                 }
