@@ -210,9 +210,22 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
             {
                 found.Leave(player.Id);
             }
-        } else {
-            found.Join(player.Id, player.playerName);
         }
+    }
+
+    /** One of the games in the game list has changed state.  See if the scene
+     * needs to change any of its display */
+    public void RefreshOnGameListChange()
+    {
+        // See if the "Host Game" button should be disabled.
+        uint me = (localLobbyPlayer == null ? GameInLobby.NO_PLAYER : localLobbyPlayer.Id);
+        GameInLobby[] games = gameList.GetComponentsInChildren<GameInLobby>();
+        bool inAGame = false;
+        for (int i=0; i<games.Length && !inAGame; ++i)
+        {
+            inAGame = inAGame || games[i].IsInGame(me);
+        }
+        hostButton.interactable = !inAGame && !newGamePanel.activeInHierarchy;
     }
 
     public void OnHostPressed() {

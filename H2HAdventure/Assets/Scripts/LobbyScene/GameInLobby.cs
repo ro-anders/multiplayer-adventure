@@ -74,6 +74,9 @@ public class GameInLobby : NetworkBehaviour
      * but wait for an ack before disconnecting anything.  This is the number 
      * of players that have acked. */
     private int numPlayersReady = 0;
+    private bool hasBeenDestroyed = false;
+
+    private LobbyController lobbyController;
 
     private LobbyPlayer localPlayer;
     private LobbyPlayer LocalPlayer
@@ -82,8 +85,6 @@ public class GameInLobby : NetworkBehaviour
         {
             if (localPlayer == null)
             {
-                GameObject lobbyControllerGO = GameObject.FindGameObjectWithTag("LobbyController");
-                LobbyController lobbyController = lobbyControllerGO.GetComponent<LobbyController>();
                 localPlayer = lobbyController.LocalLobbyPlayer;
             }
             return localPlayer;
@@ -92,7 +93,7 @@ public class GameInLobby : NetworkBehaviour
 
     public bool IsInGame(uint player)
     {
-        return ((player != NO_PLAYER) &&
+        return (!hasBeenDestroyed && (player != NO_PLAYER) &&
                 ((playerOne == player) || (playerTwo == player) || (playerThree == player)));
     }
 
@@ -145,6 +146,9 @@ public class GameInLobby : NetworkBehaviour
 
         GameObject GameList = GameObject.FindGameObjectWithTag("GameParent");
         gameObject.transform.SetParent(GameList.transform, false);
+        GameObject lobbyControllerGameObject = GameObject.FindGameObjectWithTag("LobbyController");
+        lobbyController = lobbyControllerGameObject.GetComponent<LobbyController>();
+
         RefreshGraphic();
     }
 
@@ -157,20 +161,27 @@ public class GameInLobby : NetworkBehaviour
         isReadyToPlay = true;
     }
 
-    public bool IsReadyToPlay()
+    public bool HasInitialSetup()
     {
-        bool ready =
-            isReadyToPlay &&
+        bool hasData = 
             (playerOne != NO_PLAYER) &&
             (playerOneName != UNKNOWN_NAME) &&
-            (playerTwo != NO_PLAYER) &&
-            (playerTwoName != UNKNOWN_NAME) &&
             (numPlayers != 0) &&
             (gameNumber != -1) &&
             (diff1 != DIFF.NOT_SET) &&
             (diff2 != DIFF.NOT_SET) &&
             (connectionkey != "") &&
             (playerMapping != -1);
+        return hasData;
+    }
+
+    public bool IsReadyToPlay()
+    {
+        bool ready =
+            HasInitialSetup() &&
+            isReadyToPlay &&
+            (playerTwo != NO_PLAYER) &&
+            (playerTwoName != UNKNOWN_NAME);
         if (numPlayers > 2)
         {
             ready = ready &&
@@ -188,8 +199,6 @@ public class GameInLobby : NetworkBehaviour
         // players before disconnecting.
         if (!isServer)
         {
-            GameObject lobbyControllerGO = GameObject.FindGameObjectWithTag("LobbyController");
-            LobbyController lobbyController = lobbyControllerGO.GetComponent<LobbyController>();
             lobbyController.StartGame(this);
         }
     }
@@ -208,46 +217,59 @@ public class GameInLobby : NetworkBehaviour
         return numPlayersReady >= numPlayers;
     }
 
+    public override void OnNetworkDestroy()
+    {
+        hasBeenDestroyed = true;
+        RefreshGraphic();
+    }
+
     private void RefreshGraphic()
     {
-        uint me = (LocalPlayer != null ? LocalPlayer.Id : NO_PLAYER);
-        bool amInGame = IsInGame(me);
-        string playerList = (playerOne == me ? "you" : playerOneName) + "\n";
-        if (playerTwo != NO_PLAYER)
+        // Don't even try to update display the game object until 
+        // the game has its initial data
+        if (HasInitialSetup())
         {
-            playerList += (playerTwo == me ? "you" : playerTwoName) + "\n";
-            if (playerThree != NO_PLAYER)
+            uint me = (LocalPlayer != null ? LocalPlayer.Id : NO_PLAYER);
+            bool amInGame = IsInGame(me);
+            string playerList = (playerOne == me ? "you" : playerOneName) + "\n";
+            if (playerTwo != NO_PLAYER)
             {
-                playerList += (playerThree == me ? "you" : playerThreeName) + "\n";
+                playerList += (playerTwo == me ? "you" : playerTwoName) + "\n";
+                if (playerThree != NO_PLAYER)
+                {
+                    playerList += (playerThree == me ? "you" : playerThreeName) + "\n";
+                }
+
+            }
+            string gameTitle = (gameNumber < 3 ? "Game " + (gameNumber + 1) :
+                (gameNumber < 6 ? "Coop " + (gameNumber - 2) :
+                (gameNumber == 6 ? "Coop X" : "Gauntlet")));
+            text.text = gameTitle + "\n  " + numPlayers + " players";
+            if (diff1 == DIFF.A)
+            {
+                text.text += "\n  Fast dragons";
+            }
+            if (diff2 == DIFF.A)
+            {
+                text.text += "\n  Run from sword";
+            }
+            playerText.text = playerList;
+            if (amInGame)
+            {
+                actionButton.gameObject.SetActive(true);
+                actionButton.GetComponentInChildren<Text>().text = "Cancel";
+            }
+            else if ((playerThree != NO_PLAYER) || ((numPlayers == 2) && (playerTwo != NO_PLAYER)))
+            {
+                actionButton.gameObject.SetActive(false);
+            }
+            else
+            {
+                actionButton.gameObject.SetActive(true);
+                actionButton.GetComponentInChildren<Text>().text = "Join";
             }
 
-        }
-        string gameTitle = (gameNumber < 3 ? "Game " + (gameNumber + 1) :
-            (gameNumber < 6 ? "Coop " + (gameNumber - 2) : 
-            (gameNumber == 6 ? "Coop X" : "Gauntlet")));
-        text.text =  gameTitle + "\n  " + numPlayers + " players";
-        if (diff1 == DIFF.A)
-        {
-            text.text += "\n  Fast dragons";
-        }
-        if (diff2 == DIFF.A)
-        {
-            text.text += "\n  Run from sword";
-        }
-        playerText.text = playerList;
-        if (amInGame)
-        {
-            actionButton.gameObject.SetActive(true);
-            actionButton.GetComponentInChildren<Text>().text = "Cancel";
-        }
-        else if ((playerThree != NO_PLAYER) || ((numPlayers == 2) && (playerTwo != NO_PLAYER)))
-        {
-            actionButton.gameObject.SetActive(false);
-        }
-        else
-        {
-            actionButton.gameObject.SetActive(true);
-            actionButton.GetComponentInChildren<Text>().text = "Join";
+            lobbyController.RefreshOnGameListChange();
         }
     }
 
