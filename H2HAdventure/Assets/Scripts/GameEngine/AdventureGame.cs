@@ -61,6 +61,9 @@ namespace GameEngine
         private bool joystickDisabled = false; // No longer ever set, but left in in case we come up with a need
         private bool switchReset = false;
 
+        private int turnsSinceTimeCheck = 0;
+        private int[] missedChecks = { 0, 0, 0 };
+
         private Sync sync;
         private Transport transport;
         private int thisPlayer;
@@ -490,58 +493,11 @@ namespace GameEngine
 
         }
 
-        ////        void Adventure_CheckTime(float currentScale)
-        ////        {
-        ////            const int FRAMES_PER_SLOT = 60;
-        ////            const long TARGET_SLOT_TIME = (long)(FRAMES_PER_SLOT * ADVENTURE_FRAME_PERIOD * 1000);
-        ////            const int MAX_SLOTS_MISSED = 5;
-        ////            static float lastScale = 0;
-        ////            static bool haveWarnedAboutThisScale = false;
-        ////            static int framesIntoSlot = 0;
-        ////            static long timeAtStartOfSlot = Sys::runTime();
-        ////            static int numSlotsMissed = 0;
-
-        ////            if (currentScale != lastScale)
-        ////            {
-        ////                // Scale changed.  Reset timing history.
-        ////                haveWarnedAboutThisScale = false;
-        ////                framesIntoSlot = 0;
-        ////                timeAtStartOfSlot = Sys::runTime();
-        ////                numSlotsMissed = 0;
-        ////                lastScale = currentScale;
-        ////            }
-        ////            else if (!haveWarnedAboutThisScale)
-        ////            {
-        ////                ++framesIntoSlot;
-        ////                if (framesIntoSlot >= FRAMES_PER_SLOT)
-        ////                {
-        ////                    long currentTime = Sys::runTime();
-        ////                    long elapsed = currentTime - timeAtStartOfSlot;
-        ////                    if (elapsed > TARGET_SLOT_TIME * 1.1)
-        ////                    { // We allow for 10% slowness.
-        ////                        ++numSlotsMissed;
-        ////                        if (numSlotsMissed > MAX_SLOTS_MISSED)
-        ////                        {
-        ////                            Platform_DisplayStatus("Your game is running too slow.\nConsider shrinking the window size.", 4);
-        ////                            haveWarnedAboutThisScale = true;
-        ////                        }
-        ////                    }
-        ////                    else
-        ////                    {
-        ////                        numSlotsMissed = 0;
-        ////                    }
-        ////                    framesIntoSlot = 0;
-        ////                    timeAtStartOfSlot = currentTime;
-        ////                }
-        ////            }
-        ////        }
-
-
         public void Adventure_Run()
         {
             ////            sync.StartFrame();
             SyncWithOthers();
-            ////            checkPlayers();
+            checkPlayers();
 
             // read the console switches every frame
             bool reset = false;
@@ -2119,142 +2075,117 @@ namespace GameEngine
         }
 
 
-        /////**
-        //// * If the player has become disconnect them, remove them from the game.
-        //// */
-        ////void dropPlayer(int player)
-        ////{
-        ////    // Mostly just move the player to the 0 room, but drop any object they
-        ////    // are carrying and free any dragon they have been eaten by.
-        ////    if (player != thisPlayer)
-        ////    {
-        ////        BALL* toDrop = gameBoard.getPlayer(player);
+        /**
+         * If the player has become disconnect them, remove them from the game.
+         */
+        void dropPlayer(int player)
+        {
+            // Mostly just move the player to the 0 room, but drop any object they
+            // are carrying and free any dragon they have been eaten by.
+            if (player != thisPlayer)
+            {
+                BALL toDrop = gameBoard.getPlayer(player);
 
-        ////        // Drop anything player is carrying
-        ////        toDrop.linkedObject = OBJECT_NONE;
+                // Drop anything player is carrying
+                toDrop.linkedObject = Board.OBJECT_NONE;
 
-        ////        // Free the dragon if it has eaten the player
-        ////        for (int ctr = 0; ctr < numDragons; ++ctr)
-        ////        {
-        ////            Dragon* dragon = dragons[ctr];
-        ////            if (dragon.eaten == toDrop)
-        ////            {
-        ////                dragon.state = Dragon::STALKING;
-        ////                dragon.eaten = NULL;
-        ////            }
-        ////        }
+                // Free the dragon if it has eaten the player
+                for (int ctr = 0; ctr < numDragons; ++ctr)
+                {
+                    Dragon dragon = dragons[ctr];
+                    if (dragon.eaten == toDrop)
+                    {
+                        dragon.state = Dragon.STALKING;
+                        dragon.eaten = null;
+                    }
+                }
 
-        ////        // Move the player to the 0 room.
-        ////        toDrop.room = 0;
-        ////    }
-        ////}
+                // Move the player to the 0 room.
+                toDrop.room = 0;
+            }
+        }
 
-        /////**
-        //// * Sends a message that a player has gone offlline or come back online.
-        //// * playerDropped - the player that dropped off, 0 means no one dropped off.  -1 means two players dropped off.
-        //// * playerRejoined - the player that rejoined, 0 means no one rejoined.  -1 means two players rejoined.
-        //// */
-        ////void warnOfDropoffRejoin(int playerDroppedOff, int playerRejoined)
-        ////{
-        ////    if ((playerRejoined != 0) || (playerDroppedOff != 0))
-        ////    {
-        ////        char firstMessage[1000];
-        ////        char message[2000];
-        ////        if (playerRejoined == 0)
-        ////        {
-        ////            firstMessage[0] = '\0';
-        ////        }
-        ////        else
-        ////        {
-        ////            if (playerRejoined < 0)
-        ////            {
-        ////                sprintf(firstMessage, "All other players have rejoined the game.\n");
-        ////            }
-        ////            else
-        ////            {
-        ////                sprintf(firstMessage, "Player %d has rejoined the game.\n", playerRejoined);
-        ////            }
-        ////        }
-        ////        if (playerDroppedOff != 0)
-        ////        {
-        ////            if (playerDroppedOff < 0)
-        ////            {
-        ////                sprintf(message, "%sAll other players have disconnected.\n", firstMessage);
-        ////            }
-        ////            else
-        ////            {
-        ////                sprintf(message, "%sPlayer %d has disconnected.\n", firstMessage, playerDroppedOff);
-        ////            }
-        ////            Platform_DisplayStatus(message, 5);
-        ////        }
-        ////        else
-        ////        {
-        ////            Platform_DisplayStatus(firstMessage, 5);
-        ////        }
-        ////    }
-        ////}
+        /**
+         * Sends a message that a player has gone offlline or come back online.
+         * playerDropped - the player that dropped off, 0 means no one dropped off.  -1 means two players dropped off.
+         * playerRejoined - the player that rejoined, 0 means no one rejoined.  -1 means two players rejoined.
+         */
+        void warnOfDropoffRejoin(int playerDroppedOff, int playerRejoined)
+        {
+            if ((playerRejoined != 0) || (playerDroppedOff != 0))
+            {
+                string message = "";
+                if (playerRejoined < 0)
+                {
+                    message = "All other players have rejoined the game.\n";
+                }
+                else if (playerRejoined > 0) 
+                {
+                    message = "Player " + playerRejoined + " has rejoined the game.\n";
+                }
+                if (playerDroppedOff < 0)
+                {
+                    message += "All other players have disconnected.\n";
+                }
+                else if (playerDroppedOff > 0) 
+                {
+                    message += "Player " + playerDroppedOff + " has disconnected.\n";
+                }
+                if (message.Length > 0) {
+                    view.Platform_DisplayStatus(message, 5);
+                }
+            }
+        }
 
-        /////**
-        //// * Report whether  we've gotten messages from other players recently.
-        //// * Also send a ping to other players to make sure they see activity from us.
-        //// */
-        ////void checkPlayers()
-        ////{
-        ////    // We check for players every 15 seconds (actually every 5 seconds/300 turns we check to see if its
-        ////    // been 15 seconds) if we've received anything from the other players.  If they've missed 3 15 second marks
-        ////    // in a row we assume they have disconnected and remove them from the game.
-        ////    // We also send out a ping every 15 seconds to others so we know they've heard from us.
-        ////    const int TURNS_BETWEEN_TIME_CHECKS = 300; // About 5 seconds.
-        ////    const int MILLIS_BETWEEN_MESSAGE_CHECKS = 15000; // 15 seconds
-        ////    const int MAX_MISSED_CHECKS = 3;
+        /**
+         * Report whether  we've gotten messages from other players recently.
+         * Also send a ping to other players to make sure they see activity from us.
+         */
+        private void checkPlayers()
+        {
+            // We check for players every 15 seconds (900 turns actually). We check to see if 
+            // we've received anything from the other players.  If they've missed 3 15 second marks
+            // in a row we assume they have disconnected and remove them from the game.
+            // We also send out a ping every 15 seconds to others so we know they've heard from us.
+            const int TURNS_BETWEEN_CHECKS = 900; // About 15 seconds.
+            const int MAX_MISSED_CHECKS = 3;
 
-        ////    static int turnsSinceTimeCheck = 0;
-        ////    static int long timeSinceLastMessageCheck = Sys::runTime();
-        ////    static int missedChecks[3] = { 0, 0, 0 };
+            ++turnsSinceTimeCheck;
+            if (turnsSinceTimeCheck >= TURNS_BETWEEN_CHECKS)
+            {
+                int offline = 0;
+                int online = 0;
+                for (int ctr = 0; ctr < numPlayers; ++ctr)
+                {
+                    if (ctr != thisPlayer)
+                    {
+                        if (sync.getMessagesReceived(ctr) == 0)
+                        {
+                            ++missedChecks[ctr];
+                            if (missedChecks[ctr] == MAX_MISSED_CHECKS)
+                            {
+                                dropPlayer(ctr);
+                                offline = (offline == 0 ? ctr + 1 : -1);
+                            }
+                        }
+                        else
+                        {
+                            if (missedChecks[ctr] >= MAX_MISSED_CHECKS)
+                            {
+                                online = (online == 0 ? ctr + 1 : -1);
+                            }
+                            missedChecks[ctr] = 0;
+                        }
+                    }
+                }
+                warnOfDropoffRejoin(offline, online);
+                PingAction action = new PingAction();
+                sync.BroadcastAction(action);
+                sync.resetMessagesReceived();
 
-        ////    ++turnsSinceTimeCheck;
-        ////    if (turnsSinceTimeCheck >= TURNS_BETWEEN_TIME_CHECKS)
-        ////    {
-
-        ////        // Check the time, and see if it's time for a message check.
-        ////        long currentTime = Sys::runTime();
-        ////        if (currentTime - timeSinceLastMessageCheck > MILLIS_BETWEEN_MESSAGE_CHECKS)
-        ////        {
-        ////            int offline = 0;
-        ////            int online = 0;
-        ////            for (int ctr = 0; ctr < numPlayers; ++ctr)
-        ////            {
-        ////                if (ctr != thisPlayer)
-        ////                {
-        ////                    if (sync.getMessagesReceived(ctr) == 0)
-        ////                    {
-        ////                        ++missedChecks[ctr];
-        ////                        if (missedChecks[ctr] == MAX_MISSED_CHECKS)
-        ////                        {
-        ////                            dropPlayer(ctr);
-        ////                            offline = (offline == 0 ? ctr + 1 : -1);
-        ////                        }
-        ////                    }
-        ////                    else
-        ////                    {
-        ////                        if (missedChecks[ctr] >= MAX_MISSED_CHECKS)
-        ////                        {
-        ////                            online = (online == 0 ? ctr + 1 : -1);
-        ////                        }
-        ////                        missedChecks[ctr] = 0;
-        ////                    }
-        ////                }
-        ////            }
-        ////            warnOfDropoffRejoin(offline, online);
-        ////            PingAction* action = new PingAction();
-        ////            sync.BroadcastAction(action);
-        ////            sync.resetMessagesReceived();
-        ////            timeSinceLastMessageCheck = currentTime;
-        ////        }
-
-        ////        turnsSinceTimeCheck = 0;
-        ////    }
-        ////}
+                turnsSinceTimeCheck = 0;
+            }
+        }
 
 
 
