@@ -163,7 +163,7 @@ public class GameInLobby : NetworkBehaviour
 
     public bool HasInitialSetup()
     {
-        bool hasData = 
+        bool hasData = (lobbyController != null) &&
             (playerOne != NO_PLAYER) &&
             (playerOneName != UNKNOWN_NAME) &&
             (numPlayers != 0) &&
