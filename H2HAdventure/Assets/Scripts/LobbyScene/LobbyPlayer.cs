@@ -91,4 +91,12 @@ public class LobbyPlayer : NetworkBehaviour
         Debug.Log(newPlayerName + " connected to lobby");
         RefreshDisplay();
     }
+
+    public override void OnNetworkDestroy()
+    {
+        if (lobbyController != null)
+        {
+            lobbyController.OnPlayerDropped(this);
+        }
+    }
 }

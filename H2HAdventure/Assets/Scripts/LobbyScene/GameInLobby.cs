@@ -149,7 +149,7 @@ public class GameInLobby : NetworkBehaviour
         GameObject lobbyControllerGameObject = GameObject.FindGameObjectWithTag("LobbyController");
         lobbyController = lobbyControllerGameObject.GetComponent<LobbyController>();
 
-        RefreshGraphic();
+        OnInternalStateUpdated();
     }
 
     public void markReadyToPlay()
@@ -175,20 +175,24 @@ public class GameInLobby : NetworkBehaviour
         return hasData;
     }
 
-    public bool IsReadyToPlay()
+    public bool IsForMeAndReadyToPlay()
     {
         bool ready =
             HasInitialSetup() &&
             isReadyToPlay &&
             (playerTwo != NO_PLAYER) &&
             (playerTwoName != UNKNOWN_NAME);
+        bool forMe = (localPlayer != null) &&
+         ((playerOne == localPlayer.Id) || (playerTwo == localPlayer.Id));
         if (numPlayers > 2)
         {
             ready = ready &&
                 (playerThree != NO_PLAYER) &&
                 (playerThreeName != UNKNOWN_NAME);
+            forMe = forMe ||
+                ((localPlayer != null) && (playerThree == localPlayer.Id));
         }
-        return ready;
+        return ready && forMe;
     }
 
     public void StartGame()
@@ -220,11 +224,24 @@ public class GameInLobby : NetworkBehaviour
     public override void OnNetworkDestroy()
     {
         hasBeenDestroyed = true;
-        RefreshGraphic();
+        OnInternalStateUpdated();
     }
 
-    private void RefreshGraphic()
+    private void OnInternalStateUpdated()
     {
+        if (HasInitialSetup() && (lobbyController != null))
+        {
+            lobbyController.OnGameStateUpdated();
+            if (IsForMeAndReadyToPlay())
+            {
+                StartGame();
+            }
+        }
+    }
+
+    public void RefreshGraphic(bool localPlayerInAGame)
+    {
+        Debug.Log("Refreshing game graphics");
         // Don't even try to update display the game object until 
         // the game has its initial data
         if (HasInitialSetup())
@@ -265,11 +282,16 @@ public class GameInLobby : NetworkBehaviour
             }
             else
             {
-                actionButton.gameObject.SetActive(true);
-                actionButton.GetComponentInChildren<Text>().text = "Join";
+                if (localPlayerInAGame)
+                {
+                    actionButton.gameObject.SetActive(false);
+                }
+                else
+                {
+                    actionButton.gameObject.SetActive(true);
+                    actionButton.GetComponentInChildren<Text>().text = "Join";
+                }
             }
-
-            lobbyController.RefreshOnGameListChange();
         }
     }
 
@@ -331,128 +353,79 @@ public class GameInLobby : NetworkBehaviour
     void OnChangePlayerOne(uint newPlayerOne)
     {
         playerOne = newPlayerOne;
-        RefreshGraphic();
-        if (IsReadyToPlay())
-        {
-            StartGame();
-        }
+        OnInternalStateUpdated();
     }
 
     void OnChangePlayerOneName(string newPlayerOneName)
     {
         playerOneName = newPlayerOneName;
-        RefreshGraphic();
-        if (IsReadyToPlay())
-        {
-            StartGame();
-        }
+        OnInternalStateUpdated();
     }
 
     void OnChangePlayerTwo(uint newPlayerTwo)
     {
         playerTwo = newPlayerTwo;
-        RefreshGraphic();
-        if (IsReadyToPlay())
-        {
-            StartGame();
-        }
+        OnInternalStateUpdated();
     }
 
     void OnChangePlayerTwoName(string newPlayerTwoName)
     {
         playerTwoName = newPlayerTwoName;
-        RefreshGraphic();
-        if (IsReadyToPlay())
-        {
-            StartGame();
-        }
+        OnInternalStateUpdated();
     }
 
     void OnChangePlayerThree(uint newPlayerThree)
     {
         playerThree = newPlayerThree;
-        RefreshGraphic();
-        if (IsReadyToPlay())
-        {
-            StartGame();
-        }
+        OnInternalStateUpdated();
     }
 
     void OnChangePlayerThreeName(string newPlayerThreeName)
     {
         playerThreeName = newPlayerThreeName;
-        RefreshGraphic();
-        if (IsReadyToPlay())
-        {
-            StartGame();
-        }
+        OnInternalStateUpdated();
     }
 
     void OnChangeNumPlayers(int newNumPlayers)
     {
         numPlayers = newNumPlayers;
-        RefreshGraphic();
-        if (IsReadyToPlay())
-        {
-            StartGame();
-        }
+        OnInternalStateUpdated();
     }
 
     void OnChangeGameNumber(int newGameNumber)
     {
         gameNumber = newGameNumber;
-        RefreshGraphic();
-        if (IsReadyToPlay())
-        {
-            StartGame();
-        }
+        OnInternalStateUpdated();
     }
 
     void OnChangeDiff1(DIFF newDiff1)
     {
         diff1 = newDiff1;
-        RefreshGraphic();
-        if (IsReadyToPlay())
-        {
-            StartGame();
-        }
+        OnInternalStateUpdated();
     }
 
     void OnChangeDiff2(DIFF newDiff2)
     {
         diff2 = newDiff2;
-        RefreshGraphic();
-        if (IsReadyToPlay())
-        {
-            StartGame();
-        }
+        OnInternalStateUpdated();
     }
 
     void OnChangeConnectionKey(string newConnectionKey)
     {
         connectionkey = newConnectionKey;
-        if (IsReadyToPlay())
-        {
-            StartGame();
-        }
+        OnInternalStateUpdated();
     }
 
     void OnChangePlayerMapping(int newPlayerMapping)
     {
         playerMapping = newPlayerMapping;
-        if (IsReadyToPlay())
-        {
-            StartGame();
-        }
+        OnInternalStateUpdated();
     }
 
     void OnChangeIsReadyToPlay(bool newIsReady)
     {
         isReadyToPlay = newIsReady;
-        if (IsReadyToPlay())
-        {
-            StartGame();
-        }
+        OnInternalStateUpdated();
     }
 
     public override string ToString()

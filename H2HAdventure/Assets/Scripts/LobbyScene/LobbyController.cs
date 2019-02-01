@@ -33,6 +33,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     /** When we leave the scene we store the next scene because
      * we have to disconnect first in an asynchronous callback. */
     private String nextSceneName;
+    private bool shuttingDown = false;
 
 
     public LobbyPlayer LocalLobbyPlayer
@@ -215,9 +216,9 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
 
     /** One of the games in the game list has changed state.  See if the scene
      * needs to change any of its display */
-    public void RefreshOnGameListChange()
+    public void OnGameStateUpdated()
     {
-        // See if the "Host Game" button should be disabled.
+        // First determine if the local player is now in a game or not
         uint me = (localLobbyPlayer == null ? GameInLobby.NO_PLAYER : localLobbyPlayer.Id);
         GameInLobby[] games = gameList.GetComponentsInChildren<GameInLobby>();
         bool inAGame = false;
@@ -225,6 +226,13 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
         {
             inAGame = inAGame || games[i].IsInGame(me);
         }
+        // Have all games update their display based on whether local player is 
+        // now in a game.
+        for (int i = 0; i < games.Length; ++i)
+        {
+            games[i].RefreshGraphic(inAGame);
+        }
+        // Disable the "Host Game" button.
         hostButton.interactable = !inAGame && !newGamePanel.activeInHierarchy;
     }
 
@@ -332,6 +340,39 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
         SceneManager.LoadScene(nextSceneName);
     }
 
+    public void OnPlayerDropped(LobbyPlayer player)
+    {
+        // Only the server needs to do anything when a player drops
+        if (player.isServer)
+        {
+            // Remove the player from any game they are in.  If they are
+            // the host, cancel the whole game.
+            GameInLobby[] games = gameList.GetComponentsInChildren<GameInLobby>();
+            for (int i = 0; i < games.Length; ++i)
+            {
+                GameInLobby next = games[i];
+                if (next.playerOne == player.Id)
+                {
+                    NetworkServer.Destroy(next.gameObject);
+                }
+                else if ((next.playerTwo == player.Id) || (next.playerThree == player.Id)) { 
+                    next.Leave(player.Id);
+                }
+            }
+        }
+    }
+
+    public void OnHostDropped()
+    {
+        if (!shuttingDown)
+        {
+            // We've gotten disconnected from the host of the lobby.
+            // Most likely because that person has gone to a game.
+            // Only thing to do is to disconnect and create a new lobby
+            SwitchToScene("Lobby");
+        }
+    }
+
     private IEnumerator ShutdownLocalNetwork()
     {
         yield return new WaitForSeconds(0.5f);
@@ -362,6 +403,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
 
     private void SwitchToScene(string sceneName)
     {
+        shuttingDown = true;
         nextSceneName = sceneName;
         // Disconnect from the lobby
         if ((SessionInfo.NetworkSetup == SessionInfo.Network.ALL_LOCAL) ||
