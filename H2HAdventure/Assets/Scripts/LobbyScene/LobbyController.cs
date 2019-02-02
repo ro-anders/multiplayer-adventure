@@ -224,7 +224,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
         bool inAGame = false;
         for (int i=0; i<games.Length && !inAGame; ++i)
         {
-            inAGame = inAGame || games[i].IsInGame(me);
+            inAGame = inAGame || (games[i].IsInGame(me) && !games[i].HasBeenDestroyed);
         }
         // Have all games update their display based on whether local player is 
         // now in a game.

@@ -75,6 +75,10 @@ public class GameInLobby : NetworkBehaviour
      * of players that have acked. */
     private int numPlayersReady = 0;
     private bool hasBeenDestroyed = false;
+    public bool HasBeenDestroyed
+    {
+        get { return hasBeenDestroyed; }
+    }
 
     private LobbyController lobbyController;
 
@@ -93,7 +97,7 @@ public class GameInLobby : NetworkBehaviour
 
     public bool IsInGame(uint player)
     {
-        return (!hasBeenDestroyed && (player != NO_PLAYER) &&
+        return ((player != NO_PLAYER) &&
                 ((playerOne == player) || (playerTwo == player) || (playerThree == player)));
     }
 
@@ -232,7 +236,7 @@ public class GameInLobby : NetworkBehaviour
         if (HasInitialSetup() && (lobbyController != null))
         {
             lobbyController.OnGameStateUpdated();
-            if (IsForMeAndReadyToPlay())
+            if (IsForMeAndReadyToPlay() && !HasBeenDestroyed)
             {
                 StartGame();
             }
