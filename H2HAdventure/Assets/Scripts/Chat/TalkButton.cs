@@ -33,7 +33,7 @@ public class TalkButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         lockButton.interactable = inEnabled;
     }
 
-    public void MakeLookPressed()
+    private void MakeLookPressed()
     {
         gameObject.GetComponentInChildren<Text>().color = unpressedColor;
         // Sometimes we call this even when the button isn't pressed, when
@@ -43,12 +43,19 @@ public class TalkButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         thisButton.colors = colors;
     }
 
-    public void MakeLookUnpressed()
+    private void MakeLookUnpressed()
     {
         gameObject.GetComponentInChildren<Text>().color = pressedColor;
         ColorBlock colors = thisButton.colors;
         colors.normalColor = unpressedColor;
         thisButton.colors = colors;
+    }
+
+    public void Reset()
+    {
+        locked = false;
+        MakeLookUnpressed();
+        controller.OnTalkReleased();
     }
 
     public void OnPointerDown(PointerEventData eventData)

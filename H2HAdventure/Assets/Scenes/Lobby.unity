@@ -1222,7 +1222,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &485636817
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1922,11 +1922,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chatPrefab: {fileID: 1608151135211504, guid: 54c2465b95f4d481a94661ff9e013bf0, type: 2}
-  voiceController: {fileID: 1938639926}
-  voiceBroadcast: {fileID: 222649376}
-  voiceReceipt: {fileID: 222649375}
-  talkButton: {fileID: 485636821}
-  silenceButton: {fileID: 1398486935}
 --- !u!1 &681685778
 GameObject:
   m_ObjectHideFlags: 0
@@ -3563,7 +3558,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Silence
+  m_Text: Enable
 --- !u!222 &1400139009
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4521,7 +4516,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1719456677
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4606,7 +4601,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -5312,7 +5307,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 17.949997, y: 0.17401123}
-  m_SizeDelta: {x: 55.1, y: 30.772003}
+  m_SizeDelta: {x: 148.2, y: 30.8}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &1801191448
 MonoBehaviour:
@@ -5346,7 +5341,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Voice:'
+  m_Text: 'Voice Chat: Disabled'
 --- !u!222 &1801191449
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6105,6 +6100,11 @@ Prefab:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114000013759243398, guid: 8ddfffabe89a8424aa93f1d72eda77a5,
+        type: 2}
+      propertyPath: _isDeafened
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8ddfffabe89a8424aa93f1d72eda77a5, type: 2}
   m_IsPrefabAsset: 0
@@ -6113,12 +6113,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4000014238669240, guid: 8ddfffabe89a8424aa93f1d72eda77a5,
     type: 2}
   m_PrefabInternal: {fileID: 1938639924}
---- !u!114 &1938639926 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 114000013759243398, guid: 8ddfffabe89a8424aa93f1d72eda77a5,
-    type: 2}
-  m_PrefabInternal: {fileID: 1938639924}
-  m_Script: {fileID: 11500000, guid: 8cb4dc319de88dc4cb76c47aafb46b1c, type: 3}
 --- !u!1 &1990767879
 GameObject:
   m_ObjectHideFlags: 0

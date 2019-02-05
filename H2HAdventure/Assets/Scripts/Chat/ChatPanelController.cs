@@ -9,16 +9,20 @@ public class ChatPanelController : MonoBehaviour
 {
 
     public GameObject chatPrefab;
-    public DissonanceComms voiceController;
-    public VoiceBroadcastTrigger voiceBroadcast;
-    public VoiceReceiptTrigger voiceReceipt;
-    public TalkButton talkButton;
-    public Button silenceButton;
+    private GameObject dissonanceSetup;
+    private DissonanceComms voiceController;
+    private VoiceBroadcastTrigger voiceBroadcast;
+    private VoiceReceiptTrigger voiceReceipt;
+    private Text voiceLabel;
+    private TalkButton talkButton;
+    private Button lockButton;
+    private Button silenceButton;
 
     private InputField chatInput;
     private ChatSubmitter submitter;
     private ChatSync localChatSync;
-    private bool voiceChatEnabled = true;
+    private bool voiceChatEnabled = false;
+    private bool voiceChatSilenced = true;
 
     public ChatSubmitter ChatSubmitter
     {
@@ -33,11 +37,22 @@ public class ChatPanelController : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        GameObject chatInputGameObject = GameObject.Find("Chat Input").gameObject;
+        dissonanceSetup = transform.Find("Dissonance").gameObject;
+        voiceController = dissonanceSetup.GetComponent<DissonanceComms>();
+        voiceBroadcast = dissonanceSetup.GetComponent<VoiceBroadcastTrigger>();
+        voiceReceipt = dissonanceSetup.GetComponent<VoiceReceiptTrigger>();
+        GameObject voiceLabelGameObject = transform.Find("Voice Text").gameObject;
+        voiceLabel = voiceLabelGameObject.GetComponent<Text>();
+        GameObject talkButtonGameObject = transform.Find("Talk Button").gameObject;
+        talkButton = talkButtonGameObject.GetComponent<TalkButton>();
+        GameObject lockButtonGameObject = transform.Find("Lock Button").gameObject;
+        lockButton = lockButtonGameObject.GetComponent<Button>();
+        GameObject silenceButtonGameObject = transform.Find("Silence Button").gameObject;
+        silenceButton = silenceButtonGameObject.GetComponent<Button>();
+        GameObject chatInputGameObject = transform.Find("Chat Input").gameObject;
         chatInput = chatInputGameObject.GetComponent<InputField>();
         if (SessionInfo.NetworkSetup == SessionInfo.Network.NONE)
         {
-            SetVoiceEnabled(false);
             silenceButton.interactable = false;
         }
     }
@@ -56,12 +71,33 @@ public class ChatPanelController : MonoBehaviour
         }
     }
 
-    public void SetVoiceEnabled(bool isEnabled)
+    public void EnableVoiceChat()
     {
-        voiceChatEnabled = isEnabled;
-        talkButton.SetEnabled(isEnabled);
-        voiceController.IsMuted = !isEnabled;
-        voiceController.IsDeafened = !isEnabled;
+        voiceChatEnabled = true;
+        voiceChatSilenced = false;
+        dissonanceSetup.SetActive(true);
+        voiceLabel.text = "Voice:";
+        talkButton.gameObject.SetActive(voiceChatEnabled);
+        lockButton.gameObject.SetActive(voiceChatEnabled);
+        silenceButton.GetComponentInChildren<Text>().text = "Disable";
+    }
+
+    public void SetSilenced(bool isSilenced)
+    {
+        if (voiceChatEnabled)
+        {
+            voiceChatSilenced = isSilenced;
+            if (voiceChatSilenced)
+            {
+                talkButton.Reset();
+            }
+            voiceController.IsMuted = voiceChatSilenced;
+            voiceController.IsDeafened = voiceChatSilenced;
+            voiceLabel.text = (voiceChatSilenced ? "Voice chat: Disabled" : "Voice:");
+            talkButton.gameObject.SetActive(!voiceChatSilenced);
+            lockButton.gameObject.SetActive(!voiceChatSilenced);
+            silenceButton.GetComponentInChildren<Text>().text = (voiceChatSilenced ? "Enable" : "Disable");
+        }
     }
 
     // Only called on server
@@ -103,7 +139,14 @@ public class ChatPanelController : MonoBehaviour
 
     public void OnSilencePressed()
     {
-        SetVoiceEnabled(!voiceChatEnabled);
+        if (!voiceChatEnabled)
+        {
+            EnableVoiceChat();
+        }
+        else
+        {
+            SetSilenced(!voiceChatSilenced);
+        }
     }
 
 }
