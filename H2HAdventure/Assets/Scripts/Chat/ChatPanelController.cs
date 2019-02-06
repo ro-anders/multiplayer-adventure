@@ -7,8 +7,12 @@ using Dissonance;
 
 public class ChatPanelController : MonoBehaviour
 {
-
+    private const string VOICE_LABEL_ON = "Voice:";
+    private const string VOICE_LABEL_OFF = "Voice chat: Disabled";
+    private const string VOICE_LABEL_OFF_NARROW = "Voice: Disabled";
+    private string voiceLabelOff = VOICE_LABEL_OFF;
     public GameObject chatPrefab;
+    public bool narrow;
     private GameObject dissonanceSetup;
     private DissonanceComms voiceController;
     private VoiceBroadcastTrigger voiceBroadcast;
@@ -37,6 +41,7 @@ public class ChatPanelController : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        voiceLabelOff = (narrow ? VOICE_LABEL_OFF_NARROW : VOICE_LABEL_OFF);
         dissonanceSetup = transform.Find("Dissonance").gameObject;
         voiceController = dissonanceSetup.GetComponent<DissonanceComms>();
         voiceBroadcast = dissonanceSetup.GetComponent<VoiceBroadcastTrigger>();
@@ -51,6 +56,7 @@ public class ChatPanelController : MonoBehaviour
         silenceButton = silenceButtonGameObject.GetComponent<Button>();
         GameObject chatInputGameObject = transform.Find("Chat Input").gameObject;
         chatInput = chatInputGameObject.GetComponent<InputField>();
+        voiceLabel.text = voiceLabelOff;
         if (SessionInfo.NetworkSetup == SessionInfo.Network.NONE)
         {
             silenceButton.interactable = false;
@@ -76,7 +82,7 @@ public class ChatPanelController : MonoBehaviour
         voiceChatEnabled = true;
         voiceChatSilenced = false;
         dissonanceSetup.SetActive(true);
-        voiceLabel.text = "Voice:";
+        voiceLabel.text = VOICE_LABEL_ON;
         talkButton.gameObject.SetActive(voiceChatEnabled);
         lockButton.gameObject.SetActive(voiceChatEnabled);
         silenceButton.GetComponentInChildren<Text>().text = "Disable";
@@ -93,7 +99,7 @@ public class ChatPanelController : MonoBehaviour
             }
             voiceController.IsMuted = voiceChatSilenced;
             voiceController.IsDeafened = voiceChatSilenced;
-            voiceLabel.text = (voiceChatSilenced ? "Voice chat: Disabled" : "Voice:");
+            voiceLabel.text = (voiceChatSilenced ? voiceLabelOff : VOICE_LABEL_ON);
             talkButton.gameObject.SetActive(!voiceChatSilenced);
             lockButton.gameObject.SetActive(!voiceChatSilenced);
             silenceButton.GetComponentInChildren<Text>().text = (voiceChatSilenced ? "Enable" : "Disable");

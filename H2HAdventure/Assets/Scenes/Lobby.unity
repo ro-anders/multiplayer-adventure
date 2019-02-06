@@ -1922,6 +1922,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chatPrefab: {fileID: 1608151135211504, guid: 54c2465b95f4d481a94661ff9e013bf0, type: 2}
+  narrow: 0
 --- !u!1 &681685778
 GameObject:
   m_ObjectHideFlags: 0
@@ -5306,7 +5307,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 17.949997, y: 0.17401123}
+  m_AnchoredPosition: {x: 17.949997, y: -3}
   m_SizeDelta: {x: 148.2, y: 30.8}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &1801191448
@@ -5330,7 +5331,7 @@ MonoBehaviour:
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 16
+    m_FontSize: 15
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 1

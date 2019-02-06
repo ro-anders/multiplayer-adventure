@@ -91,16 +91,19 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
     void Update()
     {
         // Make the game screen as big as possible
-        RectTransform rt = (RectTransform)gamePanel.transform;
-        float maxWidth = rt.rect.width;
-        float maxHeight = rt.rect.height;
-        float scale1 = maxWidth / DRAW_AREA_WIDTH;
-        float scale2 = maxHeight / DRAW_AREA_HEIGHT;
-        float newScale = (scale1 <= scale2 ? scale1 : scale2);
-        if (Math.Abs(scale - newScale)>0.01)
+        if (gamePanel != null)
         {
-            RectTransform screenRect = screen.GetComponent<RectTransform>();
-            screenRect.sizeDelta = new Vector2(newScale*DRAW_AREA_WIDTH, newScale*DRAW_AREA_HEIGHT);
+            RectTransform rt = (RectTransform)gamePanel.transform;
+            float maxWidth = rt.rect.width;
+            float maxHeight = rt.rect.height;
+            float scale1 = maxWidth / DRAW_AREA_WIDTH;
+            float scale2 = maxHeight / DRAW_AREA_HEIGHT;
+            float newScale = (scale1 <= scale2 ? scale1 : scale2);
+            if (Math.Abs(scale - newScale) > 0.01)
+            {
+                RectTransform screenRect = screen.GetComponent<RectTransform>();
+                screenRect.sizeDelta = new Vector2(newScale * DRAW_AREA_WIDTH, newScale * DRAW_AREA_HEIGHT);
+            }
         }
 
         // If the transport has been gracefully shutdown it means we are trying
