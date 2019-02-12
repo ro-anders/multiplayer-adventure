@@ -76,7 +76,7 @@ namespace GameEngine
                                             COPPER_CASTLE, MAIN_HALL_LEFT, SOUTHEAST_ROOM, MAIN_HALL_CENTER, "Main Hall Right"));
             addRoom(BLUE_MAZE_5, new ROOM(roomGfxBlueMazeTop, ROOM.FLAG_NONE, COLOR.BLUE,                        // 0x04
                                           0x10, 0x05, 0x07, 0x06, "Blue Maze 5"));
-            addRoom(BLUE_MAZE_2, new ROOM(roomGfxBlueMaze1, ROOM.FLAG_NONE, COLOR.BLUE,                          // 0x05
+            addRoom(BLUE_MAZE_2, new ROOM(roomGfxBlueMaze2, ROOM.FLAG_NONE, COLOR.BLUE,                          // 0x05
                                           0x1D, 0x06, 0x08, 0x04, "Blue Maze 2"));
             addRoom(BLUE_MAZE_3, new ROOM(roomGfxBlueMazeBottom, ROOM.FLAG_NONE, COLOR.BLUE,                     // 0x06
                                           0x07, 0x04, 0x03, 0x05, "Blue Maze 3"));
@@ -347,7 +347,7 @@ namespace GameEngine
         {
             // Block off Jade Castle
             roomDefs[BLUE_MAZE_2].roomUp = MAIN_HALL_RIGHT;
-            roomDefs[BLUE_MAZE_2].graphicsData = roomGfxBlueMaze1;
+            roomDefs[BLUE_MAZE_2].graphicsData = roomGfxBlueMaze2;
 
             // Block off white catacombs
             roomDefs[MAIN_HALL_RIGHT].roomUp = BLUE_MAZE_3;
@@ -473,28 +473,10 @@ namespace GameEngine
             0xF0,0x33,0x3F      // XXXX  XX  XXXXXXXX    RRRRRRRR  RR  RRRR
                                 // 0123456789012345678901234567890123456789
         };
-        //0,4,0,5
-        //0,8,0,9
-        //0,18,4,21
-        //0,30,0,31
-        //0,34,0,35
-        //1,0,1,5
-        //1,8,1,15
-        //1,24,1,31
-        //1,34,1,39
-        //3,4,4,7
-        //3,10,3,17
-        //3,22,3,29
-        //3,32,4,35
-        //4,10,5,13
-        //4,26,5,29
-        //5,0,5,7
-        //5,16,5,23
-        //5,32,5,39
 
 
         // Blue Maze #1
-        private static readonly byte[] roomGfxBlueMaze1 =
+        private static readonly byte[] roomGfxBlueMaze2 =
         {                            // 0123456789012345678901234567890123456789
             0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXX--------RRRRRRRRRRRRRRRR
             0x00,0x00,0x00,          //
@@ -504,6 +486,7 @@ namespace GameEngine
             0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR
             0xF0,0xF3,0xCC           // XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR
         };                           // 0123456789012345678901234567890123456789
+
 
         // Blue Maze #1 with entrance to Jade Castle (only used with 3 players)
         private static readonly byte[] roomGfxBlueMaze1B =
@@ -528,6 +511,7 @@ namespace GameEngine
             0x00,0x30,0x00,      //       XX                        RR
             0xF0,0xFF,0xFF       // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
         };                       // 0123456789012345678901234567890123456789
+
 
         // Center of Blue Maze
         private static readonly byte[] roomGfxBlueMazeCenter =

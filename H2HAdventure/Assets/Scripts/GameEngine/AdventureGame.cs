@@ -207,7 +207,6 @@ namespace GameEngine
 
             // Setup the players
             bool useAltIcons = (gameMode == Adv.GAME_MODE_ROLE_PLAY);
-            UnityEngine.Debug.Log((useAltIcons ? "" : "not ") + " using alt icons when game mode = " + gameMode);
             gameBoard.addPlayer(new BALL(0, ports[0], useAltIcons), thisPlayer == 0);
             Portcullis p2Home = (isCooperative ? ports[0] : ports[4]);
             gameBoard.addPlayer(new BALL(1, p2Home, useAltIcons), thisPlayer == 1);

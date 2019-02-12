@@ -40,9 +40,12 @@ namespace GameEngine
             {
                 return new AiPathNode(aiPlots[toPlot], Plot.NO_DIRECTION, null);
             }
+            UnityEngine.Debug.Log("Computing path from " + aiPlots[fromPlot].thisPlot + 
+                " to " + aiPlots[toPlot].thisPlot);
+
 
             // Reset the already visited array
-            for(int ctr=0; ctr<alreadyVisited.Length; ++ctr)
+            for (int ctr=0; ctr<alreadyVisited.Length; ++ctr)
             {
                 alreadyVisited[ctr] = false;
             }
@@ -78,6 +81,12 @@ namespace GameEngine
             ComputePlotsInRoom(Map.GOLD_CASTLE, plotsCastle, ref totalPlots);
             ComputePlotsInRoom(Map.SOUTHEAST_ROOM, plotsRoomWithTop, ref totalPlots);
             ComputePlotsInRoom(Map.COPPER_CASTLE, plotsCastle, ref totalPlots);
+            ComputePlotsInRoom(Map.BLUE_MAZE_5, plotsBlueMazeTop, ref totalPlots);
+            ComputePlotsInRoom(Map.BLUE_MAZE_2, plotsBlueMaze1, ref totalPlots);
+            ComputePlotsInRoom(Map.BLUE_MAZE_3, plotsBlueMazeBottom, ref totalPlots);
+            ComputePlotsInRoom(Map.BLUE_MAZE_4, plotsBlueMazeCenter, ref totalPlots);
+            ComputePlotsInRoom(Map.BLUE_MAZE_1, plotsBlueMazeEntry, ref totalPlots);
+            ComputePlotsInRoom(Map.BLACK_CASTLE, plotsCastle, ref totalPlots);
 
             aiPlots = new AiMapNode[totalPlots];
             int plotCtr = 0;
@@ -162,7 +171,7 @@ namespace GameEngine
                 AiMapNode neighbor = nextStep.thisNode.neighbors[ctr];
                 if ((neighbor != null) && !alreadyVisited[neighbor.thisPlot.Key])
                 {
-                    AiPathNode nextNextStep = new AiPathNode(neighbor, ctr + 2 % 4, nextStep);
+                    AiPathNode nextNextStep = new AiPathNode(neighbor, (ctr + 2) % 4, nextStep);
                     if (neighbor.thisPlot.Key == goalPlot)
                     {
                         return nextNextStep;
@@ -206,7 +215,7 @@ namespace GameEngine
 
         private static readonly byte[][] plotsHallWithTop =
         {
-            new byte[] {1,3,5,39},
+            new byte[] {1,0,5,39},
             new byte[] {6,16, 6,23}
         };
 
@@ -227,6 +236,115 @@ namespace GameEngine
         {
             new byte[] {1,2,5,37},
             new byte[] {6,16, 6,23}
+        };
+
+        private static readonly byte[][] plotsBlueMazeTop =
+        {
+            new byte[] {0,4,0,5},
+            new byte[] {0,8,0,9},
+            new byte[] {0,18,4,21},
+            new byte[] {0,30,0,31},
+            new byte[] {0,34,0,35},
+            new byte[] {1,0,1,5},
+            new byte[] {1,8,1,15},
+            new byte[] {1,24,1,31},
+            new byte[] {1,34,1,39},
+            new byte[] {3,4,4,7},
+            new byte[] {3,10,3,17},
+            new byte[] {3,22,3,29},
+            new byte[] {3,32,4,35},
+            new byte[] {4,10,5,13},
+            new byte[] {4,26,5,29},
+            new byte[] {5,0,5,7},
+            new byte[] {5,16,5,23},
+            new byte[] {5,32,5,39},
+        };
+
+        private static readonly byte[][] plotsBlueMaze1 =
+        {
+             new byte[] {0,8,0,9},
+            new byte[] {0,12,0,13},
+            new byte[] {0,16,2,17},
+            new byte[] {0,22,2,23},
+            new byte[] {0,26,0,27},
+            new byte[] {0,30,0,31},
+            new byte[] {1,0,1,5},
+            new byte[] {1,8,1,13},
+            new byte[] {1,26,1,31},
+            new byte[] {1,34,1,39},
+            new byte[] {2,4,2,5},
+            new byte[] {2,34,2,35},
+            new byte[] {3,4,3,17},
+            new byte[] {3,22,3,35},
+            new byte[] {4,10,4,11},
+            new byte[] {4,28,4,29},
+            new byte[] {5,0,5,39},
+            new byte[] {6,16,6,23 } // This one not there if no green castle
+       };
+
+        private static readonly byte[][] plotsBlueMazeBottom =
+        {
+            new byte[] {1,0,1,5},
+            new byte[] {1,8,3,31},
+            new byte[] {1,34,1,39},
+            new byte[] {3,4,5,5},
+            new byte[] {3,6,3,7},
+            new byte[] {3,32,3,33},
+            new byte[] {3,34,5,35},
+            new byte[] {4,16,6,23},
+            new byte[] {5,0,5,3},
+            new byte[] {5,8,6,9},
+            new byte[] {5,10,5,11},
+            new byte[] {5,12,6,13},
+            new byte[] {5,26,6,27},
+            new byte[] {5,28,5,29},
+            new byte[] {5,30,6,31},
+            new byte[] {5,36,5,39},
+     };
+
+        private static readonly byte[][] plotsBlueMazeCenter =
+        {
+            new byte[] {0,8,3,9},
+            new byte[] {0,12,5,13},
+            new byte[] {0,16,1,23},
+            new byte[] {0,26,5,27},
+            new byte[] {0,30,3,31},
+            new byte[] {1,0,1,5},
+            new byte[] {1,34,1,39},
+            new byte[] {2,4,2,5},
+            new byte[] {2,18,6,21},
+            new byte[] {2,34,2,35},
+            new byte[] {3,0,3,7},
+            new byte[] {3,32,3,39},
+            new byte[] {5,0,5,5},
+            new byte[] {5,8,6,9},
+            new byte[] {5,10,5,11},
+            new byte[] {5,28,5,29},
+            new byte[] {5,30,6,31},
+            new byte[] {5,34,5,39},
+            new byte[] {6,4,6,5},
+            new byte[] {6,34,6,35},
+        };
+
+        private static readonly byte[][] plotsBlueMazeEntry =
+        {
+            new byte[] {0,16,0,23},
+            new byte[] {1,0,1,23},
+            new byte[] {1,24,1,39},
+            new byte[] {2,8,6,9},
+            new byte[] {2,30,6,31},
+            new byte[] {3,0,3,5},
+            new byte[] {3,12,6,13},
+            new byte[] {3,14,3,25},
+            new byte[] {3,26,6,27},
+            new byte[] {3,34,3,39},
+            new byte[] {4,4,4,5},
+            new byte[] {4,34,4,35},
+            new byte[] {5,0,5,5},
+            new byte[] {5,16,5,23},
+            new byte[] {5,34,5,39},
+            new byte[] {6,16,6,17},
+            new byte[] {6,22,6,23},
         };
 
     }
@@ -379,8 +497,9 @@ namespace GameEngine
                 case UP: return "N";
                 case RIGHT: return "E";
                 case DOWN: return "S";
+                case LEFT: return "W";
                 case NO_DIRECTION: return "X";
-                case LEFT: default: return "W";
+                default: return "?"+dir;
             }
         }
     }
@@ -398,6 +517,20 @@ namespace GameEngine
         public void SetNeighbor(int direction, AiMapNode neighbor)
         {
             neighbors[direction] = neighbor;
+        }
+
+        public override string ToString()
+        {
+            string str = thisPlot + "(";
+            for (int ctr = 0; ctr < 4; ++ctr) {
+                str += (neighbors[ctr] == null ? "-" : "" + neighbors[ctr].thisPlot.Key);
+                if (ctr < 3)
+                {
+                    str += ",";
+                }
+            }
+            str += ")";
+            return str;
         }
     }
 
@@ -423,7 +556,7 @@ namespace GameEngine
             for(AiPathNode n = nextNode; n != null; n = n.nextNode)
             {
                 str += "-" + dirStr + "-" + n.ThisPlot.Key;
-                dirStr = Plot.DirToString(nextDirection);
+                dirStr = Plot.DirToString(n.nextDirection);
             }
             return str;
         }

@@ -10,7 +10,7 @@ namespace GameEngine
         private int thisPlayer;
         private BALL thisBall;
 
-        private int desiredRoom = Map.SOUTHEAST_ROOM;
+        private int desiredRoom = Map.BLACK_CASTLE;
         private int desiredX = Portcullis.EXIT_X;
         private int desiredY = Portcullis.EXIT_Y-(Portcullis.PORT_Y-Portcullis.EXIT_Y);
 
@@ -20,7 +20,6 @@ namespace GameEngine
 
         public AiPlayer(AI inAi, Board inBoard, int inPlayerSlot)
         {
-            UnityEngine.Debug.Log("Setting up AI for player " + inPlayerSlot);
             gameBoard = inBoard;
             ai = inAi;
             thisPlayer = inPlayerSlot;
@@ -41,7 +40,9 @@ namespace GameEngine
             if (desiredPath == null)
             {
                 // We don't even know where we are going.  Figure it out.
-                UnityEngine.Debug.Log("Computing path for AI player " + thisPlayer);
+                UnityEngine.Debug.Log("Get player " + thisPlayer + " from " +
+                    thisBall.room + "-(" + thisBall.x + "," + thisBall.y + ") to " +
+                    desiredRoom + "-(" + desiredX + "," + desiredY + ")");
                 desiredPath = ai.ComputePath(thisBall.room, thisBall.x, thisBall.y, desiredRoom, desiredX, desiredY);
                 if (desiredPath == null)
                 {
