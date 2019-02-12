@@ -42,6 +42,23 @@ namespace GameEngine
             visibility = inVis;
         }
 
+        public int roomNext(int direction)
+        {
+            switch (direction)
+            {
+                case Plot.UP:
+                    return roomUp;
+                case Plot.RIGHT:
+                    return roomRight;
+                case Plot.DOWN:
+                    return roomDown;
+                case Plot.LEFT:
+                    return roomLeft;
+                default:
+                    return -1;
+            }
+        }
+
         public void setIndex(int inIndex)
         {
             index = inIndex;

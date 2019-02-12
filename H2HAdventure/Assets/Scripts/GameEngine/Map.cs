@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Collections.Generic;
+
 namespace GameEngine
 {
     public class Map
@@ -47,24 +48,19 @@ namespace GameEngine
         public const int COPPER_CASTLE = 0x23;
         public const int COPPER_FOYER = 0x24;
 
-        public ROOM[] roomDefs; // TODO: Migrate to being private with accessors.
+        public const int NUM_ROOMS = COPPER_FOYER + 1;
+
+        public ROOM[] roomDefs;
 
         public const int LONG_WAY = 5;
-
-        private const int numRooms = COPPER_FOYER + 1;
 
         private int[,] distances = new int[0, 0];
 
         public Map(int numPlayers, int gameMapLayout, bool isCooperative)
         {
-            roomDefs = new ROOM[numRooms];
+            roomDefs = new ROOM[NUM_ROOMS];
             defaultRooms();
             ConfigureMaze(numPlayers, gameMapLayout, isCooperative);
-        }
-
-        public int getNumRooms()
-        {
-            return numRooms;
         }
 
         void defaultRooms()
@@ -223,10 +219,10 @@ namespace GameEngine
         void ComputeDistances(Portcullis[] ports)
         {
             // This may get called more than once.
-            distances = new int[numRooms, numRooms];
-            for (int ctr1 = 0; ctr1 < numRooms; ++ctr1)
+            distances = new int[NUM_ROOMS, NUM_ROOMS];
+            for (int ctr1 = 0; ctr1 < NUM_ROOMS; ++ctr1)
             {
-                for (int ctr2 = 0; ctr2 < numRooms; ++ctr2)
+                for (int ctr2 = 0; ctr2 < NUM_ROOMS; ++ctr2)
                 {
                     if (ctr1 == ctr2)
                     {
@@ -276,13 +272,13 @@ namespace GameEngine
             // Now compute the distances using isNextTo()
             for (int step = 2; step < LONG_WAY; ++step)
             {
-                for (int ctr1 = 0; ctr1 < numRooms; ++ctr1)
+                for (int ctr1 = 0; ctr1 < NUM_ROOMS; ++ctr1)
                 {
-                    for (int ctr2 = 0; ctr2 < numRooms; ++ctr2)
+                    for (int ctr2 = 0; ctr2 < NUM_ROOMS; ++ctr2)
                     {
                         if (distances[ctr1, ctr2] == LONG_WAY)
                         {
-                            for (int ctr3 = 0; ctr3 < numRooms; ++ctr3)
+                            for (int ctr3 = 0; ctr3 < NUM_ROOMS; ++ctr3)
                             {
                                 if ((distances[ctr3, ctr2] < step) && (distances[ctr1, ctr3] == 1))
                                 {
@@ -308,7 +304,7 @@ namespace GameEngine
 
         public ROOM getRoom(int key)
         {
-            if ((key < 0) || (key > numRooms))
+            if ((key < 0) || (key > NUM_ROOMS))
             {
                 return null;
             }
@@ -377,6 +373,7 @@ namespace GameEngine
 
         }
 
+
         //-- ROOM SHAPES ------------------------------------------------------
         // Left of Name Room
         private static readonly byte[] roomGfxLeftOfName = {
@@ -403,15 +400,15 @@ namespace GameEngine
 
         // Below Yellow Castle
         private static readonly byte[] roomGfxBelowYellowCastle =
-        {
-            0xF0,0xFF,0x0F,     // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRRRRRR
+        {                       // 0123456789012345678901234567890123456789
+            0xF0,0xFF,0x0F,     // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
             0x00,0x00,0x00,
             0x00,0x00,0x00,
             0x00,0x00,0x00,
             0x00,0x00,0x00,
             0x00,0x00,0x00,
-            0xF0,0xFF,0xFF      // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRRRRRR
-        };
+            0xF0,0xFF,0xFF      // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
+        };                      // 0123456789012345678901234567890123456789
 
 
         // Side Corridor
@@ -466,7 +463,7 @@ namespace GameEngine
 
         // Top of Blue Maze
         private static readonly byte[] roomGfxBlueMazeTop =
-        {
+        {                       // 0123456789012345678901234567890123456789
             0xF0,0xFF,0x0F,     // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
             0x00,0x0C,0x0C,     //         XX    XX        RR    RR
             0xF0,0x0C,0x3C,     // XXXX    XX    XXXX    RRRR    RR    RRRR
@@ -474,7 +471,27 @@ namespace GameEngine
             0xF0,0xFF,0x3F,     // XXXXXXXXXXXXXXXXXX    RRRRRRRRRRRRRRRRRR
             0x00,0x30,0x30,     //       XX        XX    RR        RR
             0xF0,0x33,0x3F      // XXXX  XX  XXXXXXXX    RRRRRRRR  RR  RRRR
+                                // 0123456789012345678901234567890123456789
         };
+        //0,4,0,5
+        //0,8,0,9
+        //0,18,4,21
+        //0,30,0,31
+        //0,34,0,35
+        //1,0,1,5
+        //1,8,1,15
+        //1,24,1,31
+        //1,34,1,39
+        //3,4,4,7
+        //3,10,3,17
+        //3,22,3,29
+        //3,32,4,35
+        //4,10,5,13
+        //4,26,5,29
+        //5,0,5,7
+        //5,16,5,23
+        //5,32,5,39
+
 
         // Blue Maze #1
         private static readonly byte[] roomGfxBlueMaze1 =
@@ -503,13 +520,13 @@ namespace GameEngine
         // Bottom of Blue Maze
         private static readonly byte[] roomGfxBlueMazeBottom =
         {
-            0xF0,0xF3,0x0C,          // XXXXXXXX  XX  XX        RR  RR  RRRRRRRR
-            0x00,0x30,0x0C,          //       XX      XX        RR      RR
-            0xF0,0x3F,0x0F,          // XXXX  XXXXXXXXXX        RRRRRRRRRR  RRRR
-            0xF0,0x00,0x00,          // XXXX                                RRRR
-            0xF0,0xF0,0x00,          // XXXXXXXX                        RRRRRRRR
-            0x00,0x30,0x00,          //       XX                        RR
-            0xF0,0xFF,0xFF           // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
+            0xF0,0xF3,0x0C,      // XXXXXXXX  XX  XX        RR  RR  RRRRRRRR
+            0x00,0x30,0x0C,      //       XX      XX        RR      RR
+            0xF0,0x3F,0x0F,      // XXXX  XXXXXXXXXX        RRRRRRRRRR  RRRR
+            0xF0,0x00,0x00,      // XXXX                                RRRR
+            0xF0,0xF0,0x00,      // XXXXXXXX                        RRRRRRRR
+            0x00,0x30,0x00,      //       XX                        RR
+            0xF0,0xFF,0xFF       // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
         };
 
         // Center of Blue Maze
@@ -563,26 +580,26 @@ namespace GameEngine
         // Maze Entry
         private static readonly byte[] roomGfxMazeEntry =
         {
-            0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
-            0x00,0x30,0x00,          //       XX                        RR
-            0xF0,0x30,0xFF,          // XXXX  XX    XXXXXXXXRRRRRRRRR   RR  RRRR
-            0x00,0x30,0xC0,          //       XX          XXRR          RR
-            0xF0,0xF3,0xC0,          // XXXXXXXX  XX      XXRR      RR  RRRRRRRR
-            0x00,0x03,0xC0,          //           XX      XXRR      RR
-            0xF0,0xFF,0xCC           // XXXXXXXXXXXX  XX  XXRR  RR  RRRRRRRRRRRR
+            0xF0,0xFF,0x0F,      // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+            0x00,0x30,0x00,      //       XX                        RR
+            0xF0,0x30,0xFF,      // XXXX  XX    XXXXXXXXRRRRRRRRR   RR  RRRR
+            0x00,0x30,0xC0,      //       XX          XXRR          RR
+            0xF0,0xF3,0xC0,      // XXXXXXXX  XX      XXRR      RR  RRRRRRRR
+            0x00,0x03,0xC0,      //           XX      XXRR      RR
+            0xF0,0xFF,0xCC       // XXXXXXXXXXXX  XX  XXRR  RR  RRRRRRRRRRRR
         };
 
         // Castle
         public static readonly byte[] roomGfxCastle = // This one is public!
-        {
+        {                        // 0123456789012345678901234567890123456789
             0xF0,0xFE,0x15,      // XXXXXXXXXXX X X X      R R R RRRRRRRRRRR
             0x30,0x03,0x1F,      // XX        XXXXXXX      RRRRRRR        RR
             0x30,0x03,0xFF,      // XX        XXXXXXXXXXRRRRRRRRRR        RR
             0x30,0x00,0xFF,      // XX          XXXXXXXXRRRRRRRR          RR
             0x30,0x00,0x3F,      // XX          XXXXXX    RRRRRR          RR
             0x30,0x00,0x00,      // XX                                    RR
-            0xF0,0xFF,0x0F       // XXXXXXXXXXXXXX            RRRRRRRRRRRRRR
-        };
+            0xF0,0xFF,0x0F       // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+        };                       // 0123456789012345678901234567890123456789
 
         // Castle
         private static readonly byte[] roomGfxCastle2 =
@@ -593,7 +610,7 @@ namespace GameEngine
             0x30,0x00,0xFF,      // XX          XXXXXXXXRRRRRRRR          RR
             0x30,0x00,0x3F,      // XX          XXXXXX    RRRRRR          RR
             0x30,0x00,0x00,      // XX                                    RR
-            0xF0,0xFF,0x0F       // XXXXXXXXXXXXXX            RRRRRRRRRRRRRR
+            0xF0,0xFF,0x0F       // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
         };
 
         // Castle
@@ -605,7 +622,7 @@ namespace GameEngine
             0x30,0x00,0xFF,      // XX          XXXXXXXXRRRRRRRR          RR
             0x30,0x00,0x3F,      // XX          XXXXXX    RRRRRR          RR
             0x30,0x00,0x00,      // XX                                    RR
-            0xF0,0xFF,0x0F       // XXXXXXXXXXXXXX            RRRRRRRRRRRRRR
+            0xF0,0xFF,0x0F       // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
         };
 
         // Walled off Castle
@@ -729,6 +746,6 @@ namespace GameEngine
             0xF0,0xFF,0x0F           // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
         };
 
-
     }
+
 }
