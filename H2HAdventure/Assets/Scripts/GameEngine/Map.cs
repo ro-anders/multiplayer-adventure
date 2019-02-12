@@ -495,7 +495,7 @@ namespace GameEngine
 
         // Blue Maze #1
         private static readonly byte[] roomGfxBlueMaze1 =
-        {
+        {                            // 0123456789012345678901234567890123456789
             0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXX--------RRRRRRRRRRRRRRRR
             0x00,0x00,0x00,          //
             0xF0,0xFC,0xFF,          // XXXXXXXXXX  XXXXXXXXRRRRRRRR  RRRRRRRRRR
@@ -503,11 +503,11 @@ namespace GameEngine
             0xF0,0x3F,0xCF,          // XXXX  XXXXXXXXXX  XXRR  RRRRRRRRRR  RRRR
             0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR
             0xF0,0xF3,0xCC           // XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR
-        };
+        };                           // 0123456789012345678901234567890123456789
 
         // Blue Maze #1 with entrance to Jade Castle (only used with 3 players)
         private static readonly byte[] roomGfxBlueMaze1B =
-        {
+        {                            // 0123456789012345678901234567890123456789
             0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
             0x00,0x00,0x00,          //
             0xF0,0xFC,0xFF,          // XXXXXXXXXX  XXXXXXXXRRRRRRRR  RRRRRRRRRR
@@ -515,11 +515,11 @@ namespace GameEngine
             0xF0,0x3F,0xCF,          // XXXX  XXXXXXXXXX  XXRR  RRRRRRRRRR  RRRR
             0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR
             0xF0,0xF3,0xCC           // XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR
-        };
+        };                           // 0123456789012345678901234567890123456789
 
         // Bottom of Blue Maze
         private static readonly byte[] roomGfxBlueMazeBottom =
-        {
+        {                        // 0123456789012345678901234567890123456789
             0xF0,0xF3,0x0C,      // XXXXXXXX  XX  XX        RR  RR  RRRRRRRR
             0x00,0x30,0x0C,      //       XX      XX        RR      RR
             0xF0,0x3F,0x0F,      // XXXX  XXXXXXXXXX        RRRRRRRRRR  RRRR
@@ -527,11 +527,11 @@ namespace GameEngine
             0xF0,0xF0,0x00,      // XXXXXXXX                        RRRRRRRR
             0x00,0x30,0x00,      //       XX                        RR
             0xF0,0xFF,0xFF       // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
-        };
+        };                       // 0123456789012345678901234567890123456789
 
         // Center of Blue Maze
         private static readonly byte[] roomGfxBlueMazeCenter =
-        {
+        {                            // 0123456789012345678901234567890123456789
             0xF0,0x33,0x3F,          // XXXX  XX  XXXXXXXX    RRRRRRRR  RR  RRRR
             0x00,0x30,0x3C,          //       XX      XXXX    RRRR      RR
             0xF0,0xFF,0x3C,          // XXXXXXXXXXXX  XXXX    RRRR  RRRRRRRRRRRR
@@ -539,11 +539,11 @@ namespace GameEngine
             0xF0,0x33,0x3C,          // XXXX  XX  XX  XXXX    RRRR  RR  RR  RRRR
             0x00,0x33,0x0C,          //       XX  XX  XX        RR  RR  RR
             0xF0,0xF3,0x0C           // XXXXXXXX  XX  XX        RR  RR  RRRRRRRR
-        };
+        };                           // 0123456789012345678901234567890123456789
 
         // Blue Maze Entry
         private static readonly byte[] roomGfxBlueMazeEntry =
-        {
+        {                            // 0123456789012345678901234567890123456789
             0xF0,0xF3,0xCC,          // XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR
             0x00,0x33,0x0C,          //       XX  XX  XX        RR  RR  RR
             0xF0,0x33,0xFC,          // XXXX  XX  XX  XXXXXXRRRRRR  RR  RR  RRRR
@@ -551,7 +551,7 @@ namespace GameEngine
             0xF0,0xF3,0xFF,          // XXXXXXXX  XXXXXXXXXXRRRRRRRRRR  RRRRRRRR
             0x00,0x00,0x00,          //
             0xF0,0xFF,0x0F           // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
-        };
+        };                           // 0123456789012345678901234567890123456789
 
         // Maze Middle
         private static readonly byte[] roomGfxMazeMiddle =
@@ -563,7 +563,7 @@ namespace GameEngine
             0xF0,0xF3,0xFC,          // XXXXXXXX  XX  XXXXXXRRRRRR  RR  RRRRRRRR
             0x00,0x33,0x0C,          //       XX  XX  XX        RR  RR  RR
             0xF0,0x33,0xCC           // XXXX  XX  XX  XX  XXRR  RR  RR  RR  RRRR
-        };
+        };                           // 0123456789012345678901234567890123456789
 
         // Maze Side
         private static readonly byte[] roomGfxMazeSide =
