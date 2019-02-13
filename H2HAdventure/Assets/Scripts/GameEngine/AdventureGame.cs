@@ -58,7 +58,7 @@ namespace GameEngine
         private int flashColorLum = 0;
         private int displayListIndex = 0;
         private bool joyLeft, joyUp, joyRight, joyDown, joyFire;
-        private bool joystickDisabled = false; // No longer ever set, but left in in case we come up with a need
+        private bool joystickDisabled = false; // Only used when scripting and testing ai
         private bool switchReset = false;
 
         private int turnsSinceTimeCheck = 0;
@@ -228,6 +228,7 @@ namespace GameEngine
                     aiPlayers[ctr] = new AiPlayer(ai, gameBoard, ctr);
                 }
             }
+            joystickDisabled = joystickDisabled && useAi[thisPlayer];
 
             if (gameMode == Adv.GAME_MODE_ROLE_PLAY)
             {
@@ -464,11 +465,12 @@ namespace GameEngine
             handleSetupMessages();
 
             // Move all the other players
-            OtherBallMovement();
-            OthersPickupPutdown();
+            RemoteBallMovement();
+            RemotePickupPutdown();
 
             // move the dragons
             SyncDragons();
+
 
             // Move the bat
             RemoteAction batAction = sync.GetNextBatAction();
@@ -599,13 +601,10 @@ namespace GameEngine
                         if (gameState == GAMESTATE_ACTIVE_1)
                         {
                             // Move balls
-                            ThisBallMovement();
+                            bool broadcastMovement = ThisBallMovement();
                             for (int i = 0; i < numPlayers; ++i)
                             {
-                                if (i != thisPlayer)
-                                {
-                                    BallMovement(gameBoard.getPlayer(i));
-                                }
+                                BallMovement(gameBoard.getPlayer(i), (i==thisPlayer) && broadcastMovement);
                             }
 
                             // Move the carried object
@@ -1051,7 +1050,7 @@ namespace GameEngine
             }
         }
 
-        void ThisBallMovement()
+        private bool ThisBallMovement()
         {
             // Read the joystick and translate into a velocity
             int prevVelX = objectBall.velx;
@@ -1087,17 +1086,18 @@ namespace GameEngine
                 objectBall.velx = newVelX;
             }
 
-            BallMovement(objectBall);
-
-            if (!joystickDisabled && ((objectBall.velx != prevVelX) || (objectBall.vely != prevVelY)))
-            {
-                PlayerMoveAction moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
-                sync.BroadcastAction(moveAction);
-            }
+            bool broadcastMovement = !joystickDisabled && 
+                 ((objectBall.velx != prevVelX) || (objectBall.vely != prevVelY));
+            return broadcastMovement;
         }
 
-        void BallMovement(BALL ball)
+        void BallMovement(BALL ball, bool broadcastMovement)
         {
+            // If an AI player, compute direction
+            if (aiPlayers[ball.playerNum] != null)
+            {
+                aiPlayers[ball.playerNum].chooseDirection();
+            }
 
             bool eaten = false;
             for (int ctr = 0; ctr < numDragons && !eaten; ++ctr)
@@ -1222,6 +1222,13 @@ namespace GameEngine
 
             ball.displayedRoom = ball.room;
 
+            if (broadcastMovement)
+            {
+                PlayerMoveAction moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
+                sync.BroadcastAction(moveAction);
+            }
+
+
         }
 
         // Check if the ball would be hitting anything (wall, object, ...)
@@ -1246,7 +1253,7 @@ namespace GameEngine
         }
 
 
-        void OtherBallMovement()
+        void RemoteBallMovement()
         {
             for (int i = 0; i < numPlayers; ++i)
             {
@@ -1267,10 +1274,6 @@ namespace GameEngine
                         nextPayer.velx = movement.velx;
                         nextPayer.vely = movement.vely;
                     }
-                }
-                if (aiPlayers[i] != null)
-                {
-                    aiPlayers[i].chooseDirection();
                 }
             }
 
@@ -1451,7 +1454,7 @@ namespace GameEngine
             }
         }
 
-        void OthersPickupPutdown()
+        void RemotePickupPutdown()
         {
             PlayerPickupAction newaction = sync.GetNextPickupAction();
             while (newaction != null)

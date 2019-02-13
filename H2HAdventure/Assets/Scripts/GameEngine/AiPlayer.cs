@@ -106,8 +106,9 @@ namespace GameEngine
                 thisBall.velx = (nextStepX > thisBall.x ? BALL_MOVEMENT : -BALL_MOVEMENT);
                 thisBall.vely = (nextStepY > thisBall.y ? BALL_MOVEMENT : -BALL_MOVEMENT);
             }
-            }
+            UnityEngine.Debug.Log("Chose direction " + thisBall.velx + "," + thisBall.vely);
 
+        }
     }
 
 }
