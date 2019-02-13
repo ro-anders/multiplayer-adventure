@@ -73,8 +73,8 @@ public class StartScreen : MonoBehaviour {
         SessionInfo.GameToPlay.playerTwoName = "ben";
         SessionInfo.GameToPlay.playerThree = 14;
         SessionInfo.GameToPlay.playerThreeName = "chris";
-        SessionInfo.ThisPlayerId = SessionInfo.GameToPlay.playerTwo;
-        SessionInfo.ThisPlayerName = SessionInfo.GameToPlay.playerTwoName;
+        SessionInfo.ThisPlayerId = SessionInfo.GameToPlay.playerOne;
+        SessionInfo.ThisPlayerName = SessionInfo.GameToPlay.playerOneName;
         SessionInfo.GameToPlay.playerMapping = 0;
         SessionInfo.GameToPlay.numPlayers = 3;
         SessionInfo.GameToPlay.gameNumber = 0;

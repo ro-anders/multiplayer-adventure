@@ -181,7 +181,7 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
         for(int ctr=0; ctr<game.numPlayers; ++ctr)
         {
             //useAi[ctr] = (SessionInfo.NetworkSetup == SessionInfo.Network.NONE) && (ctr != inLocalPlayerSlot);
-            useAi[ctr] = (SessionInfo.NetworkSetup == SessionInfo.Network.NONE) && (ctr == 0);
+            useAi[ctr] = (SessionInfo.NetworkSetup == SessionInfo.Network.NONE) && (ctr == 1);
         }
         UnityTransport xportToUse = (SessionInfo.NetworkSetup == SessionInfo.Network.NONE ? null : xport);
         gameEngine = new AdventureGame(this, game.numPlayers, inLocalPlayerSlot, xportToUse, 

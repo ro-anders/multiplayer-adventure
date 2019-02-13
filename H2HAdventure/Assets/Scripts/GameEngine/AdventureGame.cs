@@ -1267,10 +1267,10 @@ namespace GameEngine
                         nextPayer.velx = movement.velx;
                         nextPayer.vely = movement.vely;
                     }
-                    if (aiPlayers[i] != null)
-                    {
-                        aiPlayers[i].chooseDirection();
-                    }
+                }
+                if (aiPlayers[i] != null)
+                {
+                    aiPlayers[i].chooseDirection();
                 }
             }
 

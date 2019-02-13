@@ -10,9 +10,9 @@ namespace GameEngine
         private int thisPlayer;
         private BALL thisBall;
 
-        private int desiredRoom = Map.BLACK_CASTLE;
+        private int desiredRoom = Map.BLUE_MAZE_1;
         private int desiredX = Portcullis.EXIT_X;
-        private int desiredY = Portcullis.EXIT_Y-(Portcullis.PORT_Y-Portcullis.EXIT_Y);
+        private int desiredY = 40;
 
         private AiPathNode desiredPath = null;
         private int nextStepX = int.MinValue;

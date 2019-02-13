@@ -73,44 +73,34 @@ namespace GameEngine
             {
                 aiPlotsByRoom[ctr] = new AiMapNode[0];
             }
-            int totalPlots = 0;
+            List<AiMapNode> allPlotsList = new List<AiMapNode>();
+            ComputePlotsInRoom(Map.MAIN_HALL_LEFT, plotsLeftHallWithTop, allPlotsList);
+            ComputePlotsInRoom(Map.MAIN_HALL_CENTER, plotsHallWithTop, allPlotsList);
+            ComputePlotsInRoom(Map.MAIN_HALL_RIGHT, plotsRightHallWithBoth, allPlotsList);
+            ComputePlotsInRoom(Map.GOLD_CASTLE, plotsCastle, allPlotsList);
+            ComputePlotsInRoom(Map.SOUTHEAST_ROOM, plotsRoomWithTop, allPlotsList);
+            ComputePlotsInRoom(Map.COPPER_CASTLE, plotsCastle, allPlotsList);
+            ComputePlotsInRoom(Map.BLUE_MAZE_5, plotsBlueMazeTop, allPlotsList);
+            ComputePlotsInRoom(Map.BLUE_MAZE_2, plotsBlueMaze1, allPlotsList);
+            ComputePlotsInRoom(Map.BLUE_MAZE_3, plotsBlueMazeBottom, allPlotsList);
+            ComputePlotsInRoom(Map.BLUE_MAZE_4, plotsBlueMazeCenter, allPlotsList);
+            ComputePlotsInRoom(Map.BLUE_MAZE_1, plotsBlueMazeEntry, allPlotsList);
+            ComputePlotsInRoom(Map.BLACK_CASTLE, plotsCastle, allPlotsList);
 
-            ComputePlotsInRoom(Map.MAIN_HALL_LEFT, plotsLeftHallWithTop, ref totalPlots);
-            ComputePlotsInRoom(Map.MAIN_HALL_CENTER, plotsHallWithTop, ref totalPlots);
-            ComputePlotsInRoom(Map.MAIN_HALL_RIGHT, plotsRightHallWithBoth, ref totalPlots);
-            ComputePlotsInRoom(Map.GOLD_CASTLE, plotsCastle, ref totalPlots);
-            ComputePlotsInRoom(Map.SOUTHEAST_ROOM, plotsRoomWithTop, ref totalPlots);
-            ComputePlotsInRoom(Map.COPPER_CASTLE, plotsCastle, ref totalPlots);
-            ComputePlotsInRoom(Map.BLUE_MAZE_5, plotsBlueMazeTop, ref totalPlots);
-            ComputePlotsInRoom(Map.BLUE_MAZE_2, plotsBlueMaze1, ref totalPlots);
-            ComputePlotsInRoom(Map.BLUE_MAZE_3, plotsBlueMazeBottom, ref totalPlots);
-            ComputePlotsInRoom(Map.BLUE_MAZE_4, plotsBlueMazeCenter, ref totalPlots);
-            ComputePlotsInRoom(Map.BLUE_MAZE_1, plotsBlueMazeEntry, ref totalPlots);
-            ComputePlotsInRoom(Map.BLACK_CASTLE, plotsCastle, ref totalPlots);
-
-            aiPlots = new AiMapNode[totalPlots];
-            int plotCtr = 0;
-            for (int roomCtr = 0; roomCtr < Map.NUM_ROOMS; ++roomCtr)
-            {
-                for (int plotInRoomCtr = 0; plotInRoomCtr < aiPlotsByRoom[roomCtr].Length; ++plotInRoomCtr)
-                {
-                    aiPlots[plotCtr] = aiPlotsByRoom[roomCtr][plotInRoomCtr];
-                    ++plotCtr;
-                }
-            }
+            aiPlots = allPlotsList.ToArray();
         }
 
-        private void ComputePlotsInRoom(int room, byte[][] plotData, ref int totalPlots)
+        private void ComputePlotsInRoom(int room, byte[][] plotData, List<AiMapNode> allPlotsList)
         {
             AiMapNode[] roomPlots = new AiMapNode[plotData.Length];
 
             for (int plotCtr = 0; plotCtr < plotData.Length; ++plotCtr)
             {
                 byte[] plotValues = plotData[plotCtr];
-                Plot newPlot = new Plot(totalPlots, room,
+                Plot newPlot = new Plot(allPlotsList.Count, room,
                     plotValues[1], plotValues[0], plotValues[3], plotValues[2]);
                 roomPlots[plotCtr] = new AiMapNode(newPlot);
-                ++totalPlots;
+                allPlotsList.Add(roomPlots[plotCtr]);
             }
             aiPlotsByRoom[room] = roomPlots;
         }
