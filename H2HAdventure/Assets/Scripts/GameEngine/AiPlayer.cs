@@ -66,7 +66,7 @@ namespace GameEngine
                     desiredPath = desiredPath.nextNode;
                 }
                 // Next most probable cause is we've missed the path by just a little.
-                else if (thisBall.hit && desiredPath.ThisPlot.RoughlyContains(thisBall.room, thisBall.x, thisBall.y))
+                else if (desiredPath.ThisPlot.RoughlyContains(thisBall.room, thisBall.x, thisBall.y))
                 {
                     // We're ok.  Don't need to do anything.
                 }
