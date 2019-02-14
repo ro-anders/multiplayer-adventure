@@ -10,9 +10,9 @@ namespace GameEngine
         private int thisPlayer;
         private BALL thisBall;
 
-        private int desiredRoom = Map.BLUE_MAZE_1;
-        private int desiredX = Portcullis.EXIT_X;
-        private int desiredY = 40;
+        private int desiredRoom = Map.BLUE_MAZE_4;
+        private int desiredX = 288; //Portcullis.EXIT_X;
+        private int desiredY = 188; // 60;
 
         private AiPathNode desiredPath = null;
         private int nextStepX = int.MinValue;
@@ -28,11 +28,10 @@ namespace GameEngine
 
         public void chooseDirection()
         {
+            AiPathNode startingPath = desiredPath;
             if (desiredRoom < 0)
             {
                 // We have no goal.  Don't do anything.
-                thisBall.velx = 0;
-                thisBall.vely = 0;
                 return;
 
             }
@@ -48,6 +47,7 @@ namespace GameEngine
                 {
                     // No way to get to where we want to go.  Give up
                     UnityEngine.Debug.Log("Couldn't compute path for AI player " + thisPlayer);
+                    // ABORT PATH
                     desiredRoom = -1;
                     thisBall.velx = 0;
                     thisBall.vely = 0;
@@ -57,57 +57,74 @@ namespace GameEngine
                     desiredPath.nextDirection, ref nextStepX, ref nextStepY);
             }
 
-            // See if we've gotten to the next step of the path
-            while (!desiredPath.ThisPlot.Contains(thisBall.room, thisBall.x, thisBall.y))
-            {
-                desiredPath = desiredPath.nextNode;
-                if (desiredPath == null)
+            // Make sure we're still on the path
+            if (!desiredPath.ThisPlot.Contains(thisBall.room, thisBall.x, thisBall.y)) {
+                // Most probable cause is we've gotten to the next step in the path
+                if ((desiredPath.nextNode != null) &&
+                    (desiredPath.nextNode.ThisPlot.RoughlyContains(thisBall.room, thisBall.x, thisBall.y)))
                 {
-                    UnityEngine.Debug.LogError(thisBall.room + "(" + thisBall.x + "," + thisBall.y + ")" +
-                        " has traversed past end of AI path!");
-                    desiredRoom = -1;
-                    thisBall.velx = 0;
-                    thisBall.vely = 0;
-                    return;
+                    desiredPath = desiredPath.nextNode;
                 }
-                else if (!desiredPath.ThisPlot.Contains(thisBall.room, thisBall.x, thisBall.y))
+                // Next most probable cause is we've missed the path by just a little.
+                else if (thisBall.hit && desiredPath.ThisPlot.RoughlyContains(thisBall.room, thisBall.x, thisBall.y))
                 {
-                    UnityEngine.Debug.LogError(thisBall.room + "(" + thisBall.x + "," + thisBall.y + ")" +
-                        "has fallen off the path.");
-                    // TODO: What do we do now?  Right now we just check along the path
-                    // to see if we ended up any further along it, and if not, give up.
+                    // We're ok.  Don't need to do anything.
                 }
                 else
                 {
-                    UnityEngine.Debug.Log(thisBall.room + "(" + thisBall.x + "," + thisBall.y + ")" +
-                        " has reached next node in path: " + desiredPath);
-                    if (desiredPath.nextNode == null)
+                    // We're off the path.  See if, by any chance, we are now somewhere further on
+                    // the path
+                    AiPathNode found = null;
+                    for (AiPathNode newNode = desiredPath.nextNode;
+                        (newNode != null) && (found != null);
+                        newNode = newNode.nextNode)
                     {
-                        // We've reached the last plot in the path.  Now go to the desired coordinates
-                        nextStepX = desiredX;
-                        nextStepY = desiredY;
+                        if (newNode.ThisPlot.Contains(thisBall.room, thisBall.x, thisBall.y)) {
+                            found = newNode;
+                        }
+                    }
+                    if (found != null) {
+                        desiredPath = found;
                     }
                     else
                     {
-                        desiredPath.ThisPlot.GetOverlap(desiredPath.nextNode.ThisPlot,
-                            desiredPath.nextDirection, ref nextStepX, ref nextStepY);
-                        UnityEngine.Debug.Log(" At " + thisBall.room + "(" + thisBall.x + "," + thisBall.y + ")" +
-                            " in plot " + desiredPath.ThisPlot +
-                            " and shooting for (" + nextStepX + "," + nextStepY + ")" + " in plot " + desiredPath.nextNode.ThisPlot); 
-
+                        UnityEngine.Debug.LogError(thisBall.room + "(" + thisBall.x + "," +
+                            thisBall.y + ")" + " has fallen off the AI path!\nNot in " + 
+                            desiredPath.ThisPlot + 
+                            (desiredPath.nextNode == null ? "" : " or " + desiredPath.nextNode.ThisPlot));
+                        // ABORT PATH
+                        desiredRoom = -1;
+                        thisBall.velx = 0;
+                        thisBall.vely = 0;
+                        return;
                     }
                 }
             }
 
-            if (desiredPath != null)
+            // Go to the nextStep coordinates to get us to the next step on the path
+            // or the desired coordinates.
+            if (desiredPath != startingPath)
             {
-                // Go to the nextStep coordinates to get us to the next step on the path
-                // or the desired coordinates.
-                thisBall.velx = (nextStepX > thisBall.x ? BALL_MOVEMENT : -BALL_MOVEMENT);
-                thisBall.vely = (nextStepY > thisBall.y ? BALL_MOVEMENT : -BALL_MOVEMENT);
+                // Recompute how to get to the next step in the path
+                if (desiredPath.nextNode != null)
+                {
+                    desiredPath.ThisPlot.GetOverlap(desiredPath.nextNode.ThisPlot,
+                        desiredPath.nextDirection, ref nextStepX, ref nextStepY);
+                    UnityEngine.Debug.Log("Heading for (" + nextStepX + "," + nextStepY +
+                        ") in plot " + desiredPath.ThisPlot);
+                }
+                else
+                {
+                    // We've reached the last plot in the path.  
+                    // Now go to the desired coordinates
+                    nextStepX = desiredX;
+                    nextStepY = desiredY;
+                }
             }
-            UnityEngine.Debug.Log("Chose direction " + thisBall.velx + "," + thisBall.vely);
-
+            thisBall.velx = (nextStepX > thisBall.x ? BALL_MOVEMENT : -BALL_MOVEMENT);
+            thisBall.vely = (nextStepY > thisBall.y ? BALL_MOVEMENT : -BALL_MOVEMENT);
+            UnityEngine.Debug.Log("Choosing (" + thisBall.velx + "," + thisBall.vely + ") at " +
+                thisBall.room + "-(" + thisBall.x + "," + thisBall.y + ")");
         }
     }
 

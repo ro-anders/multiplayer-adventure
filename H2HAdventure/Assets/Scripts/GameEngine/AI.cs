@@ -416,6 +416,16 @@ namespace GameEngine
                     (y >= edges[DOWN]) && (y <= edges[UP]));
         }
 
+        /**
+         * Returns true if the plot contains the coordinates or they are very close
+         */
+        public bool RoughlyContains(int inRoom, int x, int y)
+        {
+            return ((inRoom == room) &&
+                    (x >= edges[LEFT]-OVERLAP_EXTENT) && (x <= edges[RIGHT] + OVERLAP_EXTENT) &&
+                    (y >= edges[DOWN] - OVERLAP_EXTENT) && (y <= edges[UP] + OVERLAP_EXTENT));
+        }
+
         public bool AdjacentTo(Plot otherPlot, int direction)
         {
             bool isAdjacent = false;
