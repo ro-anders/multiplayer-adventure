@@ -158,7 +158,7 @@ namespace GameEngine
             if ((numPlayers > 2) && !isCooperative)
             {
                 roomDefs[BLUE_MAZE_2].roomUp = JADE_CASTLE;
-                roomDefs[BLUE_MAZE_2].graphicsData = roomGfxBlueMaze1B;
+                roomDefs[BLUE_MAZE_2].graphicsData = roomGfxBlueMaze2B;
                 roomDefs[JADE_CASTLE].visibility = ROOM.RandomVisibility.OPEN;
                 roomDefs[JADE_FOYER].visibility = ROOM.RandomVisibility.IN_CASTLE;
             }
@@ -461,7 +461,7 @@ namespace GameEngine
             0xF0,0xFF,0x0F      // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
         };
 
-        // Top of Blue Maze
+        // Blue Maze 5 - Top of Blue Maze
         private static readonly byte[] roomGfxBlueMazeTop =
         {                       // 0123456789012345678901234567890123456789
             0xF0,0xFF,0x0F,     // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
@@ -475,7 +475,7 @@ namespace GameEngine
         };
 
 
-        // Blue Maze #1
+        // Blue Maze #2
         private static readonly byte[] roomGfxBlueMaze2 =
         {                            // 0123456789012345678901234567890123456789
             0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXX--------RRRRRRRRRRRRRRRR
@@ -488,8 +488,8 @@ namespace GameEngine
         };                           // 0123456789012345678901234567890123456789
 
 
-        // Blue Maze #1 with entrance to Jade Castle (only used with 3 players)
-        private static readonly byte[] roomGfxBlueMaze1B =
+        // Blue Maze #2 with entrance to Jade Castle (only used with 3 players)
+        private static readonly byte[] roomGfxBlueMaze2B =
         {                            // 0123456789012345678901234567890123456789
             0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
             0x00,0x00,0x00,          //
@@ -500,7 +500,7 @@ namespace GameEngine
             0xF0,0xF3,0xCC           // XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR
         };                           // 0123456789012345678901234567890123456789
 
-        // Bottom of Blue Maze
+        // Blue Maze 3 - Bottom of Blue Maze
         private static readonly byte[] roomGfxBlueMazeBottom =
         {                        // 0123456789012345678901234567890123456789
             0xF0,0xF3,0x0C,      // XXXXXXXX  XX  XX        RR  RR  RRRRRRRR
@@ -513,7 +513,7 @@ namespace GameEngine
         };                       // 0123456789012345678901234567890123456789
 
 
-        // Center of Blue Maze
+        // Blue Maze 4 - Center of Blue Maze
         private static readonly byte[] roomGfxBlueMazeCenter =
         {                            // 0123456789012345678901234567890123456789
             0xF0,0x33,0x3F,          // XXXX  XX  XXXXXXXX    RRRRRRRR  RR  RRRR
@@ -525,7 +525,7 @@ namespace GameEngine
             0xF0,0xF3,0x0C           // XXXXXXXX  XX  XX        RR  RR  RRRRRRRR
         };                           // 0123456789012345678901234567890123456789
 
-        // Blue Maze Entry
+        // Blue Maze 1 - Blue Maze Entry
         private static readonly byte[] roomGfxBlueMazeEntry =
         {                            // 0123456789012345678901234567890123456789
             0xF0,0xF3,0xCC,          // XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR

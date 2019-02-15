@@ -252,23 +252,25 @@ namespace GameEngine
 
         private static readonly byte[][] plotsBlueMaze1 =
         {
-             new byte[] {0,8,0,9},
-            new byte[] {0,12,0,13},
-            new byte[] {0,16,2,17},
-            new byte[] {0,22,2,23},
-            new byte[] {0,26,0,27},
+            new byte[] {0,8,0,9},
+            new byte[] {0,12,1,13},
+            new byte[] {0,16,3,17},
+            new byte[] {0,22,3,23},
+            new byte[] {0,26,1,27},
             new byte[] {0,30,0,31},
             new byte[] {1,0,1,5},
-            new byte[] {1,8,1,13},
-            new byte[] {1,26,1,31},
+            new byte[] {1,8,1,11},
+            new byte[] {1,28,1,31},
             new byte[] {1,34,1,39},
             new byte[] {2,4,2,5},
             new byte[] {2,34,2,35},
-            new byte[] {3,4,3,17},
-            new byte[] {3,22,3,35},
+            new byte[] {3,4,3,15},
+            new byte[] {3,24,3,35},
             new byte[] {4,10,4,11},
             new byte[] {4,28,4,29},
-            new byte[] {5,0,5,39},
+            new byte[] {5,0,5,15},
+            new byte[] {5,16,5,23},
+            new byte[] {5,24,5,39},
             new byte[] {6,16,6,23 } // This one not there if no green castle
        };
 
