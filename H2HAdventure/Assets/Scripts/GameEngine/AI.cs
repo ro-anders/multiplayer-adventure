@@ -256,7 +256,7 @@ namespace GameEngine
             new byte[] {4,10,5,13},
             new byte[] {4,26,5,29},
             new byte[] {5,0,5,7},
-            new byte[] {5,16,5,23},
+            new byte[] {5,16,6,23},
             new byte[] {5,32,5,39},
         };
 
