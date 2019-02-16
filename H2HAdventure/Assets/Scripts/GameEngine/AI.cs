@@ -32,6 +32,10 @@ namespace GameEngine
                 UnityEngine.Debug.LogError("Couldn't find starting plot");
             }
             int toPlot = FindPlot(toRoom, toX, toY);
+            if (toPlot < 0)
+            {
+                UnityEngine.Debug.LogError("Couldn't find ending plot");
+            }
             if ((fromPlot < 0) || (toPlot < 0))
             {
                 return null;
@@ -61,6 +65,12 @@ namespace GameEngine
             {
                 found = ComputeNextStep(fromPlot, q, alreadyVisited);
             }
+
+            if (found==null)
+            {
+                UnityEngine.Debug.Log("Could not find path from " + aiPlots[fromPlot] + " to " +
+                    aiPlots[toPlot]);
+            }
             return found;
         }
 
@@ -81,7 +91,7 @@ namespace GameEngine
             ComputePlotsInRoom(Map.SOUTHEAST_ROOM, plotsRoomWithTop, allPlotsList);
             ComputePlotsInRoom(Map.COPPER_CASTLE, plotsCastle, allPlotsList);
             ComputePlotsInRoom(Map.BLUE_MAZE_5, plotsBlueMazeTop, allPlotsList);
-            ComputePlotsInRoom(Map.BLUE_MAZE_2, plotsBlueMaze1, allPlotsList);
+            ComputePlotsInRoom(Map.BLUE_MAZE_2, plotsBlueMaze2, allPlotsList);
             ComputePlotsInRoom(Map.BLUE_MAZE_3, plotsBlueMazeBottom, allPlotsList);
             ComputePlotsInRoom(Map.BLUE_MAZE_4, plotsBlueMazeCenter, allPlotsList);
             ComputePlotsInRoom(Map.BLUE_MAZE_1, plotsBlueMazeEntry, allPlotsList);
@@ -250,7 +260,7 @@ namespace GameEngine
             new byte[] {5,32,5,39},
         };
 
-        private static readonly byte[][] plotsBlueMaze1 =
+        private static readonly byte[][] plotsBlueMaze2 =
         {
             new byte[] {0,8,0,9},
             new byte[] {0,12,1,13},
@@ -271,7 +281,7 @@ namespace GameEngine
             new byte[] {5,0,5,15},
             new byte[] {5,16,5,23},
             new byte[] {5,24,5,39},
-            new byte[] {6,16,6,23 } // This one not there if no green castle
+            new byte[] {6,16,6,23} // This one not there if no green castle
        };
 
         private static readonly byte[][] plotsBlueMazeBottom =
@@ -469,19 +479,19 @@ namespace GameEngine
             switch(direction) {
                 case UP:
                     outX = midpoint;
-                    outY = this.Top + OVERLAP_EXTENT;
+                    outY = this.Top + 1;
                     return;
                 case DOWN:
                     outX = midpoint;
-                    outY = this.Bottom - OVERLAP_EXTENT;
+                    outY = this.Bottom - 1;
                     return;
                 case LEFT:
-                    outX = this.Left - OVERLAP_EXTENT;
+                    outX = this.Left - 1;
                     outY = midpoint;
                     return;
                 case RIGHT:
                 default:
-                    outX = this.Right + OVERLAP_EXTENT;
+                    outX = this.Right + 1;
                     outY = midpoint;
                     return;
             }

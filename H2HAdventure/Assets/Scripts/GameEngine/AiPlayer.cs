@@ -10,9 +10,9 @@ namespace GameEngine
         private int thisPlayer;
         private BALL thisBall;
 
-        private int desiredRoom = Map.BLUE_MAZE_1;
-        private int desiredX = 40; // Portcullis.EXIT_X;
-        private int desiredY =  80; //60;
+        private int desiredRoom = Map.BLACK_CASTLE;
+        private int desiredX = 160;  //Portcullis.EXIT_X;
+        private int desiredY = 16;
 
         private AiPathNode desiredPath = null;
         private int nextStepX = int.MinValue;
@@ -61,7 +61,7 @@ namespace GameEngine
             if (!desiredPath.ThisPlot.Contains(thisBall.room, thisBall.x, thisBall.y)) {
                 // Most probable cause is we've gotten to the next step in the path
                 if ((desiredPath.nextNode != null) &&
-                    (desiredPath.nextNode.ThisPlot.RoughlyContains(thisBall.room, thisBall.x, thisBall.y)))
+                    (desiredPath.nextNode.ThisPlot.Contains(thisBall.room, thisBall.x, thisBall.y)))
                 {
                     desiredPath = desiredPath.nextNode;
                 }
@@ -123,8 +123,8 @@ namespace GameEngine
             }
             thisBall.velx = (nextStepX > thisBall.x ? BALL_MOVEMENT : -BALL_MOVEMENT);
             thisBall.vely = (nextStepY > thisBall.y ? BALL_MOVEMENT : -BALL_MOVEMENT);
-            UnityEngine.Debug.Log("Choosing (" + thisBall.velx + "," + thisBall.vely + ") at " +
-                thisBall.room + "-(" + thisBall.x + "," + thisBall.y + ")");
+            UnityEngine.Debug.Log("Choosing (" + thisBall.velx + "," + thisBall.vely +
+                ") at " + thisBall.room + "-(" + thisBall.x + "," + thisBall.y + ")");
         }
     }
 
