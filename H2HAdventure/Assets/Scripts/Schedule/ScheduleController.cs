@@ -31,8 +31,13 @@ public class ScheduleController : MonoBehaviour {
 
     private const string LIST_SCHEDULES_LAMBDA = "ListSchedules";
 
+    public GameObject schedulePrefab;
+
+    private GameObject scheduleContainer;
+
 	// Use this for initialization
 	void Start () {
+        scheduleContainer = transform.Find("ScheduledGames").gameObject;
         AWSUtil.InitializeAws(this.gameObject);
         RefreshList();
 	}
@@ -56,8 +61,16 @@ public class ScheduleController : MonoBehaviour {
                     LambdaPayload payload = JsonUtility.FromJson<LambdaPayload>(payloadStr);
                     string newPayload = "{\"Entries\":" + payload.body + "}";
                     DummyArrayHolder result = JsonUtility.FromJson<DummyArrayHolder>(newPayload);
-                    Debug.Log("Read in " + result.Entries.Length + " scheduled games");
-                    Debug.Log("First one is from " + result.Entries[0].Host);
+                    ListScheduleEntry[] entries = result.Entries;
+                    foreach(ListScheduleEntry entry in entries)
+                    {
+                        Debug.Log("Read in game scheduled by " + entry.Host);
+                        GameObject nextGameObject = Instantiate(schedulePrefab);
+                        nextGameObject.transform.parent = scheduleContainer.transform;
+                        ScheduledGame nextEvent = nextGameObject.GetComponent<ScheduledGame>();
+                        nextEvent.Timestamp = entry.Time;
+                        nextEvent.Host = entry.Host;
+                    }
                 } catch (Exception e)
                 {
                     Debug.LogError("Error calling lambda:" + e);

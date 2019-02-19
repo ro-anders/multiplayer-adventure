@@ -37,7 +37,6 @@ public static class AWSUtil {
             byte[] encrypted = InitFile.ReadEncryptedKey();
             // Decrypt the bytes to a string. 
             string roundtrip = DecryptStringFromBytes(encrypted, myRijndael.Key, myRijndael.IV);
-            UnityEngine.Debug.Log("roundtrip=" + roundtrip);
             return roundtrip;
         }
     }

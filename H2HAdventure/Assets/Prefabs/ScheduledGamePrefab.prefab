@@ -41,7 +41,7 @@ GameObject:
   - component: {fileID: 222707700940969436}
   - component: {fileID: 114195718756186284}
   m_Layer: 5
-  m_Name: JoinButton
+  m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -59,7 +59,7 @@ GameObject:
   - component: {fileID: 114500074666365810}
   - component: {fileID: 114880300023398684}
   m_Layer: 5
-  m_Name: Button
+  m_Name: JoinButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -243,6 +243,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a42a2528542ee7f4abd946bfc1099753, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  text: {fileID: 114617833107048808}
 --- !u!114 &114880300023398684
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -341,7 +342,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 699.9, y: 45.8}
+  m_SizeDelta: {x: 530.8, y: 45.8}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!224 &224822505768607538
 RectTransform:
@@ -395,6 +396,6 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 310.5, y: 0}
+  m_AnchoredPosition: {x: 238, y: 1.85}
   m_SizeDelta: {x: 43.1, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
