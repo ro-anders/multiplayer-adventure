@@ -35,6 +35,7 @@ public class ScheduleController : MonoBehaviour {
     public GameObject schedulePrefab;
     public GameObject modalOverlay;
     public GameObject scheduleGamePanel;
+    public ScheduleDetails scheduleDetails;
 
     private GameObject scheduleContainer;
 
@@ -73,6 +74,7 @@ public class ScheduleController : MonoBehaviour {
                         ScheduledGame nextEvent = nextGameObject.GetComponent<ScheduledGame>();
                         nextEvent.Timestamp = entry.Time;
                         nextEvent.Host = entry.Host;
+                        nextEvent.Controller = this;
                     }
                 } catch (Exception e)
                 {
@@ -149,5 +151,11 @@ public class ScheduleController : MonoBehaviour {
     {
         scheduleGamePanel.SetActive(false);
         modalOverlay.SetActive(false);
+    }
+
+    public void DisplayScheduledGame(ScheduledGame schedule)
+    {
+        scheduleDetails.DisplaySchedule(schedule);
+        scheduleDetails.gameObject.SetActive(true);
     }
 }

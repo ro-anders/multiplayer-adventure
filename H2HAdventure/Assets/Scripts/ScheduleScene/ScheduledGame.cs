@@ -20,6 +20,11 @@ public class ScheduledGame : MonoBehaviour {
         set { host = value; Refresh(); }
     }
     private List<string> others = new List<string>();
+    private ScheduleController controller;
+    public ScheduleController Controller
+    {
+        set { controller = value; }
+    }
 
     private void Refresh()
     {
@@ -71,5 +76,6 @@ public class ScheduledGame : MonoBehaviour {
     public void OnGameClicked()
     {
         Debug.Log("Whole game clicked");
+        controller.DisplayScheduledGame(this);
     }
 }
