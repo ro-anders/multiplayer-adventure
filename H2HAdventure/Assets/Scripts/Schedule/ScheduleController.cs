@@ -17,7 +17,7 @@ class LambdaPayload
 class ListScheduleEntry
 {
     public string Host;
-    public int Time;
+    public long Time;
     public int Duration;
 }
 
@@ -30,8 +30,11 @@ class DummyArrayHolder
 public class ScheduleController : MonoBehaviour {
 
     private const string LIST_SCHEDULES_LAMBDA = "ListSchedules";
+    private const string SCHEDULE_GAME_LAMBDA = "CreateSchedule";
 
     public GameObject schedulePrefab;
+    public GameObject modalOverlay;
+    public GameObject scheduleGamePanel;
 
     private GameObject scheduleContainer;
 
@@ -66,7 +69,7 @@ public class ScheduleController : MonoBehaviour {
                     {
                         Debug.Log("Read in game scheduled by " + entry.Host);
                         GameObject nextGameObject = Instantiate(schedulePrefab);
-                        nextGameObject.transform.parent = scheduleContainer.transform;
+                        nextGameObject.transform.SetParent(scheduleContainer.transform);
                         ScheduledGame nextEvent = nextGameObject.GetComponent<ScheduledGame>();
                         nextEvent.Timestamp = entry.Time;
                         nextEvent.Host = entry.Host;
@@ -82,5 +85,69 @@ public class ScheduleController : MonoBehaviour {
             }
         }
         );
+    }
+
+    private void ScheduleGame(string host, DateTime gameStart)
+    {
+        AmazonLambdaClient lambdaClient = AWSUtil.lambdaClient;
+        ListScheduleEntry newEntry = new ListScheduleEntry();
+        newEntry.Time = gameStart.Ticks;
+        newEntry.Host = host;
+        string jsonStr = JsonUtility.ToJson(newEntry);
+        Debug.Log("Sending lambda event " + jsonStr);
+        lambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
+        {
+            FunctionName = SCHEDULE_GAME_LAMBDA,
+            Payload = jsonStr
+        },
+        (responseObject) =>
+        {
+            if (responseObject.Exception == null)
+            {
+                try
+                {
+                    if (responseObject.Response.StatusCode != 200)
+                    {
+                        Debug.LogError("Error calling " + SCHEDULE_GAME_LAMBDA + 
+                        " lambda returned status code " + responseObject.Response.StatusCode);
+                    }
+                    else
+                    {
+                        Debug.Log("AWS reported processing lambda.  Refreshing screen.");
+                        RefreshList();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError("Error calling lambda:" + e);
+                }
+            }
+            else
+            {
+                Debug.LogError(responseObject.Exception.ToString());
+            }
+        }
+        );
+    }
+
+    public void OnNewPressed()
+    {
+        modalOverlay.SetActive(true);
+        scheduleGamePanel.SetActive(true);
+    }
+
+    public void OnScheduleGameOkPressed()
+    {
+        Debug.Log("Submitting new lambda");
+        ScheduleGame("Ro", DateTime.UtcNow);
+        Debug.Log("Submitted");
+        scheduleGamePanel.SetActive(false);
+        modalOverlay.SetActive(false);
+    }
+
+    public void OnScheduleGameCancelPressed()
+    {
+        scheduleGamePanel.SetActive(false);
+        modalOverlay.SetActive(false);
     }
 }

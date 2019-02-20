@@ -7,8 +7,8 @@ using UnityEngine.UI;
 public class ScheduledGame : MonoBehaviour {
 
     public Text text;
-    private int timestamp;
-    public int Timestamp
+    private long timestamp;
+    public long Timestamp
     {
         get { return timestamp; }
         set { timestamp = value;  Refresh(); }
