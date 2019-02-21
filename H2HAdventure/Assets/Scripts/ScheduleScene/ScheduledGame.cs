@@ -19,6 +19,18 @@ public class ScheduledGame : MonoBehaviour {
         get { return host; }
         set { host = value; Refresh(); }
     }
+    private string comments;
+    public string Comments
+    {
+        get { return comments; }
+        set { comments = value; Refresh(); }
+    }
+    private int duration;
+    public int Duration
+    {
+        get { return duration; }
+        set { duration = value; Refresh(); }
+    }
     private List<string> others = new List<string>();
     private ScheduleController controller;
     public ScheduleController Controller

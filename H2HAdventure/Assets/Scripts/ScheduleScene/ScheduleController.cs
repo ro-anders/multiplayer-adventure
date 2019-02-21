@@ -19,6 +19,7 @@ class ListScheduleEntry
     public string Host;
     public long Time;
     public int Duration;
+    public string Comments;
 }
 
 [Serializable]
@@ -72,8 +73,12 @@ public class ScheduleController : MonoBehaviour {
                         GameObject nextGameObject = Instantiate(schedulePrefab);
                         nextGameObject.transform.SetParent(scheduleContainer.transform);
                         ScheduledGame nextEvent = nextGameObject.GetComponent<ScheduledGame>();
-                        nextEvent.Timestamp = entry.Time;
+                        // Convert the time to current time
+                        long localTimestamp = new DateTime(entry.Time).ToLocalTime().Ticks;
+                        nextEvent.Timestamp = localTimestamp;
                         nextEvent.Host = entry.Host;
+                        nextEvent.Comments = entry.Comments;
+                        nextEvent.Duration = entry.Duration;
                         nextEvent.Controller = this;
                     }
                 } catch (Exception e)
@@ -89,11 +94,18 @@ public class ScheduleController : MonoBehaviour {
         );
     }
 
-    private void ScheduleGame(string host, DateTime gameStart)
+    public string ScheduleGame(string host, DateTime gameStart, int duration, string comments)
     {
+        UpsertGame(host, gameStart, duration, new string[0], comments);
+        return null;
+    }
+
+    private void UpsertGame(string host, DateTime gameStart, int duration, 
+        string[] others, string comments)
+    { 
         AmazonLambdaClient lambdaClient = AWSUtil.lambdaClient;
         ListScheduleEntry newEntry = new ListScheduleEntry();
-        newEntry.Time = gameStart.Ticks;
+        newEntry.Time = gameStart.ToUniversalTime().Ticks;
         newEntry.Host = host;
         string jsonStr = JsonUtility.ToJson(newEntry);
         Debug.Log("Sending lambda event " + jsonStr);
@@ -138,16 +150,7 @@ public class ScheduleController : MonoBehaviour {
         scheduleGamePanel.SetActive(true);
     }
 
-    public void OnScheduleGameOkPressed()
-    {
-        Debug.Log("Submitting new lambda");
-        ScheduleGame("Ro", DateTime.UtcNow);
-        Debug.Log("Submitted");
-        scheduleGamePanel.SetActive(false);
-        modalOverlay.SetActive(false);
-    }
-
-    public void OnScheduleGameCancelPressed()
+    public void DismissNewSchedulePanel()
     {
         scheduleGamePanel.SetActive(false);
         modalOverlay.SetActive(false);

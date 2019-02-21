@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,5 +20,7 @@ public class ScheduleDetails : MonoBehaviour {
         {
             hostText.text = "<b>Hosted by:</b> " + host;
         }
+        dateText.text = new DateTime(game.Timestamp).ToString() + " for " + game.Duration + " minutes";
+        commentsText.text = game.Comments;
     }
 }
