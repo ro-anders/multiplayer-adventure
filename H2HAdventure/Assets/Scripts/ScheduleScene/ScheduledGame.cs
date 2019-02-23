@@ -7,6 +7,13 @@ using UnityEngine.UI;
 public class ScheduledGame : MonoBehaviour {
 
     public Text text;
+
+    private string key;
+    public string Key
+    {
+        get { return key; }
+        set { key = value;}
+    }
     private long timestamp;
     public long Timestamp
     {
@@ -101,14 +108,8 @@ public class ScheduledGame : MonoBehaviour {
         text.text = summary;
     }
 
-    public void OnJoinClicked()
-    {
-        Debug.Log("Button clicked");
-    }
-
     public void OnGameClicked()
     {
-        Debug.Log("Whole game clicked");
         controller.DisplayScheduledGame(this);
     }
 }

@@ -66,8 +66,7 @@ public class ScheduleDetails : MonoBehaviour {
         {
             // Add the user to the others list
             currentGame.AddOther(SessionInfo.ThisPlayerName);
-            controller.UpsertGame(currentGame.Host, new DateTime(currentGame.Timestamp), 
-                currentGame.Duration, currentGame.Others, currentGame.Comments);
+            controller.UpdateGame(currentGame);
         }
         else
         {
@@ -88,8 +87,7 @@ public class ScheduleDetails : MonoBehaviour {
             }
             else
             {
-                controller.UpsertGame(currentGame.Host, new DateTime(currentGame.Timestamp),
-                    currentGame.Duration, currentGame.Others, currentGame.Comments);
+                controller.UpdateGame(currentGame);
             }
         }
     }

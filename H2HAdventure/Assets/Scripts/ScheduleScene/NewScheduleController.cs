@@ -31,7 +31,7 @@ public class NewScheduleController : MonoBehaviour {
         {
             return;
         }
-        string errorMessage = scheduleController.ScheduleGame(SessionInfo.ThisPlayerName, start, duration, commentsInput.text);
+        string errorMessage = scheduleController.ScheduleNewGame(SessionInfo.ThisPlayerName, start, duration, commentsInput.text);
         if ((errorMessage != null) && !errorMessage.Equals(""))
         {
             errorText.text = errorMessage;

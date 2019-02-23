@@ -18,13 +18,17 @@ class LambdaPayload
 [Serializable]
 class ListScheduleEntry
 {
+    public string PK;
+    public string SK;
     public string Host;
     public long Time;
     public int Duration;
     public string Comments;
     public string[] Others;
-    public ListScheduleEntry(string inHost, long inTime, int inDuration, string[] inOthers, string inComments)
+    public ListScheduleEntry(string inKey, string inHost, long inTime, int inDuration, string[] inOthers, string inComments)
     {
+        PK = "Schedule";
+        SK = inKey;
         Host = inHost;
         Time = inTime;
         Duration = inDuration;
@@ -42,7 +46,7 @@ class DummyArrayHolder
 public class ScheduleController : MonoBehaviour {
 
     private const string LIST_SCHEDULES_LAMBDA = "ListSchedules";
-    private const string SCHEDULE_GAME_LAMBDA = "CreateSchedule";
+    private const string SCHEDULE_GAME_LAMBDA = "UpsertSchedule";
 
     public GameObject schedulePrefab;
     public GameObject modalOverlay;
@@ -93,14 +97,15 @@ public class ScheduleController : MonoBehaviour {
                     ListScheduleEntry[] entries = result.Entries;
                     foreach(ListScheduleEntry entry in entries)
                     {
-                        Debug.Log("Read in game scheduled by " + entry.Host);
+                        Debug.Log("Read in game " + entry.SK + " scheduled by " + entry.Host);
                         GameObject nextGameObject = Instantiate(schedulePrefab);
                         nextGameObject.transform.SetParent(scheduleContainer.transform);
                         ScheduledGame nextEvent = nextGameObject.GetComponent<ScheduledGame>();
                         // Convert the time to current time
                         long localTimestamp = new DateTime(entry.Time).ToLocalTime().Ticks;
-                        nextEvent.Timestamp = localTimestamp;
+                        nextEvent.Key = entry.SK;
                         nextEvent.Host = entry.Host;
+                        nextEvent.Timestamp = localTimestamp;
                         nextEvent.Comments = entry.Comments;
                         nextEvent.Duration = entry.Duration;
                         nextEvent.AddOthers(entry.Others);
@@ -136,18 +141,24 @@ public class ScheduleController : MonoBehaviour {
         }
     }
 
-    public string ScheduleGame(string host, DateTime gameStart, int duration, string comments)
+    public string ScheduleNewGame(string host, DateTime gameStart, int duration, string comments)
     {
-        UpsertGame(host, gameStart, duration, new string[0], comments);
+        UpsertGame("", host, gameStart, duration, new string[0], comments);
         return null;
     }
 
-    public void UpsertGame(string host, DateTime gameStart, int duration, 
+    public void UpdateGame(ScheduledGame game)
+    {
+        UpsertGame(game.Key, game.Host, new DateTime(game.Timestamp),
+                game.Duration, game.Others, game.Comments);
+    }
+
+    private void UpsertGame(string key, string host, DateTime gameStart, int duration, 
         string[] others, string comments)
     { 
         AmazonLambdaClient lambdaClient = AWSUtil.lambdaClient;
         long startTime = gameStart.ToUniversalTime().Ticks;
-        ListScheduleEntry newEntry = new ListScheduleEntry(host, startTime, duration, others, comments);
+        ListScheduleEntry newEntry = new ListScheduleEntry(key, host, startTime, duration, others, comments);
         string jsonStr = JsonUtility.ToJson(newEntry);
         Debug.Log("Sending lambda event " + jsonStr);
         lambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
