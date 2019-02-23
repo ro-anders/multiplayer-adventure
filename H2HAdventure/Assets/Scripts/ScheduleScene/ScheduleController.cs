@@ -5,6 +5,8 @@ using System;
 using System.IO;
 using System.Text;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 [Serializable]
 class LambdaPayload
@@ -20,6 +22,15 @@ class ListScheduleEntry
     public long Time;
     public int Duration;
     public string Comments;
+    public string[] Others;
+    public ListScheduleEntry(string inHost, long inTime, int inDuration, string[] inOthers, string inComments)
+    {
+        Host = inHost;
+        Time = inTime;
+        Duration = inDuration;
+        Others = inOthers;
+        Comments = inComments;
+    }
 }
 
 [Serializable]
@@ -35,21 +46,34 @@ public class ScheduleController : MonoBehaviour {
 
     public GameObject schedulePrefab;
     public GameObject modalOverlay;
+    public GameObject promptNamePanel;
+    public InputField promptNameInput;
     public GameObject scheduleGamePanel;
     public ScheduleDetails scheduleDetails;
 
     private GameObject scheduleContainer;
+    public GameObject refreshButton;
+    public GameObject loginButton;
+    public GameObject newButton;
 
 	// Use this for initialization
 	void Start () {
         scheduleContainer = transform.Find("ScheduledGames").gameObject;
         AWSUtil.InitializeAws(this.gameObject);
+
+        bool loggedIn = (SessionInfo.ThisPlayerName != null) && 
+           !SessionInfo.ThisPlayerName.Equals("");
+        refreshButton.SetActive(loggedIn);
+        newButton.SetActive(loggedIn);
+        loginButton.SetActive(!loggedIn);
         RefreshList();
 	}
 
     // Requery the database for a list of games
-    void RefreshList()
+    private void RefreshList()
     {
+        scheduleDetails.gameObject.SetActive(false);
+        DestroyList();
         AmazonLambdaClient lambdaClient = AWSUtil.lambdaClient;
         lambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
         {
@@ -79,6 +103,7 @@ public class ScheduleController : MonoBehaviour {
                         nextEvent.Host = entry.Host;
                         nextEvent.Comments = entry.Comments;
                         nextEvent.Duration = entry.Duration;
+                        nextEvent.AddOthers(entry.Others);
                         nextEvent.Controller = this;
                     }
                 } catch (Exception e)
@@ -94,19 +119,35 @@ public class ScheduleController : MonoBehaviour {
         );
     }
 
+    public void DeleteGame(string host, DateTime gameStart)
+    {
+
+    }
+
+    // Clear out all schedules currently in the schedule list
+    private void DestroyList()
+    {
+        foreach(Transform child in scheduleContainer.transform)
+        {
+            if (child.gameObject.GetComponent<ScheduledGame>() != null)
+            {
+                Destroy(child.gameObject);
+            }
+        }
+    }
+
     public string ScheduleGame(string host, DateTime gameStart, int duration, string comments)
     {
         UpsertGame(host, gameStart, duration, new string[0], comments);
         return null;
     }
 
-    private void UpsertGame(string host, DateTime gameStart, int duration, 
+    public void UpsertGame(string host, DateTime gameStart, int duration, 
         string[] others, string comments)
     { 
         AmazonLambdaClient lambdaClient = AWSUtil.lambdaClient;
-        ListScheduleEntry newEntry = new ListScheduleEntry();
-        newEntry.Time = gameStart.ToUniversalTime().Ticks;
-        newEntry.Host = host;
+        long startTime = gameStart.ToUniversalTime().Ticks;
+        ListScheduleEntry newEntry = new ListScheduleEntry(host, startTime, duration, others, comments);
         string jsonStr = JsonUtility.ToJson(newEntry);
         Debug.Log("Sending lambda event " + jsonStr);
         lambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
@@ -144,10 +185,39 @@ public class ScheduleController : MonoBehaviour {
         );
     }
 
+    public void OnLoginPressed()
+    {
+        modalOverlay.SetActive(true);
+        promptNamePanel.SetActive(true);
+    }
+
+    public void OnRefreshPressed()
+    {
+        RefreshList();
+    }
+
     public void OnNewPressed()
     {
         modalOverlay.SetActive(true);
         scheduleGamePanel.SetActive(true);
+    }
+
+    public void OnBackPressed()
+    {
+        SceneManager.LoadScene("Start");
+    }
+
+    public void OnPromptNameOkPressed()
+    {
+        SessionInfo.ThisPlayerName = promptNameInput.text.Trim();
+        bool loggedIn = (SessionInfo.ThisPlayerName != null) &&
+           !SessionInfo.ThisPlayerName.Equals("");
+        refreshButton.SetActive(loggedIn);
+        newButton.SetActive(loggedIn);
+        loginButton.SetActive(!loggedIn);
+        promptNamePanel.SetActive(false);
+        modalOverlay.SetActive(false);
+        scheduleDetails.gameObject.SetActive(false);
     }
 
     public void DismissNewSchedulePanel()

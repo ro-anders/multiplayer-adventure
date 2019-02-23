@@ -32,6 +32,38 @@ public class ScheduledGame : MonoBehaviour {
         set { duration = value; Refresh(); }
     }
     private List<string> others = new List<string>();
+    public string[] Others
+    {
+        get { return others.ToArray(); }
+    }
+    public void AddOther(string other)
+    {
+        if (!others.Contains(other))
+        {
+            others.Add(other);
+        }
+        Refresh();
+    }
+    public void AddOthers(string[] more)
+    {
+        if (more != null)
+        {
+            foreach(string other in more)
+            {
+                if (!others.Contains(other))
+                {
+                    others.Add(other);
+                }
+            }
+        }
+        Refresh();
+    }
+    public void RemoveOther(string other)
+    {
+        others.Remove(other);
+        Refresh();
+    }
+
     private ScheduleController controller;
     public ScheduleController Controller
     {
@@ -41,7 +73,9 @@ public class ScheduledGame : MonoBehaviour {
     private void Refresh()
     {
         DateTime start = new DateTime(timestamp);
-        string summary = start.ToShortDateString() + " - ";
+        DateTime end = start.AddMinutes(duration);
+        string summary = start.ToString("ddd MMM d h:mmtt") + "-" +
+            end.ToString("h:mm") + " - ";
         if ((host == null) || host.Equals(""))
         {
             if (others.Count == 0)
@@ -65,19 +99,6 @@ public class ScheduledGame : MonoBehaviour {
             }
         }
         text.text = summary;
-    }
-
-    private bool AddOther(string other)
-    {
-        if (others.Contains(other))
-        {
-            return false;
-        }
-        else
-        {
-            others.Add(other);
-            return true;
-        }
     }
 
     public void OnJoinClicked()

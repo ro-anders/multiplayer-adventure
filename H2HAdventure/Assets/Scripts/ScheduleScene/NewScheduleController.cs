@@ -31,7 +31,7 @@ public class NewScheduleController : MonoBehaviour {
         {
             return;
         }
-        string errorMessage = scheduleController.ScheduleGame("Ro", start, duration, commentsInput.text);
+        string errorMessage = scheduleController.ScheduleGame(SessionInfo.ThisPlayerName, start, duration, commentsInput.text);
         if ((errorMessage != null) && !errorMessage.Equals(""))
         {
             errorText.text = errorMessage;
@@ -46,7 +46,7 @@ public class NewScheduleController : MonoBehaviour {
         DateTime result;
         // Verify the date string is a valid date string
         string dateStr = dateInput.text;
-        if (dateStr.Split('/').Length < 2)
+        if (dateStr.Split('/').Length <= 2)
         {
             // No year was specified.  Add the current year.
             dateStr += "/" + DateTime.Now.Year;
@@ -57,13 +57,13 @@ public class NewScheduleController : MonoBehaviour {
         }
         catch (FormatException)
         {
-            errorText.text = "Cannot parse Date field.  Please specify Date in the form 5/12 or 5/12/19";
+            errorText.text = "Cannot parse Date \"" + dateStr + "\".  Please specify Date in the form 5/12 or 5/12/19";
             return DateTime.MinValue;
         }
 
         try
         {
-            DateTime.Parse("12/31/2019 " + timeInput.text);
+            DateTime.Parse(timeInput.text);
         }
         catch (FormatException)
         {
