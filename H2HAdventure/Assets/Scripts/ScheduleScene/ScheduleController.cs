@@ -47,6 +47,7 @@ public class ScheduleController : MonoBehaviour {
 
     private const string LIST_SCHEDULES_LAMBDA = "ListSchedules";
     private const string SCHEDULE_GAME_LAMBDA = "UpsertSchedule";
+    private const string DELETE_SCHEDULE_LAMBDA = "DeleteSchedule";
 
     public GameObject schedulePrefab;
     public GameObject modalOverlay;
@@ -124,9 +125,44 @@ public class ScheduleController : MonoBehaviour {
         );
     }
 
-    public void DeleteGame(string host, DateTime gameStart)
+    public void DeleteGame(ScheduledGame game)
     {
-
+        AmazonLambdaClient lambdaClient = AWSUtil.lambdaClient;
+        ListScheduleEntry newEntry = new ListScheduleEntry(game.Key, game.Host,
+             game.Timestamp, game.Duration, game.Others, game.Comments);
+        string jsonStr = JsonUtility.ToJson(newEntry);
+        lambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
+        {
+            FunctionName = DELETE_SCHEDULE_LAMBDA,
+            Payload = jsonStr
+        },
+        (responseObject) =>
+        {
+            if (responseObject.Exception == null)
+            {
+                try
+                {
+                    if (responseObject.Response.StatusCode != 200)
+                    {
+                        Debug.LogError("Error calling " + SCHEDULE_GAME_LAMBDA +
+                        " lambda returned status code " + responseObject.Response.StatusCode);
+                    }
+                    else
+                    {
+                        RefreshList();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError("Error calling lambda:" + e);
+                }
+            }
+            else
+            {
+                Debug.LogError(responseObject.Exception.ToString());
+            }
+        }
+        );
     }
 
     // Clear out all schedules currently in the schedule list
@@ -172,6 +208,7 @@ public class ScheduleController : MonoBehaviour {
             {
                 try
                 {
+                    UnityEngine.Debug.Log("response code = " + responseObject.Response.StatusCode);
                     if (responseObject.Response.StatusCode != 200)
                     {
                         Debug.LogError("Error calling " + SCHEDULE_GAME_LAMBDA + 

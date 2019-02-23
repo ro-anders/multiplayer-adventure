@@ -10,34 +10,44 @@ in Dynamo
 Copy this file into UpsertSchedule lambda
 '''
 def lambda_handler(event, context):
-    sk = event['SK']
-    host = event['Host']
-    starttime = event['Time']
-    duration = event['Duration']
-    others = event['Others']
-    comments = event['Comments']
-    dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
     
-    table = dynamodb.Table('global')
-    if not sk:
-        # Generate a sort key for this new scheduled game
-        # Mostly sort on start time but throw some things on the end for uniqueness
-        sk = "{}-{}-{}".format(starttime, int(time.time()), random.randint(0, 999))
+    try:
+        print("event = " + json.dumps(event))
     
-    response = table.put_item(
-        Item={
-            'PK': 'Schedule',
-            'SK': sk,
-            'Host': host,
-            'Time': starttime,
-            'Duration': duration,
-            'Comments': comments,
-            'Others': others
+        dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
+        table = dynamodb.Table('global')
+        
+        item = {
+                'PK': 'Schedule',
+                'SK': event['SK'],
+                'Host': event['Host'],
+                'Time': event['Time'],
+                'Duration': event['Duration'],
+                'Others': event['Others'],
+                'Comments': event['Comments']
         }
-    )
-
-    return {
-        'statusCode': 200,
-        'body': 'PutItem succeeded:' + json.dumps(response)
-    }
-
+        if not item['SK']:
+            # Generate a sort key for this new scheduled game
+            # Mostly sort on start time but throw some things on the end for uniqueness
+            item['SK'] = "{}-{}-{}".format(starttime, int(time.time()), random.randint(0, 999))
+        if not item['Host']:
+            del item['Host']
+        if not item['Others']:
+            del item['Others']
+        if not item['Comments']:
+            del item['Comments']
+        
+        print("inserting " + json.dumps(item))
+        response = table.put_item(Item=item)
+    
+        return {
+            'statusCode': 200,
+            'body': 'PutItem succeeded:' + json.dumps(response)
+        }
+    except Exception as e:
+        message = 'PutItem failed: {}'.format(e)
+        print("Hit exception.  Returning: " + message)
+        return {
+            'statusCode': 500,
+            'body': message
+        }

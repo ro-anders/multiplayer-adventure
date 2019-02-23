@@ -21,7 +21,7 @@ public class ScheduleDetails : MonoBehaviour {
         currentGame = game;
         inGame = false;
         string host = game.Host;
-        if ((host == null) && host.Equals("")) {
+        if ((host == null) || host.Equals("")) {
             hostText.text = "Original host has canceled but others are still playing";
         } else
         {
@@ -83,7 +83,7 @@ public class ScheduleDetails : MonoBehaviour {
             if (((currentGame.Host == null) || currentGame.Host.Equals("")) &&
                 (currentGame.Others.Length == 0))
             {
-                controller.DeleteGame(currentGame.Host, new DateTime(currentGame.Timestamp));
+                controller.DeleteGame(currentGame);
             }
             else
             {
