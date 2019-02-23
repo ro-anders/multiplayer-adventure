@@ -29,7 +29,7 @@ def lambda_handler(event, context):
         if not item['SK']:
             # Generate a sort key for this new scheduled game
             # Mostly sort on start time but throw some things on the end for uniqueness
-            item['SK'] = "{}-{}-{}".format(starttime, int(time.time()), random.randint(0, 999))
+            item['SK'] = "{}-{}-{}".format(event['Time'], int(time.time()), random.randint(0, 999))
         if not item['Host']:
             del item['Host']
         if not item['Others']:

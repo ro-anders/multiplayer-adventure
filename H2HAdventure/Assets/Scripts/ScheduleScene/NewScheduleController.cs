@@ -61,20 +61,28 @@ public class NewScheduleController : MonoBehaviour {
             return DateTime.MinValue;
         }
 
+        // Verify the time string is a valid time string
+        // For some reason can parse "9:30PM" and "9 PM" but not "9PM"
+        // So throw a space between the time and the "PM"
+        string timeStr = timeInput.text.Trim();
+        string timeEnding = timeStr.Substring(timeStr.Length - 2, 2);
+        if (timeEnding.ToUpper().Equals("AM") || timeEnding.ToUpper().Equals("PM")) {
+            timeStr = timeStr.Substring(0, timeStr.Length - 2) + " " + timeEnding;
+        }
         try
         {
-            DateTime.Parse(timeInput.text);
+            DateTime.Parse("12/31/2019 " + timeStr);
         }
         catch (FormatException)
         {
-            errorText.text = "Cannot parse Time \"" + timeInput.text + "\".  Please specify time in the form 5:30PM";
+            errorText.text = "Cannot parse Time \"" + timeInput.text + "\".  Please specify time in the form 5:30 PM";
             return DateTime.MinValue;
         }
 
         // Now concatenate the two and try to make a date & time
         try
         {
-            result = DateTime.Parse(dateStr + " " + timeInput.text);
+            result = DateTime.Parse(dateStr + " " + timeStr);
         }
         catch (FormatException)
         {
