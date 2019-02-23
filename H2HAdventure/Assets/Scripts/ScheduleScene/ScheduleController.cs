@@ -98,19 +98,23 @@ public class ScheduleController : MonoBehaviour {
                     ListScheduleEntry[] entries = result.Entries;
                     foreach(ListScheduleEntry entry in entries)
                     {
-                        Debug.Log("Read in game " + entry.SK + " scheduled by " + entry.Host);
-                        GameObject nextGameObject = Instantiate(schedulePrefab);
-                        nextGameObject.transform.SetParent(scheduleContainer.transform);
-                        ScheduledGame nextEvent = nextGameObject.GetComponent<ScheduledGame>();
                         // Convert the time to current time
-                        long localTimestamp = new DateTime(entry.Time).ToLocalTime().Ticks;
-                        nextEvent.Key = entry.SK;
-                        nextEvent.Host = entry.Host;
-                        nextEvent.Timestamp = localTimestamp;
-                        nextEvent.Comments = entry.Comments;
-                        nextEvent.Duration = entry.Duration;
-                        nextEvent.AddOthers(entry.Others);
-                        nextEvent.Controller = this;
+                        DateTime localTime = new DateTime(entry.Time).ToLocalTime();
+                        DateTime endTime = localTime.AddMinutes(entry.Duration);
+                        // Don't display games scheduled in the past
+                        if ((endTime - DateTime.Now).TotalHours >= -1)
+                        {
+                            GameObject nextGameObject = Instantiate(schedulePrefab);
+                            nextGameObject.transform.SetParent(scheduleContainer.transform);
+                            ScheduledGame nextEvent = nextGameObject.GetComponent<ScheduledGame>();
+                            nextEvent.Key = entry.SK;
+                            nextEvent.Host = entry.Host;
+                            nextEvent.Timestamp = localTime.Ticks;
+                            nextEvent.Comments = entry.Comments;
+                            nextEvent.Duration = entry.Duration;
+                            nextEvent.AddOthers(entry.Others);
+                            nextEvent.Controller = this;
+                        }
                     }
                 } catch (Exception e)
                 {
