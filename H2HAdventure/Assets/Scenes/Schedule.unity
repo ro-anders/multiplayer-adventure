@@ -2384,10 +2384,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
-    m_Left: 10
-    m_Right: 10
-    m_Top: 3
-    m_Bottom: 3
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
   m_ChildAlignment: 0
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
@@ -3322,7 +3322,7 @@ MonoBehaviour:
   m_Script: {fileID: 1980459831, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
@@ -3927,7 +3927,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 494c7fb5f1a5ec844ad498b433bbab91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  schedulePrefab: {fileID: 1201590780063970, guid: 638495ed473503d4fbf46eb286e6626d,
+  schedulePrefab: {fileID: 1323550541475116, guid: 638495ed473503d4fbf46eb286e6626d,
     type: 2}
   modalOverlay: {fileID: 792182531}
   promptNamePanel: {fileID: 1234643884}

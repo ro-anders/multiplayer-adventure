@@ -9,20 +9,20 @@ Prefab:
     m_Modifications: []
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 0}
-  m_RootGameObject: {fileID: 1201590780063970}
+  m_RootGameObject: {fileID: 1323550541475116}
   m_IsPrefabAsset: 1
---- !u!1 &1201590780063970
+--- !u!1 &1323550541475116
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 224753306245463318}
-  - component: {fileID: 222448789098289918}
-  - component: {fileID: 114454593739108492}
-  - component: {fileID: 114783746714377718}
-  - component: {fileID: 114502500285642402}
+  - component: {fileID: 224713193457676584}
+  - component: {fileID: 222514252996347408}
+  - component: {fileID: 114063122445580070}
+  - component: {fileID: 114741536109808586}
+  - component: {fileID: 114159865170897188}
   m_Layer: 5
   m_Name: ScheduledGamePrefab
   m_TagString: Untagged
@@ -30,16 +30,16 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!1 &1961094428835114
+--- !u!1 &1900048862510232
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 224896627247093476}
-  - component: {fileID: 222325311136461056}
-  - component: {fileID: 114617833107048808}
+  - component: {fileID: 224848572458367416}
+  - component: {fileID: 222876156732738316}
+  - component: {fileID: 114683485810781860}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -47,12 +47,12 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &114454593739108492
+--- !u!114 &114063122445580070
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1201590780063970}
+  m_GameObject: {fileID: 1323550541475116}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
@@ -74,12 +74,12 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
---- !u!114 &114502500285642402
+--- !u!114 &114159865170897188
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1201590780063970}
+  m_GameObject: {fileID: 1323550541475116}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: -1862395651, guid: f70555f144d8491a825f0804e09c671c, type: 3}
@@ -90,7 +90,7 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 114783746714377718}
+        - m_Target: {fileID: 114741536109808586}
           m_MethodName: OnGameClicked
           m_Mode: 1
           m_Arguments:
@@ -104,12 +104,12 @@ MonoBehaviour:
       m_TypeName: UnityEngine.EventSystems.EventTrigger+TriggerEvent, UnityEngine.UI,
         Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   delegates: []
---- !u!114 &114617833107048808
+--- !u!114 &114683485810781860
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1961094428835114}
+  m_GameObject: {fileID: 1900048862510232}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
@@ -125,7 +125,7 @@ MonoBehaviour:
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 18
+    m_FontSize: 22
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 1
@@ -137,43 +137,43 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: Fri Mar 15, 9PM-10 EST - jruthless and 2 others
---- !u!114 &114783746714377718
+--- !u!114 &114741536109808586
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1201590780063970}
+  m_GameObject: {fileID: 1323550541475116}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a42a2528542ee7f4abd946bfc1099753, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  text: {fileID: 114617833107048808}
---- !u!222 &222325311136461056
+  text: {fileID: 114683485810781860}
+--- !u!222 &222514252996347408
 CanvasRenderer:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1961094428835114}
+  m_GameObject: {fileID: 1323550541475116}
   m_CullTransparentMesh: 0
---- !u!222 &222448789098289918
+--- !u!222 &222876156732738316
 CanvasRenderer:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1201590780063970}
+  m_GameObject: {fileID: 1900048862510232}
   m_CullTransparentMesh: 0
---- !u!224 &224753306245463318
+--- !u!224 &224713193457676584
 RectTransform:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1201590780063970}
+  m_GameObject: {fileID: 1323550541475116}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 224896627247093476}
+  - {fileID: 224848572458367416}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -182,17 +182,17 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 530.8, y: 45.8}
   m_Pivot: {x: 0.5, y: 1}
---- !u!224 &224896627247093476
+--- !u!224 &224848572458367416
 RectTransform:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1961094428835114}
+  m_GameObject: {fileID: 1900048862510232}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 224753306245463318}
+  m_Father: {fileID: 224713193457676584}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}

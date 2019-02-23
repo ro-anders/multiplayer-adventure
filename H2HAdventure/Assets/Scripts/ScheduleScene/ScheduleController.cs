@@ -105,7 +105,7 @@ public class ScheduleController : MonoBehaviour {
                         if ((endTime - DateTime.Now).TotalHours >= -1)
                         {
                             GameObject nextGameObject = Instantiate(schedulePrefab);
-                            nextGameObject.transform.SetParent(scheduleContainer.transform);
+                            nextGameObject.transform.SetParent(scheduleContainer.transform, false);
                             ScheduledGame nextEvent = nextGameObject.GetComponent<ScheduledGame>();
                             nextEvent.Key = entry.SK;
                             nextEvent.Host = entry.Host;
