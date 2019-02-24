@@ -1,1 +1,11 @@
+libsqlite3.so
+libsqlite3.so.meta
+x86_64.meta
+Android/AndroidManifest.xml
+Android/AndroidManifest.xml.meta
+Android/libsqlite3.so
+Android/libsqlite3.so.meta
 Dissonance
+x86_64/sqlite3.dll
+x86_64/sqlite3.dll.meta
+

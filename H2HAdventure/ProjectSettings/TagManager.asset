@@ -9,6 +9,7 @@ TagManager:
   - LobbyController
   - dev_only
   - ChatController
+  - ScheduleController
   layers:
   - Default
   - TransparentFX

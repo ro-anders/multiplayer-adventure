@@ -216,8 +216,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 497436390}
   - {fileID: 350507860}
+  - {fileID: 497436390}
   - {fileID: 1658044957}
   - {fileID: 1239793250}
   - {fileID: 1411582527}
@@ -467,7 +467,7 @@ RectTransform:
   m_Children:
   - {fileID: 202511353}
   m_Father: {fileID: 48490422}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -740,7 +740,7 @@ RectTransform:
   m_Children:
   - {fileID: 636300662}
   m_Father: {fileID: 48490422}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -785,7 +785,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 497436392}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 680926983}
+        m_MethodName: OnScheduleClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &497436392

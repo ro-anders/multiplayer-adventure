@@ -5,7 +5,7 @@ using UnityEngine;
 public class SessionInfo {
 
     // If true, show some other options only for developers
-    public const bool DEV_MODE = true;
+    public const bool DEV_MODE = false;
 
     // Which scene to take users to once game is established.
     public const string GAME_SCENE = "AdvGame";

@@ -22,6 +22,13 @@ public class StartScreen : MonoBehaviour {
 
     }
 
+    public void OnScheduleClicked()
+    {
+        SceneManager.LoadScene("Schedule");
+    }
+
+
+
     public void OnPlayClicked() {
         SessionInfo.NetworkSetup = SessionInfo.Network.MATCHMAKER;
         SceneManager.LoadScene("Lobby");

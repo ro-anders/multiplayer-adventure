@@ -2201,11 +2201,11 @@ RectTransform:
   m_Father: {fileID: 1715093224}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -353.3, y: -222}
-  m_SizeDelta: {x: 85.4, y: 30}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 4, y: 3.5}
+  m_SizeDelta: {x: 85.399994, y: 30}
+  m_Pivot: {x: 0, y: 0}
 --- !u!114 &842113116
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5253,7 +5253,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.83669895, g: 0.7216981, b: 1, a: 1}
+  m_Color: {r: 0.764151, g: 0.764151, b: 0.764151, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -6322,7 +6322,7 @@ MonoBehaviour:
   m_PacketLossPercentage: 0
   m_MaxBufferedPackets: 16
   m_AllowFragmentation: 1
-  m_MatchHost: mm.unet.unity3d.com
+  m_MatchHost: us1-mm.unet.unity3d.com
   m_MatchPort: 443
   matchName: default
   matchSize: 4
