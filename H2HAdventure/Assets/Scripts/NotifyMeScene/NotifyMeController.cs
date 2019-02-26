@@ -109,35 +109,29 @@ public class NotifyMeController : MonoBehaviour {
         },
         (responseObject) =>
         {
-            if (responseObject.Exception == null)
+            if (responseObject.Exception != null)
             {
-                try
-                {
-                    UnityEngine.Debug.Log("error code = " + responseObject.Response.FunctionError);
-                    if ((responseObject.Response.FunctionError != null) && !responseObject.Response.FunctionError.Equals(""))
-                    {
-                        string payloadStr = Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray());
-                        LambdaError errorResponse = JsonUtility.FromJson<LambdaError>(payloadStr);
-                        Debug.LogError("Error calling " + NEW_SUBSCRIPTION_LAMBDA +
-                        " lambda returned error message " + errorResponse.errorMessage);
-                        OnUpsertReturn(false, "Unexpected error.");
-                    }
-                    else
-                    {
-                        Debug.Log("AWS reported processing lambda.");
-                        OnUpsertReturn(true, "");
-                    }
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError("Error calling lambda:" + e);
-                    OnUpsertReturn(false, "Unexpected response.");
-                }
+                Debug.LogError("Error calling " + NEW_SUBSCRIPTION_LAMBDA +
+                        " lambda returned threw exception " + responseObject.Exception.ToString());
+            }
+            else if (responseObject.Response.StatusCode != 200)
+            {
+                Debug.LogError("Error calling " + NEW_SUBSCRIPTION_LAMBDA +
+                " lambda returned status code " + responseObject.Response.StatusCode);
+            }
+            else if ((responseObject.Response.FunctionError != null) && !responseObject.Response.FunctionError.Equals(""))
+            {
+                string payloadStr = Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray());
+                LambdaError errorResponse = JsonUtility.FromJson<LambdaError>(payloadStr);
+                Debug.LogError("Error calling " + NEW_SUBSCRIPTION_LAMBDA +
+                " lambda returned error message " + errorResponse.errorMessage);
             }
             else
             {
-                Debug.LogError(responseObject.Exception.ToString());
+                Debug.Log("AWS reported processing lambda.");
+                OnUpsertReturn(true, "");
             }
+            OnUpsertReturn(false, "Unexpected error.");
         }
         );
     }

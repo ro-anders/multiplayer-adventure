@@ -21,7 +21,7 @@ def lambda_handler(event, context):
         item = {
                 'PK': 'Subscription',
                 'SK': event['Contact'],
-                'Contact': event['Contact']
+                'Contact': event['Contact'],
                 'Type': event['Type'],
                 'OnCallOut': event['OnCallOut'],
                 'OnNewSchedule': event['OnNewSchedule'],
@@ -48,7 +48,7 @@ def lambda_handler(event, context):
         if event['Unsubscribe']:
             # Delete the entry from the table
             response = table.delete_item(Key=key)
-        else
+        else:
             response = table.put_item(Item=item)
     
         return {
