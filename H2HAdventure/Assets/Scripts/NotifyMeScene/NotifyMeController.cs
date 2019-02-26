@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using Amazon.Lambda;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -112,12 +113,14 @@ public class NotifyMeController : MonoBehaviour {
             {
                 try
                 {
-                    UnityEngine.Debug.Log("response code = " + responseObject.Response.StatusCode);
-                    if (responseObject.Response.StatusCode != 200)
+                    UnityEngine.Debug.Log("error code = " + responseObject.Response.FunctionError);
+                    if ((responseObject.Response.FunctionError != null) && !responseObject.Response.FunctionError.Equals(""))
                     {
-                        // This check is dumb.  Status is always 200
+                        string payloadStr = Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray());
+                        LambdaError errorResponse = JsonUtility.FromJson<LambdaError>(payloadStr);
                         Debug.LogError("Error calling " + NEW_SUBSCRIPTION_LAMBDA +
-                        " lambda returned status code " + responseObject.Response.StatusCode);
+                        " lambda returned error message " + errorResponse.errorMessage);
+                        OnUpsertReturn(false, "Unexpected error.");
                     }
                     else
                     {
@@ -128,7 +131,7 @@ public class NotifyMeController : MonoBehaviour {
                 catch (Exception e)
                 {
                     Debug.LogError("Error calling lambda:" + e);
-                    OnUpsertReturn(false, "Unexpected error.");
+                    OnUpsertReturn(false, "Unexpected response.");
                 }
             }
             else

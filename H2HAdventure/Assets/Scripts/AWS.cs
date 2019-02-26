@@ -13,6 +13,12 @@ class LambdaPayload
     public string body;
 }
 
+class LambdaError
+{
+    public string errorMessage;
+    public string errorType;
+    public string stackTrace;
+}
 
 public class AWS : MonoBehaviour {
 
