@@ -27,6 +27,11 @@ public class StartScreen : MonoBehaviour {
         SceneManager.LoadScene("Schedule");
     }
 
+    public void OnGetNotifiedClicked()
+    {
+        SceneManager.LoadScene("NotifyMe");
+    }
+
 
 
     public void OnPlayClicked() {

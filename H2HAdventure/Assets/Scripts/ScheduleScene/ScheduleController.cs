@@ -9,13 +9,6 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 [Serializable]
-class LambdaPayload
-{
-    public int statusCode;
-    public string body;
-}
-
-[Serializable]
 class ListScheduleEntry
 {
     public string PK;
@@ -55,6 +48,7 @@ public class ScheduleController : MonoBehaviour {
     public InputField promptNameInput;
     public GameObject scheduleGamePanel;
     public ScheduleDetails scheduleDetails;
+    public AWS awsUtil;
 
     private GameObject scheduleContainer;
     public GameObject refreshButton;
@@ -64,8 +58,6 @@ public class ScheduleController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         scheduleContainer = transform.Find("ScheduledGames").gameObject;
-        AWSUtil.InitializeAws(this.gameObject);
-
         bool loggedIn = (SessionInfo.ThisPlayerName != null) && 
            !SessionInfo.ThisPlayerName.Equals("");
         refreshButton.SetActive(loggedIn);
@@ -79,7 +71,7 @@ public class ScheduleController : MonoBehaviour {
     {
         scheduleDetails.gameObject.SetActive(false);
         DestroyList();
-        AmazonLambdaClient lambdaClient = AWSUtil.lambdaClient;
+        AmazonLambdaClient lambdaClient = awsUtil.lambdaClient;
         lambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
         {
             FunctionName = LIST_SCHEDULES_LAMBDA,
@@ -131,7 +123,7 @@ public class ScheduleController : MonoBehaviour {
 
     public void DeleteGame(ScheduledGame game)
     {
-        AmazonLambdaClient lambdaClient = AWSUtil.lambdaClient;
+        AmazonLambdaClient lambdaClient = awsUtil.lambdaClient;
         ListScheduleEntry newEntry = new ListScheduleEntry(game.Key, game.Host,
              game.Timestamp, game.Duration, game.Others, game.Comments);
         string jsonStr = JsonUtility.ToJson(newEntry);
@@ -196,7 +188,7 @@ public class ScheduleController : MonoBehaviour {
     private void UpsertGame(string key, string host, DateTime gameStart, int duration, 
         string[] others, string comments)
     { 
-        AmazonLambdaClient lambdaClient = AWSUtil.lambdaClient;
+        AmazonLambdaClient lambdaClient = awsUtil.lambdaClient;
         long startTime = gameStart.ToUniversalTime().Ticks;
         ListScheduleEntry newEntry = new ListScheduleEntry(key, host, startTime, duration, others, comments);
         string jsonStr = JsonUtility.ToJson(newEntry);

@@ -6,17 +6,24 @@ using System.Security.Cryptography;
 using System;
 using System.IO;
 
+[Serializable]
+class LambdaPayload
+{
+    public int statusCode;
+    public string body;
+}
 
-public static class AWSUtil {
 
-    public static AmazonLambdaClient lambdaClient;
+public class AWS : MonoBehaviour {
 
     private static byte[] RijndaelKey = { 72, 127, 153, 45, 111, 94, 69, 91, 36, 248, 149, 7, 166, 80, 210, 47, 30, 192, 20, 200, 73, 238, 78, 136, 116, 101, 223, 56, 119, 15, 129, 127 };
     private static byte[] RijndaelIV = { 216, 105, 230, 72, 146, 231, 225, 103, 160, 49, 132, 32, 100, 194, 131, 107 };
 
-    public static void InitializeAws(GameObject attachTo)
-    {
-        UnityInitializer.AttachToGameObject(attachTo);
+    public AmazonLambdaClient lambdaClient;
+
+    // Use this for initialization
+    void Start () {
+        UnityInitializer.AttachToGameObject(gameObject);
         AWSConfigs.HttpClient = AWSConfigs.HttpClientOption.UnityWebRequest;
         // Initialize the Amazon Cognito credentials provider
         string idPoolId = decryptCredentials();
@@ -27,7 +34,7 @@ public static class AWSUtil {
         lambdaClient = new AmazonLambdaClient(credentials, RegionEndpoint.USEast2);
     }
 
-    private static string decryptCredentials()
+    private string decryptCredentials()
     {
         using (RijndaelManaged myRijndael = new RijndaelManaged())
         {
@@ -41,7 +48,7 @@ public static class AWSUtil {
         }
     }
 
-    static string DecryptStringFromBytes(byte[] cipherText, byte[] Key, byte[] IV)
+    private string DecryptStringFromBytes(byte[] cipherText, byte[] Key, byte[] IV)
     {
         // Check arguments.
         if (cipherText == null || cipherText.Length <= 0)
@@ -78,11 +85,8 @@ public static class AWSUtil {
                     }
                 }
             }
-
-
             return plaintext;
 
         }
     }
-
 }
