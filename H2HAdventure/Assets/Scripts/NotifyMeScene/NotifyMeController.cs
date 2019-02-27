@@ -101,7 +101,6 @@ public class NotifyMeController : MonoBehaviour {
     {
         AmazonLambdaClient lambdaClient = awsUtil.lambdaClient;
         string jsonStr = JsonUtility.ToJson(newEntry);
-        Debug.Log("Sending lambda event " + jsonStr);
         lambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
         {
             FunctionName = NEW_SUBSCRIPTION_LAMBDA,
@@ -113,11 +112,8 @@ public class NotifyMeController : MonoBehaviour {
             {
                 Debug.LogError("Error calling " + NEW_SUBSCRIPTION_LAMBDA +
                         " lambda returned threw exception " + responseObject.Exception.ToString());
-            }
-            else if (responseObject.Response.StatusCode != 200)
-            {
-                Debug.LogError("Error calling " + NEW_SUBSCRIPTION_LAMBDA +
-                " lambda returned status code " + responseObject.Response.StatusCode);
+                OnUpsertReturn(false, "Unexpected error.");
+
             }
             else if ((responseObject.Response.FunctionError != null) && !responseObject.Response.FunctionError.Equals(""))
             {
@@ -125,13 +121,24 @@ public class NotifyMeController : MonoBehaviour {
                 LambdaError errorResponse = JsonUtility.FromJson<LambdaError>(payloadStr);
                 Debug.LogError("Error calling " + NEW_SUBSCRIPTION_LAMBDA +
                 " lambda returned error message " + errorResponse.errorMessage);
+                OnUpsertReturn(false, "Unexpected error.");
             }
             else
             {
-                Debug.Log("AWS reported processing lambda.");
-                OnUpsertReturn(true, "");
+                string payloadStr = Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray());
+                LambdaPayload lambdaResponse = JsonUtility.FromJson<LambdaPayload>(payloadStr);
+                if (lambdaResponse.statusCode != 200)
+                {
+                    Debug.LogError("Error calling " + NEW_SUBSCRIPTION_LAMBDA +
+                    " lambda returned status code " + lambdaResponse.statusCode + ":" +
+                        lambdaResponse.body);
+                    OnUpsertReturn(false, "Unexpected error.");
+                }
+                else
+                {
+                    OnUpsertReturn(true, "");
+                }
             }
-            OnUpsertReturn(false, "Unexpected error.");
         }
         );
     }

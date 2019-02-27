@@ -15,30 +15,36 @@ def lambda_handler(event, context):
     try:
         print("event = " + json.dumps(event))
     
-        dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
-        table = dynamodb.Table('global')
-        
+        client = boto3.client('dynamodb')
+        table = 'global'
+
         item = {
-                'PK': 'Subscription',
-                'SK': event['Contact'],
-                'Contact': event['Contact'],
-                'Type': event['Type'],
-                'OnCallOut': event['OnCallOut'],
-                'OnNewSchedule': event['OnNewSchedule'],
-                'Blacklist': event['Blacklist']
+                'PK': {'S': 'Subscription'},
+                'SK': {'S': event['Contact']},
+                'Contact': {'S': event['Contact']},
+                'Type': {'S': event['Type']},
+                'OnCallOut': {'BOOL': event['OnCallOut']},
+                'OnNewSchedule': {'BOOL': event['OnNewSchedule']},
+                'Blacklist': {'BOOL': event['Blacklist']}
         }
         
         # Need to first see if this user is blacklisted
         key={
             'PK': {
-                'S': item['PK']
+                'S': 'Subscription'
                 },
             'SK': {
-                'S': item['SK']
+                'S': event['Contact']
                }
             }
-        response = table.get_item(Key=key)
-        blacklisted = 'Item' in response and response['Item'] and response['Item']['Blacklist']
+        response = client.get_item(TableName=table, Key=key)
+        print("check blacklist response = {}".format(json.dumps(response)))
+        blacklisted = (
+            'Item' in response and 
+            response['Item'] and 
+            response['Item']['Blacklist'] and
+            response['Item']['Blacklist']['BOOL']
+        )
         if blacklisted:
             return {
                 'statusCode': 200,
@@ -47,14 +53,21 @@ def lambda_handler(event, context):
 
         if event['Unsubscribe']:
             # Delete the entry from the table
-            response = table.delete_item(Key=key)
+            print("Deleting item with key {}".format(json.dumps(key)))
+            response = client.delete_item(TableName=table, Key=key)
+            return {
+                'statusCode': 200,
+                'body': 'Delete succeeded'
+            }
+
         else:
-            response = table.put_item(Item=item)
-    
-        return {
-            'statusCode': 200,
-            'body': 'Upsert succeeded'
-        }
+            print("Upserting item with key {}".format(json.dumps(key)))
+            response = client.put_item(TableName=table, Item=item)
+            return {
+                'statusCode': 200,
+                'body': 'Upsert succeeded'
+            }
+
     except Exception as e:
         message = 'Upsert failed: {}'.format(e)
         print("Hit exception.  Returning: " + message)
