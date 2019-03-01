@@ -13,7 +13,6 @@ public class PromptNameController : MonoBehaviour {
         if (nameInput.text.Trim() != "")
         {
             parent.GotPlayerName(nameInput.text.Trim());
-            thisPanel.SetActive(false);
         }
     }
 }

@@ -7,6 +7,11 @@ public class SessionInfo {
     // If true, show some other options only for developers
     public const bool DEV_MODE = true;
 
+    // The version number.  Every time there is a breaking change, this
+    // needs to be updated.  Then the server can determine if the client
+    // is talking to needs to be updated.
+    public const int VERSION = 1;
+
     // Which scene to take users to once game is established.
     public const string GAME_SCENE = "AdvGame";
     //public const string GAME_SCENE = "FauxGame";

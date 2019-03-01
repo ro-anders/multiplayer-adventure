@@ -1,17 +1,44 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Text;
+using Amazon.Lambda;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+[Serializable]
+class StatusMessageEntry
+{
+    public string PK;
+    public string SK;
+    public int MinimumVersion;
+    public string SystemMessage;
+    public StatusMessageEntry(int inMinimumVersion, string inSystemMessage)
+    {
+        PK = "StatusMessage";
+        SK = "singleton";
+        MinimumVersion = inMinimumVersion;
+        SystemMessage = inSystemMessage;
+    }
+}
+
 public class StartScreen : MonoBehaviour {
+
+    private const string GAME_STATUS_LAMBDA = "GameStatus";
 
     public const int DIRECT_CONNECT_PORT = 1980;
     public GameObject directConnectPanel;
     public InputField directConnectIp;
+    public GameObject overlay;
+    public AWS awsUtil;
 
-	// Use this for initialization
-	void Start () {
+
+    // Use this for initialization
+    void Start () {
+
+        CheckSystemMessages();
+
         // Show dev resources when in dev mode
         GameObject[] devObjects = GameObject.FindGameObjectsWithTag("dev_only");
         Debug.Log("Found " + devObjects.Length + " dev objects");
@@ -20,6 +47,11 @@ public class StartScreen : MonoBehaviour {
             devObj.SetActive(SessionInfo.DEV_MODE);
         }
 
+    }
+
+    private void StartGame()
+    {
+        overlay.SetActive(false);
     }
 
     public void OnScheduleClicked()
@@ -94,4 +126,34 @@ public class StartScreen : MonoBehaviour {
         SessionInfo.GameToPlay.diff2 = DIFF.A;
         SceneManager.LoadScene(SessionInfo.GAME_SCENE);
     }
+
+    private void CheckSystemMessages()
+    {
+        awsUtil.CallLambdaAsync(GAME_STATUS_LAMBDA, "", OnGameStatusReturn);
+    }
+
+    private void OnGameStatusReturn(bool success, string payload)
+    {
+        if (success)
+        {
+            StatusMessageEntry statusMessage = JsonUtility.FromJson<StatusMessageEntry>(payload);
+            if (statusMessage.MinimumVersion > SessionInfo.VERSION)
+            {
+                Debug.LogError("Current version " + SessionInfo.VERSION +
+                " is too old.  Need to upgrade to version " + statusMessage.MinimumVersion);
+            }
+            else if ((statusMessage.SystemMessage != null) && !statusMessage.Equals("")) {
+                Debug.Log("Got status message from server: " + statusMessage.SystemMessage);
+            }
+            else
+            {
+                StartGame();
+            }
+        }
+        else
+        {
+            Debug.LogError("Cannot get system status.  Need to abort.");
+        }
+    }
+
 }

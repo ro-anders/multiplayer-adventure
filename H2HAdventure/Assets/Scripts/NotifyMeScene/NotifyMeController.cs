@@ -99,7 +99,7 @@ public class NotifyMeController : MonoBehaviour {
     
     private void UpsertSubscription(SubscriptionEntry newEntry)
     {
-        AmazonLambdaClient lambdaClient = awsUtil.lambdaClient;
+        AmazonLambdaClient lambdaClient = awsUtil.LambdaClient;
         string jsonStr = JsonUtility.ToJson(newEntry);
         lambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
         {

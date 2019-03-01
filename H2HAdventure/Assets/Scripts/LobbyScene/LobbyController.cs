@@ -25,6 +25,8 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public Button hostButton;
     public GameObject gamePrefab;
     public GameObject gameList;
+    public GameObject overlay;
+    public GameObject sendCallConf;
 
     private const string LOBBY_MATCH_NAME = "h2hlobby";
     private LobbyPlayer localLobbyPlayer;
@@ -59,6 +61,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     {
         chatPanel.ChatSubmitter = this;
         if (SessionInfo.ThisPlayerName == null) {
+            overlay.SetActive(true);
             promptNamePanel.SetActive(true);
         } else {
             ConnectToLobby();
@@ -109,6 +112,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
 
     public void CloseNewGameDialog(bool submitted) {
         newGamePanel.SetActive(false);
+        overlay.SetActive(false);
         if (!submitted) {
             hostButton.interactable = true;
         }
@@ -116,6 +120,8 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
 
     public void GotPlayerName(string inPlayerName) {
         ThisPlayerName = inPlayerName;
+        promptNamePanel.SetActive(false);
+        overlay.SetActive(false);
         ConnectToLobby();
     }
 
@@ -233,11 +239,12 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
             games[i].RefreshGraphic(inAGame);
         }
         // Disable the "Host Game" button.
-        hostButton.interactable = !inAGame && !newGamePanel.activeInHierarchy;
+        hostButton.interactable = !inAGame;
     }
 
     public void OnHostPressed() {
         hostButton.interactable = false;
+        overlay.SetActive(true);
         newGamePanel.SetActive(true);
     }
 
@@ -388,6 +395,25 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
         SceneManager.LoadScene(nextSceneName);
     }
 
+    public void OnSendCallPressed()
+    {
+        overlay.SetActive(true);
+        sendCallConf.SetActive(true);
+    }
+
+    public void OnSendCallConfOkPressed()
+    {
+        sendCallConf.SetActive(false);
+        overlay.SetActive(false);
+        SendCall();
+    }
+
+    public void OnSendCallConfCancelPressed()
+    {
+        sendCallConf.SetActive(false);
+        overlay.SetActive(false);
+    }
+
     public void OnBackPressed()
     {
         SwitchToScene("Start");
@@ -433,6 +459,11 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     private void ShutdownNetworkManager() {
         Destroy(lobbyManager);
         NetworkManager.Shutdown();
+    }
+
+    private void SendCall()
+    {
+
     }
 
 }

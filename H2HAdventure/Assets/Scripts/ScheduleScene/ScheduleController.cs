@@ -71,7 +71,7 @@ public class ScheduleController : MonoBehaviour {
     {
         scheduleDetails.gameObject.SetActive(false);
         DestroyList();
-        AmazonLambdaClient lambdaClient = awsUtil.lambdaClient;
+        AmazonLambdaClient lambdaClient = awsUtil.LambdaClient;
         lambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
         {
             FunctionName = LIST_SCHEDULES_LAMBDA,
@@ -123,7 +123,7 @@ public class ScheduleController : MonoBehaviour {
 
     public void DeleteGame(ScheduledGame game)
     {
-        AmazonLambdaClient lambdaClient = awsUtil.lambdaClient;
+        AmazonLambdaClient lambdaClient = awsUtil.LambdaClient;
         ListScheduleEntry newEntry = new ListScheduleEntry(game.Key, game.Host,
              game.Timestamp, game.Duration, game.Others, game.Comments);
         string jsonStr = JsonUtility.ToJson(newEntry);
@@ -188,7 +188,7 @@ public class ScheduleController : MonoBehaviour {
     private void UpsertGame(string key, string host, DateTime gameStart, int duration, 
         string[] others, string comments)
     { 
-        AmazonLambdaClient lambdaClient = awsUtil.lambdaClient;
+        AmazonLambdaClient lambdaClient = awsUtil.LambdaClient;
         long startTime = gameStart.ToUniversalTime().Ticks;
         ListScheduleEntry newEntry = new ListScheduleEntry(key, host, startTime, duration, others, comments);
         string jsonStr = JsonUtility.ToJson(newEntry);
