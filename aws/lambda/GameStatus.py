@@ -26,8 +26,8 @@ def lambda_handler(event, context):
     STATUS_MESSAGE = ""
     
     response = {
-        'MinVersion': MINIMAL_VIABLE_VERSION,
-        'Status:' STATUS_MESSAGE
+        'MinimumVersion': MINIMAL_VIABLE_VERSION,
+        'SystemMessage': STATUS_MESSAGE
     }
     
     return {

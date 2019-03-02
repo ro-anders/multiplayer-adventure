@@ -30,21 +30,14 @@ public class AWS : MonoBehaviour {
     public AmazonLambdaClient LambdaClient
     {
         get
-        {
-            if (lambdaClient == null)
-            {
-                lambdaClient = CreateLambdaClient();
-            }
-            return lambdaClient;
-        }
+        { return lambdaClient;}
     }
+
+    private bool isReady = false;
+    private Action callOnReady = null;
 
     // Use this for initialization
     void Start () {
-    }
-
-    private AmazonLambdaClient CreateLambdaClient()
-    {
         UnityInitializer.AttachToGameObject(gameObject);
         AWSConfigs.HttpClient = AWSConfigs.HttpClientOption.UnityWebRequest;
         // Initialize the Amazon Cognito credentials provider
@@ -52,8 +45,26 @@ public class AWS : MonoBehaviour {
         CognitoAWSCredentials credentials = new CognitoAWSCredentials(
             idPoolId, // Identity pool ID
             RegionEndpoint.USEast2 // Region
-        );
-        return new AmazonLambdaClient(credentials, RegionEndpoint.USEast2);
+            );
+            lambdaClient = new AmazonLambdaClient(credentials, RegionEndpoint.USEast2);
+        isReady = true;
+        UnityEngine.Debug.Log("AWS setup");
+        if (callOnReady != null)
+        {
+            Action action = callOnReady;
+            callOnReady = null;
+            action();
+        }
+    }
+
+    public void CallOnReady(Action action)
+    {
+        if (isReady) {
+            action();
+        } else
+        {
+            callOnReady = action;
+        }
     }
 
     private string decryptCredentials()
@@ -116,6 +127,7 @@ public class AWS : MonoBehaviour {
     {
         try
         {
+            UnityEngine.Debug.Log("Calling lambda");
             //string jsonStr = JsonUtility.ToJson(input);
             LambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
             {

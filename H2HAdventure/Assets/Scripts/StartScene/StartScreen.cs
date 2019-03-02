@@ -26,18 +26,23 @@ class StatusMessageEntry
 public class StartScreen : MonoBehaviour {
 
     private const string GAME_STATUS_LAMBDA = "GameStatus";
+    private const string NO_SERVER_MESSAGE = "H2H Adventure server is unreachable.The game cannot be played at this time.  Please check system status at";
+    private const string NO_SERVER_LINK = "http://h2hadventure.com/status";
+    private const string NEED_DOWNLOAD_MESSAGE = "You need to download the latest H2H Adventure client from";
+    private const string NEED_DOWNLOAD_LINK = "http://h2hadventure.com/download";
 
     public const int DIRECT_CONNECT_PORT = 1980;
     public GameObject directConnectPanel;
     public InputField directConnectIp;
     public GameObject overlay;
+    public AbortPopup abortPopup;
     public AWS awsUtil;
 
 
     // Use this for initialization
     void Start () {
 
-        CheckSystemMessages();
+        awsUtil.CallOnReady(CheckSystemMessages);
 
         // Show dev resources when in dev mode
         GameObject[] devObjects = GameObject.FindGameObjectsWithTag("dev_only");
@@ -134,13 +139,27 @@ public class StartScreen : MonoBehaviour {
 
     private void OnGameStatusReturn(bool success, string payload)
     {
+
+        StatusMessageEntry statusMessage = null;
         if (success)
         {
-            StatusMessageEntry statusMessage = JsonUtility.FromJson<StatusMessageEntry>(payload);
+            try
+            {
+                statusMessage = JsonUtility.FromJson<StatusMessageEntry>(payload);
+                success = (statusMessage.MinimumVersion != 0) && (statusMessage.SystemMessage != null);
+            } catch (Exception e)
+            {
+                Debug.LogError("Excpecting StatusMessageEntry fron lambda but received: " + payload);
+                success = false;
+            }
+        }
+
+        if (success) { 
             if (statusMessage.MinimumVersion > SessionInfo.VERSION)
             {
                 Debug.LogError("Current version " + SessionInfo.VERSION +
                 " is too old.  Need to upgrade to version " + statusMessage.MinimumVersion);
+                AbortPopup.Show(abortPopup, NEED_DOWNLOAD_MESSAGE, NEED_DOWNLOAD_LINK);
             }
             else if ((statusMessage.SystemMessage != null) && !statusMessage.Equals("")) {
                 Debug.Log("Got status message from server: " + statusMessage.SystemMessage);
@@ -153,7 +172,7 @@ public class StartScreen : MonoBehaviour {
         else
         {
             Debug.LogError("Cannot get system status.  Need to abort.");
+            AbortPopup.Show(abortPopup, NO_SERVER_MESSAGE, NO_SERVER_LINK);
         }
     }
-
 }
