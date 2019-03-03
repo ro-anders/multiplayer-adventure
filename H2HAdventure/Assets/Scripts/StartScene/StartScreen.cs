@@ -172,7 +172,7 @@ public class StartScreen : MonoBehaviour {
                 " is too old.  Need to upgrade to version " + statusMessage.MinimumVersion);
                 AbortPopup.Show(abortPopup, NEED_DOWNLOAD_MESSAGE, NEED_DOWNLOAD_LINK);
             }
-            else if ((statusMessage.SystemMessage != null) && !statusMessage.Equals("")) {
+            else if ((statusMessage.SystemMessage != null) && !statusMessage.SystemMessage.Equals("")) {
                 // Only show the message once (unless it doesn't have an ID, then
                 // show it every time).
                 Debug.Log("Message is \"" + statusMessage.SystemMessage + "\"");
@@ -184,6 +184,10 @@ public class StartScreen : MonoBehaviour {
                     overlay.SetActive(true);
                     systemMessagePanel.SetActive(true);
                     PlayerPrefs.SetInt(LAST_SYSTEM_MESSAGE_PREF, statusMessage.MessageId);
+                }
+                else
+                {
+                    StartGame();
                 }
             }
             else
