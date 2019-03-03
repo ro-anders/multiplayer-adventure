@@ -10,7 +10,7 @@ public class SessionInfo {
     // The version number.  Every time there is a breaking change, this
     // needs to be updated.  Then the server can determine if the client
     // is talking to needs to be updated.
-    public const int VERSION = 0;
+    public const int VERSION = 1;
 
     // Which scene to take users to once game is established.
     public const string GAME_SCENE = "AdvGame";

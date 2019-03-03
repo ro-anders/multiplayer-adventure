@@ -14,12 +14,15 @@ class StatusMessageEntry
     public string SK;
     public int MinimumVersion;
     public string SystemMessage;
-    public StatusMessageEntry(int inMinimumVersion, string inSystemMessage)
+    public int MessageId;
+    public StatusMessageEntry(int inMinimumVersion, string inSystemMessage,
+        int inMessageId)
     {
         PK = "StatusMessage";
         SK = "singleton";
         MinimumVersion = inMinimumVersion;
         SystemMessage = inSystemMessage;
+        MessageId = inMessageId;
     }
 }
 
@@ -36,6 +39,8 @@ public class StartScreen : MonoBehaviour {
     public InputField directConnectIp;
     public GameObject overlay;
     public AbortPopup abortPopup;
+    public GameObject systemMessagePanel;
+    public Text systemMessageText;
     public AWS awsUtil;
 
 
@@ -132,6 +137,12 @@ public class StartScreen : MonoBehaviour {
         SceneManager.LoadScene(SessionInfo.GAME_SCENE);
     }
 
+    public void OnSystemMessageContinuePressed()
+    {
+        systemMessagePanel.SetActive(false);
+        StartGame();
+    }
+
     private void CheckSystemMessages()
     {
         awsUtil.CallLambdaAsync(GAME_STATUS_LAMBDA, "", OnGameStatusReturn);
@@ -162,7 +173,18 @@ public class StartScreen : MonoBehaviour {
                 AbortPopup.Show(abortPopup, NEED_DOWNLOAD_MESSAGE, NEED_DOWNLOAD_LINK);
             }
             else if ((statusMessage.SystemMessage != null) && !statusMessage.Equals("")) {
-                Debug.Log("Got status message from server: " + statusMessage.SystemMessage);
+                // Only show the message once (unless it doesn't have an ID, then
+                // show it every time).
+                Debug.Log("Message is \"" + statusMessage.SystemMessage + "\"");
+                string LAST_SYSTEM_MESSAGE_PREF = "LastSystemMessage";
+                int lastMessage = PlayerPrefs.GetInt(LAST_SYSTEM_MESSAGE_PREF, 0);
+                if ((statusMessage.MessageId == 0) || (statusMessage.MessageId != lastMessage))
+                {
+                    systemMessageText.text = statusMessage.SystemMessage;
+                    overlay.SetActive(true);
+                    systemMessagePanel.SetActive(true);
+                    PlayerPrefs.SetInt(LAST_SYSTEM_MESSAGE_PREF, statusMessage.MessageId);
+                }
             }
             else
             {
