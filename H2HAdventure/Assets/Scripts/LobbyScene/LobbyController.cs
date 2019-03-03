@@ -27,6 +27,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public GameObject gameList;
     public GameObject overlay;
     public GameObject sendCallConf;
+    public GameObject noOneElsePanel;
 
     private const string LOBBY_MATCH_NAME = "h2hlobby";
     private LobbyPlayer localLobbyPlayer;
@@ -61,7 +62,6 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     {
         chatPanel.ChatSubmitter = this;
         if ((SessionInfo.ThisPlayerName == null) || SessionInfo.ThisPlayerName.Equals("")) {
-            overlay.SetActive(true);
             promptNamePanel.SetActive(true);
         } else {
             ConnectToLobby();
@@ -71,8 +71,15 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public void OnConnectedToLobby(LobbyPlayer inLocalLobbyPlayer) {
         localLobbyPlayer = inLocalLobbyPlayer;
         SessionInfo.ThisPlayerId = localLobbyPlayer.GetComponent<NetworkIdentity>().netId.Value;
-        if (localLobbyPlayer.isServer) {
+        if (localLobbyPlayer.isServer)
+        {
             chatPanel.ServerSetup();
+            // If you're hosting the lobby then you're the only one right now
+            noOneElsePanel.SetActive(true);
+        }
+        else
+        {
+            overlay.SetActive(false);
         }
     }
 
@@ -121,7 +128,6 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public void GotPlayerName(string inPlayerName) {
         ThisPlayerName = inPlayerName;
         promptNamePanel.SetActive(false);
-        overlay.SetActive(false);
         ConnectToLobby();
     }
 
@@ -411,6 +417,12 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public void OnSendCallConfCancelPressed()
     {
         sendCallConf.SetActive(false);
+        overlay.SetActive(false);
+    }
+
+    public void OnNoOneElseOkPressed()
+    {
+        noOneElsePanel.SetActive(false);
         overlay.SetActive(false);
     }
 
