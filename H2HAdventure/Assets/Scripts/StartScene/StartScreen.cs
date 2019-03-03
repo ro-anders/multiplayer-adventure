@@ -43,11 +43,21 @@ public class StartScreen : MonoBehaviour {
     public Text systemMessageText;
     public AWS awsUtil;
 
+    public static bool firstTimeVisit = true;
+
 
     // Use this for initialization
     void Start () {
 
-        awsUtil.CallOnReady(CheckSystemMessages);
+        if (firstTimeVisit)
+        {
+            awsUtil.CallOnReady(CheckSystemMessages);
+            firstTimeVisit = false;
+        }
+        else
+        {
+            StartGame();
+        }
 
         // Show dev resources when in dev mode
         GameObject[] devObjects = GameObject.FindGameObjectsWithTag("dev_only");

@@ -233,6 +233,11 @@ public class ScheduleController : MonoBehaviour {
     {
         modalOverlay.SetActive(true);
         promptNamePanel.SetActive(true);
+        string prevName = PlayerPrefs.GetString(SessionInfo.PLAYER_NAME_PREF, "");
+        if (!prevName.Equals(""))
+        {
+            promptNameInput.text = prevName;
+        }
     }
 
     public void OnRefreshPressed()
@@ -256,12 +261,22 @@ public class ScheduleController : MonoBehaviour {
         SessionInfo.ThisPlayerName = promptNameInput.text.Trim();
         bool loggedIn = (SessionInfo.ThisPlayerName != null) &&
            !SessionInfo.ThisPlayerName.Equals("");
+        if (loggedIn)
+        {
+            PlayerPrefs.SetString(SessionInfo.PLAYER_NAME_PREF, promptNameInput.text.Trim());
+        }
         refreshButton.SetActive(loggedIn);
         newButton.SetActive(loggedIn);
         loginButton.SetActive(!loggedIn);
         promptNamePanel.SetActive(false);
         modalOverlay.SetActive(false);
         scheduleDetails.gameObject.SetActive(false);
+    }
+
+    public void OnPromptNameCancelPressed()
+    {
+        promptNamePanel.SetActive(false);
+        modalOverlay.SetActive(false);
     }
 
     public void DismissNewSchedulePanel()

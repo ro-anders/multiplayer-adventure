@@ -16,6 +16,9 @@ public class SessionInfo {
     public const string GAME_SCENE = "AdvGame";
     //public const string GAME_SCENE = "FauxGame";
 
+    // Name of player name preference
+    public const string PLAYER_NAME_PREF = "PlayerName";
+
     public enum Network
     {
         MATCHMAKER,

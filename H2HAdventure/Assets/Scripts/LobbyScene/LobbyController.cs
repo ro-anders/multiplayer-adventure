@@ -60,7 +60,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public void Start()
     {
         chatPanel.ChatSubmitter = this;
-        if (SessionInfo.ThisPlayerName == null) {
+        if ((SessionInfo.ThisPlayerName == null) || SessionInfo.ThisPlayerName.Equals("")) {
             overlay.SetActive(true);
             promptNamePanel.SetActive(true);
         } else {
