@@ -49,7 +49,7 @@ public class StartScreen : MonoBehaviour {
     // Use this for initialization
     void Start () {
 
-        if (firstTimeVisit)
+        if (firstTimeVisit && !SessionInfo.WORK_OFFLINE)
         {
             awsUtil.CallOnReady(CheckSystemMessages);
             firstTimeVisit = false;

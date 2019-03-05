@@ -7,6 +7,10 @@ public class SessionInfo {
     // If true, show some other options only for developers
     public const bool DEV_MODE = true;
 
+    // If doing development while offline, set this.  Will stub out
+    // network calls.
+    public const bool WORK_OFFLINE = true;
+
     // The version number.  Every time there is a breaking change, this
     // needs to be updated.  Then the server can determine if the client
     // is talking to needs to be updated.
