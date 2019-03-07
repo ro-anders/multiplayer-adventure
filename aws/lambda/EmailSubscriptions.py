@@ -26,6 +26,12 @@ def retrieve_email_subscriptions(event):
     )
     return [sub['Contact'] for sub in response['Items'] if sub['Type']=='EMAIL' && sub[attribute]]
 
+def send_emails(recipients, subject, message):
+    message = create_message("ro.c.anders@gmail.com", "robert.antonucci@gmail.com", "Testing H2HAdventure Notify", "This works!")
+    response = send_message(service, 'me', message)
+    print("Sent message.  Response = " + json.dumps(response))
+    
+    
 def lambda_handler(event, context):
 
     retrieve_email_subscriptions()
