@@ -26,15 +26,78 @@ def retrieve_email_subscriptions(event):
     )
     return [sub['Contact'] for sub in response['Items'] if sub['Type']=='EMAIL' && sub[attribute]]
 
+def get_creds():
+    dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
+    table = dynamodb.Table('global')
+    response = table.query(
+      KeyConditionExpression=Key('PK').eq('GmailToken')
+    )
+    if 'Items' not in response or len(response['Items']!=1):
+      raise ValueError("Could not read GMail Token from database")
+    token = response['Items']
+    
 def send_emails(recipients, subject, message):
-    message = create_message("ro.c.anders@gmail.com", "robert.antonucci@gmail.com", "Testing H2HAdventure Notify", "This works!")
-    response = send_message(service, 'me', message)
-    print("Sent message.  Response = " + json.dumps(response))
+    with open('token.pickle', 'rb') as token:
+        creds = pickle.load(token)
+    if creds and creds.expired:
+        raise ValueError("GMail Token expired")
+    if not creds: 
+        raise ValueError("No GMail Token")
+    if not creds.valid:
+        raise ValueError("Invalid GMail Token")
+
+    service = build('gmail', 'v1', credentials=creds)
+    for recipient in recipients:
+        message = create_message("ro.c.anders@gmail.com", "robert.antonucci@gmail.com", subject, message)
+        response = send_message(service, 'me', message)
+        print("Sent message to {}.  Response = {}".format(recipeint, json.dumps(response))
+
+def create_message(sender, to, subject, message_text):
+  """Create a message for an email.
+
+  Args:
+    sender: Email address of the sender.
+    to: Email address of the receiver.
+    subject: The subject of the email message.
+    message_text: The text of the email message.
+
+  Returns:
+    An object containing a base64url encoded email object.
+  """
+  message = MIMEText(message_text)
+  message['to'] = to
+  message['from'] = sender
+  message['subject'] = subject
+  return {'raw': base64.urlsafe_b64encode(message.as_string())}
+
+def send_message(service, user_id, message):
+  """Send an email message.
+
+  Args:
+    service: Authorized Gmail API service instance.
+    user_id: User's email address. The special value "me"
+    can be used to indicate the authenticated user.
+    message: Message to be sent.
+
+  Returns:
+    Sent Message.
+  """
+  try:
+    message = (service.users().messages().send(userId=user_id, body=message)
+               .execute())
+    print('Message Id: %s' % message['id'])
+    return message
+  except HttpError as error:
+    print('An error occurred: %s' % error)
+
+
     
     
 def lambda_handler(event, context):
 
-    retrieve_email_subscriptions()
+    recipients = retrieve_email_subscriptions()
+    creds = get_creds()
+
     return {
         'statusCode': 200,
         'body': json.dumps(response['Items'], cls=DecimalEncoder)
