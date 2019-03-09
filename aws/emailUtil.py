@@ -15,6 +15,13 @@ import sys
 """
 This is a test program, not a lambda.  Run it if you need to regenerate a 
 auth token or manually test emails.
+
+This uses a credentials.json file which is specific to an gmail user.  This
+was obtained from https://console.developers.google.com/.  Login, declare a 
+service, generate a credential, and download it.
+
+Once downloaded run this, "emailUtil.py token db" to generate a token for
+the api to use.
 """
 
 def getCreds(location):
@@ -34,12 +41,14 @@ def getCreds(location):
   if location == 'db' or location == 'either':
     creds = getFromDynamo()
     if location == 'either' and creds:
+      print("Loaded credentials from db")
       location = 'db'
   if not creds:
     if location == 'file' or location == 'either':
-      creds = getFromDynamo()
-        if location == 'either' and creds:
-          location = 'file'
+      creds = getFromFile()
+      if location == 'either' and creds:
+        print("Loaded credentials from file")
+        location = 'file'
   token_changed = False
 
   # If there are no (valid) credentials available, let the user log in.
@@ -59,10 +68,10 @@ def getCreds(location):
             print("Expired token cannot be refreshed.  Generating new one.")
           else:
             print("Invalid token.  Generating new one.")
-          # flow = InstalledAppFlow.from_client_secrets_file(
-          #     'credentials.json', SCOPES)
-          # creds = flow.run_local_server()
-          # token_changed = True
+          flow = InstalledAppFlow.from_client_secrets_file(
+              'credentials.json', SCOPES)
+          creds = flow.run_local_server()
+          token_changed = True
 
   if not creds or not creds.valid:
     raise ValueError("Could not create valid creedentials")
@@ -94,7 +103,7 @@ def storeInFile(creds):
 def getFromDynamo():
         key={
           'PK': 'NotificationCreds',
-          'SK': 'GmailTokens'
+          'SK': 'GmailToken'
         }
         dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
         table = dynamodb.Table('global')
@@ -146,7 +155,8 @@ def create_message(sender, to, subject, message_text):
   message['to'] = to
   message['from'] = sender
   message['subject'] = subject
-  return {'raw': base64.urlsafe_b64encode(message.as_string())}
+  encoded = base64.urlsafe_b64encode(message.as_string().encode("utf-8")).decode("ascii")
+  return {'raw': encoded}
 
 def send_message(service, user_id, message):
   """Send an email message.
@@ -161,10 +171,10 @@ def send_message(service, user_id, message):
     Sent Message.
   """
   try:
-    message = (service.users().messages().send(userId=user_id, body=message)
+    response = (service.users().messages().send(userId=user_id, body=message)
                .execute())
-    print('Message Id: %s' % message['id'])
-    return message
+    print('Message Id: %s' % response['id'])
+    return response
   except HttpError as error:
     print('An error occurred: %s' % error)
 
@@ -221,4 +231,6 @@ if __name__ == '__main__':
       service = build('gmail', 'v1', credentials=creds)
       # Do a query of labels to test
       printLabels(service)
+    else:
+      print('Unknown command.  Must specify "token" or "test"')
 

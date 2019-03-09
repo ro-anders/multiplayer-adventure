@@ -9,10 +9,37 @@ Run through all subscriptions and send a message
 Copy this file into EmailSubscriptions lambda
 '''
 
-def retrieve_email_subscriptions(event):
+SENDER_EMAIL ='ro.c.anders@gmail.com'
+
+def lambda_handler(event, context):
+  """
+  Call this to send an email to all those subscribed for email notification
+
+  :param event: of the form
+    {
+      'Reason': 'CallOut',
+      'Subject': 'billybob wants to play h2hadventure',
+      'Message': 'You have subscribed to ...'
+    }
+  :type event: dict[string:string]
+  :param context: unused
+  :type context: ???
+  """
+
+    recipients = retrieve_email_subscriptions(event['Reason'])
+    creds = get_creds()
+    sendEmails(creds, recipients, event['Subject'], event['Message'])
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps(response['Items'], cls=DecimalEncoder)
+    }
+
+def retrieve_email_subscriptions(reason):
     '''
     Query dynamo for the list of email addresses to email about an event
-    event 'CallOut' or 'NewSchedule'
+    :param reason: 'CallOut' or 'NewSchedule'
+    :type reason: string
     :return: list of emails to notify about this event
     :rtype: string[]:
     '''
@@ -27,30 +54,83 @@ def retrieve_email_subscriptions(event):
     return [sub['Contact'] for sub in response['Items'] if sub['Type']=='EMAIL' && sub[attribute]]
 
 def get_creds():
+  """
+  Loads the Google API client token from Dynamo.
+  If it needs to be refreshed it refreshes it and saves the refreshed token
+  as the latest.
+  """
+    creds = loadCredsFromDynamo()
+    creds = refreshCreds(creds)
+    return creds
+
+def loadCredsFromDynamo():
+  """
+  Load the token from Dynamo or throw an error if it can't
+  :return: the credentials to use with the GoogleAPI
+  :rtype: some sort of Google Credentials object
+  """
+    key={
+      'PK': 'NotificationCreds',
+      'SK': 'GmailToken'
+    }
     dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
     table = dynamodb.Table('global')
-    response = table.query(
-      KeyConditionExpression=Key('PK').eq('GmailToken')
-    )
-    if 'Items' not in response or len(response['Items']!=1):
-      raise ValueError("Could not read GMail Token from database")
-    token = response['Items']
-    
-def send_emails(recipients, subject, message):
-    with open('token.pickle', 'rb') as token:
-        creds = pickle.load(token)
-    if creds and creds.expired:
-        raise ValueError("GMail Token expired")
-    if not creds: 
-        raise ValueError("No GMail Token")
-    if not creds.valid:
-        raise ValueError("Invalid GMail Token")
+    response = table.get_item(Key=key)
 
+    if (
+        'Item' in response and 
+        response['Item'] and 
+        response['Item']['Token'] 
+    ):
+      creds = pickle.loads(response['Item']['Token'].value)
+      return creds
+    else:
+      print("Unexpected response from Dynamo query = " + json.dumps(response))
+      raise ValueError("Could not find token in dynamo")
+
+def RefreshCreds(creds):
+  """
+  If the credentials need to be refreshed, refresh them, then store them
+  back in the database
+  :param creds: the credentials to use with the GoogleAPI
+  :type param: some sort of Google Credentials object
+  :return: new credentials if they needed to be refreshed or the passed in
+    ones if the didn't
+  :rtype: some sort of Google Credentials object
+  """
+  if not creds:
+    raise ValueError("Cannot refresh credentials.  No credentials passed in.")
+  if creds.valid:
+    return creds
+
+  if creds.expired:
+    if creds.refresh_token:
+      creds.refresh(Request())
+      if not creds.valid:
+          raise ValueError("Failed to refresh token")
+    else:
+      raise ValueError("Expired token cannot be refreshed.")
+  else:
+    # Invalid but not expired.  Give up.
+    raise ValueError("Invalid token.")
+
+  # Store the refreshed credentials in the database
+  dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
+  table = dynamodb.Table('global')
+  pickled_creds = pickle.dumps(creds)
+  item = {
+    'PK': 'NotificationCreds',
+    'SK': 'GmailToken',
+    'Token': pickled_creds
+  }
+  table.put_item(Item=item)
+    
+def sendEmails(creds, recipients, subject, message):
     service = build('gmail', 'v1', credentials=creds)
     for recipient in recipients:
-        message = create_message("ro.c.anders@gmail.com", "robert.antonucci@gmail.com", subject, message)
+        message = create_message(SENDER_EMAIL, recipient, subject, message)
         response = send_message(service, 'me', message)
-        print("Sent message to {}.  Response = {}".format(recipeint, json.dumps(response))
+    print('Sent "{}" message to {} recipients'.format(subject, len(recipients)))
 
 def create_message(sender, to, subject, message_text):
   """Create a message for an email.
@@ -68,7 +148,8 @@ def create_message(sender, to, subject, message_text):
   message['to'] = to
   message['from'] = sender
   message['subject'] = subject
-  return {'raw': base64.urlsafe_b64encode(message.as_string())}
+  encoded = base64.urlsafe_b64encode(message.as_string().encode("utf-8")).decode("ascii")
+  return {'raw': encoded}
 
 def send_message(service, user_id, message):
   """Send an email message.
@@ -93,12 +174,3 @@ def send_message(service, user_id, message):
 
     
     
-def lambda_handler(event, context):
-
-    recipients = retrieve_email_subscriptions()
-    creds = get_creds()
-
-    return {
-        'statusCode': 200,
-        'body': json.dumps(response['Items'], cls=DecimalEncoder)
-    }
