@@ -1,7 +1,14 @@
+import base64
 import boto3
-import decimal
-import json
 from boto3.dynamodb.conditions import Key, Attr
+import decimal
+from email.mime.text import MIMEText
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+import json
+import pickle
 
 '''
 Run through all subscriptions and send a message
@@ -26,42 +33,42 @@ def lambda_handler(event, context):
   :type context: ???
   """
 
-    recipients = retrieve_email_subscriptions(event['Reason'])
-    creds = get_creds()
-    sendEmails(creds, recipients, event['Subject'], event['Message'])
+  recipients = retrieveEmailSubscriptions(event['Reason'])
+  creds = getCreds()
+  sendEmails(creds, recipients, event['Subject'], event['Message'])
 
-    return {
-        'statusCode': 200,
-        'body': json.dumps(response['Items'], cls=DecimalEncoder)
-    }
+  return {
+      'statusCode': 200,
+      'body': '{}'
+  }
 
-def retrieve_email_subscriptions(reason):
-    '''
-    Query dynamo for the list of email addresses to email about an event
-    :param reason: 'CallOut' or 'NewSchedule'
-    :type reason: string
-    :return: list of emails to notify about this event
-    :rtype: string[]:
-    '''
-    dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
-    
-    table = dynamodb.Table('global')
-    attribute = 'On' + event
-    response = table.query(
-        KeyConditionExpression=Key('PK').eq('Schedule')
-        #QueryFilter=Attr(attribute).eq('true') + Attr('Type').eq('EMAIL')
-    )
-    return [sub['Contact'] for sub in response['Items'] if sub['Type']=='EMAIL' && sub[attribute]]
+def retrieveEmailSubscriptions(reason):
+  '''
+  Query dynamo for the list of email addresses to email about an event
+  :param reason: 'CallOut' or 'NewSchedule'
+  :type reason: string
+  :return: list of emails to notify about this event
+  :rtype: string[]:
+  '''
+  dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
+  
+  table = dynamodb.Table('global')
+  attribute = 'On' + reason
+  response = table.query(
+      KeyConditionExpression=Key('PK').eq('Subscription')
+      #QueryFilter=Attr(attribute).eq('true') + Attr('Type').eq('EMAIL')
+  )
+  return [sub['Contact'] for sub in response['Items'] if sub['Type']=='EMAIL' and sub[attribute]]
 
-def get_creds():
+def getCreds():
   """
   Loads the Google API client token from Dynamo.
   If it needs to be refreshed it refreshes it and saves the refreshed token
   as the latest.
   """
-    creds = loadCredsFromDynamo()
-    creds = refreshCreds(creds)
-    return creds
+  creds = loadCredsFromDynamo()
+  creds = refreshCreds(creds)
+  return creds
 
 def loadCredsFromDynamo():
   """
@@ -69,26 +76,26 @@ def loadCredsFromDynamo():
   :return: the credentials to use with the GoogleAPI
   :rtype: some sort of Google Credentials object
   """
-    key={
-      'PK': 'NotificationCreds',
-      'SK': 'GmailToken'
-    }
-    dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
-    table = dynamodb.Table('global')
-    response = table.get_item(Key=key)
+  key={
+    'PK': 'NotificationCreds',
+    'SK': 'GmailToken'
+  }
+  dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
+  table = dynamodb.Table('global')
+  response = table.get_item(Key=key)
 
-    if (
-        'Item' in response and 
-        response['Item'] and 
-        response['Item']['Token'] 
-    ):
-      creds = pickle.loads(response['Item']['Token'].value)
-      return creds
-    else:
-      print("Unexpected response from Dynamo query = " + json.dumps(response))
-      raise ValueError("Could not find token in dynamo")
+  if (
+      'Item' in response and 
+      response['Item'] and 
+      response['Item']['Token'] 
+  ):
+    creds = pickle.loads(response['Item']['Token'].value)
+    return creds
+  else:
+    print("Unexpected response from Dynamo query = " + json.dumps(response))
+    raise ValueError("Could not find token in dynamo")
 
-def RefreshCreds(creds):
+def refreshCreds(creds):
   """
   If the credentials need to be refreshed, refresh them, then store them
   back in the database
@@ -126,9 +133,11 @@ def RefreshCreds(creds):
   table.put_item(Item=item)
     
 def sendEmails(creds, recipients, subject, message):
-    service = build('gmail', 'v1', credentials=creds)
+    print("Creating GMAIL service")
+    service = build('gmail', 'v1', credentials=creds, cache_discovery=False)
     for recipient in recipients:
         message = create_message(SENDER_EMAIL, recipient, subject, message)
+        print("Sending GMAIL message")
         response = send_message(service, 'me', message)
     print('Sent "{}" message to {} recipients'.format(subject, len(recipients)))
 
@@ -172,5 +181,11 @@ def send_message(service, user_id, message):
     print('An error occurred: %s' % error)
 
 
-    
+if __name__ == '__main__':
+  event = {
+    'Reason': 'CallOut',
+    'Subject': 'billybob wants to play h2hadventure',
+    'Message': 'You have subscribed to ...'
+  }
+  lambda_handler(event, None)
     

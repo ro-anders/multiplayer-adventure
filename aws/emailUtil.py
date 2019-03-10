@@ -1,5 +1,4 @@
 
-from __future__ import print_function
 import base64
 import boto3
 from email.mime.text import MIMEText
