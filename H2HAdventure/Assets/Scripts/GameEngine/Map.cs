@@ -55,14 +55,21 @@ namespace GameEngine
 
         private int[,] distances = new int[0, 0];
 
+        private Guide guide = new Guide();
+        public Guide Guide
+        {
+            get { return guide; }
+        }
+
         public Map(int numPlayers, int gameMapLayout, bool isCooperative)
         {
             roomDefs = new ROOM[numRooms];
             defaultRooms();
             ConfigureMaze(numPlayers, gameMapLayout, isCooperative);
+            ConfigureGuide();
         }
 
-        public int getNumRooms()
+        static public int getNumRooms()
         {
             return numRooms;
         }
@@ -338,6 +345,14 @@ namespace GameEngine
         public void addCastles(Portcullis[] ports)
         {
             ComputeDistances(ports);
+        }
+
+        private void ConfigureGuide()
+        {
+            Guide.Line line = new Guide.Line();
+            line.Add(new Guide.Point(150, 50));
+            line.Add(new Guide.Point(250, 50));
+            guide.AddLine(2, line);
         }
 
         // Close exit to crystal castle to keep everyone there until the race starts
