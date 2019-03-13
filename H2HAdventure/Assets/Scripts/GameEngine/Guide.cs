@@ -84,27 +84,32 @@ namespace GameEngine {
 
         public void ConfigureGuide()
         {
-            int[] points = { 0, 3, 39, 3 };
-            Guide.Line line = MakeLine(points);
-            this.AddLine(2, line);
             int[][][] pointsLists = new int[][][]
             {
                 new int[][]{ },
                 new int[][]{ },
                 new int[][]{ },
                 new int[][]{ },
-                new int[][]{ }, // Blue maze top
-                new int[][]{ }, // Blue maze 1
-                new int[][]{ }, // Blue maze bottom
+                new int[][]{    // Blue maze top
+                    new int[]{34, 0, 34, 1, 39, 1},
+                    new int[]{19, 0, 19, 6}
+                },
+                new int[][]{    // Blue maze 1
+                    new int[]{-1, 1, 4, 1, 4, 3, 10, 3, 10, 5, 39, 5}
+                },
+                new int[][]{    // Blue maze bottom
+                    new int[]{-1, 5, 4, 5, 4, 3, 19, 3, 19, 6}
+                },
                 new int[][]{    // Blue maze center
                     new int[]{39, 1, 34, 1, 34, 3, 39, 3},
-                    new int[]{39, 5, 34, 5, 34, 6}
+                    new int[]{39, 5, 34, 5, 34, 6},
+                    new int[]{19, 0, 19, 6}
                 }, 
                 new int[][]{    // Blue maze entry
-                    new int[]{ 20, 0, 20, 1, 0, 1 },
-                    new int[]{ 0, 3, 5, 3, 5, 5, 0, 5}
+                    new int[]{ 19, 0, 19, 1, -1, 1 },
+                    new int[]{ -1, 3, 4, 3, 4, 5, -1, 5}
                 },
-                new int[][]{ } // Blue maze middle
+                new int[][]{ }
             };
             for (int roomCtr = 0; roomCtr < pointsLists.Length; ++roomCtr)
             {
@@ -122,7 +127,7 @@ namespace GameEngine {
             Guide.Line line = new Guide.Line();
             for (int ctr = 0; ctr < gridNums.Length; ctr += 2)
             {
-                line.Add(new Guide.Point(gridNums[ctr] * 8 + 4, gridNums[ctr + 1] * 32 + 16));
+                line.Add(new Guide.Point(gridNums[ctr] * 8 + 8, gridNums[ctr + 1] * 32 + 16));
             }
             return line;
         }
