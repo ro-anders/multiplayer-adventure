@@ -36,3 +36,6 @@ sysinfo.txt
 *.unitypackage
 
 H2HAdventure/target
+H2HAdventure/Logs
+token.pickle
+credentials.json

@@ -5,11 +5,23 @@ using UnityEngine;
 public class SessionInfo {
 
     // If true, show some other options only for developers
-    public const bool DEV_MODE = false;
+    public const bool DEV_MODE = true;
+
+    // If doing development while offline, set this.  Will stub out
+    // network calls.
+    public const bool WORK_OFFLINE = true;
+
+    // The version number.  Every time there is a breaking change, this
+    // needs to be updated.  Then the server can determine if the client
+    // is talking to needs to be updated.
+    public const int VERSION = 1;
 
     // Which scene to take users to once game is established.
     public const string GAME_SCENE = "AdvGame";
     //public const string GAME_SCENE = "FauxGame";
+
+    // Name of player name preference
+    public const string PLAYER_NAME_PREF = "PlayerName";
 
     public enum Network
     {

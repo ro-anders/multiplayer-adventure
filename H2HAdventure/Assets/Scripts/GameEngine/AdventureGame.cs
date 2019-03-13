@@ -326,6 +326,25 @@ namespace GameEngine
                 }
             }
 
+            // Draw the guide
+            Guide guide = gameMap.Guide;
+            IEnumerator<Guide.Line> lines = guide.GetLines(displayedRoom);
+            while (lines.MoveNext()) {
+                Guide.Line nextLine = lines.Current;
+                Guide.Point first = null;
+                IEnumerator<Guide.Point> points = nextLine.GetEnumerator();
+                while (points.MoveNext())
+                {
+                    Guide.Point next = points.Current;
+                    if (first != null)
+                    {
+                        view.Platform_PaintPixel(0, 0, 0, first.x, first.y, next.x-first.x+5, next.y-first.y+5);
+                    }
+                    first = next;
+
+                }
+            }
+
             //
             // Draw the balls
             //
@@ -811,6 +830,7 @@ namespace GameEngine
          */
         void randomizeRoomObjects()
         {
+            int numRooms = Map.getNumRooms();
             Portcullis blackCastle = (Portcullis)gameBoard[Board.OBJECT_BLACK_PORT];
             Portcullis whiteCastle = (Portcullis)gameBoard[Board.OBJECT_WHITE_PORT];
 
