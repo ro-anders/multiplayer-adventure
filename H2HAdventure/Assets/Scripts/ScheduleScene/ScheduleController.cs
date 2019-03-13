@@ -140,7 +140,7 @@ public class ScheduleController : MonoBehaviour {
                 {
                     if (responseObject.Response.StatusCode != 200)
                     {
-                        Debug.LogError("Error calling " + SCHEDULE_GAME_LAMBDA +
+                        Debug.LogError("Error calling " + DELETE_SCHEDULE_LAMBDA +
                         " lambda returned status code " + responseObject.Response.StatusCode);
                     }
                     else

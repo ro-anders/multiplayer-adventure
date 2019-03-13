@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Amazon.Lambda;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.Match;
@@ -15,9 +16,22 @@ public class NewGameInfo {
     public bool dragonsRunFromSword;
 }
 
+[Serializable]
+class SendCallRequest
+{
+    public string Reason;
+    public string Subject;
+    public string Message;
+    public SendCallRequest(string inSubject, string inMessage)
+    {
+        Reason = "CallOut";
+        Subject = inSubject;
+        Message = inMessage;
+    }
+}
+
 public class LobbyController : MonoBehaviour, ChatSubmitter
 {
-
     public NetworkManager lobbyManager;
     public ChatPanelController chatPanel;
     public GameObject newGamePanel;
@@ -28,7 +42,9 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public GameObject overlay;
     public GameObject sendCallConf;
     public GameObject noOneElsePanel;
+    public AWS awsUtil;
 
+    private const string SEND_CALL_LAMBDA = "EmailSubscriptions";
     private const string LOBBY_MATCH_NAME = "h2hlobby";
     private LobbyPlayer localLobbyPlayer;
     private ulong matchNetwork;
@@ -475,7 +491,46 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
 
     private void SendCall()
     {
-
+        AmazonLambdaClient lambdaClient = awsUtil.LambdaClient;
+        string subject = SEND_CALL_SUBJECT.Replace("{{name}}", SessionInfo.ThisPlayerName);
+        string message = SEND_CALL_MESSAGE.Replace("{{name}}", SessionInfo.ThisPlayerName);
+        SendCallRequest newRequest = new SendCallRequest(subject, message);
+        string jsonStr = JsonUtility.ToJson(newRequest);
+        lambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
+        {
+            FunctionName = SEND_CALL_LAMBDA,
+            Payload = jsonStr
+        },
+        (responseObject) =>
+        {
+            if (responseObject.Exception == null)
+            {
+                try
+                {
+                    if (responseObject.Response.StatusCode != 200)
+                    {
+                        Debug.LogError("Error calling " + SEND_CALL_LAMBDA +
+                        " lambda returned status code " + responseObject.Response.StatusCode);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError("Error calling lambda:" + e);
+                }
+            }
+            else
+            {
+                Debug.LogError(responseObject.Exception.ToString());
+            }
+        }
+        );
     }
+
+    private const string SEND_CALL_SUBJECT= "{{name}} wants to play h2hadventure";
+    private const string SEND_CALL_MESSAGE = "You had requested to be emailed whenever someone is " +
+        "looking to play H2H Atari Adventure.  Well {{name}} is online and has just sent out a call." +
+        "\n\n" +
+        "If you wish to no longer receive these events ...";
+
 
 }

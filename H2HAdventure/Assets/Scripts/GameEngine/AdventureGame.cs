@@ -319,15 +319,20 @@ namespace GameEngine
                 Guide.Line nextLine = lines.Current;
                 Guide.Point first = null;
                 IEnumerator<Guide.Point> points = nextLine.GetEnumerator();
+                int ctr = 0;
                 while (points.MoveNext())
                 {
                     Guide.Point next = points.Current;
                     if (first != null)
                     {
-                        view.Platform_PaintPixel(0, 0, 0, first.x, first.y, next.x-first.x+5, next.y-first.y+5);
+                        int x = (first.x < next.x ? first.x : next.x);
+                        int y = (first.y < next.y ? first.y : next.y);
+                        int width = (first.x < next.x ? next.x - first.x : first.x - next.x);
+                        int height = (first.y < next.y ? next.y - first.y : first.y - next.y);
+                        view.Platform_PaintPixel(0, 0, 0, x-1, y-1, width+2, width+2);
                     }
                     first = next;
-
+                    ++ctr;
                 }
             }
 

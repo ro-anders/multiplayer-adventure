@@ -82,5 +82,52 @@ namespace GameEngine {
             }
         }
 
+        public void ConfigureGuide()
+        {
+            int[] points = { 0, 3, 39, 3 };
+            Guide.Line line = MakeLine(points);
+            this.AddLine(2, line);
+            int[][][] pointsLists = new int[][][]
+            {
+                new int[][]{ },
+                new int[][]{ },
+                new int[][]{ },
+                new int[][]{ },
+                new int[][]{ }, // Blue maze top
+                new int[][]{ }, // Blue maze 1
+                new int[][]{ }, // Blue maze bottom
+                new int[][]{    // Blue maze center
+                    new int[]{39, 1, 34, 1, 34, 3, 39, 3},
+                    new int[]{39, 5, 34, 5, 34, 6}
+                }, 
+                new int[][]{    // Blue maze entry
+                    new int[]{ 20, 0, 20, 1, 0, 1 },
+                    new int[]{ 0, 3, 5, 3, 5, 5, 0, 5}
+                },
+                new int[][]{ } // Blue maze middle
+            };
+            for (int roomCtr = 0; roomCtr < pointsLists.Length; ++roomCtr)
+            {
+                int[][] roomPointsLists = pointsLists[roomCtr];
+                for (int ctr = 0; ctr < roomPointsLists.Length; ++ctr)
+                {
+                    Guide.Line nextline = MakeLine(roomPointsLists[ctr]);
+                    this.AddLine(roomCtr, nextline);
+                }
+            }
+        }
+
+        private Guide.Line MakeLine(int[] gridNums)
+        {
+            Guide.Line line = new Guide.Line();
+            for (int ctr = 0; ctr < gridNums.Length; ctr += 2)
+            {
+                line.Add(new Guide.Point(gridNums[ctr] * 8 + 4, gridNums[ctr + 1] * 32 + 16));
+            }
+            return line;
+        }
+
+
+
     }
 }
