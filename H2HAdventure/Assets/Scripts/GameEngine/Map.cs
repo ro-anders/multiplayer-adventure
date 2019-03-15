@@ -560,7 +560,7 @@ namespace GameEngine
         {
             0xF0,0x33,0xCC,          // XXXX  XX  XX  XX  XXRR  RR  RR  RR  RRRR
             0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR
-            0x00,0x3F,0xCF,          //       XXXXXX  XX  XXRR  RR  RRRRRR
+            0x00,0x3F,0xCF,          //       XXXXXXXXXX  XXRR  RRRRRRRRRR
             0x00,0x00,0xC0,          //                   XXRR
             0x00,0x3F,0xC3,          //       XXXXXXXX    XXRR    RRRRRRRR
             0x00,0x30,0xC0,          //       XX          XXRR          RR
@@ -572,7 +572,7 @@ namespace GameEngine
         {
             0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
             0x00,0x30,0x00,          //       XX                        RR
-            0xF0,0x30,0xFF,          // XXXX  XX    XXXXXXXXRRRRRRRRR   RR  RRRR
+            0xF0,0x30,0xFF,          // XXXX  XX    XXXXXXXXRRRRRRRR    RR  RRRR
             0x00,0x30,0xC0,          //       XX          XXRR          RR
             0xF0,0xF3,0xC0,          // XXXXXXXX  XX      XXRR      RR  RRRRRRRR
             0x00,0x03,0xC0,          //           XX      XXRR      RR
@@ -633,7 +633,7 @@ namespace GameEngine
             0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
             0x00,0x00,0x00,          //
             0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
-            0x00,0x00,0x0C,          //                   XX        RR
+            0x00,0x00,0x0C,          //               XX        RR
             0xF0,0xFF,0x0C,          // XXXXXXXXXXXX  XX        RR  RRRRRRRRRRRR
             0xF0,0x03,0xCC,          // XXXX      XX  XX  XXRR  RR  RR      RRRR
             0xF0,0x33,0xCF           // XXXX  XX  XXXXXX  XXRR  RRRRRR  RR  RRRR
@@ -645,7 +645,7 @@ namespace GameEngine
             0xF0,0x33,0xCF,          // XXXX  XX  XXXXXX  XXRR  RRRRRR  RR  RRRR
             0xF0,0x30,0x00,          // XXXX  XX                        RR  RRRR
             0xF0,0x33,0xFF,          // XXXX  XX  XXXXXXXXXXRRRRRRRRRR  RR  RRRR
-            0x00,0x33,0x00,          //       XX  XX                RR  RR  RRRR
+            0x00,0x33,0x00,          //       XX  XX                RR  RR  
             0xF0,0xFF,0x00,          // XXXXXXXXXXXX                RRRRRRRRRRRR
             0x00,0x00,0x00,          //
             0xF0,0xFF,0x0F           // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
@@ -718,7 +718,7 @@ namespace GameEngine
             0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXXXXXXMMMMMMMMMMMMMMMMMMMM
             0x00,0x00,0xC0,          //                   XX                  MM
             0xF0,0xFF,0xCF,          // XXXXXXXXXXXXXXXX  XXMMMMMMMMMMMMMMMM  MM
-            0x00,0x00,0x0C,          //                   XX                  MM
+            0x00,0x00,0x0C,          //               XX                  MM
             0xF0,0x0F,0xFF,          // XXXX    XXXXXXXXXXXXMMMM    MMMMMMMMMMMM
             0x00,0x0F,0xC0,          //         XXXX      XX        MMMM      MM
             0x30,0xCF,0xCC           // XX  XX  XXXX  XX  XXMM  MM  MMMM  MM  MM
@@ -728,7 +728,7 @@ namespace GameEngine
         private static readonly byte[] roomGfxBlackMazeEntry =
         {
             0x30,0xCF,0xCC,          // XX  XX  XXXX  XX  XXMM  MM  MMMM  MM  MM
-            0x00,0xC0,0xCC,          //         XX        XX  XXRR  RR        RR
+            0x00,0xC0,0xCC,          //     XX        XX  XXRR  RR        RR
             0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
             0x00,0x00,0x00,          //
             0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR

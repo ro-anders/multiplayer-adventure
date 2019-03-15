@@ -317,6 +317,7 @@ namespace GameEngine
             IEnumerator<Guide.Line> lines = guide.GetLines(displayedRoom);
             while (lines.MoveNext()) {
                 Guide.Line nextLine = lines.Current;
+                COLOR lineColor = nextLine.Color;
                 Guide.Point first = null;
                 IEnumerator<Guide.Point> points = nextLine.GetEnumerator();
                 int ctr = 0;
@@ -329,7 +330,7 @@ namespace GameEngine
                         int y = (first.y < next.y ? first.y : next.y);
                         int width = (first.x < next.x ? next.x - first.x : first.x - next.x);
                         int height = (first.y < next.y ? next.y - first.y : first.y - next.y);
-                        view.Platform_PaintPixel(0, 0, 0, x-1, y-1, width+2, height+2);
+                        view.Platform_PaintPixel(lineColor.r, lineColor.g, lineColor.b, x-1, y-1, width+2, height+2);
                     }
                     first = next;
                     ++ctr;
