@@ -496,34 +496,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
         string message = SEND_CALL_MESSAGE.Replace("{{name}}", SessionInfo.ThisPlayerName);
         SendCallRequest newRequest = new SendCallRequest(subject, message);
         string jsonStr = JsonUtility.ToJson(newRequest);
-        lambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
-        {
-            FunctionName = SEND_CALL_LAMBDA,
-            Payload = jsonStr
-        },
-        (responseObject) =>
-        {
-            if (responseObject.Exception == null)
-            {
-                try
-                {
-                    if (responseObject.Response.StatusCode != 200)
-                    {
-                        Debug.LogError("Error calling " + SEND_CALL_LAMBDA +
-                        " lambda returned status code " + responseObject.Response.StatusCode);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError("Error calling lambda:" + e);
-                }
-            }
-            else
-            {
-                Debug.LogError(responseObject.Exception.ToString());
-            }
-        }
-        );
+        awsUtil.CallLambdaAsync(SEND_CALL_LAMBDA, jsonStr);
     }
 
     private const string SEND_CALL_SUBJECT= "{{name}} wants to play h2hadventure";

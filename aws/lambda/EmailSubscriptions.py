@@ -2,6 +2,7 @@ import base64
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 import decimal
+import traceback
 from email.mime.text import MIMEText
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -33,10 +34,19 @@ def lambda_handler(event, context):
   :type context: ???
   """
 
-  recipients = retrieveEmailSubscriptions(event['Reason'])
-  creds = getCreds()
-  sendEmails(creds, recipients, event['Subject'], event['Message'])
-
+  try:
+    recipients = retrieveEmailSubscriptions(event['Reason'])
+    print("Retrieved {} email subscriptions to send to".format(len(recipients)))
+    creds = getCreds()
+    print("Retrieved GMail credentials")
+    sendEmails(creds, recipients, event['Subject'], event['Message'])
+  except Exception:
+    print("Encountered fatal exception")
+    print(traceback.format_exc())
+    return {
+      'statusCode': 500,
+      'body': '{}'
+    }
   return {
       'statusCode': 200,
       'body': '{}'
@@ -134,7 +144,12 @@ def refreshCreds(creds):
     
 def sendEmails(creds, recipients, subject, message):
     print("Creating GMAIL service")
-    service = build('gmail', 'v1', credentials=creds, cache_discovery=False)
+    try:
+      service = build('gmail', 'v1', credentials=creds, cache_discovery=False)
+    except:
+      print("Failed to create GMAIL service")
+      raise
+    print("Created GMAIL service")
     for recipient in recipients:
         message = create_message(SENDER_EMAIL, recipient, subject, message)
         print("Sending GMAIL message")

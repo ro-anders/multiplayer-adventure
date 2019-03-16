@@ -1,4 +1,5 @@
-#!/bin/bash -e
+#!/bin/bash -ex
+
 rm -rf EmailSubscriptions
 mkdir EmailSubscriptions
 cd EmailSubscriptions

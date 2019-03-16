@@ -123,6 +123,11 @@ public class AWS : MonoBehaviour {
         }
     }
 
+    public void CallLambdaAsync(string lambdaName, string inputStr)
+    {
+        CallLambdaAsync(lambdaName, inputStr, dummyCallback);
+    }
+
     public void CallLambdaAsync(string lambdaName, string inputStr, Action<bool, string> callback)
     {
         try
@@ -178,4 +183,8 @@ public class AWS : MonoBehaviour {
         }
     }
 
+    private void dummyCallback(bool success, string payload)
+    {
+        // Do nothing.
+    }
 }
