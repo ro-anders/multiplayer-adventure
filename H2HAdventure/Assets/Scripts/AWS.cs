@@ -132,8 +132,6 @@ public class AWS : MonoBehaviour {
     {
         try
         {
-            UnityEngine.Debug.Log("Calling lambda");
-            //string jsonStr = JsonUtility.ToJson(input);
             LambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
             {
                 FunctionName = lambdaName,
@@ -169,6 +167,7 @@ public class AWS : MonoBehaviour {
                     }
                     else
                     {
+                        Debug.Log("Call to " + lambdaName + " successful.");
                         callback(true, lambdaResponse.body);
                     }
                 }

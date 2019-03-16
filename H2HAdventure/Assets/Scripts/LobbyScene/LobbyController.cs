@@ -16,20 +16,6 @@ public class NewGameInfo {
     public bool dragonsRunFromSword;
 }
 
-[Serializable]
-class SendCallRequest
-{
-    public string Reason;
-    public string Subject;
-    public string Message;
-    public SendCallRequest(string inSubject, string inMessage)
-    {
-        Reason = "CallOut";
-        Subject = inSubject;
-        Message = inMessage;
-    }
-}
-
 public class LobbyController : MonoBehaviour, ChatSubmitter
 {
     public NetworkManager lobbyManager;
@@ -44,7 +30,6 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public GameObject noOneElsePanel;
     public AWS awsUtil;
 
-    private const string SEND_CALL_LAMBDA = "EmailSubscriptions";
     private const string LOBBY_MATCH_NAME = "h2hlobby";
     private LobbyPlayer localLobbyPlayer;
     private ulong matchNetwork;
@@ -491,19 +476,19 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
 
     private void SendCall()
     {
-        AmazonLambdaClient lambdaClient = awsUtil.LambdaClient;
         string subject = SEND_CALL_SUBJECT.Replace("{{name}}", SessionInfo.ThisPlayerName);
         string message = SEND_CALL_MESSAGE.Replace("{{name}}", SessionInfo.ThisPlayerName);
-        SendCallRequest newRequest = new SendCallRequest(subject, message);
+        EmailSubscriptionRequest newRequest = new EmailSubscriptionRequest(subject, message);
         string jsonStr = JsonUtility.ToJson(newRequest);
-        awsUtil.CallLambdaAsync(SEND_CALL_LAMBDA, jsonStr);
+        awsUtil.CallLambdaAsync(NotifyMeController.EMAIL_SUBSCRIPTION_LAMBDA, jsonStr);
     }
 
     private const string SEND_CALL_SUBJECT= "{{name}} wants to play h2hadventure";
     private const string SEND_CALL_MESSAGE = "You had requested to be emailed whenever someone is " +
         "looking to play H2H Atari Adventure.  Well {{name}} is online and has just sent out a call." +
         "\n\n" +
-        "If you wish to no longer receive these events ...";
+        "If you wish to no longer receive these events you can unsubscribe through the H2HAdventure " +
+        "interface by clicking \"Notify Me\"";
 
 
 }

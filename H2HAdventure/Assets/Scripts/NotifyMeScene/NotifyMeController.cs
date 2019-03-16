@@ -31,10 +31,27 @@ class SubscriptionEntry
     }
 }
 
+[Serializable]
+public class EmailSubscriptionRequest
+{
+    public string Reason;
+    public string Subject;
+    public string Message;
+    public EmailSubscriptionRequest(string inSubject, string inMessage)
+    {
+        Reason = "CallOut";
+        Subject = inSubject;
+        Message = inMessage;
+    }
+}
+
+
+
 public class NotifyMeController : MonoBehaviour {
 
     public const string EMAIL_TYPE = "EMAIL";
     public const string NEW_SUBSCRIPTION_LAMBDA = "UpsertSubscription";
+    public const string EMAIL_SUBSCRIPTION_LAMBDA = "EmailSubscriptions";
 
     public AWS awsUtil;
     public Toggle sendCallToggle;
