@@ -89,14 +89,29 @@ public class StartScreen : MonoBehaviour {
 
     public void OnPlayClicked() {
         SessionInfo.NetworkSetup = SessionInfo.Network.MATCHMAKER;
-        overlay.SetActive(true);
-        promptInfoPanel.SetActive(true);
+        if (SessionInfo.ThisPlayerInfo.userInfoSet)
+        {
+            SceneManager.LoadScene("Lobby");
+        }
+        else
+        {
+            overlay.SetActive(true);
+            promptInfoPanel.SetActive(true);
+        }
     }
 
     public void OnTestClicked()
     {
         SessionInfo.NetworkSetup = SessionInfo.Network.ALL_LOCAL;
-        SceneManager.LoadScene("Lobby");
+        if (SessionInfo.ThisPlayerInfo.userInfoSet)
+        {
+            SceneManager.LoadScene("Lobby");
+        }
+        else
+        {
+            overlay.SetActive(true);
+            promptInfoPanel.SetActive(true);
+        }
     }
 
     public void OnDirectConnectClicked()
@@ -141,6 +156,8 @@ public class StartScreen : MonoBehaviour {
             playerThree = 14,
             playerThreeName = "chris"
         };
+        SessionInfo.ThisPlayerInfo.needsPopupHelp = true;
+        SessionInfo.ThisPlayerInfo.needsMazeGuides = true;
         SessionInfo.ThisPlayerId = SessionInfo.GameToPlay.playerOne;
         SessionInfo.ThisPlayerName = SessionInfo.GameToPlay.playerOneName;
         SessionInfo.GameToPlay.playerMapping = 0;
@@ -160,6 +177,8 @@ public class StartScreen : MonoBehaviour {
     public void GotPromptInfo(string name, bool needPopups, bool needGuides)
     {
         SessionInfo.ThisPlayerName = name;
+        SessionInfo.ThisPlayerInfo.needsPopupHelp = needPopups;
+        SessionInfo.ThisPlayerInfo.needsMazeGuides = needGuides;
         SceneManager.LoadScene("Lobby");
     }
 

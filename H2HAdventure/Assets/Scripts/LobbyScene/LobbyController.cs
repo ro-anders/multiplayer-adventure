@@ -21,7 +21,6 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public NetworkManager lobbyManager;
     public ChatPanelController chatPanel;
     public GameObject newGamePanel;
-    public GameObject promptNamePanel;
     public Button hostButton;
     public GameObject gamePrefab;
     public GameObject gameList;
@@ -62,11 +61,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public void Start()
     {
         chatPanel.ChatSubmitter = this;
-        if ((SessionInfo.ThisPlayerName == null) || SessionInfo.ThisPlayerName.Equals("")) {
-            promptNamePanel.SetActive(true);
-        } else {
-            ConnectToLobby();
-        }
+        ConnectToLobby();
     }
 
     public void OnConnectedToLobby(LobbyPlayer inLocalLobbyPlayer) {
@@ -125,13 +120,6 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
             hostButton.interactable = true;
         }
     }
-
-    public void GotPlayerName(string inPlayerName) {
-        ThisPlayerName = inPlayerName;
-        promptNamePanel.SetActive(false);
-        ConnectToLobby();
-    }
-
 
     public void SubmitNewGame(NewGameInfo info) {
         localLobbyPlayer.CmdHostGame(info.numPlayers, info.gameNumber, 

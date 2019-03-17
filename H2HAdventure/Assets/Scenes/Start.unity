@@ -6159,7 +6159,7 @@ MonoBehaviour:
     m_LineSpacing: 1
   m_Text: 'Do you still need help through the through the mazes?
 
-    We can add guides to help you.'
+    <size=12>(We will add guides to help you)</size>'
 --- !u!222 &2036901111
 CanvasRenderer:
   m_ObjectHideFlags: 0

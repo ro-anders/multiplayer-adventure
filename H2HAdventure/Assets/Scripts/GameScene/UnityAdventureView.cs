@@ -51,8 +51,8 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
 
     private PlayerSync localPlayer;
 
-    private bool gameStarted = false;
-    private int numPlayersReady = 0;
+    private bool gameStarted;
+    private int numPlayersReady;
 
     // We hold a big buffer of rectangles as compactly as possible, so we
     // convert a Rectange (red, green, blue, x, y, width, length) and store
@@ -60,11 +60,11 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
     private const short RECTSIZE = 7;
     private const int RECTS_START_SIZE = 3000;
     private short[] rectsToDisplay = new short[RECTS_START_SIZE * RECTSIZE];
-    private float scale = 1;
-    int rectsBufferSize = RECTS_START_SIZE;
-    int numRects = 0;
-    bool painting = false;
-    bool displaying = false;
+    private readonly float scale = 1;
+    private int rectsBufferSize = RECTS_START_SIZE;
+    private int numRects;
+    private bool painting;
+    private bool displaying;
 
     void Start() {
         chatPanel.ChatSubmitter = this;
@@ -179,7 +179,8 @@ public class UnityAdventureView : MonoBehaviour, AdventureView, ChatSubmitter
         GameInLobby game = SessionInfo.GameToPlay;
         UnityTransport xportToUse = (SessionInfo.NetworkSetup == SessionInfo.Network.NONE ? null : xport);
         gameEngine = new AdventureGame(this, game.numPlayers, inLocalPlayerSlot, xportToUse, 
-            game.gameNumber, game.diff1 == DIFF.A, game.diff2 == DIFF.A);
+            game.gameNumber, game.diff1 == DIFF.A, game.diff2 == DIFF.A,
+            SessionInfo.ThisPlayerInfo.needsPopupHelp, SessionInfo.ThisPlayerInfo.needsMazeGuides);
     }
 
     public void AdventureUpdate() {

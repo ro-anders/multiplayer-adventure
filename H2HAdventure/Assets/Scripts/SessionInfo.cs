@@ -2,6 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public class UserInfo
+{
+    public bool userInfoSet = false;
+    public bool needsPopupHelp = false;
+    public bool needsMazeGuides = false;
+}
+
 public class SessionInfo {
 
     // If true, show some other options only for developers
@@ -38,6 +45,7 @@ public class SessionInfo {
     private static GameInLobby gameToPlay;
     private static Network networkSetup;
     private static string directConnectIp;
+    private static UserInfo thisPlayerInfo = new UserInfo();
 
 
     public static uint ThisPlayerId
@@ -62,6 +70,14 @@ public class SessionInfo {
         set
         {
             thisPlayerName = value;
+        }
+    }
+
+    public static UserInfo ThisPlayerInfo
+    {
+        get
+        {
+            return thisPlayerInfo;
         }
     }
 

@@ -61,12 +61,15 @@ namespace GameEngine
             get { return guide; }
         }
 
-        public Map(int numPlayers, int gameMapLayout, bool isCooperative)
+        public Map(int numPlayers, int gameMapLayout, bool isCooperative, bool usesGuides)
         {
             roomDefs = new ROOM[numRooms];
             defaultRooms();
             ConfigureMaze(numPlayers, gameMapLayout, isCooperative);
-            guide.ConfigureGuide();
+            if (usesGuides)
+            {
+                guide.ConfigureGuide();
+            }
         }
 
         static public int getNumRooms()
