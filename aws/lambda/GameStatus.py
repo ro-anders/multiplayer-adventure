@@ -21,7 +21,7 @@ class DecimalEncoder(json.JSONEncoder):
 
 def lambda_handler(event, context):
 
-    MINIMAL_VIABLE_VERSION = 1
+    MINIMAL_VIABLE_VERSION = 2
     
     STATUS_MESSAGE = ""
     
