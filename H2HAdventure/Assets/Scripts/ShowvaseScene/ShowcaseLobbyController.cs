@@ -14,6 +14,8 @@ public class ShowcaseLobbyController : MonoBehaviour
     private const string ACCEPT_SUPPLEMENT_NO_LIMIT = "or...";
     private const string ACCEPT_SUPPLEMENT_LIMIT = "you have {} seconds to accept";
 
+    private const float TIME_TO_JOIN_2P_GAME = 10;
+
     public ShowcaseController parent;
     public ShowcaseTransport xport;
 
@@ -31,6 +33,7 @@ public class ShowcaseLobbyController : MonoBehaviour
     private Text waitGameDescText;
     private GameObject leftOutPanel;
 
+    private float timeToAccept = -1;
 
     // Start is called before the first frame update
     void Start()
@@ -54,12 +57,25 @@ public class ShowcaseLobbyController : MonoBehaviour
         acceptPanel.SetActive(false);
         waitPanel.SetActive(false);
         leftOutPanel.SetActive(false);
+        timeToAccept = -1;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (timeToAccept > 0)
+        {
+            int currentSeconds = (int)Mathf.Ceil(timeToAccept);
+            timeToAccept -= Time.deltaTime;
+            int newSeconds = (int)Mathf.Ceil(timeToAccept);
+            if ((newSeconds < currentSeconds) && (currentSeconds > 1))
+            {
+                if (acceptSupplementText.text != ACCEPT_SUPPLEMENT_NO_LIMIT)
+                {
+                    acceptSupplementText.text = ACCEPT_SUPPLEMENT_LIMIT.Replace("{}", newSeconds.ToString());
+                }
+            }
+        }
     }
 
     // ----- Button and Other UI Handlers -----------------------------------------------------
@@ -123,6 +139,7 @@ public class ShowcaseLobbyController : MonoBehaviour
             {
                 parent.GameHasBeenAgreed();
             }
+            timeToAccept = -1;
         }
         else
         {
@@ -139,12 +156,20 @@ public class ShowcaseLobbyController : MonoBehaviour
                 acceptGameDescText.text = GameDisplayString(game);
                 acceptSupplementText.text = ACCEPT_SUPPLEMENT_NO_LIMIT;
                 leftOutPanel.SetActive(false);
+                timeToAccept = -1;
             }
             // If the game doesn't have me and is a 2 player game ready to go
             // display the accept panel only and put in the countdown
             else
             {
-                // TBD
+                waitPanel.SetActive(false);
+                proposalPanel.SetActive(false);
+                acceptPanel.SetActive(true);
+                acceptTitleText.text = ACCEPT_TITLE_NO_OTHER;
+                acceptGameDescText.text = GameDisplayString(game);
+                acceptSupplementText.text = ACCEPT_SUPPLEMENT_LIMIT;
+                leftOutPanel.SetActive(false);
+                timeToAccept = TIME_TO_JOIN_2P_GAME;
             }
         }
     }
@@ -156,6 +181,7 @@ public class ShowcaseLobbyController : MonoBehaviour
         acceptPanel.SetActive(false);
         waitPanel.SetActive(false);
         leftOutPanel.SetActive(false);
+        timeToAccept = -1;
     }
 
     private string GameDisplayString(ProposedGame game)
