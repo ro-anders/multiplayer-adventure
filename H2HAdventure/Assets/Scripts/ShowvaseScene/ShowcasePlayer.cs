@@ -27,10 +27,28 @@ public class ShowcasePlayer : NetworkBehaviour
         xport.FflProposeGame(this, gameJson);
     }
 
+    [Command]
+    public void CmdAcceptGame(int acceptingPlayerId)
+    {
+        xport.FflAcceptGame(acceptingPlayerId);
+    }
+
+    [Command]
+    public void CmdAbortGame(int abortingPlayerId)
+    {
+        xport.FflAbortGame(abortingPlayerId);
+    }
+
     [ClientRpc]
     public void RpcNewProposedGame(string serializedGame)
     {
         xport.HdlNewProposedGame(serializedGame);
+    }
+
+    [ClientRpc]
+    public void RpcClearGame()
+    {
+        xport.HdlNoGame();
     }
 
 }

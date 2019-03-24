@@ -8,6 +8,12 @@ public class ShowcaseLobbyController : MonoBehaviour
     private const string PROPOSAL_TITLE_NO_OTHER = "Propose a game";
     private const string PROPOSAL_TITLE_OTHER = "offer a counter-proposal";
 
+    private const string ACCEPT_TITLE_NO_OTHER = "The following game has been proposed: ";
+    private const string ACCEPT_TITLE_OTHER = "Your game was rejected and a new one proposed:";
+
+    private const string ACCEPT_SUPPLEMENT_NO_LIMIT = "or...";
+    private const string ACCEPT_SUPPLEMENT_LIMIT = "you have {} seconds to accept";
+
     public ShowcaseController parent;
     public ShowcaseTransport xport;
 
@@ -18,23 +24,30 @@ public class ShowcaseLobbyController : MonoBehaviour
     private ToggleGroup difficulty1ToggleGrp;
     private ToggleGroup difficulty2ToggleGrp;
     private GameObject acceptPanel;
+    private Text acceptTitleText;
+    private Text acceptGameDescText;
+    private Text acceptSupplementText;
     private GameObject waitPanel;
     private Text waitGameDescText;
     private GameObject leftOutPanel;
+
 
     // Start is called before the first frame update
     void Start()
     {
         proposalPanel = transform.Find("ProposalPanel").gameObject;
-        proposalTitleText = transform.Find("ProposalPanel/TitleText").gameObject.GetComponent<Text>();
+        proposalTitleText = transform.Find("ProposalPanel/DescText").gameObject.GetComponent<Text>();
         gameBoardToggleGrp = transform.Find("ProposalPanel/GameBoardToggleGroup").gameObject.GetComponent<ToggleGroup>();
         numPlayersToggleGrp = transform.Find("ProposalPanel/NumPlayersToggleGroup").gameObject.GetComponent<ToggleGroup>();
         difficulty1ToggleGrp = transform.Find("ProposalPanel/Difficulty1ToggleGroup").gameObject.GetComponent<ToggleGroup>();
         difficulty2ToggleGrp = transform.Find("ProposalPanel/Difficulty2ToggleGroup").gameObject.GetComponent<ToggleGroup>();
         acceptPanel = transform.Find("AcceptPanel").gameObject;
+        acceptTitleText = transform.Find("AcceptPanel/DescText").gameObject.GetComponent<Text>();
+        acceptGameDescText = transform.Find("AcceptPanel/GameDescriptionText").gameObject.GetComponent<Text>();
+        acceptSupplementText = transform.Find("AcceptPanel/SupplementText").gameObject.GetComponent<Text>();
         waitPanel = transform.Find("WaitPanel").gameObject;
-        leftOutPanel = transform.Find("LeftOutPanel").gameObject;
         waitGameDescText = transform.Find("WaitPanel/GameDescriptionText").gameObject.GetComponent<Text>();
+        leftOutPanel = transform.Find("LeftOutPanel").gameObject;
 
         proposalPanel.SetActive(true);
         proposalTitleText.text = PROPOSAL_TITLE_NO_OTHER;
@@ -48,6 +61,8 @@ public class ShowcaseLobbyController : MonoBehaviour
     {
         
     }
+
+    // ----- Button and Other UI Handlers -----------------------------------------------------
 
     public void OnProposePressed()
     {
@@ -78,39 +93,75 @@ public class ShowcaseLobbyController : MonoBehaviour
         xport.ReqProposeGame(newGame);
     }
 
+    public void OnAbortPressed()
+    {
+        xport.ReqAbortGame();
+    }
+
+    public void OnAcceptPressed()
+    {
+        xport.ReqAcceptGame();
+    }
+
+    // --- Network Action Handlers -----------------------------------------------------------------------
+
     public void OnProposalReceived(ProposedGame game, bool inGame) {
         if (inGame)
         {
             // If the game has me and still needs another player
             // display the waiting panel
-            if (game.players.Length >= game.numPlayers)
+            if (game.players.Length < game.numPlayers)
             {
                 waitGameDescText.text = GameDisplayString(game);
                 waitPanel.SetActive(true);
                 proposalPanel.SetActive(false);
                 acceptPanel.SetActive(false);
                 leftOutPanel.SetActive(false);
-
             }
-
             // If the game has me and is ready to play.  Move to next phase
-            // TBD
-
+            else
+            {
+                parent.GameHasBeenAgreed();
+            }
         }
         else
         {
             // If the game doesn't have me and and still needs another player
             // display the accept panel and the counter-proposal panel
-            // TBD
-
+            if (game.players.Length < game.numPlayers)
+            {
+                bool gameWasRejected = waitPanel.activeInHierarchy;
+                waitPanel.SetActive(false);
+                proposalPanel.SetActive(true);
+                proposalTitleText.text = PROPOSAL_TITLE_OTHER;
+                acceptPanel.SetActive(true);
+                acceptTitleText.text = (gameWasRejected ? ACCEPT_TITLE_OTHER : ACCEPT_TITLE_NO_OTHER);
+                acceptGameDescText.text = GameDisplayString(game);
+                acceptSupplementText.text = ACCEPT_SUPPLEMENT_NO_LIMIT;
+                leftOutPanel.SetActive(false);
+            }
             // If the game doesn't have me and is a 2 player game ready to go
             // display the accept panel only and put in the countdown
-            // TBD
+            else
+            {
+                // TBD
+            }
         }
+    }
+
+    public void OnClearProposalReceived()
+    {
+        proposalPanel.SetActive(true);
+        proposalTitleText.text = PROPOSAL_TITLE_NO_OTHER;
+        acceptPanel.SetActive(false);
+        waitPanel.SetActive(false);
+        leftOutPanel.SetActive(false);
     }
 
     private string GameDisplayString(ProposedGame game)
     {
-        return "snuf";
+        return "Game " + (game.gameNumber + 1) + ", " + (game.numPlayers == 2 ? "2-3" : "3") + " players, " +
+            (game.diff1 == 0 ? "Faster dragons" : "Slower dragons") + ", " + (game.diff2 == 0 ? "Dragons avoid sword" : "Dragons charge sword");
+        
     }
 }

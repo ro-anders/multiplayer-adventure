@@ -15,6 +15,7 @@ public class ShowcaseNetworkController : MonoBehaviour
     private InputField clientPortInput;
     private Text errorText;
 
+    // A flag to indicate we've tried to connect to the Host.  Used when deciding to report an error.
     private bool waitingForSuccess = false;
 
     // Start is called before the first frame update
@@ -56,6 +57,7 @@ public class ShowcaseNetworkController : MonoBehaviour
         if (waitingForSuccess)
         {
             parent.NetworkHasBeenSetup();
+            waitingForSuccess = false;
         }
     }
 

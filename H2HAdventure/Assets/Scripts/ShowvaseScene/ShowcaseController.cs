@@ -7,6 +7,7 @@ public class ShowcaseController : MonoBehaviour
     private ShowcaseNetworkController networkController;
     private ShowcaseTitleController titleController;
     private ShowcaseLobbyController lobbyController;
+    private ShowcasePrestartController prestartController;
 
     // Start is called before the first frame update
     void Start()
@@ -14,10 +15,12 @@ public class ShowcaseController : MonoBehaviour
         networkController = transform.Find("NetworkPanel").gameObject.GetComponent<ShowcaseNetworkController>();
         titleController = transform.Find("ShowcasePanel").gameObject.GetComponent<ShowcaseTitleController>();
         lobbyController = transform.Find("LobbyPanel").gameObject.GetComponent<ShowcaseLobbyController>();
+        prestartController = transform.Find("PrestartPanel").gameObject.GetComponent<ShowcasePrestartController>();
 
         networkController.gameObject.SetActive(true);
         titleController.gameObject.SetActive(false);
         lobbyController.gameObject.SetActive(false);
+        prestartController.gameObject.SetActive(false);
     }
 
     public void NetworkHasBeenSetup()
@@ -31,6 +34,13 @@ public class ShowcaseController : MonoBehaviour
     {
         titleController.gameObject.SetActive(false);
         lobbyController.gameObject.SetActive(true);
+    }
+
+    public void GameHasBeenAgreed()
+    {
+        titleController.gameObject.SetActive(false);
+        lobbyController.gameObject.SetActive(false);
+        prestartController.gameObject.SetActive(true);
     }
 
 }

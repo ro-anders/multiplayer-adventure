@@ -63,4 +63,36 @@ public class ShowcaseTransport : MonoBehaviour
         ProposedGame proposal = JsonUtility.FromJson<ProposedGame>(serializedProposedGame);
         lobbyController.OnProposalReceived(proposal, proposal.ContainsPlayer(thisClient.GetId()));
     }
+
+    public void ReqAcceptGame()
+    {
+        thisClient.CmdAcceptGame(thisClient.GetId());
+    }
+
+    public void FflAcceptGame(int player)
+    {
+        lobbyServer.HandleAcceptGame(player);
+    }
+
+    public void ReqAbortGame()
+    {
+        thisClient.CmdAbortGame(thisClient.GetId());
+    }
+
+    public void FflAbortGame(int abortingPlayerId)
+    {
+        lobbyServer.HandleAbortGame(abortingPlayerId);
+    }
+
+    public void BcstNoGame()
+    {
+        thisClient.RpcClearGame();
+
+    }
+
+    public void HdlNoGame()
+    {
+        lobbyController.OnClearProposalReceived();
+    }
+
 }

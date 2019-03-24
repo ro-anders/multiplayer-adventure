@@ -17,12 +17,49 @@ public class LobbyServer
     {
         if (isProposingSameGame(newGame)) 
         {
-            throw new Exception("TBD");
+            int playerToAdd = newGame.players[0];
+            if (!proposedGame.ContainsPlayer(playerToAdd))
+            {
+                List<int> playerList = new List<int>(proposedGame.players);
+                playerList.Add(playerToAdd);
+                proposedGame.players = playerList.ToArray();
+                xport.BcstNewProposedGame(proposedGame);
+            }
         }
         else
         {
             proposedGame = newGame;
             xport.BcstNewProposedGame(proposedGame);
+        }
+    }
+
+    public void HandleAcceptGame(int acceptingPlayerId)
+    {
+        if (!proposedGame.ContainsPlayer(acceptingPlayerId))
+        {
+            List<int> playerList = new List<int>(proposedGame.players);
+            playerList.Add(acceptingPlayerId);
+            proposedGame.players = playerList.ToArray();
+            xport.BcstNewProposedGame(proposedGame);
+        }
+    }
+
+        public void HandleAbortGame(int abortingPlayerId)
+    {
+        if (proposedGame.ContainsPlayer(abortingPlayerId)) {
+            List<int> playerList = new List<int>(proposedGame.players);
+            playerList.Remove(abortingPlayerId);
+            if (playerList.Count == 0)
+            {
+                // All players have aborted.  Cancel the proposed game.
+                proposedGame = null;
+                xport.BcstNoGame();
+            }
+            else
+            {
+                proposedGame.players = playerList.ToArray();
+                xport.BcstNewProposedGame(proposedGame);
+            }
         }
     }
 
