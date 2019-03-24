@@ -9,7 +9,7 @@ public class ShowcaseTransport : MonoBehaviour
     public ShowcaseLobbyController lobbyController;
 
     private ShowcasePlayer thisClient;
-    private List<ShowcasePlayer> allClients;
+    private List<ShowcasePlayer> allClients = new List<ShowcasePlayer>();
     private LobbyServer lobbyServer;
 
     // Start is called before the first frame update

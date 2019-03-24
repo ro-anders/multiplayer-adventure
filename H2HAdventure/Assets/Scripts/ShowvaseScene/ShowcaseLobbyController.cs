@@ -9,8 +9,8 @@ public class ShowcaseLobbyController : MonoBehaviour
     private const string PROPOSAL_TITLE_OTHER = "offer a counter-proposal";
 
     public ShowcaseController parent;
+    public ShowcaseTransport xport;
 
-    private ShowcaseTransport transport;
     private GameObject proposalPanel;
     private Text proposalTitleText;
     private ToggleGroup gameBoardToggleGrp;
@@ -25,7 +25,6 @@ public class ShowcaseLobbyController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        proposalPanel = parent.transform.Find("ShowcseTransport").gameObject;
         proposalPanel = transform.Find("ProposalPanel").gameObject;
         proposalTitleText = transform.Find("ProposalPanel/TitleText").gameObject.GetComponent<Text>();
         gameBoardToggleGrp = transform.Find("ProposalPanel/GameBoardToggleGroup").gameObject.GetComponent<ToggleGroup>();
@@ -58,12 +57,15 @@ public class ShowcaseLobbyController : MonoBehaviour
         int gameBoard = (selected.gameObject.name == "GameBoard1Toggle" ? 0 :
             (selected.gameObject.name == "GameBoard2Toggle" ? 1 : 2));
         enumerator = numPlayersToggleGrp.ActiveToggles().GetEnumerator();
+        enumerator.MoveNext();
         selected = enumerator.Current;
         int numPlayers = (selected.gameObject.name == "NumPlayers2Toggle" ? 2 : 3);
         enumerator = difficulty1ToggleGrp.ActiveToggles().GetEnumerator();
+        enumerator.MoveNext();
         selected = enumerator.Current;
         int diff1 = (selected.gameObject.name == "Diff1AToggle" ? 0 : 1);
         enumerator = difficulty2ToggleGrp.ActiveToggles().GetEnumerator();
+        enumerator.MoveNext();
         selected = enumerator.Current;
         int diff2 = (selected.gameObject.name == "Diff2AToggle" ? 0 : 1);
         ProposedGame newGame = new ProposedGame
@@ -73,7 +75,7 @@ public class ShowcaseLobbyController : MonoBehaviour
             diff1 = diff1,
             diff2 = diff2
         };
-        transport.ReqProposeGame(newGame);
+        xport.ReqProposeGame(newGame);
     }
 
     public void OnProposalReceived(ProposedGame game, bool inGame) {
