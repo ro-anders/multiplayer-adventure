@@ -7,6 +7,7 @@ public class ShowcaseTransport : MonoBehaviour
 {
     public ShowcaseNetworkController networkController;
     public ShowcaseLobbyController lobbyController;
+    public ShowcasePrestartController prestartController;
 
     private ShowcasePlayer thisClient;
     private List<ShowcasePlayer> allClients = new List<ShowcasePlayer>();
@@ -37,6 +38,9 @@ public class ShowcaseTransport : MonoBehaviour
         networkController.PlayerStarted();
     }
 
+
+    // ---- Reqs and Ffls ---------------------------------------------------------------
+
     public void ReqProposeGame(ProposedGame newGame)
     {
         newGame.players = new int[] { thisClient.GetId() };
@@ -49,19 +53,6 @@ public class ShowcaseTransport : MonoBehaviour
     {
         ProposedGame newGame = JsonUtility.FromJson<ProposedGame>(gameJson);
         lobbyServer.HandleProposeGame(newGame);
-    }
-
-    public void BcstNewProposedGame(ProposedGame proposedGame)
-    {
-        string proposedGameJson = JsonUtility.ToJson(proposedGame);
-        thisClient.RpcNewProposedGame(proposedGameJson);
-
-    }
-
-    public void HdlNewProposedGame(string serializedProposedGame)
-    {
-        ProposedGame proposal = JsonUtility.FromJson<ProposedGame>(serializedProposedGame);
-        lobbyController.OnProposalReceived(proposal, proposal.ContainsPlayer(thisClient.GetId()));
     }
 
     public void ReqAcceptGame()
@@ -84,6 +75,32 @@ public class ShowcaseTransport : MonoBehaviour
         lobbyServer.HandleAbortGame(abortingPlayerId);
     }
 
+    public void ReqReadyToStart()
+    {
+        thisClient.CmdReadyToStart(thisClient.GetId());
+    }
+
+    public void FflReadyToStart(int abortingPlayerId)
+    {
+        lobbyServer.HandleReadyToStart(abortingPlayerId);
+    }
+
+
+    // ---- Bcasts and Hdls ---------------------------------------------------------------
+
+    public void BcstNewProposedGame(ProposedGame proposedGame)
+    {
+        string proposedGameJson = JsonUtility.ToJson(proposedGame);
+        thisClient.RpcNewProposedGame(proposedGameJson);
+
+    }
+
+    public void HdlNewProposedGame(string serializedProposedGame)
+    {
+        ProposedGame proposal = JsonUtility.FromJson<ProposedGame>(serializedProposedGame);
+        lobbyController.OnProposalReceived(proposal, proposal.ContainsPlayer(thisClient.GetId()));
+    }
+
     public void BcstNoGame()
     {
         thisClient.RpcClearGame();
@@ -93,6 +110,17 @@ public class ShowcaseTransport : MonoBehaviour
     public void HdlNoGame()
     {
         lobbyController.OnClearProposalReceived();
+    }
+
+    public void BcstStartGame()
+    {
+        thisClient.RpcStartGame();
+
+    }
+
+    public void HdlStartGame()
+    {
+        prestartController.OnStartGame();
     }
 
 }

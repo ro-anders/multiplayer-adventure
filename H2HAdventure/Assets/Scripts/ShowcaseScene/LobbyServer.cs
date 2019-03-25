@@ -7,6 +7,7 @@ public class LobbyServer
 {
     private ShowcaseTransport xport;
     private ProposedGame proposedGame;
+    private int playersReady;
 
     public LobbyServer(ShowcaseTransport inXport)
     {
@@ -31,6 +32,7 @@ public class LobbyServer
             proposedGame = newGame;
             xport.BcstNewProposedGame(proposedGame);
         }
+        playersReady = 0;
     }
 
     public void HandleAcceptGame(int acceptingPlayerId)
@@ -44,7 +46,7 @@ public class LobbyServer
         }
     }
 
-        public void HandleAbortGame(int abortingPlayerId)
+    public void HandleAbortGame(int abortingPlayerId)
     {
         if (proposedGame.ContainsPlayer(abortingPlayerId)) {
             List<int> playerList = new List<int>(proposedGame.players);
@@ -60,6 +62,15 @@ public class LobbyServer
                 proposedGame.players = playerList.ToArray();
                 xport.BcstNewProposedGame(proposedGame);
             }
+        }
+    }
+
+    public void HandleReadyToStart(int readyPlayerId)
+    {
+        ++playersReady;
+        if (playersReady == proposedGame.players.Length)
+        {
+            xport.BcstStartGame();
         }
     }
 

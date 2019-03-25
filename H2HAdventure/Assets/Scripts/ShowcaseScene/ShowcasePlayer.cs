@@ -39,6 +39,12 @@ public class ShowcasePlayer : NetworkBehaviour
         xport.FflAbortGame(abortingPlayerId);
     }
 
+    [Command]
+    public void CmdReadyToStart(int abortingPlayerId)
+    {
+        xport.FflReadyToStart(abortingPlayerId);
+    }
+
     [ClientRpc]
     public void RpcNewProposedGame(string serializedGame)
     {
@@ -49,6 +55,12 @@ public class ShowcasePlayer : NetworkBehaviour
     public void RpcClearGame()
     {
         xport.HdlNoGame();
+    }
+
+    [ClientRpc]
+    public void RpcStartGame()
+    {
+        xport.HdlStartGame();
     }
 
 }

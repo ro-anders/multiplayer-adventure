@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ShowcasePrestartController : MonoBehaviour
+public class ShowcaseGameController : MonoBehaviour
 {
-
     public ShowcaseController parent;
     public ShowcaseTransport xport;
 
