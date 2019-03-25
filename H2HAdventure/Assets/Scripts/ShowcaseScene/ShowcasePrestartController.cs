@@ -15,16 +15,17 @@ public class ShowcasePrestartController : MonoBehaviour
     private Text startText;
 
 
+
     // Start is called before the first frame update
     void Start()
     {
-        needHelpToggleGrp = transform.Find("PrestartPanel/Q1ToggleGroup").gameObject.GetComponent<ToggleGroup>();
-        needGuideToggleGrp = transform.Find("PrestartPanel/Q2ToggleGroup").gameObject.GetComponent<ToggleGroup>();
-        okButton = transform.Find("PrestartPanel/OkButton").gameObject.GetComponent<Button>();
-        startText = transform.Find("PrestartPanel/StartText").gameObject.GetComponent<Text>();
+        needHelpToggleGrp = transform.Find("Q1ToggleGroup").gameObject.GetComponent<ToggleGroup>();
+        needGuideToggleGrp = transform.Find("Q2ToggleGroup").gameObject.GetComponent<ToggleGroup>();
+        okButton = transform.Find("OkButton").gameObject.GetComponent<Button>();
+        startText = transform.Find("StartText").gameObject.GetComponent<Text>();
 
         okButton.interactable = true;
-        startText.gameObject.SetActive(true);
+        startText.gameObject.SetActive(false);
 
     }
 
@@ -42,6 +43,7 @@ public class ShowcasePrestartController : MonoBehaviour
         SessionInfo.ThisPlayerInfo.needsMazeGuides = (selected.gameObject.name == "Q2YesToggle");
         okButton.interactable = false;
         startText.gameObject.SetActive(true);
+        xport.ReqReadyToStart();
     }
 
     // --- Network Action Handlers -----------------------------------------------------------------------

@@ -8,6 +8,7 @@ public class ShowcaseTransport : MonoBehaviour
     public ShowcaseNetworkController networkController;
     public ShowcaseLobbyController lobbyController;
     public ShowcasePrestartController prestartController;
+    public ShowcaseGameController gameController;
 
     private ShowcasePlayer thisClient;
     private List<ShowcasePlayer> allClients = new List<ShowcasePlayer>();
@@ -120,6 +121,7 @@ public class ShowcaseTransport : MonoBehaviour
 
     public void HdlStartGame()
     {
+        lobbyController.OnStartGame();
         prestartController.OnStartGame();
     }
 

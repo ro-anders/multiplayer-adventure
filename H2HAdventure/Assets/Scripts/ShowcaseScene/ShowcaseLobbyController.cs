@@ -184,6 +184,15 @@ public class ShowcaseLobbyController : MonoBehaviour
         timeToAccept = -1;
     }
 
+    public void OnStartGame()
+    {
+        // Game has started.  Show the left out screen.
+        proposalPanel.SetActive(false);
+        acceptPanel.SetActive(false);
+        waitPanel.SetActive(false);
+        leftOutPanel.SetActive(true);
+    }
+
     private string GameDisplayString(ProposedGame game)
     {
         return "Game " + (game.gameNumber + 1) + ", " + (game.numPlayers == 2 ? "2-3" : "3") + " players, " +
