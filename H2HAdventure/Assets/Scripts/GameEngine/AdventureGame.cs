@@ -527,7 +527,6 @@ namespace GameEngine
 
         public void Adventure_Run()
         {
-            UnityEngine.Debug.Log("Game updating");
             ////            sync.StartFrame();
             SyncWithOthers();
             checkPlayers();

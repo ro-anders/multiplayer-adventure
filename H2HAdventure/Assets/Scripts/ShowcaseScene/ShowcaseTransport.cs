@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using GameEngine;
 using UnityEngine;
@@ -17,6 +18,9 @@ public class ShowcaseTransport : MonoBehaviour, GameEngine.Transport
     private LobbyServer lobbyServer;
     private Queue<RemoteAction> receviedActions = new Queue<RemoteAction>();
 
+    private float timeLeftInTimer = -1;
+    private Action timerCallback;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -25,7 +29,16 @@ public class ShowcaseTransport : MonoBehaviour, GameEngine.Transport
     // Update is called once per frame
     void Update()
     {
-        
+        if (timeLeftInTimer > 0)
+        {
+            timeLeftInTimer -= Time.deltaTime;
+            if ((timeLeftInTimer <= 0) && (timerCallback != null))
+            {
+                Action callback = timerCallback;
+                timerCallback = null;
+                callback();
+            }
+        }
     }
 
     public void AddClient(ShowcasePlayer newClient)
@@ -40,6 +53,30 @@ public class ShowcaseTransport : MonoBehaviour, GameEngine.Transport
             }
         }
         networkController.PlayerStarted();
+    }
+
+    /**
+     * Not really a function of the transport but any
+     * monobehavior can do it and I'm not creating a whole
+     * new unity object just for a timer. The LobbyServer uses it.
+     */    
+    public void SetTimer(float seconds, Action callback)
+    {
+        if (callback == null)
+        {
+            timeLeftInTimer = -1;
+            timerCallback = null;
+        }
+        else
+        {
+            timeLeftInTimer = seconds;
+            timerCallback = callback;
+        }
+    }
+
+    public bool IsTimerRunning()
+    {
+        return timerCallback != null;
     }
 
     public void send(RemoteAction action)
