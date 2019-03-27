@@ -58,9 +58,21 @@ public class ShowcasePlayer : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void RpcStartGame()
+    public void RpcStartGame(string serializedGame)
     {
-        xport.HdlStartGame();
+        xport.HdlStartGame(serializedGame);
+    }
+
+    [Command]
+    public void CmdBroadcastGameAction(int[] dataPacket)
+    {
+        RpcReceiveGameAction(dataPacket);
+    }
+
+    [ClientRpc]
+    public void RpcReceiveGameAction(int[] dataPacket)
+    {
+        xport.receiveBroadcast(dataPacket);
     }
 
 }

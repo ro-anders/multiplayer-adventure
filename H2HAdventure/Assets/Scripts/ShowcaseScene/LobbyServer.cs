@@ -8,6 +8,15 @@ public class LobbyServer
     private ShowcaseTransport xport;
     private ProposedGame proposedGame;
     private int playersReady;
+    private static readonly int[,] permutations = new int[,] {
+        {0, 1, 2},
+        {1, 0, 2},
+        {1, 2, 0},
+        {0, 2, 1},
+        {2, 0, 1},
+        {2, 1, 0}
+    };
+
 
     public LobbyServer(ShowcaseTransport inXport)
     {
@@ -68,9 +77,20 @@ public class LobbyServer
     public void HandleReadyToStart(int readyPlayerId)
     {
         ++playersReady;
-        if (playersReady == proposedGame.players.Length)
+        int numPlayers = proposedGame.players.Length;
+        if (playersReady == numPlayers)
         {
-            xport.BcstStartGame();
+            // Reorder the players list randomly
+            System.Random rand = new System.Random();
+            int which = rand.Next(0, (numPlayers == 2 ? 2 : 6));
+            int[] ordering = { permutations[which, 0], permutations[which, 1], permutations[which, 2] };
+            int[] playersReordered = new int[numPlayers];
+            for(int ctr=0; ctr<numPlayers; ++ctr){
+                playersReordered[ctr] = proposedGame.players[ordering[ctr]];
+            }
+            proposedGame.players = playersReordered;
+
+            xport.BcstStartGame(proposedGame);
         }
     }
 

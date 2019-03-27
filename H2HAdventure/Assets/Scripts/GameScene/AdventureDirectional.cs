@@ -33,7 +33,10 @@ public class AdventureDirectional : MonoBehaviour
     void Start()
     {
 #if UNITY_STANDALONE || UNITY_WEBPLAYER
-        joystickImage.gameObject.SetActive(false);
+        if (joystickImage != null)
+        {
+            joystickImage.gameObject.SetActive(false);
+        }
 #else
         Vector3 size = GetComponent<Renderer>().bounds.size;
         minDragDistance = (int)(size.x / 4);

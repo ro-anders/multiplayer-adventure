@@ -3285,10 +3285,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 531a352e8a7014746b79a32ff6c4dea2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  adv_audio: {fileID: 7873009}
-  adv_input: {fileID: 1349559598}
   screenRenderer: {fileID: 422320390}
   screen: {fileID: 2078267140}
+  adv_audio: {fileID: 7873009}
+  adv_input: {fileID: 1349559598}
   introPanel: {fileID: 1069304501}
   chatPanel: {fileID: 917224215}
   respawnButton: {fileID: 568972936}

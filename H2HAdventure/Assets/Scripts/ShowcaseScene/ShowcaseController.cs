@@ -17,7 +17,7 @@ public class ShowcaseController : MonoBehaviour
         titleController = transform.Find("ShowcasePanel").gameObject.GetComponent<ShowcaseTitleController>();
         lobbyController = transform.Find("LobbyPanel").gameObject.GetComponent<ShowcaseLobbyController>();
         prestartController = transform.Find("PrestartPanel").gameObject.GetComponent<ShowcasePrestartController>();
-        gameController = transform.Find("GamePanel").gameObject.GetComponent<ShowcaseGameController>();
+        gameController = transform.Find("PlayGamePanel").gameObject.GetComponent<ShowcaseGameController>();
 
         networkController.gameObject.SetActive(true);
         titleController.gameObject.SetActive(false);
@@ -46,10 +46,11 @@ public class ShowcaseController : MonoBehaviour
         prestartController.gameObject.SetActive(true);
     }
 
-    public void StartGame()
+    public void StartGame(ProposedGame game, int thisClientSlot)
     {
         prestartController.gameObject.SetActive(false);
         gameController.gameObject.SetActive(true);
+        gameController.Play(game, thisClientSlot);
     }
 
 }

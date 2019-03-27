@@ -48,9 +48,9 @@ public class ShowcasePrestartController : MonoBehaviour
 
     // --- Network Action Handlers -----------------------------------------------------------------------
 
-    public void OnStartGame()
+    public void OnStartGame(ProposedGame game, int thisClientSlot)
     {
-        parent.StartGame();
+        parent.StartGame(game, thisClientSlot);
     }
 
 }
