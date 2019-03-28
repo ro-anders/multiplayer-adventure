@@ -193,6 +193,16 @@ public class ShowcaseTransport : MonoBehaviour, GameEngine.Transport
         lobbyServer.HandleReadyToStart(abortingPlayerId);
     }
 
+    public void ReqQuitGame()
+    {
+        thisClient.CmdQuitGame(thisClient.GetId());
+    }
+
+    public void FflQuitGame(int quittingPlayerId)
+    {
+        lobbyServer.HandleQuitGame(quittingPlayerId);
+    }
+
 
     // ---- Bcasts and Hdls ---------------------------------------------------------------
 
@@ -229,10 +239,28 @@ public class ShowcaseTransport : MonoBehaviour, GameEngine.Transport
 
     public void HdlStartGame(string serializedProposedGame)
     {
-        ProposedGame gameToStart = JsonUtility.FromJson<ProposedGame>(serializedProposedGame);
-        thisClientGameSlot = new ArrayList(gameToStart.players).IndexOf(thisClient.GetId());
         lobbyController.OnStartGame();
-        prestartController.OnStartGame(gameToStart, thisClientGameSlot);
+        if (prestartController.gameObject.activeInHierarchy)
+        {
+            ProposedGame gameToStart = JsonUtility.FromJson<ProposedGame>(serializedProposedGame);
+            thisClientGameSlot = new ArrayList(gameToStart.players).IndexOf(thisClient.GetId());
+            prestartController.OnStartGame(gameToStart, thisClientGameSlot);
+        }
+    }
+
+    public void BcstGameOver()
+    {
+        thisClient.RpcGameOver();
+
+    }
+
+    public void HdlGameOver()
+    {
+        if (gameController.gameObject.activeInHierarchy)
+        {
+            gameController.OnGameOver();
+        }
+        lobbyController.OnGameOver();
     }
 
 }

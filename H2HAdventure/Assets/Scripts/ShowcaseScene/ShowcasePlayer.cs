@@ -45,6 +45,18 @@ public class ShowcasePlayer : NetworkBehaviour
         xport.FflReadyToStart(abortingPlayerId);
     }
 
+    [Command]
+    public void CmdBroadcastGameAction(int[] dataPacket)
+    {
+        RpcReceiveGameAction(dataPacket);
+    }
+
+    [Command]
+    public void CmdQuitGame(int quittingPlayerId)
+    {
+        xport.FflQuitGame(quittingPlayerId);
+    }
+
     [ClientRpc]
     public void RpcNewProposedGame(string serializedGame)
     {
@@ -63,17 +75,18 @@ public class ShowcasePlayer : NetworkBehaviour
         xport.HdlStartGame(serializedGame);
     }
 
-    [Command]
-    public void CmdBroadcastGameAction(int[] dataPacket)
-    {
-        RpcReceiveGameAction(dataPacket);
-    }
-
     [ClientRpc]
     public void RpcReceiveGameAction(int[] dataPacket)
     {
         xport.receiveBroadcast(dataPacket);
     }
+
+    [ClientRpc]
+    public void RpcGameOver()
+    {
+        xport.HdlGameOver();
+    }
+
 
 }
 

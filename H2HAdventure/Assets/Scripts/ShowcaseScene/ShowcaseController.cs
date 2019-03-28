@@ -53,4 +53,10 @@ public class ShowcaseController : MonoBehaviour
         gameController.Play(game, thisClientSlot);
     }
 
+    public void GameHasBeenQuit()
+    {
+        gameController.gameObject.SetActive(false);
+        lobbyController.gameObject.SetActive(true);
+    }
+
 }

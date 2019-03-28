@@ -21,4 +21,16 @@ public class ShowcaseGameController : MonoBehaviour
         gameToPlay = game;
         advView.PlayGame(game, thisClientSlot);
     }
+
+    public void OnQuitPressed()
+    {
+        xport.ReqQuitGame();
+        parent.GameHasBeenQuit();
+    }
+
+    public void OnGameOver()
+    {
+        // TBD: Handle this better
+        parent.GameHasBeenQuit();
+    }
 }

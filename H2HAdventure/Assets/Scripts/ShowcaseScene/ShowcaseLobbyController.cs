@@ -193,6 +193,16 @@ public class ShowcaseLobbyController : MonoBehaviour
         leftOutPanel.SetActive(true);
     }
 
+    public void OnGameOver()
+    {
+        proposalPanel.SetActive(true);
+        proposalTitleText.text = PROPOSAL_TITLE_NO_OTHER;
+        acceptPanel.SetActive(false);
+        waitPanel.SetActive(false);
+        leftOutPanel.SetActive(false);
+        timeToAccept = -1;
+    }
+
     private string GameDisplayString(ProposedGame game)
     {
         return "Game " + (game.gameNumber + 1) + ", " + (game.numPlayers == 2 ? "2-3" : "3") + " players, " +

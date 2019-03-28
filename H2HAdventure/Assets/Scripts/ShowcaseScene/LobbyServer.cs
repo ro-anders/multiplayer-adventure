@@ -56,7 +56,8 @@ public class LobbyServer
     {
         // If a timer is running, clear it.
         xport.SetTimer(0, null);
-        if (!proposedGame.ContainsPlayer(acceptingPlayerId))
+        if ((proposedGame != null) &&
+             (!proposedGame.ContainsPlayer(acceptingPlayerId)))
         {
             List<int> playerList = new List<int>(proposedGame.players);
             playerList.Add(acceptingPlayerId);
@@ -74,7 +75,8 @@ public class LobbyServer
     {
         // If a timer is running, clear it.
         xport.SetTimer(0, null);
-        if (proposedGame.ContainsPlayer(abortingPlayerId)) {
+        if ((proposedGame != null) && 
+            (proposedGame.ContainsPlayer(abortingPlayerId))) {
             List<int> playerList = new List<int>(proposedGame.players);
             playerList.Remove(abortingPlayerId);
             if (playerList.Count == 0)
@@ -93,12 +95,30 @@ public class LobbyServer
 
     public void HandleReadyToStart(int readyPlayerId)
     {
-        ++playersReady;
-        if (playersReady == proposedGame.players.Length)
+        if (proposedGame != null)
         {
-            if ((playersReady == 3) || ((playersReady == 2) && !xport.IsTimerRunning()))
+            ++playersReady;
+            if (playersReady == proposedGame.players.Length)
             {
-                SignalStart();
+                if ((playersReady == 3) || ((playersReady == 2) && !xport.IsTimerRunning()))
+                {
+                    SignalStart();
+                }
+            }
+        }
+    }
+
+    public void HandleQuitGame(int quittingPlayerId)
+    {
+        if (proposedGame != null)
+        {
+            List<int> nowPlaying = new List<int>(proposedGame.players);
+            nowPlaying.Remove(quittingPlayerId);
+            proposedGame.players = nowPlaying.ToArray();
+            if (proposedGame.players.Length < 2)
+            {
+                proposedGame = null;
+                xport.BcstGameOver();
             }
         }
     }
