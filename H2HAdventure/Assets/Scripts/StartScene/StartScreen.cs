@@ -40,6 +40,7 @@ public class StartScreen : MonoBehaviour {
     public GameObject overlay;
     public AbortPopup abortPopup;
     public GameObject systemMessagePanel;
+    public GameObject promptInfoPanel;
     public Text systemMessageText;
     public AWS awsUtil;
 
@@ -47,7 +48,7 @@ public class StartScreen : MonoBehaviour {
 
 
     // Use this for initialization
-    void Start () {
+    private void Start () {
 
         if (firstTimeVisit && !SessionInfo.WORK_OFFLINE)
         {
@@ -88,13 +89,29 @@ public class StartScreen : MonoBehaviour {
 
     public void OnPlayClicked() {
         SessionInfo.NetworkSetup = SessionInfo.Network.MATCHMAKER;
-        SceneManager.LoadScene("Lobby");
+        if (SessionInfo.ThisPlayerInfo.userInfoSet)
+        {
+            SceneManager.LoadScene("Lobby");
+        }
+        else
+        {
+            overlay.SetActive(true);
+            promptInfoPanel.SetActive(true);
+        }
     }
 
     public void OnTestClicked()
     {
         SessionInfo.NetworkSetup = SessionInfo.Network.ALL_LOCAL;
-        SceneManager.LoadScene("Lobby");
+        if (SessionInfo.ThisPlayerInfo.userInfoSet)
+        {
+            SceneManager.LoadScene("Lobby");
+        }
+        else
+        {
+            overlay.SetActive(true);
+            promptInfoPanel.SetActive(true);
+        }
     }
 
     public void OnDirectConnectClicked()
@@ -129,14 +146,18 @@ public class StartScreen : MonoBehaviour {
     public void OnTestSingleClicked()
     {
         SessionInfo.NetworkSetup = SessionInfo.Network.NONE;
-        SessionInfo.GameToPlay = new GameInLobby();
-        SessionInfo.GameToPlay.gameId = 11;
-        SessionInfo.GameToPlay.playerOne = 12;
-        SessionInfo.GameToPlay.playerOneName = "abbie";
-        SessionInfo.GameToPlay.playerTwo = 13;
-        SessionInfo.GameToPlay.playerTwoName = "ben";
-        SessionInfo.GameToPlay.playerThree = 14;
-        SessionInfo.GameToPlay.playerThreeName = "chris";
+        SessionInfo.GameToPlay = new GameInLobby
+        {
+            gameId = 11,
+            playerOne = 12,
+            playerOneName = "abbie",
+            playerTwo = 13,
+            playerTwoName = "ben",
+            playerThree = 14,
+            playerThreeName = "chris"
+        };
+        SessionInfo.ThisPlayerInfo.needsPopupHelp = true;
+        SessionInfo.ThisPlayerInfo.needsMazeGuides = true;
         SessionInfo.ThisPlayerId = SessionInfo.GameToPlay.playerOne;
         SessionInfo.ThisPlayerName = SessionInfo.GameToPlay.playerOneName;
         SessionInfo.GameToPlay.playerMapping = 0;
@@ -151,6 +172,14 @@ public class StartScreen : MonoBehaviour {
     {
         systemMessagePanel.SetActive(false);
         StartGame();
+    }
+
+    public void GotPromptInfo(string name, bool needPopups, bool needGuides)
+    {
+        SessionInfo.ThisPlayerName = name;
+        SessionInfo.ThisPlayerInfo.needsPopupHelp = needPopups;
+        SessionInfo.ThisPlayerInfo.needsMazeGuides = needGuides;
+        SceneManager.LoadScene("Lobby");
     }
 
     private void CheckSystemMessages()
@@ -170,7 +199,8 @@ public class StartScreen : MonoBehaviour {
                 success = (statusMessage.MinimumVersion != 0) && (statusMessage.SystemMessage != null);
             } catch (Exception e)
             {
-                Debug.LogError("Excpecting StatusMessageEntry fron lambda but received: " + payload);
+                Debug.LogError("Excpecting StatusMessageEntry fron lambda but received: " + payload +
+                    "\nError message was: " + e.Message);
                 success = false;
             }
         }

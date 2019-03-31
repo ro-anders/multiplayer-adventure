@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Amazon.Lambda;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.Match;
@@ -17,17 +18,16 @@ public class NewGameInfo {
 
 public class LobbyController : MonoBehaviour, ChatSubmitter
 {
-
     public NetworkManager lobbyManager;
     public ChatPanelController chatPanel;
     public GameObject newGamePanel;
-    public GameObject promptNamePanel;
     public Button hostButton;
     public GameObject gamePrefab;
     public GameObject gameList;
     public GameObject overlay;
     public GameObject sendCallConf;
     public GameObject noOneElsePanel;
+    public AWS awsUtil;
 
     private const string LOBBY_MATCH_NAME = "h2hlobby";
     private LobbyPlayer localLobbyPlayer;
@@ -61,11 +61,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public void Start()
     {
         chatPanel.ChatSubmitter = this;
-        if ((SessionInfo.ThisPlayerName == null) || SessionInfo.ThisPlayerName.Equals("")) {
-            promptNamePanel.SetActive(true);
-        } else {
-            ConnectToLobby();
-        }
+        ConnectToLobby();
     }
 
     public void OnConnectedToLobby(LobbyPlayer inLocalLobbyPlayer) {
@@ -124,13 +120,6 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
             hostButton.interactable = true;
         }
     }
-
-    public void GotPlayerName(string inPlayerName) {
-        ThisPlayerName = inPlayerName;
-        promptNamePanel.SetActive(false);
-        ConnectToLobby();
-    }
-
 
     public void SubmitNewGame(NewGameInfo info) {
         localLobbyPlayer.CmdHostGame(info.numPlayers, info.gameNumber, 
@@ -475,7 +464,19 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
 
     private void SendCall()
     {
-
+        string subject = SEND_CALL_SUBJECT.Replace("{{name}}", SessionInfo.ThisPlayerName);
+        string message = SEND_CALL_MESSAGE.Replace("{{name}}", SessionInfo.ThisPlayerName);
+        EmailSubscriptionRequest newRequest = new EmailSubscriptionRequest(subject, message);
+        string jsonStr = JsonUtility.ToJson(newRequest);
+        awsUtil.CallLambdaAsync(NotifyMeController.EMAIL_SUBSCRIPTION_LAMBDA, jsonStr);
     }
+
+    private const string SEND_CALL_SUBJECT= "{{name}} wants to play h2hadventure";
+    private const string SEND_CALL_MESSAGE = "You had requested to be emailed whenever someone is " +
+        "looking to play H2H Atari Adventure.  Well {{name}} is online and has just sent out a call." +
+        "\n\n" +
+        "If you wish to no longer receive these events you can unsubscribe through the H2HAdventure " +
+        "interface by clicking \"Notify Me\"";
+
 
 }

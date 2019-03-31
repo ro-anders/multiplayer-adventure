@@ -30,7 +30,7 @@ namespace GameEngine
         private const int ADVENTURE_MAX_NAME_LENGTH = Adv.ADVENTURE_MAX_NAME_LENGTH;
         private const int MAX_OBJECTS = 32;                      // Should be plenty
         private const int MAX_DISPLAYABLE_OBJECTS = 2;             // The 2600 only has 2 Player (sprite) objects. Accuracy will be compromised if this is changed!
-        private static bool SHOW_OBJECT_FLICKER = true;
+        private static readonly bool SHOW_OBJECT_FLICKER = true;
 
         // finite state machine values
         private const int GAMESTATE_GAMESELECT = 0;
@@ -48,28 +48,30 @@ namespace GameEngine
 
         private AdventureView view;
 
-        private int winFlashTimer = 0;
+        private int winFlashTimer;
         private int winningRoom = -1; // The room number of the castle of the winning player.  -1 if the game is not won yet.
-        private bool displayWinningRoom = false; // At the end of the game we show the player who won.
-        private int numPlayers;
-        private int gameMapLayout = 0;                               // The board setup.  Level 1 = 0, Levels 2 & 3 = 1, Gauntlet = 2
+        private bool displayWinningRoom; // At the end of the game we show the player who won.
+        private readonly int numPlayers;
+        private readonly int gameMapLayout;                               // The board setup.  Level 1 = 0, Levels 2 & 3 = 1, Gauntlet = 2
         private int gameState = GAMESTATE_GAMESELECT;
-        private int flashColorHue = 0;
-        private int flashColorLum = 0;
-        private int displayListIndex = 0;
+        private int flashColorHue;
+        private int flashColorLum;
+        private int displayListIndex;
         private bool joyLeft, joyUp, joyRight, joyDown, joyFire;
         private bool joystickDisabled = false; // Only used when scripting and testing ai
-        private bool switchReset = false;
+        private bool switchReset;
+        private bool useHelpPopups;
+        private bool useMazeGuides;
 
-        private int turnsSinceTimeCheck = 0;
-        private int[] missedChecks = { 0, 0, 0 };
+        private int turnsSinceTimeCheck;
+        private readonly int[] missedChecks = { 0, 0, 0 };
 
         private Sync sync;
-        private Transport transport;
-        private int thisPlayer;
+        private readonly Transport transport;
+        private readonly int thisPlayer;
         private BALL objectBall;
 
-        private OBJECT[] surrounds;
+        private readonly OBJECT[] surrounds;
 
         private AI ai;
         private AiPlayer[] aiPlayers = { null, null, null };
@@ -80,9 +82,9 @@ namespace GameEngine
          This is the countdown timer. */
         private int timeToStartGame;
 
-        static int numDragons = 3;
-        static Dragon[] dragons = new Dragon[0];
-        static Bat bat = null;
+        private static int numDragons = 3;
+        private static Dragon[] dragons = new Dragon[0];
+        private static Bat bat = null;
         private Portcullis[] ports;
 
 
@@ -91,20 +93,20 @@ namespace GameEngine
          * 3-5 are cooperative version of the original three
          * 6 is a role playing cooperative version that Glynn requested       
          * 7 is a version which I call The Gauntlet. */
-        private int gameMode = 0;
-        private bool isCooperative = false;
+        private int gameMode;
+        private readonly bool isCooperative;
 
-        private ROOM[] roomDefs;
+        private readonly ROOM[] roomDefs;
         private Map gameMap;
         private Board gameBoard;
 
         // This holds all the switches for whether to turn on or off different game options
         // It is a bitwise or of each game option
-        private int gameOptions = GAMEOPTION_NO_HIDE_KEY_IN_CASTLE;
+        private readonly int gameOptions = GAMEOPTION_NO_HIDE_KEY_IN_CASTLE;
 
-        public AdventureGame(AdventureView inView, int inNumPlayers, int inThisPlayer, Transport inTransport,
-                             int inGameNum, bool leftDifficultyOn, bool rightDifficultyOn,
-                             bool[] useAi)
+        public AdventureGame(AdventureView inView, int inNumPlayers, int inThisPlayer,
+            Transport inTransport, int inGameNum, bool leftDifficultyOn, bool rightDifficultyOn,
+            bool inUseHelpPopups, bool inUseMazeGuides, bool[] useAi)
         {
             view = inView;
 
@@ -112,13 +114,15 @@ namespace GameEngine
             thisPlayer = inThisPlayer;
             gameMode = inGameNum;
             isCooperative = (gameMode > Adv.GAME_MODE_3);
+            useHelpPopups = inUseHelpPopups;
+            useMazeGuides = inUseMazeGuides;
             timeToStartGame = 60 * 3;
 
             // The map for game 3 is the same as 2.
             gameMapLayout = (gameMode == Adv.GAME_MODE_GAUNTLET ? Map.MAP_LAYOUT_SMALL :
                 (gameMode == Adv.GAME_MODE_1 || gameMode == Adv.GAME_MODE_C_1 ? Map.MAP_LAYOUT_SMALL :
                 Map.MAP_LAYOUT_BIG));
-            gameMap = new Map(numPlayers, gameMapLayout, isCooperative);
+            gameMap = new Map(numPlayers, gameMapLayout, isCooperative, useMazeGuides);
             roomDefs = gameMap.roomDefs;
             gameBoard = new Board(gameMap, view);
             EasterEgg.setup(view, gameBoard);
@@ -327,21 +331,31 @@ namespace GameEngine
             }
 
             // Draw the guide
-            Guide guide = gameMap.Guide;
-            IEnumerator<Guide.Line> lines = guide.GetLines(displayedRoom);
-            while (lines.MoveNext()) {
-                Guide.Line nextLine = lines.Current;
-                Guide.Point first = null;
-                IEnumerator<Guide.Point> points = nextLine.GetEnumerator();
-                while (points.MoveNext())
+            if (useMazeGuides)
+            {
+                Guide guide = gameMap.Guide;
+                IEnumerator<Guide.Line> lines = guide.GetLines(displayedRoom);
+                while (lines.MoveNext())
                 {
-                    Guide.Point next = points.Current;
-                    if (first != null)
+                    Guide.Line nextLine = lines.Current;
+                    COLOR lineColor = nextLine.Color;
+                    Guide.Point first = null;
+                    IEnumerator<Guide.Point> points = nextLine.GetEnumerator();
+                    int ctr = 0;
+                    while (points.MoveNext())
                     {
-                        view.Platform_PaintPixel(0, 0, 0, first.x, first.y, next.x-first.x+5, next.y-first.y+5);
+                        Guide.Point next = points.Current;
+                        if (first != null)
+                        {
+                            int x = (first.x < next.x ? first.x : next.x);
+                            int y = (first.y < next.y ? first.y : next.y);
+                            int width = (first.x < next.x ? next.x - first.x : first.x - next.x);
+                            int height = (first.y < next.y ? next.y - first.y : first.y - next.y);
+                            view.Platform_PaintPixel(lineColor.r, lineColor.g, lineColor.b, x - 1, y - 1, width + 2, height + 2);
+                        }
+                        first = next;
+                        ++ctr;
                     }
-                    first = next;
-
                 }
             }
 

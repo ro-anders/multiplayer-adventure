@@ -123,12 +123,15 @@ public class AWS : MonoBehaviour {
         }
     }
 
+    public void CallLambdaAsync(string lambdaName, string inputStr)
+    {
+        CallLambdaAsync(lambdaName, inputStr, dummyCallback);
+    }
+
     public void CallLambdaAsync(string lambdaName, string inputStr, Action<bool, string> callback)
     {
         try
         {
-            UnityEngine.Debug.Log("Calling lambda");
-            //string jsonStr = JsonUtility.ToJson(input);
             LambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
             {
                 FunctionName = lambdaName,
@@ -164,6 +167,7 @@ public class AWS : MonoBehaviour {
                     }
                     else
                     {
+                        Debug.Log("Call to " + lambdaName + " successful.");
                         callback(true, lambdaResponse.body);
                     }
                 }
@@ -178,4 +182,8 @@ public class AWS : MonoBehaviour {
         }
     }
 
+    private void dummyCallback(bool success, string payload)
+    {
+        // Do nothing.
+    }
 }

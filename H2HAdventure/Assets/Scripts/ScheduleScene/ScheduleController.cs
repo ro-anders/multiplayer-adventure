@@ -140,7 +140,7 @@ public class ScheduleController : MonoBehaviour {
                 {
                     if (responseObject.Response.StatusCode != 200)
                     {
-                        Debug.LogError("Error calling " + SCHEDULE_GAME_LAMBDA +
+                        Debug.LogError("Error calling " + DELETE_SCHEDULE_LAMBDA +
                         " lambda returned status code " + responseObject.Response.StatusCode);
                     }
                     else
@@ -188,45 +188,32 @@ public class ScheduleController : MonoBehaviour {
     private void UpsertGame(string key, string host, DateTime gameStart, int duration, 
         string[] others, string comments)
     { 
-        AmazonLambdaClient lambdaClient = awsUtil.LambdaClient;
         long startTime = gameStart.ToUniversalTime().Ticks;
         ListScheduleEntry newEntry = new ListScheduleEntry(key, host, startTime, duration, others, comments);
         string jsonStr = JsonUtility.ToJson(newEntry);
-        Debug.Log("Sending lambda event " + jsonStr);
-        lambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
+        if (key == "")
         {
-            FunctionName = SCHEDULE_GAME_LAMBDA,
-            Payload = jsonStr
-        },
-        (responseObject) =>
-        {
-            if (responseObject.Exception == null)
-            {
-                try
-                {
-                    UnityEngine.Debug.Log("response code = " + responseObject.Response.StatusCode);
-                    if (responseObject.Response.StatusCode != 200)
-                    {
-                        Debug.LogError("Error calling " + SCHEDULE_GAME_LAMBDA + 
-                        " lambda returned status code " + responseObject.Response.StatusCode);
-                    }
-                    else
-                    {
-                        Debug.Log("AWS reported processing lambda.  Refreshing screen.");
-                        RefreshList();
-                    }
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError("Error calling lambda:" + e);
-                }
-            }
-            else
-            {
-                Debug.LogError(responseObject.Exception.ToString());
-            }
+            awsUtil.CallLambdaAsync(SCHEDULE_GAME_LAMBDA, jsonStr, OnNewGameReturn);
         }
-        );
+        else
+        {
+            awsUtil.CallLambdaAsync(SCHEDULE_GAME_LAMBDA, jsonStr, OnUpdateGameReturn);
+        }
+    }
+
+    private void OnNewGameReturn(bool success, string response)
+    {
+        RefreshList();
+        string subject = NOTIFY_GAME_SUBJECT.Replace("{{name}}", SessionInfo.ThisPlayerName);
+        string message = NOTIFY_GAME_MESSAGE.Replace("{{name}}", SessionInfo.ThisPlayerName);
+        EmailSubscriptionRequest newRequest = new EmailSubscriptionRequest(subject, message);
+        string jsonStr = JsonUtility.ToJson(newRequest);
+        awsUtil.CallLambdaAsync(NotifyMeController.EMAIL_SUBSCRIPTION_LAMBDA, jsonStr);
+    }
+
+    private void OnUpdateGameReturn(bool success, string response)
+    {
+        RefreshList();
     }
 
     public void OnLoginPressed()
@@ -290,4 +277,16 @@ public class ScheduleController : MonoBehaviour {
         scheduleDetails.DisplaySchedule(schedule);
         scheduleDetails.gameObject.SetActive(true);
     }
+
+    private const string NOTIFY_GAME_SUBJECT = "{{name}} has scheduled a new h2hadventure game";
+    private const string NOTIFY_GAME_MESSAGE = "You had requested to be emailed whenever someone " +
+        "schedules a new H2H Atari Adventure game.  Well {{name}} has just scheduled one.  " +
+        "You can check it out in the \"Schedule a Game\" option in H2HAdventure." +
+        "\n\n" +
+        "Please note that you are emailed whenever someone schedules a new game.  H2HAdventure does not " +
+        "notify when games are modified or deleted, even games you have said you will join." +
+        "\n\n" +
+        "If you wish to no longer receive these events you can unsubscribe through the H2HAdventure " +
+        "interface by clicking \"Notify Me\".";
+
 }

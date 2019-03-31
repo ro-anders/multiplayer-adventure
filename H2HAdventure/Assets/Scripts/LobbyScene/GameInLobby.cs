@@ -16,6 +16,7 @@ public class GameInLobby : NetworkBehaviour
     public Button actionButton;
     public Text text;
     public Text playerText;
+ #pragma warning disable CS0618 // Type or member is obsolete
 
     public static readonly uint NO_PLAYER = NetworkInstanceId.Invalid.Value;
     private const string UNKNOWN_NAME = "--";
@@ -69,6 +70,7 @@ public class GameInLobby : NetworkBehaviour
 
     [SyncVar(hook = "OnChangePlayerMapping")]
     public int playerMapping = -1;
+#pragma warning restore CS0618 // Type or member is obsolete
 
     /** When enough players have joined, we notify each player to start the game
      * but wait for an ack before disconnecting anything.  This is the number 
