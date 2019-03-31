@@ -133,6 +133,7 @@ public class ShowcaseNetworkController : MonoBehaviour
         }
 
         hostToggle.interactable = false;
+        hostPortInput.interactable = false;
         clientToggle.interactable = false;
         clientIpInput.interactable = false;
         clientPortInput.interactable = false;
