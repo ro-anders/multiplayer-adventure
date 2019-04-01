@@ -12,7 +12,7 @@ public class UserInfo
 public class SessionInfo {
 
     // If true, show some other options only for developers
-    public const bool DEV_MODE = true;
+    public const bool DEV_MODE = false;
 
     // If doing development while offline, set this.  Will stub out
     // network calls.
