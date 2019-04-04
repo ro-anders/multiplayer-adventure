@@ -49,6 +49,7 @@ namespace GameEngine
         private AdventureView view;
 
         private int winFlashTimer;
+        private int frameNumber;
         private int winningRoom = -1; // The room number of the castle of the winning player.  -1 if the game is not won yet.
         private bool displayWinningRoom; // At the end of the game we show the player who won.
         private readonly int numPlayers;
@@ -60,7 +61,6 @@ namespace GameEngine
         private bool joyLeft, joyUp, joyRight, joyDown, joyFire;
         private bool joystickDisabled; // No longer ever set, but left in in case we come up with a need
         private bool switchReset;
-        private bool useHelpPopups;
         private bool useMazeGuides;
 
         private int turnsSinceTimeCheck;
@@ -96,6 +96,9 @@ namespace GameEngine
         private readonly ROOM[] roomDefs;
         private Map gameMap;
         private Board gameBoard;
+        private bool useHelpPopups;
+        private PopupMgr popupMgr;
+        private int lastPopupTime = int.MinValue;
 
         // This holds all the switches for whether to turn on or off different game options
         // It is a bitwise or of each game option
@@ -114,6 +117,7 @@ namespace GameEngine
             useHelpPopups = inUseHelpPopups;
             useMazeGuides = inUseMazeGuides;
             timeToStartGame = 60 * 3;
+            frameNumber = 0;
 
             // The map for game 3 is the same as 2.
             gameMapLayout = (gameMode == Adv.GAME_MODE_GAUNTLET ? Map.MAP_LAYOUT_SMALL :
@@ -122,6 +126,10 @@ namespace GameEngine
             gameMap = new Map(numPlayers, gameMapLayout, isCooperative, useMazeGuides);
             roomDefs = gameMap.roomDefs;
             gameBoard = new Board(gameMap, view);
+            if (inUseHelpPopups)
+            {
+                popupMgr = new PopupMgr(gameBoard);
+            }
             EasterEgg.setup(view, gameBoard);
 
             surrounds = new OBJECT[numPlayers];
@@ -527,7 +535,7 @@ namespace GameEngine
 
         public void Adventure_Run()
         {
-            ////            sync.StartFrame();
+            ++frameNumber;
             SyncWithOthers();
             checkPlayers();
 
@@ -597,7 +605,7 @@ namespace GameEngine
                         // Report back to the server.
                         view.Platform_ReportToServer("Has won a game");
                     }
-                    else if (EasterEgg.isGauntletTimeUp(sync.getFrameNumber()))
+                    else if (EasterEgg.isGauntletTimeUp(frameNumber))
                     {
                         EasterEgg.endGauntlet();
                         gameState = GAMESTATE_WIN;
@@ -609,7 +617,7 @@ namespace GameEngine
                         // Read joystick
                         view.Platform_ReadJoystick(ref joyLeft, ref joyUp, ref joyRight, ref joyDown, ref joyFire);
 
-                        if (EasterEgg.shouldStartGauntlet(sync.getFrameNumber()))
+                        if (EasterEgg.shouldStartGauntlet(frameNumber))
                         {
                             EasterEgg.startGauntlet();
                             gameMode = Adv.GAME_MODE_GAUNTLET;
@@ -703,6 +711,16 @@ namespace GameEngine
                             // Deal with the magnet
                             Magnet();
 
+                            if (popupMgr.HasPopups &&
+                                 (frameNumber > lastPopupTime + PopupMgr.MIN_SECONDS_BETWEEN_POPUPS ))
+                            {
+                                Popup popup = popupMgr.GetNextPopup();
+                                if (popup != null)
+                                {
+                                    view.Platform_PopupHelp(popup.Message, popup.ImageName);
+                                }
+                            }
+
                             // Display the room and objects
                             PrintDisplay();
 
@@ -725,7 +743,7 @@ namespace GameEngine
                     }
 
                     // Increment the last object drawn
-                    if (sync.getFrameNumber() % 3 == 0)
+                    if (frameNumber % 3 == 0)
                     {
                         ++displayListIndex;
                     }
@@ -1118,7 +1136,7 @@ namespace GameEngine
 
         void BallMovement(BALL ball)
         {
-
+            bool newRoom = false;
             bool eaten = false;
             for (int ctr = 0; ctr < numDragons && !eaten; ++ctr)
             {
@@ -1152,6 +1170,7 @@ namespace GameEngine
             {
                 ball.y = Board.ENTER_AT_BOTTOM;
                 ball.room = roomDefs[ball.room].roomUp;
+                newRoom = true;
             }
             else if (ball.y < Board.BOTTOM_EDGE)
             {
@@ -1174,6 +1193,7 @@ namespace GameEngine
 
                             ball.room = port.room;
                             ball.previousRoom = ball.room;
+                            newRoom = true;
                             // If we were locked in the castle, open the portcullis.
                             if (port.state == Portcullis.CLOSED_STATE && canUnlockFromInside)
                             {
@@ -1192,6 +1212,7 @@ namespace GameEngine
                     // Wrap the ball to the top of the next screen
                     ball.y = Board.ENTER_AT_TOP;
                     ball.room = roomDefs[ball.room].roomDown;
+                    newRoom = true;
                 }
             }
 
@@ -1211,6 +1232,8 @@ namespace GameEngine
                     // Figure out the room to the right (which might be the secret room)
                     ball.room = (ball.room == Map.MAIN_HALL_RIGHT && gameBoard[Board.OBJECT_DOT].room == Map.MAIN_HALL_RIGHT ?
                                   Map.ROBINETT_ROOM : roomDefs[ball.room].roomRight);
+                    newRoom = true;
+
                 }
             }
             else if (ball.x < Board.LEFT_EDGE)
@@ -1225,6 +1248,15 @@ namespace GameEngine
                 {
                     ball.x = Board.ENTER_AT_RIGHT;
                     ball.room = roomDefs[ball.room].roomLeft;
+                    newRoom = true;
+                }
+            }
+
+            if (newRoom && (ball.playerNum == thisPlayer))
+            {
+                if (popupMgr != null)
+                {
+                    popupMgr.EnteredRoomShowPopups(ball.room);
                 }
             }
 
@@ -1378,6 +1410,10 @@ namespace GameEngine
                             // Report the ball entering the castle
                             PlayerMoveAction moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
                             sync.BroadcastAction(moveAction);
+                        }
+                        if ((ctr == thisPlayer) && (popupMgr != null))
+                        {
+                            popupMgr.EnteredRoomShowPopups(nextPort.insideRoom);
                         }
                         // If entering the black castle in the gauntlet, glow.
                         if ((gameMode == Adv.GAME_MODE_GAUNTLET) && (nextPort == gameBoard[Board.OBJECT_BLACK_PORT]) && !nextBall.isGlowing())

@@ -16,6 +16,8 @@ namespace GameEngine
 
         void Platform_DisplayStatus(string message, int durationSecs);
 
+        void Platform_PopupHelp(string message, string imageName);
+
         void Platform_GameChange(GAME_CHANGES change);
     }
 }

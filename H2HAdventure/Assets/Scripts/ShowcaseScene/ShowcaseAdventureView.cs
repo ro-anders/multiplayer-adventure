@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using GameEngine;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ShowcaseAdventureView : UnityAdventureBase
 {

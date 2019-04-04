@@ -32,6 +32,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
 {
     private const int DRAW_AREA_WIDTH = Adv.ADVENTURE_SCREEN_WIDTH;
     private const int DRAW_AREA_HEIGHT = Adv.ADVENTURE_SCREEN_HEIGHT;
+    private const int POPUP_DURATION = 8;
 
     // We hold a big buffer of rectangles as compactly as possible, so we
     // convert a Rectange (red, green, blue, x, y, width, length) and store
@@ -48,6 +49,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     public Button respawnButton;
     public GameObject messagePanel;
     public Text messageText;
+    public GameObject popupPanel;
 
     protected bool gameStarted;
     protected AdventureGame gameEngine;
@@ -56,11 +58,14 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     private bool painting;
     private bool displaying;
     private GameObject gamePanel;
+    private Text popupText;
+
 
     // Start is called before the first frame update
     public virtual void Start()
     {
         gamePanel = gameObject.transform.parent.gameObject;
+        popupText = popupPanel.transform.Find("PopupText").gameObject.GetComponent<Text>();
     }
 
     // FixedUpdate is called exactly 60 times per second
@@ -175,10 +180,32 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     }
 
 
+    public void Platform_PopupHelp(string message, string imageName)
+    {
+        StartCoroutine(DisplayPopupHelp(message, imageName, POPUP_DURATION));
+    }
+
     public void Platform_DisplayStatus(string message, int durationSecs)
     {
         Debug.Log("Message for player: " + message);
         StartCoroutine(DisplayStatus(message, durationSecs));
+    }
+
+    private IEnumerator DisplayPopupHelp(string message, string imageName, int durationSecs)
+    {
+        popupText.text = message;
+        popupPanel.SetActive(true);
+        if (durationSecs > 0)
+        {
+            yield return new WaitForSeconds(durationSecs);
+            // Check to make sure another popup hasn't come along
+            // superceding this one (it shouldn't)
+            if (popupText.text == message)
+            {
+                popupText.text = "";
+                popupPanel.SetActive(false);
+            }
+        }
     }
 
     private IEnumerator DisplayStatus(string message, int durationSecs)
