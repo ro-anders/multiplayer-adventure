@@ -96,7 +96,6 @@ namespace GameEngine
         private readonly ROOM[] roomDefs;
         private Map gameMap;
         private Board gameBoard;
-        private bool useHelpPopups;
         private PopupMgr popupMgr;
         private int lastPopupTime = int.MinValue;
 
@@ -114,7 +113,6 @@ namespace GameEngine
             thisPlayer = inThisPlayer;
             gameMode = inGameNum;
             isCooperative = (gameMode > Adv.GAME_MODE_3);
-            useHelpPopups = inUseHelpPopups;
             useMazeGuides = inUseMazeGuides;
             timeToStartGame = 60 * 3;
             frameNumber = 0;
@@ -126,10 +124,6 @@ namespace GameEngine
             gameMap = new Map(numPlayers, gameMapLayout, isCooperative, useMazeGuides);
             roomDefs = gameMap.roomDefs;
             gameBoard = new Board(gameMap, view);
-            if (inUseHelpPopups)
-            {
-                popupMgr = new PopupMgr(gameBoard);
-            }
             EasterEgg.setup(view, gameBoard);
 
             surrounds = new OBJECT[numPlayers];
@@ -241,6 +235,13 @@ namespace GameEngine
             SetupRoomObjects();
 
             ResetPlayers();
+
+            if (inUseHelpPopups)
+            {
+                popupMgr = new PopupMgr(gameBoard);
+                popupMgr.EnteredRoomShowPopups(objectBall.room);
+
+            }
         }
 
         public void PrintDisplay()
