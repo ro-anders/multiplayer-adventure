@@ -713,12 +713,13 @@ namespace GameEngine
                             Magnet();
 
                             if (popupMgr.HasPopups &&
-                                 (frameNumber > lastPopupTime + PopupMgr.MIN_SECONDS_BETWEEN_POPUPS ))
+                                 (frameNumber > lastPopupTime + (PopupMgr.MIN_SECONDS_BETWEEN_POPUPS*60) ))
                             {
                                 Popup popup = popupMgr.GetNextPopup();
                                 if (popup != null)
                                 {
                                     view.Platform_PopupHelp(popup.Message, popup.ImageName);
+                                    lastPopupTime = frameNumber;
                                 }
                             }
 

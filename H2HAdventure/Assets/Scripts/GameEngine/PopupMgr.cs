@@ -159,22 +159,27 @@ namespace GameEngine
             objects.Add(Board.OBJECT_BLACKKEY);
             popups.Add(new ObjectInRoomPopup(Board.OBJECT_BLACKKEY,
                 "blackkey", "That key can unlock the black castle", this));
-            popups.Add(new ObjectInRoomPopup(Board.OBJECT_COPPERKEY,
+            objects.Add(Board.OBJECT_WHITEKEY);
+            popups.Add(new ObjectInRoomPopup(Board.OBJECT_WHITEKEY,
                 "whitekey", "That key can unlock the white castle", this));
+            objects.Add(Board.OBJECT_SWORD);
             popups.Add(new ObjectInRoomPopup(Board.OBJECT_SWORD,
                 "sword", "That is the sword.  It can kill dragons.", this));
 
 
-            //string myKeyMessage = "That key will unlock your home castle.  You need it!";
-            //string otherKeyMessage = "That key is to your opponent's castle.  " +
-            //    "Lock their castle to slow them down.";
-            //UnityEngine.Debug.Log("Current player = " + gameBoard.getCurrentPlayer());
-            //popups.Add(new ObjectInRoomPopup(Board.OBJECT_YELLOWKEY, "yellowkey",
-            //    (gameBoard.getCurrentPlayer().playerNum == 0 ? myKeyMessage : otherKeyMessage), this));
-            //popups.Add(new ObjectInRoomPopup(Board.OBJECT_COPPERKEY, "copperkey",
-            //    (gameBoard.getCurrentPlayer().playerNum == 1 ? myKeyMessage : otherKeyMessage), this));
-            //popups.Add(new ObjectInRoomPopup(Board.OBJECT_JADEKEY, "jadekey",
-                //(gameBoard.getCurrentPlayer().playerNum == 2 ? myKeyMessage : otherKeyMessage), this));
+            string myKeyMessage = "That key will unlock your home castle.  You need it!";
+            string otherKeyMessage = "That key is to your opponent's castle.  " +
+                "Lock their castle to slow them down.";
+            UnityEngine.Debug.Log("Current player = " + gameBoard.getCurrentPlayer());
+            objects.Add(Board.OBJECT_YELLOWKEY);
+            popups.Add(new ObjectInRoomPopup(Board.OBJECT_YELLOWKEY, "yellowkey",
+                (gameBoard.getCurrentPlayer().playerNum == 0 ? myKeyMessage : otherKeyMessage), this));
+            objects.Add(Board.OBJECT_COPPERKEY);
+            popups.Add(new ObjectInRoomPopup(Board.OBJECT_COPPERKEY, "copperkey",
+                (gameBoard.getCurrentPlayer().playerNum == 1 ? myKeyMessage : otherKeyMessage), this));
+            objects.Add(Board.OBJECT_JADEKEY);
+            popups.Add(new ObjectInRoomPopup(Board.OBJECT_JADEKEY, "jadekey",
+                (gameBoard.getCurrentPlayer().playerNum == 2 ? myKeyMessage : otherKeyMessage), this));
 
 
 
