@@ -59,6 +59,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     private bool displaying;
     private GameObject gamePanel;
     private Text popupText;
+    private Image popupImage;
 
 
     // Start is called before the first frame update
@@ -66,6 +67,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     {
         gamePanel = gameObject.transform.parent.gameObject;
         popupText = popupPanel.transform.Find("PopupText").gameObject.GetComponent<Text>();
+        popupImage = popupPanel.transform.Find("PopupImage").gameObject.GetComponent<Image>();
     }
 
     // FixedUpdate is called exactly 60 times per second
@@ -194,6 +196,13 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     private IEnumerator DisplayPopupHelp(string message, string imageName, int durationSecs)
     {
         popupText.text = message;
+        imageName = ((imageName == null) || (imageName.Trim() == "") ? "nothing" : imageName);
+        Sprite loaded = Resources.Load<Sprite>("Sprites/" + imageName);
+        if (loaded == null)
+        {
+            loaded = Resources.Load<Sprite>("Sprites/nothing");
+        }
+        popupImage.sprite = loaded;
         popupPanel.SetActive(true);
         if (durationSecs > 0)
         {
@@ -203,6 +212,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
             if (popupText.text == message)
             {
                 popupText.text = "";
+                popupImage.sprite = Resources.Load<Sprite>("Sprites/nothing");
                 popupPanel.SetActive(false);
             }
         }
