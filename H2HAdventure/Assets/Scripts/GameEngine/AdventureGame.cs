@@ -210,7 +210,6 @@ namespace GameEngine
 
             // Setup the players
             bool useAltIcons = (gameMode == Adv.GAME_MODE_ROLE_PLAY);
-            UnityEngine.Debug.Log((useAltIcons ? "" : "not ") + " using alt icons when game mode = " + gameMode);
             gameBoard.addPlayer(new BALL(0, ports[0], useAltIcons), thisPlayer == 0);
             Portcullis p2Home = (isCooperative ? ports[0] : ports[4]);
             gameBoard.addPlayer(new BALL(1, p2Home, useAltIcons), thisPlayer == 1);
@@ -239,8 +238,6 @@ namespace GameEngine
             if (inUseHelpPopups)
             {
                 popupMgr = new PopupMgr(gameBoard);
-                popupMgr.EnteredRoomShowPopups(objectBall.room);
-
             }
         }
 
@@ -712,6 +709,11 @@ namespace GameEngine
                             // Deal with the magnet
                             Magnet();
 
+                            if (frameNumber % 60 == 0)
+                            {
+                                // Once a second we check for timed popups
+                                popupMgr.CheckTimedPopups(frameNumber);
+                            }
                             if (popupMgr.HasPopups &&
                                  (frameNumber > lastPopupTime + (PopupMgr.MIN_SECONDS_BETWEEN_POPUPS*60) ))
                             {

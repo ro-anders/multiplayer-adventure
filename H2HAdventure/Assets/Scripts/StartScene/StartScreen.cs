@@ -162,7 +162,7 @@ public class StartScreen : MonoBehaviour {
         SessionInfo.ThisPlayerName = SessionInfo.GameToPlay.playerOneName;
         SessionInfo.GameToPlay.playerMapping = 0;
         SessionInfo.GameToPlay.numPlayers = 3;
-        SessionInfo.GameToPlay.gameNumber = 0;
+        SessionInfo.GameToPlay.gameNumber = 1;
         SessionInfo.GameToPlay.diff1 = DIFF.A;
         SessionInfo.GameToPlay.diff2 = DIFF.A;
         SceneManager.LoadScene(SessionInfo.GAME_SCENE);

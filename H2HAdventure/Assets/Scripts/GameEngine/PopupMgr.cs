@@ -47,10 +47,11 @@ namespace GameEngine
         }
     }
 
-    public class ObjectInRoomPopup: Popup {
+    public class ObjectInRoomPopup : Popup
+    {
 
         public int objectNum;
-    
+
         public ObjectInRoomPopup(int inObjectNum, string inImageName, string inMessage, PopupMgr inPopupMgr) :
             base(inImageName, inMessage, inPopupMgr)
         {
@@ -70,12 +71,43 @@ namespace GameEngine
 
     }
 
+    public class TimedPopup : Popup
+    {
+
+        public int relativeSeconds;
+        public int absoluteFrame = -1;
+
+        public TimedPopup(int inRelativeSeconds, string inImageName, string inMessage, PopupMgr inPopupMgr) :
+            base(inImageName, inMessage, inPopupMgr)
+        {
+            relativeSeconds = inRelativeSeconds;
+        }
+
+    }
+
+    public class HowToMovePopup : Popup
+    {
+
+        public HowToMovePopup(PopupMgr inPopupMgr) :
+            base(null, "Use arrow keys to move up, down, left and right", inPopupMgr)
+        {}
+
+        public override bool ShouldStillShow()
+        {
+            BALL ball = popupMgr.gameBoard.getCurrentPlayer();
+            return (ball.room == ball.homeGate.room) &&
+                ((ball.x == 0x50 * 2) ||
+                 (ball.y == 0x20 * 2));
+        }
+
+    }
+
     public class PopupMgr
     {
         public const int MIN_SECONDS_BETWEEN_POPUPS = 10;
 
         private List<Popup> popupsToShow = new List<Popup>();
-        private Board gameBoard;
+        public Board gameBoard;
         private bool hasPopups;
         public bool HasPopups { 
             get { return hasPopups; }
@@ -85,7 +117,9 @@ namespace GameEngine
         public PopupMgr(Board inBoard)
         {
             gameBoard = inBoard;
+            initializeStartOfGamePopups();
             initializeEnterRoomPopups();
+            EnteredRoomShowPopups(gameBoard.getCurrentPlayer().room);
         }
 
         public Popup GetNextPopup()
@@ -109,6 +143,26 @@ namespace GameEngine
         {
             popupsToShow.Add(popup);
             hasPopups = true;
+        }
+
+        private void initializeStartOfGamePopups()
+        {
+            showPopup(new Popup("chalice", "This is your home castle.  " +
+            "Bring the chalice back here to win the game.", this));
+            // Only put the line about the key if the key isn't sitting in 
+            // the same rooom
+            BALL player = gameBoard.getCurrentPlayer();
+            int key_id = Board.OBJECT_YELLOWKEY + player.playerNum;
+            OBJECT key = gameBoard[key_id];
+            if (player.room != key.room)
+            {
+                string key_name = (player.playerNum == 0 ? "gold" :
+                 (player.playerNum == 1 ? "copper" : "jade"));
+                showPopup(new Popup(key_name + "key", "But first you " +
+                    "need to unlock your castle.  Find the " + key_name + 
+                    " key and bring it back here.", this));
+            }
+            showPopup(new HowToMovePopup(this));
         }
 
         //----------------------------------------------------------
@@ -186,6 +240,44 @@ namespace GameEngine
             objectsInRooms = objects.ToArray();
             enterRoomPopups = popups;
         }
-        
-      }
+
+        //----------------------------------------------------------
+        // Popups for appearing in a certain amount of time 
+
+        private List<TimedPopup> scheduledPopups = new List<TimedPopup>();
+        private List<TimedPopup> unscheduledPopups = new List<TimedPopup>();
+
+        public void CheckTimedPopups(int currentFrameNumber)
+        {
+            // First we run through the unscheduled popups and schedule them
+            while (unscheduledPopups.Count > 0)
+            {
+                TimedPopup next = unscheduledPopups[0];
+                next.absoluteFrame = currentFrameNumber + 60 * next.relativeSeconds;
+                unscheduledPopups.RemoveAt(0);
+                // Find where in the scheduled popups the popup should go
+                int slot = 0;
+                while ((slot < scheduledPopups.Count) && (scheduledPopups[slot].absoluteFrame < next.absoluteFrame))
+                {
+                    ++slot;
+                }
+                scheduledPopups.Insert(slot, next);
+            }
+
+            // Now popup any that have hit their scheduled time
+            while ((scheduledPopups.Count > 0) && (scheduledPopups[0].absoluteFrame <= currentFrameNumber))
+            {
+                showPopup(scheduledPopups[0]);
+                scheduledPopups.RemoveAt(0);
+            }
+        }
+
+        public void AddTimedPopup(TimedPopup popup)
+        {
+            unscheduledPopups.Add(popup);
+        }
+
+    }
+
+
 }
