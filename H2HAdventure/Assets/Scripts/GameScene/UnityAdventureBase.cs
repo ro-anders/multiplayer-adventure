@@ -58,16 +58,14 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     private bool painting;
     private bool displaying;
     private GameObject gamePanel;
-    private Text popupText;
-    private Image popupImage;
+    private PopupController popupController;
 
 
     // Start is called before the first frame update
     public virtual void Start()
     {
         gamePanel = gameObject.transform.parent.gameObject;
-        popupText = popupPanel.transform.Find("PopupText").gameObject.GetComponent<Text>();
-        popupImage = popupPanel.transform.Find("PopupImage").gameObject.GetComponent<Image>();
+        popupController = popupPanel.GetComponent<PopupController>();
     }
 
     // FixedUpdate is called exactly 60 times per second
@@ -195,26 +193,14 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
 
     private IEnumerator DisplayPopupHelp(string message, string imageName, int durationSecs)
     {
-        popupText.text = message;
-        imageName = ((imageName == null) || (imageName.Trim() == "") ? "nothing" : imageName);
-        Sprite loaded = Resources.Load<Sprite>("Sprites/" + imageName);
-        if (loaded == null)
-        {
-            loaded = Resources.Load<Sprite>("Sprites/nothing");
-        }
-        popupImage.sprite = loaded;
-        popupPanel.SetActive(true);
+        adv_audio.PlaySystemSound(adv_audio.blip);
+        popupController.Popup(message, imageName);
         if (durationSecs > 0)
         {
             yield return new WaitForSeconds(durationSecs);
             // Check to make sure another popup hasn't come along
             // superceding this one (it shouldn't)
-            if (popupText.text == message)
-            {
-                popupText.text = "";
-                popupImage.sprite = Resources.Load<Sprite>("Sprites/nothing");
-                popupPanel.SetActive(false);
-            }
+            popupController.Hide(message);
         }
     }
 

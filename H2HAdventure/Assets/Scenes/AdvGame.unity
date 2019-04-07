@@ -164,6 +164,7 @@ MonoBehaviour:
   glowClip: {fileID: 8300000, guid: f15b79b5f8b9e43ac8f50921b5140887, type: 3}
   winClip: {fileID: 8300000, guid: d06f5c84e426447d297be4912f1a4938, type: 3}
   speaker: {fileID: 7873010}
+  blip: {fileID: 8300000, guid: 1632c01b34fe041be8df4402708e8f4b, type: 3}
 --- !u!82 &7873010
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2897,6 +2898,7 @@ GameObject:
   - component: {fileID: 1612568040}
   - component: {fileID: 1612568042}
   - component: {fileID: 1612568041}
+  - component: {fileID: 1612568043}
   m_Layer: 5
   m_Name: PopupHelpPanel
   m_TagString: Untagged
@@ -2920,11 +2922,11 @@ RectTransform:
   m_Father: {fileID: 281180917}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 93, y: 0.0099487305}
-  m_SizeDelta: {x: -242.5, y: 66}
-  m_Pivot: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: -28.249908, y: 0.0099487305}
+  m_SizeDelta: {x: 557.5, y: 66}
+  m_Pivot: {x: 1, y: 0}
 --- !u!114 &1612568041
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2962,6 +2964,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1612568039}
   m_CullTransparentMesh: 0
+--- !u!114 &1612568043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1612568039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e3c36a7384e9485caa8dddc3718b6a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1643024362
 GameObject:
   m_ObjectHideFlags: 0
