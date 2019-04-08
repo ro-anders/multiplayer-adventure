@@ -77,7 +77,6 @@ public class PlayerSync : NetworkBehaviour
             playerName = newPlayerName;
             if (playerId != GameInLobby.NO_PLAYER)
             {
-                UnityEngine.Debug.Log("Player " + playerId + "'s name changed to " + newPlayerName + ". Registering player.");
                 xport = controller.RegisterNewPlayer(this);
             }
         }

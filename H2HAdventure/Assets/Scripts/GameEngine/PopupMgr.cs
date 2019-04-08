@@ -224,7 +224,6 @@ namespace GameEngine
             string myKeyMessage = "That key will unlock your home castle.  You need it!";
             string otherKeyMessage = "That key is to your opponent's castle.  " +
                 "Lock their castle to slow them down.";
-            UnityEngine.Debug.Log("Current player = " + gameBoard.getCurrentPlayer());
             objects.Add(Board.OBJECT_YELLOWKEY);
             popups.Add(new ObjectInRoomPopup(Board.OBJECT_YELLOWKEY, "goldkey",
                 (gameBoard.getCurrentPlayer().playerNum == 0 ? myKeyMessage : otherKeyMessage), this));

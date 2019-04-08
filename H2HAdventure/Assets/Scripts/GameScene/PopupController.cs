@@ -47,7 +47,6 @@ public class PopupController : MonoBehaviour
             }
             popupProgress = (popupProgress < 0 ? 0 : popupProgress);
             float ratio = (POPUP_TIME - popupProgress) / POPUP_TIME;
-            UnityEngine.Debug.Log("Showing popup at " + ratio + " size");
             RectTransform rt = (RectTransform)transform;
             rt.sizeDelta = new Vector2(ratio*popupWidth, ratio*popupHeight);
         }

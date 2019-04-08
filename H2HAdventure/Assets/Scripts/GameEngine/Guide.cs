@@ -40,12 +40,48 @@ namespace GameEngine {
         }
 
         /**********************************
+         * A small image to indicate the purpose of a guide
+         */
+        public class Marker
+        {
+            private int x;
+            private int y;
+            private byte[] gfx;
+            private int color;
+            public int X
+            {
+                get { return x;}
+            }
+            public int Y
+            {
+                get { return y; }
+            }
+            public byte[] Gfx
+            {
+                get { return gfx; }
+            }
+            public int Color
+            {
+                get { return color; }
+            }
+
+            public Marker(int inX, int inY, byte[] inGfx, int inColor)
+            {
+                x = inX;
+                y = inY;
+                gfx = inGfx;
+                color = inColor;
+            }
+        }
+
+        /**********************************
          * The guides that appear in this room.
          */
         public class RoomGuide
         {
             int room;
             List<Line> lines = new List<Line>();
+            List<Marker> markers = new List<Marker>();
 
             public RoomGuide(int inRoom)
             {
@@ -56,15 +92,24 @@ namespace GameEngine {
             {
                 lines.Add(inLine);
             }
+            public void AddMarker(Marker inMarker)
+            {
+                markers.Add(inMarker);
+            }
 
             public IEnumerator<Line> GetLines()
             {
                 return lines.GetEnumerator();
             }
+            public IEnumerator<Marker> GetMarkers()
+            {
+                return markers.GetEnumerator();
+            }
         }
 
         private RoomGuide[] roomGuides;
-        private static readonly List<Line> EMPTY_ROOM = new List<Line>();
+        private static readonly List<Line> EMPTY_ROOM_LINES = new List<Line>();
+        private static readonly List<Marker> EMPTY_ROOM_MARKERS = new List<Marker>();
 
         public Guide()
         {
@@ -79,16 +124,36 @@ namespace GameEngine {
             }
             roomGuides[room].AddLine(line);
         }
+        public void AddMarker(int room, Marker marker)
+        {
+            if (roomGuides[room] == null)
+            {
+                roomGuides[room] = new RoomGuide(room);
+            }
+            roomGuides[room].AddMarker(marker);
+        }
 
         public IEnumerator<Line> GetLines(int room)
         {
             if (roomGuides[room] == null)
             {
-                return EMPTY_ROOM.GetEnumerator();
+                return EMPTY_ROOM_LINES.GetEnumerator();
             }
             else
             {
                 return roomGuides[room].GetLines();
+            }
+        }
+
+        public IEnumerator<Marker> GetMarkers(int room)
+        {
+            if (roomGuides[room] == null)
+            {
+                return EMPTY_ROOM_MARKERS.GetEnumerator();
+            }
+            else
+            {
+                return roomGuides[room].GetMarkers();
             }
         }
 
@@ -185,6 +250,28 @@ namespace GameEngine {
                     new int[]{ COLOR.COPPER, 12, 6, 12, 5, 4, 5, 4, 6},
                 },
             };
+            Marker[][] markerLists = new Marker[][]
+           {
+                new Marker[]{ },
+                new Marker[]{ },
+                new Marker[]{ },
+                new Marker[]{ },
+                new Marker[]{    // Blue maze top
+                },
+                new Marker[]{    // Blue maze 1
+                },
+                new Marker[]{    // Blue maze bottom
+                },
+                new Marker[]{    // Blue maze center
+                },
+                new Marker[]{    // Blue maze entry
+                    new Marker(50, 50, objectGfxCastle, COLOR.YELLOW)
+                },
+                new Marker[]{    // White maze 2
+                },
+                new Marker[]{    // White maze 3
+                },
+           };
             for (int roomCtr = 0; roomCtr < pointsLists.Length; ++roomCtr)
             {
                 int[][] roomPointsLists = pointsLists[roomCtr];
@@ -192,6 +279,14 @@ namespace GameEngine {
                 {
                     Guide.Line nextline = MakeLine(roomPointsLists[ctr]);
                     this.AddLine(roomCtr, nextline);
+                }
+                if (markerLists.Length > roomCtr)
+                {
+                    Marker[] roomMarkerList = markerLists[roomCtr];
+                    for(int ctr=0; ctr < roomMarkerList.Length; ++ctr)
+                    {
+                        this.AddMarker(roomCtr, roomMarkerList[ctr]);
+                    }
                 }
             }
         }
@@ -206,6 +301,14 @@ namespace GameEngine {
             }
             return line;
         }
+
+        // Object #0B : State FF : Graphic
+        private static byte[] objectGfxCastle = new byte[] {
+            0xAC,                  // X X  X X
+            0xFF,                  // XXXXXXXX
+            0xFF,                  // XXXXXXXX
+            0xAC                   // X X  X X
+        };
 
 
 

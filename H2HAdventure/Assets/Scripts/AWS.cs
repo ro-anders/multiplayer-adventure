@@ -48,7 +48,6 @@ public class AWS : MonoBehaviour {
             );
             lambdaClient = new AmazonLambdaClient(credentials, RegionEndpoint.USEast2);
         isReady = true;
-        UnityEngine.Debug.Log("AWS setup");
         if (callOnReady != null)
         {
             Action action = callOnReady;

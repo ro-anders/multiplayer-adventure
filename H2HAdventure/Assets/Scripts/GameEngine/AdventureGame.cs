@@ -348,6 +348,12 @@ namespace GameEngine
                         ++ctr;
                     }
                 }
+                IEnumerator<Guide.Marker> markers = guide.GetMarkers(displayedRoom);
+                while (markers.MoveNext())
+                {
+                    Guide.Marker nextMarker = markers.Current;
+                    DrawGraphic(nextMarker.X, nextMarker.Y, nextMarker.Gfx, nextMarker.Color, 1);
+                }
             }
 
             //
@@ -1947,36 +1953,37 @@ namespace GameEngine
 
         private void DrawObject(OBJECT objct)
         {
-            // Get object color, size, and position
-            COLOR color = objct.color == COLOR.FLASH ? GetFlashColor() : COLOR.table(objct.color);
-            int cx = objct.x * 2;
-            int cy = objct.y * 2;
             int size = (objct.size / 2) + 1;
 
             // Look up the index to the current state for this object
             int stateIndex = objct.states.Length > objct.state ? objct.states[objct.state] : 0;
-
-            // Get the height, then the data
             byte[] dataP = objct.gfxData[stateIndex];
-            int objHeight = dataP.Length;
+            DrawGraphic(objct.x, objct.y, dataP, objct.color, size);
+        }
 
+        private void DrawGraphic(int gfxX, int gfxY, byte[] gfx, int colorCode, int widthMultiplier)
+        {
+            COLOR color = colorCode == COLOR.FLASH ? GetFlashColor() : COLOR.table(colorCode);
+            int cx = gfxX * 2;
+            int cy = gfxY * 2;
+            int gfxHeight = gfx.Length;
             // Adjust for proper position
             cx -= Board.CLOCKS_HSYNC;
             cy -= Board.CLOCKS_VSYNC;
 
             // scan the data
-            for (int i = 0; i < objHeight; i++)
+            for (int i = 0; i < gfxHeight; i++)
             {
-                byte rowByte = dataP[i];
+                byte rowByte = gfx[i];
                 // Parse the row - each bit is a 2 x 2 block
                 for (int bit = 0; bit < 8; bit++)
                 {
                     if ((rowByte & (1 << (7 - bit))) > 0)
                     {
-                        int x = cx + (bit * 2 * size);
+                        int x = cx + (bit * 2 * widthMultiplier);
                         if (x >= ADVENTURE_SCREEN_WIDTH)
                             x -= ADVENTURE_SCREEN_WIDTH;
-                        view.Platform_PaintPixel(color.r, color.g, color.b, x, cy, 2 * size, 2);
+                        view.Platform_PaintPixel(color.r, color.g, color.b, x, cy, 2 * widthMultiplier, 2);
                     }
                 }
 
