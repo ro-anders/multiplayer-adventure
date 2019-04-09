@@ -68,7 +68,7 @@ namespace GameEngine
             ConfigureMaze(numPlayers, gameMapLayout, isCooperative);
             if (usesGuides)
             {
-                guide.ConfigureGuide();
+                guide.ConfigureGuide(numPlayers==3);
             }
         }
 
