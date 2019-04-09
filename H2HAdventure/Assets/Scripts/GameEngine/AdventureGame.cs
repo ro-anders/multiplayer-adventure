@@ -715,12 +715,12 @@ namespace GameEngine
                             // Deal with the magnet
                             Magnet();
 
-                            if (frameNumber % 60 == 0)
+                            if ((frameNumber % 60 == 0) && (popupMgr != null))
                             {
                                 // Once a second we check for timed popups
                                 popupMgr.CheckTimedPopups(frameNumber);
                             }
-                            if (popupMgr.HasPopups &&
+                            if ((popupMgr != null) && popupMgr.HasPopups &&
                                  (frameNumber > lastPopupTime + (PopupMgr.MIN_SECONDS_BETWEEN_POPUPS*60) ))
                             {
                                 Popup popup = popupMgr.GetNextPopup();
