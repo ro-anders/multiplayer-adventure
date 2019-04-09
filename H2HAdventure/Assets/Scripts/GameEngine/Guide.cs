@@ -257,15 +257,30 @@ namespace GameEngine {
                 new Marker[]{ },
                 new Marker[]{ },
                 new Marker[]{    // Blue maze top
+                    //new Marker(56, 105, gfxCastle, COLOR.YELLOW),
+                    //new Marker(46, 16, gfxCastle, COLOR.JADE),
+                    //new Marker(36, 16, gfxLeftArrow, COLOR.BLACK),
+                    //new Marker(106, 16, gfxCastle, COLOR.YELLOW),
+                    //new Marker(98, 16, gfxDownArrow, COLOR.BLACK),
                 },
                 new Marker[]{    // Blue maze 1
+                    //new Marker(46, 104, gfxCastle, COLOR.JADE),
+                    //new Marker(56, 104, gfxUpArrow, COLOR.BLACK),
+                    //new Marker(136, 104, gfxCastle, COLOR.BLACK),
+                    //new Marker(146, 104, gfxRightArrow, COLOR.BLACK),
+                    //new Marker(12, 16, gfxCastle, COLOR.YELLOW),
+                    //new Marker(2, 16, gfxLeftArrow, COLOR.BLACK),
                 },
                 new Marker[]{    // Blue maze bottom
                 },
                 new Marker[]{    // Blue maze center
                 },
                 new Marker[]{    // Blue maze entry
-                    new Marker(50, 50, objectGfxCastle, COLOR.YELLOW)
+                    //new Marker(56, 16, gfxCastle, COLOR.BLACK),
+                    //new Marker(46, 16, gfxCastle, COLOR.JADE),
+                    //new Marker(36, 16, gfxLeftArrow, COLOR.BLACK),
+                    //new Marker(106, 16, gfxCastle, COLOR.YELLOW),
+                    //new Marker(98, 16, gfxDownArrow, COLOR.BLACK),
                 },
                 new Marker[]{    // White maze 2
                 },
@@ -303,13 +318,52 @@ namespace GameEngine {
         }
 
         // Object #0B : State FF : Graphic
-        private static byte[] objectGfxCastle = new byte[] {
-            0xAC,                  // X X  X X
+        private static byte[] gfxCastle = new byte[] {
+            0xA5,                  // X X  X X
+            0xE7,                  // XXX  XXX
             0xFF,                  // XXXXXXXX
-            0xFF,                  // XXXXXXXX
-            0xAC                   // X X  X X
+            0x7E,                  //  XXXXXX 
+            0x66,                  //  XX  XX 
+            0x66                   //  XX  XX 
         };
 
+        private static byte[] gfxUpArrow = new byte[] {
+            0x10,                  //    X     
+            0x38,                  //   XXX   
+            0x54,                  //  X X X  
+            0x92,                  // X  X  X
+            0x10,                  //    X     
+            0x10,                  //    X     
+        };
+
+        private static byte[] gfxDownArrow = new byte[] {
+            0x10,                  //    X     
+            0x10,                  //    X     
+            0x92,                  // X  X  X
+            0x54,                  //  X X X  
+            0x38,                  //   XXX   
+            0x10,                  //    X     
+        };
+
+        private static byte[] gfxLeftArrow = new byte[] {
+            0x08,                  //     X     
+            0x10,                  //    X  
+            0x20,                  //   X  
+            0x7F,                  //  XXXXXXX
+            0x20,                  //   X  
+            0x10,                  //    X  
+            0x08,                  //     X     
+        };
+
+        private static byte[] gfxRightArrow = new byte[] {
+            0x10,                  //    X     
+            0x08,                  //     X     
+            0x04,                  //      X
+            0xFE,                  // XXXXXXX
+            0x04,                  //      X
+            0x08,                  //     X     
+            0x10,                  //    X     
+        };
 
 
     }
