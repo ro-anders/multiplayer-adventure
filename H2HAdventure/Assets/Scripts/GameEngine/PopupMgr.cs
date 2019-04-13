@@ -60,6 +60,30 @@ namespace GameEngine
 
         public override bool ShouldStillShow()
         {
+            return popupMgr.ShouldStillShowObjectInRoomPopup(this);
+        }
+
+        public override void MarkHandled()
+        {
+            base.MarkHandled();
+            popupMgr.MarkObjectInRoomPopupHandled(this);
+        }
+
+    }
+
+    public class EnterRoomPopup : Popup
+    {
+
+        public int roomNum;
+
+        public EnterRoomPopup(int inRoomNum, string inMessage, PopupMgr inPopupMgr) :
+            base("", inMessage, inPopupMgr)
+        {
+            roomNum = inRoomNum;
+        }
+
+        public override bool ShouldStillShow()
+        {
             return popupMgr.ShouldStillShowEnterRoomPopup(this);
         }
 
@@ -118,6 +142,7 @@ namespace GameEngine
         {
             gameBoard = inBoard;
             initializeStartOfGamePopups();
+            initializeObjectInRoomPopups();
             initializeEnterRoomPopups();
             EnteredRoomShowPopups(gameBoard.getCurrentPlayer().room);
         }
@@ -170,22 +195,10 @@ namespace GameEngine
 
 
         private int[] objectsInRooms;
-        private List<Popup> enterRoomPopups;
+        private List<Popup> objectInRoomPopups;
 
 
-        public void EnteredRoomShowPopups(int room)
-        {
-            for (int ctr = 0; ctr < objectsInRooms.Length; ++ctr)
-            {
-                OBJECT objct = gameBoard[objectsInRooms[ctr]];
-                if (objct.room == room)
-                {
-                    showPopup(enterRoomPopups[ctr]);
-                }
-            }
-        }
-
-        public bool ShouldStillShowEnterRoomPopup(ObjectInRoomPopup popup)
+        public bool ShouldStillShowObjectInRoomPopup(ObjectInRoomPopup popup)
         {
             // Make sure the current player is still in the room with the object
             // and that the popup hasn't been displayed before.
@@ -194,7 +207,7 @@ namespace GameEngine
             return (playersRoom == objectRoom) && !popup.HasFired;
         }
 
-        public void MarkEnterRoomPopupHandled(ObjectInRoomPopup popup)
+        public void MarkObjectInRoomPopupHandled(ObjectInRoomPopup popup)
         {
             List<int> objects = new List<int>(objectsInRooms);
             int index = objects.FindIndex(x => x == popup.objectNum);
@@ -202,11 +215,11 @@ namespace GameEngine
             {
                 objects.RemoveAt(index);
                 objectsInRooms = objects.ToArray();
-                enterRoomPopups.RemoveAt(index);
+                objectInRoomPopups.RemoveAt(index);
             }
         }
 
-        private void initializeEnterRoomPopups()
+        private void initializeObjectInRoomPopups()
         {
             List<int> objects = new List<int>();
             List<Popup> popups = new List<Popup>();
@@ -237,6 +250,73 @@ namespace GameEngine
 
 
             objectsInRooms = objects.ToArray();
+            objectInRoomPopups = popups;
+        }
+
+        //----------------------------------------------------------
+        // Popups for when we enter a room for the first time
+
+
+        private int[] roomsToPopup;
+        private List<Popup> enterRoomPopups;
+
+
+        // This applies to both object in room popups and entered room popups
+        public void EnteredRoomShowPopups(int room)
+        {
+            for (int ctr = 0; ctr < roomsToPopup.Length; ++ctr)
+            {
+                OBJECT objct = gameBoard[objectsInRooms[ctr]];
+                if (roomsToPopup[ctr] == room)
+                {
+                    showPopup(enterRoomPopups[ctr]);
+                }
+            }
+            for (int ctr = 0; ctr < objectsInRooms.Length; ++ctr)
+            {
+                OBJECT objct = gameBoard[objectsInRooms[ctr]];
+                if (objct.room == room)
+                {
+                    showPopup(objectInRoomPopups[ctr]);
+                }
+            }
+        }
+
+
+        public bool ShouldStillShowEnterRoomPopup(EnterRoomPopup popup)
+        {
+            // Make sure the current player is still in the room
+            // and that the popup hasn't been displayed before.
+            int playersRoom = gameBoard.getCurrentPlayer().room;
+            return (playersRoom == popup.roomNum) && !popup.HasFired;
+        }
+
+        public void MarkEnterRoomPopupHandled(EnterRoomPopup popup)
+        {
+            List<int> rooms = new List<int>(roomsToPopup);
+            int index = rooms.FindIndex(x => x == popup.roomNum);
+            if (index >= 0)
+            {
+                rooms.RemoveAt(index);
+                roomsToPopup = rooms.ToArray();
+                enterRoomPopups.RemoveAt(index);
+            }
+        }
+
+        private void initializeEnterRoomPopups()
+        {
+            List<int> rooms = new List<int>();
+            List<Popup> popups = new List<Popup>();
+
+            int blueMazeEntry = (gameBoard.getCurrentPlayer().playerNum == 2 ?
+                Map.BLUE_MAZE_2 : Map.BLUE_MAZE_1);
+            rooms.Add(blueMazeEntry);
+            popups.Add(new EnterRoomPopup(blueMazeEntry,
+                "This is a labyrinth.  Follow the black line to " +
+                "get to the other castles.", this));
+
+
+            roomsToPopup = rooms.ToArray();
             enterRoomPopups = popups;
         }
 
