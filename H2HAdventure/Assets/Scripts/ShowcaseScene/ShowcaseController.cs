@@ -36,7 +36,7 @@ public class ShowcaseController : MonoBehaviour
     public void TitleHasBeenDismissed()
     {
         titleController.gameObject.SetActive(false);
-        lobbyController.Reset();
+        lobbyController.idleTime = 0;
         lobbyController.gameObject.SetActive(true);
     }
 

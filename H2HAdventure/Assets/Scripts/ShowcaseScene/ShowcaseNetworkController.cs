@@ -40,7 +40,8 @@ public class ShowcaseNetworkController : MonoBehaviour
         errorText.text = "";
 
         bool allSpecified = LoadConfig();
-        if (allSpecified)
+        // IN Dev mode we always wait to confirm the network settings
+        if (allSpecified && !SessionInfo.DEV_MODE)
         {
             Connect();
         }

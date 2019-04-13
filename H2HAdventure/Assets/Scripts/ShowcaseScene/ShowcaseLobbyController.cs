@@ -15,7 +15,7 @@ public class ShowcaseLobbyController : MonoBehaviour
     private const string ACCEPT_SUPPLEMENT_LIMIT = "you have {} seconds to accept";
 
     private const float TIME_TO_JOIN_2P_GAME = 10;
-    private const float SCREENSAVER_TIMEOUT = 10;
+    private const float SCREENSAVER_TIMEOUT = 120;
 
     public ShowcaseController parent;
     public ShowcaseTransport xport;
@@ -60,6 +60,10 @@ public class ShowcaseLobbyController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.anyKeyDown)
+        {
+            idleTime = 0;
+        }
         if (idleTime >= 0)
         {
             idleTime += Time.deltaTime;
