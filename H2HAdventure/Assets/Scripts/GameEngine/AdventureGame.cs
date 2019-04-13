@@ -10,7 +10,7 @@
 // Any trademarks referenced herein are the property of their respective holders.
 // 
 // Original game written by Warren Robinett. Warren, you rock.
-#define DEBUG_EASTEREGG
+#undef DEBUG_EASTEREGG
 
 using System;
 using System.Collections;
@@ -2624,15 +2624,9 @@ namespace GameEngine
             {Board.OBJECT_JADEKEY, Map.BLUE_MAZE_4, 0x7a, 0x40, 0x00, 0x00, 0x00}, // Jade Key
             {Board.OBJECT_WHITEKEY, Map.BLUE_MAZE_3, 0x20, 0x40, 0x00, 0x00, 0x00}, // White Key
             {Board.OBJECT_BLACKKEY, Map.RED_MAZE_4, 0x20, 0x40, 0x00, 0x00, 0x00}, // Black Key
-            #if DEBUG_EASTEREGG
-            {Board.OBJECT_CRYSTALKEY1, Map.CRYSTAL_CASTLE, 0x20, 0x40, 0x00, 0x00, 0x00}, // Crystal Key for Player 1
-            {Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x20, 0x40, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
-            {Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x20, 0x40, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
-            #else
             {Board.OBJECT_CRYSTALKEY1, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 1
             {Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
             {Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
-            #endif
             {Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x20, 0x20, 0x00, 0, -3}, // Bat
 #if DEBUG_EASTEREGG
             {Board.OBJECT_DOT, Map.MAIN_HALL_RIGHT, 0x20, 0x10, 0x00, 0x00, 0x00}, // Dot
