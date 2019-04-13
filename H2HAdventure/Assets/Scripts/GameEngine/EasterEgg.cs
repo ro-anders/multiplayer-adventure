@@ -141,18 +141,19 @@ namespace GameEngine
                 // We only check the time 4 times a second.
                 if (frameNum % 15 == 0)
                 {
+                    const int DEBRIEF_SECONDS = 10;
                     DateTime currentTime = DateTime.Now;
                     int elapsed = (int)(DateTime.UtcNow - startOfTimer).TotalSeconds;
-                    if (elapsed >= 10000)
+                    if (elapsed >= DEBRIEF_SECONDS)
                     {
                         test = true;
                     }
-                    else if (elapsed > 7000)
+                    else if (DEBRIEF_SECONDS-elapsed <= 3)
                     {
                         OBJECT number = board.getObject(Board.OBJECT_NUMBER);
                         number.setExists(true);
                         number.room = Map.CRYSTAL_FOYER;
-                        number.state = (10000-elapsed) / 1000;
+                        number.state = (DEBRIEF_SECONDS - elapsed-1);
                     }
                 }
             }

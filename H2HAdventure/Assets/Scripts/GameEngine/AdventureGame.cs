@@ -10,7 +10,7 @@
 // Any trademarks referenced herein are the property of their respective holders.
 // 
 // Original game written by Warren Robinett. Warren, you rock.
-#undef DEBUG_EASTEREGG
+#define DEBUG_EASTEREGG
 
 using System;
 using System.Collections;
@@ -1239,11 +1239,18 @@ namespace GameEngine
                     // Wrap the ball to the left side of the next screen
                     ball.x = Board.ENTER_AT_LEFT;
 
-                    // Figure out the room to the right (which might be the secret room)
-                    ball.room = (ball.room == Map.MAIN_HALL_RIGHT && gameBoard[Board.OBJECT_DOT].room == Map.MAIN_HALL_RIGHT ?
-                                  Map.ROBINETT_ROOM : roomDefs[ball.room].roomRight);
+                    int rightRoom = roomDefs[ball.room].roomRight;
+                    if (ball.room == Map.MAIN_HALL_RIGHT)
+                    {
+                        // Figure out the room to the right (which might be the secret room)
+                        if (gameBoard[Board.OBJECT_DOT].room == Map.MAIN_HALL_RIGHT ||
+                        EasterEgg.eggState == EGG_STATE.IN_GAUNTLET)
+                        {
+                            rightRoom = Map.ROBINETT_ROOM;
+                        }
+                    }
+                    ball.room = rightRoom;
                     newRoom = true;
-
                 }
             }
             else if (ball.x < Board.LEFT_EDGE)
@@ -2617,15 +2624,21 @@ namespace GameEngine
             {Board.OBJECT_JADEKEY, Map.BLUE_MAZE_4, 0x7a, 0x40, 0x00, 0x00, 0x00}, // Jade Key
             {Board.OBJECT_WHITEKEY, Map.BLUE_MAZE_3, 0x20, 0x40, 0x00, 0x00, 0x00}, // White Key
             {Board.OBJECT_BLACKKEY, Map.RED_MAZE_4, 0x20, 0x40, 0x00, 0x00, 0x00}, // Black Key
+            #if DEBUG_EASTEREGG
+            {Board.OBJECT_CRYSTALKEY1, Map.CRYSTAL_CASTLE, 0x20, 0x40, 0x00, 0x00, 0x00}, // Crystal Key for Player 1
+            {Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x20, 0x40, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
+            {Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x20, 0x40, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
+            #else
             {Board.OBJECT_CRYSTALKEY1, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 1
             {Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
             {Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
-            {Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x20, 0x20, 0x00, 0, -3}, // Bat
-            #if DEBUG_EASTEREGG
-            {Board.OBJECT_DOT, Map.MAIN_HALL_RIGHT, 0x20, 0x10, 0x00, 0x00, 0x00}, // Dot
-            #else
-            {Board.OBJECT_DOT, Map.BLACK_MAZE_3, 0x45, 0x12, 0x00, 0x00, 0x00}, // Dot
             #endif
+            {Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x20, 0x20, 0x00, 0, -3}, // Bat
+#if DEBUG_EASTEREGG
+            {Board.OBJECT_DOT, Map.MAIN_HALL_RIGHT, 0x20, 0x10, 0x00, 0x00, 0x00}, // Dot
+#else
+            {Board.OBJECT_DOT, Map.BLACK_MAZE_3, 0x45, 0x12, 0x00, 0x00, 0x00}, // Dot
+#endif
             {Board.OBJECT_CHALISE, Map.BLACK_MAZE_2, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
             {Board.OBJECT_MAGNET, Map.SOUTHWEST_ROOM, 0x80, 0x20, 0x00, 0x00, 0x00}, // Magnet
         };
