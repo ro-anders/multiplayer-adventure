@@ -293,14 +293,12 @@ namespace GameEngine
         public void MarkEnterRoomPopupHandled(EnterRoomPopup popup)
         {
             List<int> rooms = new List<int>(roomsToPopup);
-            foreach (int roomToRemove in popup.roomNums)
+            int index = enterRoomPopups.FindIndex(x => x == popup);
+            while (index >= 0)
             {
-                int index = rooms.FindIndex(x => x == roomToRemove);
-                if (index >= 0)
-                {
-                    rooms.RemoveAt(index);
-                    enterRoomPopups.RemoveAt(index);
-                }
+                rooms.RemoveAt(index);
+                enterRoomPopups.RemoveAt(index);
+                index = enterRoomPopups.FindIndex(x => x == popup);
             }
             roomsToPopup = rooms.ToArray();
         }
@@ -330,7 +328,7 @@ namespace GameEngine
                 foreach (int room in firstDarkMazeRooms)
                 {
                     rooms.Add(room);
-                    popups.Add(firstMazePopup);
+                    popups.Add(firstDarkMazePopup);
                 }
             }
             int[] brownGuideRooms = {Map.WHITE_MAZE_2, Map.RED_MAZE_1,
@@ -340,7 +338,7 @@ namespace GameEngine
             foreach (int room in brownGuideRooms)
             {
                 rooms.Add(room);
-                popups.Add(firstMazePopup);
+                popups.Add(brownGuidePopup);
             }
             rooms.Add(Map.RED_MAZE_3);
             popups.Add(new EnterRoomPopup(new int[] { Map.RED_MAZE_3 },
