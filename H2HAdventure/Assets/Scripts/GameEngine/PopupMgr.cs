@@ -74,12 +74,12 @@ namespace GameEngine
     public class EnterRoomPopup : Popup
     {
 
-        public int roomNum;
+        public List<int> roomNums = new List<int>();
 
-        public EnterRoomPopup(int inRoomNum, string inMessage, PopupMgr inPopupMgr) :
+        public EnterRoomPopup(int[] inRoomNums, string inMessage, PopupMgr inPopupMgr) :
             base("", inMessage, inPopupMgr)
         {
-            roomNum = inRoomNum;
+            roomNums.AddRange(inRoomNums);
         }
 
         public override bool ShouldStillShow()
@@ -266,18 +266,17 @@ namespace GameEngine
         {
             for (int ctr = 0; ctr < roomsToPopup.Length; ++ctr)
             {
-                OBJECT objct = gameBoard[objectsInRooms[ctr]];
                 if (roomsToPopup[ctr] == room)
                 {
                     showPopup(enterRoomPopups[ctr]);
                 }
             }
-            for (int ctr = 0; ctr < objectsInRooms.Length; ++ctr)
+            for (int ctr2 = 0; ctr2 < objectsInRooms.Length; ++ctr2)
             {
-                OBJECT objct = gameBoard[objectsInRooms[ctr]];
+                OBJECT objct = gameBoard[objectsInRooms[ctr2]];
                 if (objct.room == room)
                 {
-                    showPopup(objectInRoomPopups[ctr]);
+                    showPopup(objectInRoomPopups[ctr2]);
                 }
             }
         }
@@ -285,22 +284,25 @@ namespace GameEngine
 
         public bool ShouldStillShowEnterRoomPopup(EnterRoomPopup popup)
         {
-            // Make sure the current player is still in the room
+            // Make sure the current player is still in one the rooms
             // and that the popup hasn't been displayed before.
             int playersRoom = gameBoard.getCurrentPlayer().room;
-            return (playersRoom == popup.roomNum) && !popup.HasFired;
+            return popup.roomNums.Contains(playersRoom) && !popup.HasFired;
         }
 
         public void MarkEnterRoomPopupHandled(EnterRoomPopup popup)
         {
             List<int> rooms = new List<int>(roomsToPopup);
-            int index = rooms.FindIndex(x => x == popup.roomNum);
-            if (index >= 0)
+            foreach (int roomToRemove in popup.roomNums)
             {
-                rooms.RemoveAt(index);
-                roomsToPopup = rooms.ToArray();
-                enterRoomPopups.RemoveAt(index);
+                int index = rooms.FindIndex(x => x == roomToRemove);
+                if (index >= 0)
+                {
+                    rooms.RemoveAt(index);
+                    enterRoomPopups.RemoveAt(index);
+                }
             }
+            roomsToPopup = rooms.ToArray();
         }
 
         private void initializeEnterRoomPopups()
@@ -308,12 +310,43 @@ namespace GameEngine
             List<int> rooms = new List<int>();
             List<Popup> popups = new List<Popup>();
 
-            int blueMazeEntry = (gameBoard.getCurrentPlayer().playerNum == 2 ?
-                Map.BLUE_MAZE_2 : Map.BLUE_MAZE_1);
-            rooms.Add(blueMazeEntry);
-            popups.Add(new EnterRoomPopup(blueMazeEntry,
+            int[] firstMazeRooms = {Map.BLUE_MAZE_1, Map.BLUE_MAZE_2,
+                Map.WHITE_MAZE_1, Map.WHITE_MAZE_3};
+            EnterRoomPopup firstMazePopup = new EnterRoomPopup(firstMazeRooms,
                 "This is a labyrinth.  Follow the black line to " +
-                "get to the other castles.", this));
+                "get to the other castles.", this);
+            foreach(int room in firstMazeRooms)
+            {
+                rooms.Add(room);
+                popups.Add(firstMazePopup);
+            }
+            if (gameBoard.map.layout == Map.MAP_LAYOUT_BIG)
+            {
+                int[] firstDarkMazeRooms = {Map.WHITE_MAZE_1, Map.WHITE_MAZE_2,
+                    Map.WHITE_MAZE_3, Map.BLACK_MAZE_ENTRY};
+                EnterRoomPopup firstDarkMazePopup = new EnterRoomPopup(firstMazeRooms,
+                    "This maze is dark.  Imagine you have a torch and can only " +
+                    "see the area the torch lights up.", this);
+                foreach (int room in firstDarkMazeRooms)
+                {
+                    rooms.Add(room);
+                    popups.Add(firstMazePopup);
+                }
+            }
+            int[] brownGuideRooms = {Map.WHITE_MAZE_2, Map.RED_MAZE_1,
+                Map.BLACK_MAZE_ENTRY};
+            EnterRoomPopup brownGuidePopup = new EnterRoomPopup(brownGuideRooms,
+                "Follow the brown line to get to useful points in the maze.", this);
+            foreach (int room in brownGuideRooms)
+            {
+                rooms.Add(room);
+                popups.Add(firstMazePopup);
+            }
+            rooms.Add(Map.RED_MAZE_3);
+            popups.Add(new EnterRoomPopup(new int[] { Map.RED_MAZE_3 },
+                "The room below this can only be reached with the bridge.",
+                 this));
+
 
 
             roomsToPopup = rooms.ToArray();

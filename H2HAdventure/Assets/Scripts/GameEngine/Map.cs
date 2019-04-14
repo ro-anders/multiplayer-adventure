@@ -49,6 +49,8 @@ namespace GameEngine
 
         public ROOM[] roomDefs; // TODO: Migrate to being private with accessors.
 
+        public int layout; // MAP_LAYOUT_SMALL or MAP_LAYOUT_BIG
+
         public const int LONG_WAY = 5;
 
         private const int numRooms = COPPER_FOYER + 1;
@@ -61,11 +63,12 @@ namespace GameEngine
             get { return guide; }
         }
 
-        public Map(int numPlayers, int gameMapLayout, bool isCooperative, bool usesGuides)
+        public Map(int numPlayers, int inGameMapLayout, bool isCooperative, bool usesGuides)
         {
+            layout = inGameMapLayout;
             roomDefs = new ROOM[numRooms];
             defaultRooms();
-            ConfigureMaze(numPlayers, gameMapLayout, isCooperative);
+            ConfigureMaze(numPlayers, isCooperative);
             if (usesGuides)
             {
                 guide.ConfigureGuide(numPlayers==3);
@@ -156,7 +159,7 @@ namespace GameEngine
                                             CRYSTAL_FOYER, CRYSTAL_FOYER, CRYSTAL_FOYER, CRYSTAL_FOYER, "Crystal Foyer", ROOM.RandomVisibility.HIDDEN));
         }
 
-        void ConfigureMaze(int numPlayers, int gameMapLayout, bool isCooperative)
+        private void ConfigureMaze(int numPlayers, bool isCooperative)
         {
             // Remove the Copper Castle in cooperative games
             if (isCooperative)
@@ -177,11 +180,11 @@ namespace GameEngine
                 roomDefs[JADE_FOYER].visibility = ROOM.RandomVisibility.IN_CASTLE;
             }
 
-            if (gameMapLayout == MAP_LAYOUT_SMALL)
+            if (layout == MAP_LAYOUT_SMALL)
             {
                 // This is the default.  Nothing to do.
             }
-            else if (gameMapLayout == MAP_LAYOUT_GAUNTLET)
+            else if (layout == MAP_LAYOUT_GAUNTLET)
             {
                 // Make the right side of the main hall a dead end.
                 roomDefs[MAIN_HALL_RIGHT].roomUp = BLUE_MAZE_3;
