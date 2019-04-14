@@ -41,6 +41,8 @@ namespace GameEngine
         /** The matrix of things the dragon runs from, attacks, and guards. */
         private int[] matrix = new int[0];
 
+        private PopupMgr popupMgr;
+
         /**
      * Create a dragon
      * label - used purely for debugging and logging
@@ -50,7 +52,7 @@ namespace GameEngine
      * chaseMatrix - the list of items that the dragon either runs from, attacks, or guards
      *               NOTE: Assumes chaseMatrix will not be deleted.
      */
-        public Dragon(String label, int inNumber, int inColor, int inSpeed, int[] chaseMatrix)
+        public Dragon(String label, int inNumber, int inColor, int inSpeed, int[] chaseMatrix, PopupMgr inPopupMgr)
             : base(label, objectGfxDragon, dragonStates, 0, inColor)
         {
             dragonNumber = inNumber;
@@ -58,6 +60,7 @@ namespace GameEngine
             matrix = chaseMatrix;
             timer = 0;
             eaten = null;
+            popupMgr = inPopupMgr;
         }
 
         public static void setRunFromSword(bool willRunFromSword)
@@ -269,6 +272,10 @@ public void syncAction(DragonMoveAction action)
                                         seekDir = 1;
                                         seekX = closest.x / 2;
                                         seekY = closest.y / 2;
+                                        if (popupMgr.needPopup[PopupMgr.SEE_DRAGON] &&
+                                            (closest == board.getCurrentPlayer())) {
+                                            popupMgr.ShowDragonPopup();
+                                        }
                                     }
                                 }
                             }
@@ -426,7 +433,7 @@ BALL closestBall()
                 int width = 8 * (other.size / 2 + 1);
                 xdist = this.x - (other.x + width);
             }
-            int ydist = 0;
+            int ydist;
             if (this.y < other.y)
             {
                 // Measure from the dragon's top to the object's bottom

@@ -124,6 +124,7 @@ namespace GameEngine
             gameMap = new Map(numPlayers, gameMapLayout, isCooperative, useMazeGuides);
             roomDefs = gameMap.roomDefs;
             gameBoard = new Board(gameMap, view);
+            popupMgr = new PopupMgr(gameBoard);
             EasterEgg.setup(view, gameBoard);
 
             surrounds = new OBJECT[numPlayers];
@@ -143,9 +144,9 @@ namespace GameEngine
                 Dragon.setSuperDragons();
             }
             dragons = new Dragon[numDragons];
-            dragons[0] = new Dragon("grindle", 0, COLOR.LIMEGREEN, 2, greenDragonMatrix);
-            dragons[1] = new Dragon("yorgle", 1, COLOR.YELLOW, 2, yellowDragonMatrix);
-            dragons[2] = new Dragon("rhindle", 2, COLOR.RED, 3, redDragonMatrix);
+            dragons[0] = new Dragon("grindle", 0, COLOR.LIMEGREEN, 2, greenDragonMatrix, popupMgr);
+            dragons[1] = new Dragon("yorgle", 1, COLOR.YELLOW, 2, yellowDragonMatrix, popupMgr);
+            dragons[2] = new Dragon("rhindle", 2, COLOR.RED, 3, redDragonMatrix, popupMgr);
             bat = new Bat(COLOR.BLACK);
 
             OBJECT goldKey = new OBJECT("gold key", objectGfxKey, new byte[0], 0, COLOR.YELLOW, OBJECT.RandomizedLocations.OUT_IN_OPEN);
@@ -237,7 +238,7 @@ namespace GameEngine
 
             if (inUseHelpPopups)
             {
-                popupMgr = new PopupMgr(gameBoard);
+                popupMgr.SetupPopups();
             }
         }
 

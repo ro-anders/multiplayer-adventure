@@ -7,7 +7,7 @@ namespace GameEngine
     public class Popup
     {
         protected PopupMgr popupMgr;
-        private readonly string message;
+        protected string message;
         public string Message
         {
             get { return message; }
@@ -47,6 +47,7 @@ namespace GameEngine
         }
     }
 
+    //-------------------------------------------------------------------------
     public class ObjectInRoomPopup : Popup
     {
 
@@ -71,6 +72,7 @@ namespace GameEngine
 
     }
 
+    //-------------------------------------------------------------------------
     public class EnterRoomPopup : Popup
     {
 
@@ -95,6 +97,7 @@ namespace GameEngine
 
     }
 
+    //-------------------------------------------------------------------------
     public class TimedPopup : Popup
     {
 
@@ -109,6 +112,7 @@ namespace GameEngine
 
     }
 
+    //-------------------------------------------------------------------------
     public class HowToMovePopup : Popup
     {
 
@@ -126,9 +130,53 @@ namespace GameEngine
 
     }
 
+    //-------------------------------------------------------------------------
+    public class DragonPopup: Popup
+    {
+        private Board gameBoard;
+
+        public DragonPopup(PopupMgr inPopupMgr) :
+            base("dragon", "That is a dragon.  Run!", inPopupMgr)
+        { }
+
+        public override bool ShouldStillShow()
+        {
+            // Determine if there is still a dragon in the room.
+            bool stillInRoom = false;
+            BALL currentPlayer = popupMgr.gameBoard.getCurrentPlayer();
+            int playersRoom = currentPlayer.room;
+            for(int ctr=Board.OBJECT_REDDRAGON; ctr<=Board.OBJECT_GREENDRAGON; ++ctr)
+            {
+                int dragonsRoom = popupMgr.gameBoard.getObject(ctr).room;
+                stillInRoom = stillInRoom || (playersRoom == dragonsRoom);
+            }
+
+            if (stillInRoom)
+            {
+                // Figure out what the message should be.
+                if (currentPlayer.linkedObject == Board.OBJECT_SWORD)
+                {
+                    message = "That is a dragon.  You can kill him with your sword.";
+                }
+            } else
+            {
+                // Reset that we need the dragon popup
+                popupMgr.needPopup[PopupMgr.SEE_DRAGON] = true;
+            }
+
+            return stillInRoom;
+        }
+
+    }
+
+    //-------------------------------------------------------------------------
     public class PopupMgr
     {
         public const int MIN_SECONDS_BETWEEN_POPUPS = 10;
+
+        public const int SEE_DRAGON = 0;
+        public const int NUM_NEED_POPUPS = 1;
+        public bool[] needPopup;
 
         private List<Popup> popupsToShow = new List<Popup>();
         public Board gameBoard;
@@ -141,10 +189,18 @@ namespace GameEngine
         public PopupMgr(Board inBoard)
         {
             gameBoard = inBoard;
+            needPopup = new bool[NUM_NEED_POPUPS];
+        }
+
+        public void SetupPopups() { 
             initializeStartOfGamePopups();
             initializeObjectInRoomPopups();
             initializeEnterRoomPopups();
             EnteredRoomShowPopups(gameBoard.getCurrentPlayer().room);
+            for(int ctr=0; ctr<NUM_NEED_POPUPS; ++ctr)
+            {
+                needPopup[ctr] = true;
+            }
         }
 
         public Popup GetNextPopup()
@@ -167,6 +223,12 @@ namespace GameEngine
         private void showPopup(Popup popup)
         {
             popupsToShow.Add(popup);
+            hasPopups = true;
+        }
+
+        private void showPopupNow(Popup popup)
+        {
+            popupsToShow.Insert(0, popup);
             hasPopups = true;
         }
 
@@ -386,6 +448,17 @@ namespace GameEngine
         {
             unscheduledPopups.Add(popup);
         }
+
+        //----------------------------------------------------------
+        // Popups for dragons
+
+        public void ShowDragonPopup()
+        {
+            needPopup[SEE_DRAGON] = false;
+            showPopupNow(new DragonPopup(this));
+            showPopup(new Popup("sword", "Find the sword to kill dragons.", this));
+        }
+
 
     }
 
