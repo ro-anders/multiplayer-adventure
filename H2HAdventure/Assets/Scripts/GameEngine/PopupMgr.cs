@@ -99,7 +99,9 @@ namespace GameEngine
                 int currentlyHolding = popupMgr.gameBoard.getCurrentPlayer().linkedObject;
                 List<int> tmplist = new List<int>(objectNums);
                 return tmplist.Contains(currentlyHolding);
-
+            } else
+            {
+                return false;
             }
         }
 
