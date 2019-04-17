@@ -38,7 +38,7 @@ namespace GameEngine
          */
         public virtual bool ShouldStillShow()
         {
-            return true;
+            return !hasFired;
         }
 
         public virtual void MarkHandled()
@@ -61,13 +61,52 @@ namespace GameEngine
 
         public override bool ShouldStillShow()
         {
-            return popupMgr.ShouldStillShowObjectInRoomPopup(this);
+            return base.ShouldStillShow() && popupMgr.ShouldStillShowObjectInRoomPopup(this);
         }
 
         public override void MarkHandled()
         {
             base.MarkHandled();
             popupMgr.MarkObjectInRoomPopupHandled(this);
+        }
+
+    }
+
+    //-------------------------------------------------------------------------
+    public class PickedUpObjectPopup : Popup
+    {
+
+        public List<int> objectNums = new List<int>();
+
+        public PickedUpObjectPopup(int inObjectNum, string inImageName, 
+            string inMessage, PopupMgr inPopupMgr) :
+            base(inImageName, inMessage, inPopupMgr)
+        {
+            objectNums.Add(inObjectNum);
+        }
+
+        public PickedUpObjectPopup(int[] inObjectNums, string inImageName, 
+            string inMessage, PopupMgr inPopupMgr) :
+            base(inImageName, inMessage, inPopupMgr)
+        {
+            objectNums.AddRange(inObjectNums);
+        }
+
+        public override bool ShouldStillShow()
+        {
+            if (base.ShouldStillShow())
+            {
+                int currentlyHolding = popupMgr.gameBoard.getCurrentPlayer().linkedObject;
+                List<int> tmplist = new List<int>(objectNums);
+                return tmplist.Contains(currentlyHolding);
+
+            }
+        }
+
+        public override void MarkHandled()
+        {
+            base.MarkHandled();
+            popupMgr.MarkPickedUpObjectPopupHandled(this);
         }
 
     }
@@ -86,7 +125,7 @@ namespace GameEngine
 
         public override bool ShouldStillShow()
         {
-            return popupMgr.ShouldStillShowEnterRoomPopup(this);
+            return base.ShouldStillShow() && popupMgr.ShouldStillShowEnterRoomPopup(this);
         }
 
         public override void MarkHandled()
@@ -123,7 +162,8 @@ namespace GameEngine
         public override bool ShouldStillShow()
         {
             BALL ball = popupMgr.gameBoard.getCurrentPlayer();
-            return (ball.room == ball.homeGate.room) &&
+            return base.ShouldStillShow() &&
+                (ball.room == ball.homeGate.room) &&
                 ((ball.x == 0x50 * 2) ||
                  (ball.y == 0x20 * 2));
         }
@@ -141,30 +181,38 @@ namespace GameEngine
 
         public override bool ShouldStillShow()
         {
-            // Determine if there is still a dragon in the room.
-            bool stillInRoom = false;
-            BALL currentPlayer = popupMgr.gameBoard.getCurrentPlayer();
-            int playersRoom = currentPlayer.room;
-            for(int ctr=Board.OBJECT_REDDRAGON; ctr<=Board.OBJECT_GREENDRAGON; ++ctr)
+            if (base.ShouldStillShow())
             {
-                int dragonsRoom = popupMgr.gameBoard.getObject(ctr).room;
-                stillInRoom = stillInRoom || (playersRoom == dragonsRoom);
-            }
-
-            if (stillInRoom)
-            {
-                // Figure out what the message should be.
-                if (currentPlayer.linkedObject == Board.OBJECT_SWORD)
+                // Determine if there is still a dragon in the room.
+                bool stillInRoom = false;
+                BALL currentPlayer = popupMgr.gameBoard.getCurrentPlayer();
+                int playersRoom = currentPlayer.room;
+                for (int ctr = Board.OBJECT_REDDRAGON; ctr <= Board.OBJECT_GREENDRAGON; ++ctr)
                 {
-                    message = "That is a dragon.  You can kill him with your sword.";
+                    int dragonsRoom = popupMgr.gameBoard.getObject(ctr).room;
+                    stillInRoom = stillInRoom || (playersRoom == dragonsRoom);
                 }
-            } else
-            {
-                // Reset that we need the dragon popup
-                popupMgr.needPopup[PopupMgr.SEE_DRAGON] = true;
-            }
 
-            return stillInRoom;
+                if (stillInRoom)
+                {
+                    // Figure out what the message should be.
+                    if (currentPlayer.linkedObject == Board.OBJECT_SWORD)
+                    {
+                        message = "That is a dragon.  You can kill him with your sword.";
+                    }
+                }
+                else
+                {
+                    // Reset that we need the dragon popup
+                    popupMgr.needPopup[PopupMgr.SEE_DRAGON] = true;
+                }
+
+                return stillInRoom;
+            }
+            else
+            {
+                return false;
+            }
         }
 
     }
@@ -196,6 +244,7 @@ namespace GameEngine
             initializeStartOfGamePopups();
             initializeObjectInRoomPopups();
             initializeEnterRoomPopups();
+            initializePickedUpObjectPopups();
             EnteredRoomShowPopups(gameBoard.getCurrentPlayer().room);
             for(int ctr=0; ctr<NUM_NEED_POPUPS; ++ctr)
             {
@@ -256,7 +305,7 @@ namespace GameEngine
         // Popups for First time we see an object
 
 
-        private int[] objectsInRooms;
+        private int[] objectsInRooms = new int[0];
         private List<Popup> objectInRoomPopups;
 
 
@@ -316,10 +365,54 @@ namespace GameEngine
         }
 
         //----------------------------------------------------------
+        // Popups for First time we pickup an object
+
+
+        private int[] objectsToPickup = new int[0];
+        private List<Popup> pickedUpObjectPopups;
+
+
+        public void MarkPickedUpObjectPopupHandled(PickedUpObjectPopup popup)
+        {
+            List<int> objects = new List<int>(objectsToPickup);
+            int index = pickedUpObjectPopups.FindIndex(x => x == popup);
+            while (index >= 0)
+            {
+                objects.RemoveAt(index);
+                pickedUpObjectPopups.RemoveAt(index);
+                index = pickedUpObjectPopups.FindIndex(x => x == popup);
+            }
+            objectsToPickup = objects.ToArray();
+        }
+
+        public void PickedUpObjectShowPopups(int objectNum)
+        {
+            for (int ctr = 0; ctr < objectsToPickup.Length; ++ctr)
+            {
+                if (objectsToPickup[ctr] == objectNum)
+                {
+                    showPopup(pickedUpObjectPopups[ctr]);
+                }
+            }
+        }
+
+        private void initializePickedUpObjectPopups()
+        {
+            List<int> objects = new List<int>();
+            List<Popup> popups = new List<Popup>();
+            objects.Add(Board.OBJECT_SWORD);
+            popups.Add(new PickedUpObjectPopup(Board.OBJECT_SWORD,
+                "sword", "Touch the sword to a dragon to kill it.", this));
+
+            objectsToPickup = objects.ToArray();
+            pickedUpObjectPopups = popups;
+        }
+
+        //----------------------------------------------------------
         // Popups for when we enter a room for the first time
 
 
-        private int[] roomsToPopup;
+        private int[] roomsToPopup = new int[0];
         private List<Popup> enterRoomPopups;
 
 

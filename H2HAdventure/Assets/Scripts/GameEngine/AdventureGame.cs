@@ -1528,9 +1528,6 @@ namespace GameEngine
             {
                 int actorNum = newaction.sender;
                 BALL actor = gameBoard.getPlayer(actorNum);
-                if (newaction.dropObject != Board.OBJECT_NONE)
-                {
-                }
                 if ((newaction.dropObject != Board.OBJECT_NONE) && (actor.linkedObject == newaction.dropObject))
                 {
                     actor.linkedObject = Board.OBJECT_NONE;
@@ -1687,6 +1684,10 @@ namespace GameEngine
                             action.setPickup(hitIndex, objectBall.linkedObjectX, objectBall.linkedObjectY);
                             sync.BroadcastAction(action);
 
+                            if (popupMgr != null)
+                            {
+                                popupMgr.PickedUpObjectShowPopups(hitIndex);
+                            }
                         }
 
                         // Play the sound
