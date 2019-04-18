@@ -2905,7 +2905,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1612568040
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2976,6 +2976,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e3c36a7384e9485caa8dddc3718b6a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  screenTop: 0
+  screenCenter: 0
+  targetPopupY: 0
 --- !u!1 &1643024362
 GameObject:
   m_ObjectHideFlags: 0
