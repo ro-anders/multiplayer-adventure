@@ -43,7 +43,10 @@ public class ShowcaseNetworkController : MonoBehaviour
 
         errorText.text = "";
 
-        localIp = GetLocalIp(); 
+        if (!SessionInfo.WORK_OFFLINE)
+        {
+            localIp = GetLocalIp();
+        }
 
         bool allSpecified = LoadConfig();
         // IN Dev mode we always wait to confirm the network settings
