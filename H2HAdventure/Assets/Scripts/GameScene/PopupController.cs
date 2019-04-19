@@ -7,16 +7,7 @@ public class PopupController : MonoBehaviour
 {
     private const float POPUP_TIME = 0.1f; // tenth of a second
     private const float FLASH_TIME = 0.1f; // tenth of a second
-
-    public string screenName;
-    public float screenTop;
-    public float screenBottom;
-    public float screenLeft;
-    public float screenRight;
-    public float popupTop;
-    public float popupBottom;
-    public float popupLeft;
-    public float popupRight;
+    public GameObject target;
 
     private Text popupText;
     private Image popupImage;
@@ -30,22 +21,15 @@ public class PopupController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Vector3 myPosition = transform.position;
+        Vector3 targetPosition = target.transform.position;
+
         popupText = this.transform.Find("PopupText").gameObject.GetComponent<Text>();
         popupImage = this.transform.Find("PopupImage").gameObject.GetComponent<Image>();
         RectTransform rt = (RectTransform)transform;
         targetPopupWidth = rt.rect.width;
         targetPopupHeight = rt.rect.height;
 
-        screenName = transform.parent.gameObject.name;
-        screenBottom = transform.parent.position.y;
-        screenTop = screenBottom + ((RectTransform)transform.parent).rect.height;
-        screenLeft = transform.parent.position.x;
-        screenRight = screenLeft + ((RectTransform)transform.parent).rect.width;
-
-        popupBottom = transform.position.y;
-        popupTop = popupBottom + ((RectTransform)transform).rect.height;
-        popupLeft = transform.position.x;
-        popupRight = popupLeft + ((RectTransform)transform).rect.width;
 
     }
 
