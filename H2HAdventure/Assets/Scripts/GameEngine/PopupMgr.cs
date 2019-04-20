@@ -267,7 +267,6 @@ namespace GameEngine
         }
 
         public void SetupPopups() { 
-            initializeStartOfGamePopups();
             initializeObjectInRoomPopups();
             initializeEnterRoomPopups();
             initializePickedUpObjectPopups();
@@ -307,10 +306,8 @@ namespace GameEngine
             hasPopups = true;
         }
 
-        private void initializeStartOfGamePopups()
+        public void StartedGameShowPopups()
         {
-            ShowPopup(new Popup("chalice", "This is your home castle.  " +
-            "Bring the chalice back here to win the game.", this));
             // Only put the line about the key if the key isn't sitting in 
             // the same rooom
             BALL player = gameBoard.getCurrentPlayer();
@@ -320,10 +317,12 @@ namespace GameEngine
             {
                 string key_name = (player.playerNum == 0 ? "gold" :
                  (player.playerNum == 1 ? "copper" : "jade"));
-                ShowPopup(new Popup(key_name + "key", "But first you " +
+                ShowPopupNow(new Popup(key_name + "key", "But first you " +
                     "need to unlock your castle.  Find the " + key_name + 
                     " key and bring it back here.", this));
             }
+            ShowPopupNow(new Popup("chalice", "This is your home castle.  " +
+            "Bring the chalice back here to win the game.", this));
             ShowPopup(new HowToMovePopup(this));
         }
 

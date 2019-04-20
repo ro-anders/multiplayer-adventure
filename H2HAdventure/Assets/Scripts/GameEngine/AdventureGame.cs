@@ -539,7 +539,7 @@ namespace GameEngine
             {
                 if (popupMgr != null)
                 {
-                    popupMgr.ShowPopup(new Popup("chalice",
+                    popupMgr.ShowPopupNow(new Popup("chalice",
                         "Oh no! You lost.  Player " + (lost.sender + 1) +
                         "has won the game.", popupMgr));
                 }
@@ -600,6 +600,10 @@ namespace GameEngine
                     {
                         gameState = GAMESTATE_ACTIVE_1;
                         ResetPlayers();
+                        if (popupMgr != null)
+                        {
+                            popupMgr.StartedGameShowPopups();
+                        }
                     }
                     else
                     {
@@ -624,8 +628,8 @@ namespace GameEngine
                     {
                         if (popupMgr != null)
                         {
-                            popupMgr.ShowPopup(new Popup("chalice",
-                                "You won!  Congratulations.", popupMgr));
+                            popupMgr.ShowPopupNow(new Popup("chalice",
+                                "You won!!!!  Congratulations.", popupMgr));
                         }
                         WinGame(objectBall.room);
                         PlayerWinAction won = new PlayerWinAction(objectBall.room);
@@ -739,22 +743,6 @@ namespace GameEngine
                             // Deal with the magnet
                             Magnet();
 
-                            if ((frameNumber % 60 == 0) && (popupMgr != null))
-                            {
-                                // Once a second we check for timed popups
-                                popupMgr.CheckTimedPopups(frameNumber);
-                            }
-                            if ((popupMgr != null) && popupMgr.HasPopups &&
-                                 (frameNumber > lastPopupTime + (PopupMgr.MIN_SECONDS_BETWEEN_POPUPS*60) ))
-                            {
-                                Popup popup = popupMgr.GetNextPopup();
-                                if (popup != null)
-                                {
-                                    view.Platform_PopupHelp(popup.Message, popup.ImageName);
-                                    lastPopupTime = frameNumber;
-                                }
-                            }
-
                             // Display the room and objects
                             PrintDisplay();
 
@@ -784,6 +772,25 @@ namespace GameEngine
 
                     // Display the room and objects
                     PrintDisplay();
+                }
+            }
+
+            // Check for popups (only ten times a second)
+            if ((popupMgr != null) && (frameNumber % 6 == 0)) {
+                // Once a second we check for timed popups
+                if (frameNumber % 60 == 0)
+                {
+                    popupMgr.CheckTimedPopups(frameNumber);
+                }
+                if (popupMgr.HasPopups &&
+                     (frameNumber > lastPopupTime + (PopupMgr.MIN_SECONDS_BETWEEN_POPUPS * 60)))
+                {
+                    Popup popup = popupMgr.GetNextPopup();
+                    if (popup != null)
+                    {
+                        view.Platform_PopupHelp(popup.Message, popup.ImageName);
+                        lastPopupTime = frameNumber;
+                    }
                 }
             }
 
