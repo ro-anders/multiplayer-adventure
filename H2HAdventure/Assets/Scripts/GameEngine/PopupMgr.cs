@@ -185,31 +185,38 @@ namespace GameEngine
         {
             if (base.ShouldStillShow())
             {
-                // Determine if there is still a dragon in the room.
+                // Determine if there is still a dragon in the room and that
+                // you haven't been eaten.
                 bool stillInRoom = false;
+                bool beenEaten = false;
                 BALL currentPlayer = popupMgr.gameBoard.getCurrentPlayer();
                 int playersRoom = currentPlayer.room;
                 for (int ctr = Board.OBJECT_REDDRAGON; ctr <= Board.OBJECT_GREENDRAGON; ++ctr)
                 {
-                    int dragonsRoom = popupMgr.gameBoard.getObject(ctr).room;
-                    stillInRoom = stillInRoom || (playersRoom == dragonsRoom);
+                    Dragon dragon = (Dragon)popupMgr.gameBoard.getObject(ctr);
+                    stillInRoom = stillInRoom || (playersRoom == dragon.room);
+                    beenEaten = dragon.eaten == currentPlayer;
                 }
 
-                if (stillInRoom)
+                if (beenEaten)
+                {
+                    return false;
+                } 
+                else if (stillInRoom)
                 {
                     // Figure out what the message should be.
                     if (currentPlayer.linkedObject == Board.OBJECT_SWORD)
                     {
                         message = "That is a dragon.  You can kill him with your sword.";
                     }
+                    return true;
                 }
                 else
                 {
                     // Reset that we need the dragon popup
                     popupMgr.needPopup[PopupMgr.SEE_DRAGON] = true;
+                    return false;
                 }
-
-                return stillInRoom;
             }
             else
             {
@@ -338,13 +345,22 @@ namespace GameEngine
             List<Popup> popups = new List<Popup>();
             objects.Add(Board.OBJECT_BLACKKEY);
             popups.Add(new ObjectInRoomPopup(Board.OBJECT_BLACKKEY,
-                "blackkey", "That key can unlock the black castle", this));
+                "blackkey", "The black key can unlock the black castle", this));
             objects.Add(Board.OBJECT_WHITEKEY);
             popups.Add(new ObjectInRoomPopup(Board.OBJECT_WHITEKEY,
-                "whitekey", "That key can unlock the white castle", this));
+                "whitekey", "The white key can unlock the white castle", this));
             objects.Add(Board.OBJECT_SWORD);
             popups.Add(new ObjectInRoomPopup(Board.OBJECT_SWORD,
                 "sword", "That is the sword.  It can kill dragons.", this));
+            objects.Add(Board.OBJECT_BRIDGE);
+            popups.Add(new ObjectInRoomPopup(Board.OBJECT_BRIDGE,
+                "bridge", "That is a bridge.  With it you can cross over walls in the mazes.", this));
+            objects.Add(Board.OBJECT_MAGNET);
+            popups.Add(new ObjectInRoomPopup(Board.OBJECT_MAGNET,
+                "magnet", "That is a magnet.  It can pull objects out of walls.", this));
+            objects.Add(Board.OBJECT_CHALISE);
+            popups.Add(new ObjectInRoomPopup(Board.OBJECT_CHALISE,
+                "chalice", "That is the chalice!  Bring that back to your castle and you win!", this));
 
 
             string myKeyMessage = "That key will unlock your home castle.  You need it!";
@@ -405,6 +421,23 @@ namespace GameEngine
             objects.Add(Board.OBJECT_SWORD);
             popups.Add(new PickedUpObjectPopup(Board.OBJECT_SWORD,
                 "sword", "Touch the sword to a dragon to kill it.", this));
+            objects.Add(Board.OBJECT_BRIDGE);
+            popups.Add(new PickedUpObjectPopup(Board.OBJECT_BRIDGE,
+                "bridge", "Lay it across a wall to cross it, but it only works " +
+                "going up and down and you can't be holding it.", this));
+            popups.Add(new PickedUpObjectPopup(
+                new int[] { Board.OBJECT_YELLOWKEY, Board.OBJECT_COPPERKEY,
+                        Board.OBJECT_JADEKEY, Board.OBJECT_BLACKKEY, Board.OBJECT_WHITEKEY },
+                "blackkey", "Keys only work on the castle of the same color.\n"+
+                "Touch it to the gate to open it.  Touch it again to close it.", this));
+            objects.Add(Board.OBJECT_CHALISE);
+            popups.Add(new PickedUpObjectPopup(Board.OBJECT_CHALISE,
+                "chalice", "Bring the chalice into your castle and you win!", this));
+            objects.Add(Board.OBJECT_DOT);
+            popups.Add(new PickedUpObjectPopup(Board.OBJECT_DOT,
+                "nothing", "You found the invisible dot.  Bring it to the " +
+                "right end of the main hall with two other objects to get to " +
+                "the easter egg.", this));
 
             objectsToPickup = objects.ToArray();
             pickedUpObjectPopups = popups;
