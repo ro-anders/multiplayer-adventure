@@ -524,6 +524,12 @@ namespace GameEngine
             while (otherReset != null)
             {
                 ResetPlayer(gameBoard.getPlayer(otherReset.sender));
+                if ((popupMgr != null) && popupMgr.needPopup[PopupMgr.RESPAWNED])
+                {
+                    popupMgr.ShowPopup(new Popup("dragon",
+                        "All dead dragons have come back to life because another player respawned.",
+                        popupMgr, PopupMgr.RESPAWNED));
+                }
                 otherReset = sync.GetNextResetAction();
             }
 
@@ -531,6 +537,12 @@ namespace GameEngine
             PlayerWinAction lost = sync.GetGameWon();
             if (lost != null)
             {
+                if (popupMgr != null)
+                {
+                    popupMgr.ShowPopup(new Popup("chalice",
+                        "Oh no! You lost.  Player " + (lost.sender + 1) +
+                        "has won the game.", popupMgr));
+                }
                 WinGame(lost.winInRoom);
                 lost = null;
             }
@@ -566,6 +578,12 @@ namespace GameEngine
                     if ((gameMode != Adv.GAME_MODE_ROLE_PLAY) || (gameBoard.getPlayer(2).room == objectBall.room))
                     {
                         ResetPlayer(objectBall);
+                        if ((popupMgr != null) && popupMgr.needPopup[PopupMgr.RESPAWNED])
+                        {
+                            popupMgr.ShowPopup(new Popup("",
+                                "Now that you respawned, all dead dragons have combe back to life",
+                                popupMgr, PopupMgr.RESPAWNED));
+                        }
                         // Broadcast to everyone else
                         PlayerResetAction action = new PlayerResetAction();
                         sync.BroadcastAction(action);
@@ -604,6 +622,11 @@ namespace GameEngine
                     // Has someone won the game.
                     if (checkWonGame())
                     {
+                        if (popupMgr != null)
+                        {
+                            popupMgr.ShowPopup(new Popup("chalice",
+                                "You won!  Congratulations.", popupMgr));
+                        }
                         WinGame(objectBall.room);
                         PlayerWinAction won = new PlayerWinAction(objectBall.room);
                         sync.BroadcastAction(won);

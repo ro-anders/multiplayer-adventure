@@ -6,6 +6,7 @@ namespace GameEngine
 {
     public class Popup
     {
+        protected int needFlag;
         protected PopupMgr popupMgr;
         protected string message;
         public string Message
@@ -23,12 +24,13 @@ namespace GameEngine
             get { return hasFired; }
         }
 
-        public Popup(string inImageName, string inMessage, PopupMgr inPopupMgr)
+        public Popup(string inImageName, string inMessage, PopupMgr inPopupMgr, int inNeedFlag=-1)
         {
             message = inMessage;
             imageName = inImageName;
             hasFired = false;
             popupMgr = inPopupMgr;
+            needFlag = inNeedFlag;
         }
 
         /**
@@ -38,12 +40,22 @@ namespace GameEngine
          */
         public virtual bool ShouldStillShow()
         {
-            return !hasFired;
+            if (needFlag < 0)
+            {
+                return !hasFired;
+            } else
+            {
+                return !hasFired && popupMgr.needPopup[needFlag];
+            }
         }
 
         public virtual void MarkHandled()
         {
             hasFired = true;
+            if (needFlag >= 0)
+            {
+                popupMgr.needPopup[needFlag] = false;
+            }
         }
     }
 
@@ -194,8 +206,10 @@ namespace GameEngine
                 for (int ctr = Board.OBJECT_REDDRAGON; ctr <= Board.OBJECT_GREENDRAGON; ++ctr)
                 {
                     Dragon dragon = (Dragon)popupMgr.gameBoard.getObject(ctr);
-                    stillInRoom = stillInRoom || (playersRoom == dragon.room);
-                    beenEaten = dragon.eaten == currentPlayer;
+                    stillInRoom = stillInRoom ||
+                        ((playersRoom == dragon.room) && 
+                        (dragon.state != Dragon.DEAD));
+                    beenEaten = beenEaten || (dragon.eaten == currentPlayer);
                 }
 
                 if (beenEaten)
@@ -232,7 +246,10 @@ namespace GameEngine
         public const int MIN_SECONDS_BETWEEN_POPUPS = 10;
 
         public const int SEE_DRAGON = 0;
-        public const int NUM_NEED_POPUPS = 1;
+        public const int USE_SWORD = 1;
+        public const int EATEN_BY_DRAGON = 2;
+        public const int RESPAWNED = 3;
+        public const int NUM_NEED_POPUPS = 4;
         public bool[] needPopup;
 
         private List<Popup> popupsToShow = new List<Popup>();
@@ -278,13 +295,13 @@ namespace GameEngine
             return null;
         }
 
-        private void showPopup(Popup popup)
+        public void ShowPopup(Popup popup)
         {
             popupsToShow.Add(popup);
             hasPopups = true;
         }
 
-        private void showPopupNow(Popup popup)
+        public void ShowPopupNow(Popup popup)
         {
             popupsToShow.Insert(0, popup);
             hasPopups = true;
@@ -292,7 +309,7 @@ namespace GameEngine
 
         private void initializeStartOfGamePopups()
         {
-            showPopup(new Popup("chalice", "This is your home castle.  " +
+            ShowPopup(new Popup("chalice", "This is your home castle.  " +
             "Bring the chalice back here to win the game.", this));
             // Only put the line about the key if the key isn't sitting in 
             // the same rooom
@@ -303,11 +320,11 @@ namespace GameEngine
             {
                 string key_name = (player.playerNum == 0 ? "gold" :
                  (player.playerNum == 1 ? "copper" : "jade"));
-                showPopup(new Popup(key_name + "key", "But first you " +
+                ShowPopup(new Popup(key_name + "key", "But first you " +
                     "need to unlock your castle.  Find the " + key_name + 
                     " key and bring it back here.", this));
             }
-            showPopup(new HowToMovePopup(this));
+            ShowPopup(new HowToMovePopup(this));
         }
 
         //----------------------------------------------------------
@@ -409,7 +426,7 @@ namespace GameEngine
             {
                 if (objectsToPickup[ctr] == objectNum)
                 {
-                    showPopup(pickedUpObjectPopups[ctr]);
+                    ShowPopup(pickedUpObjectPopups[ctr]);
                 }
             }
         }
@@ -458,7 +475,7 @@ namespace GameEngine
             {
                 if (roomsToPopup[ctr] == room)
                 {
-                    showPopup(enterRoomPopups[ctr]);
+                    ShowPopup(enterRoomPopups[ctr]);
                 }
             }
             for (int ctr2 = 0; ctr2 < objectsInRooms.Length; ++ctr2)
@@ -466,7 +483,7 @@ namespace GameEngine
                 OBJECT objct = gameBoard[objectsInRooms[ctr2]];
                 if (objct.room == room)
                 {
-                    showPopup(objectInRoomPopups[ctr2]);
+                    ShowPopup(objectInRoomPopups[ctr2]);
                 }
             }
         }
@@ -567,7 +584,7 @@ namespace GameEngine
             // Now popup any that have hit their scheduled time
             while ((scheduledPopups.Count > 0) && (scheduledPopups[0].absoluteFrame <= currentFrameNumber))
             {
-                showPopup(scheduledPopups[0]);
+                ShowPopup(scheduledPopups[0]);
                 scheduledPopups.RemoveAt(0);
             }
         }
@@ -583,8 +600,12 @@ namespace GameEngine
         public void ShowDragonPopup()
         {
             needPopup[SEE_DRAGON] = false;
-            showPopupNow(new DragonPopup(this));
-            showPopup(new Popup("sword", "Find the sword to kill dragons.", this));
+            ShowPopupNow(new DragonPopup(this));
+            if (needPopup[USE_SWORD])
+            {
+                ShowPopup(new Popup("sword", "Find the sword to kill dragons.",
+                     this, USE_SWORD));
+            }
         }
 
 

@@ -272,7 +272,8 @@ public void syncAction(DragonMoveAction action)
                                         seekDir = 1;
                                         seekX = closest.x / 2;
                                         seekY = closest.y / 2;
-                                        if (popupMgr.needPopup[PopupMgr.SEE_DRAGON] &&
+                                        if ((popupMgr != null) &&
+                                            popupMgr.needPopup[PopupMgr.SEE_DRAGON] &&
                                             (closest == board.getCurrentPlayer())) {
                                             popupMgr.ShowDragonPopup();
                                         }
@@ -369,6 +370,14 @@ public void syncAction(DragonMoveAction action)
                                 
                         // Play the sound
                         board.makeSound(SOUND.EATEN, MAX.VOLUME);
+
+                        if ((popupMgr != null) && (popupMgr.needPopup[PopupMgr.EATEN_BY_DRAGON]))
+                        {
+                            popupMgr.ShowPopup(new Popup("dragon",
+                                "You've been eaten by a dragon.\n" +
+                                "Click 'Respawn' to continue.", 
+                                popupMgr, PopupMgr.EATEN_BY_DRAGON));
+                        }
                     }
                     else
                     {
