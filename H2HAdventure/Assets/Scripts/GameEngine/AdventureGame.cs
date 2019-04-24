@@ -581,7 +581,7 @@ namespace GameEngine
                         if ((popupMgr != null) && popupMgr.needPopup[PopupMgr.RESPAWNED])
                         {
                             popupMgr.ShowPopup(new Popup("",
-                                "Now that you respawned, all dead dragons have combe back to life",
+                                "Now that you respawned, all dead dragons have come back to life",
                                 popupMgr, PopupMgr.RESPAWNED));
                         }
                         // Broadcast to everyone else
@@ -1645,6 +1645,10 @@ namespace GameEngine
 
                 // Play the sound
                 view.Platform_MakeSound(SOUND.PUTDOWN, MAX.VOLUME);
+                if (popupMgr != null)
+                {
+                    popupMgr.needPopup[PopupMgr.DROP_OBJECT] = false;
+                }
             }
             else
             {

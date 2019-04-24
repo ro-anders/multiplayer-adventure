@@ -157,8 +157,9 @@ namespace GameEngine
         public int relativeSeconds;
         public int absoluteFrame = -1;
 
-        public TimedPopup(int inRelativeSeconds, string inImageName, string inMessage, PopupMgr inPopupMgr) :
-            base(inImageName, inMessage, inPopupMgr)
+        public TimedPopup(int inRelativeSeconds, string inImageName, string inMessage,
+             PopupMgr inPopupMgr, int inNeedFlag = -1) :
+            base(inImageName, inMessage, inPopupMgr, inNeedFlag)
         {
             relativeSeconds = inRelativeSeconds;
         }
@@ -249,7 +250,8 @@ namespace GameEngine
         public const int USE_SWORD = 1;
         public const int EATEN_BY_DRAGON = 2;
         public const int RESPAWNED = 3;
-        public const int NUM_NEED_POPUPS = 4;
+        public const int DROP_OBJECT = 4;
+        public const int NUM_NEED_POPUPS = 5;
         public bool[] needPopup;
 
         private List<Popup> popupsToShow = new List<Popup>();
@@ -421,6 +423,11 @@ namespace GameEngine
 
         public void PickedUpObjectShowPopups(int objectNum)
         {
+            if (needPopup[DROP_OBJECT])
+            {
+                AddTimedPopup(new TimedPopup(20, "",
+                    "Hit spacebar to drop the object you're carrying", this, DROP_OBJECT));
+            }
             for (int ctr = 0; ctr < objectsToPickup.Length; ++ctr)
             {
                 if (objectsToPickup[ctr] == objectNum)
