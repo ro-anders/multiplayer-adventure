@@ -272,7 +272,6 @@ namespace GameEngine
             initializeObjectInRoomPopups();
             initializeEnterRoomPopups();
             initializePickedUpObjectPopups();
-            EnteredRoomShowPopups(gameBoard.getCurrentPlayer().room);
             for(int ctr=0; ctr<NUM_NEED_POPUPS; ++ctr)
             {
                 needPopup[ctr] = true;
@@ -325,6 +324,7 @@ namespace GameEngine
             }
             ShowPopupNow(new Popup("chalice", "This is your home castle.  " +
             "Bring the chalice back here to win the game.", this));
+            EnteredRoomShowPopups(gameBoard.getCurrentPlayer().room);
             ShowPopup(new HowToMovePopup(this));
         }
 

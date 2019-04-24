@@ -124,7 +124,10 @@ namespace GameEngine
             gameMap = new Map(numPlayers, gameMapLayout, isCooperative, useMazeGuides);
             roomDefs = gameMap.roomDefs;
             gameBoard = new Board(gameMap, view);
-            popupMgr = new PopupMgr(gameBoard);
+            if (inUseHelpPopups)
+            {
+                popupMgr = new PopupMgr(gameBoard);
+            }
             EasterEgg.setup(view, gameBoard);
 
             surrounds = new OBJECT[numPlayers];
@@ -236,7 +239,7 @@ namespace GameEngine
 
             ResetPlayers();
 
-            if (inUseHelpPopups)
+            if (popupMgr != null)
             {
                 popupMgr.SetupPopups();
             }
