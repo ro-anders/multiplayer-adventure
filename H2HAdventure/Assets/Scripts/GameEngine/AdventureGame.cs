@@ -603,6 +603,7 @@ namespace GameEngine
                     {
                         gameState = GAMESTATE_ACTIVE_1;
                         ResetPlayers();
+                        view.Platform_GameChange(GAME_CHANGES.GAME_STARTED);
                         if (popupMgr != null)
                         {
                             popupMgr.StartedGameShowPopups();
@@ -854,6 +855,7 @@ namespace GameEngine
             if ((numPlayers <= 2) || (isCooperative))
             {
                 gameBoard[Board.OBJECT_JADEKEY].setExists(false);
+                gameBoard[Board.OBJECT_JADEKEY].room = Map.NUMBER_ROOM;
                 gameBoard[Board.OBJECT_JADEKEY].randomPlacement = OBJECT.RandomizedLocations.FIXED_LOCATION;
             }
             if (isCooperative)

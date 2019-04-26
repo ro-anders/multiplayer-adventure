@@ -23,7 +23,7 @@ public class ShowcaseAdventureView : UnityAdventureBase
 
     public override void Platform_GameChange(GAME_CHANGES change)
     {
-        // TBD
+        base.Platform_GameChange(change);
     }
 
     public void PlayGame(ProposedGame game, int thisPlayerSlot)
@@ -31,7 +31,7 @@ public class ShowcaseAdventureView : UnityAdventureBase
         gameEngine = new AdventureGame(this, game.numPlayers, thisPlayerSlot, xport,
             game.gameNumber, game.diff1 == 0, game.diff2 == 0,
             SessionInfo.ThisPlayerInfo.needsPopupHelp, SessionInfo.ThisPlayerInfo.needsMazeGuides);
-        gameStarted = true;
+        gameInitialized = true;
     }
 
 }

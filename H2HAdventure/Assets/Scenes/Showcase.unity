@@ -2900,7 +2900,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &677444660
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3932,8 +3932,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.000015259, y: 164}
-  m_SizeDelta: {x: 406.7, y: 148.7}
+  m_AnchoredPosition: {x: 0.000011444, y: 157}
+  m_SizeDelta: {x: 648.9, y: 148.7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &841822193
 MonoBehaviour:
@@ -3968,7 +3968,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "Head-to-Head \nAtari Adventure"
+  m_Text: Head-to-Head Atari Adventure
 --- !u!222 &841822194
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -8472,7 +8472,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -201}
+  m_AnchoredPosition: {x: 0, y: -243}
   m_SizeDelta: {x: 329.9, y: 69.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1537970932
@@ -11519,8 +11519,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.0000019073, y: -12.375}
-  m_SizeDelta: {x: 560, y: 307.65}
+  m_AnchoredPosition: {x: -0.000011444, y: -13}
+  m_SizeDelta: {x: 680, y: 374.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2102535432
 MonoBehaviour:

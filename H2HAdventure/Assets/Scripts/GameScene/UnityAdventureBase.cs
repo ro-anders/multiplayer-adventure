@@ -51,7 +51,8 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     public Text messageText;
     public GameObject popupPanel;
 
-    protected bool gameStarted;
+    protected bool gameInitialized;
+    private bool gameRunning; 
     protected AdventureGame gameEngine;
     private int rectsBufferSize = RECTS_START_SIZE;
     private int numRects;
@@ -71,7 +72,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     // FixedUpdate is called exactly 60 times per second
     public void FixedUpdate()
     {
-        if (gameStarted)
+        if (gameInitialized)
         {
             AdventureUpdate();
         }
@@ -100,7 +101,16 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     }
 
 
-    public abstract void Platform_GameChange(GAME_CHANGES change);
+    public virtual void Platform_GameChange(GAME_CHANGES change)
+    {
+        if (change == GAME_CHANGES.GAME_STARTED)
+        {
+            gameRunning = true;
+        } else if (change == GAME_CHANGES.GAME_ENDED)
+        {
+            gameRunning = false;
+        }
+    }
 
     public void Platform_PaintPixel(int r, int g, int b, int x, int y, int width, int height)
     {
@@ -193,7 +203,12 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
 
     private IEnumerator DisplayPopupHelp(string message, string imageName, int durationSecs)
     {
-        adv_audio.PlaySystemSound(adv_audio.blip);
+        // We mute the sound if the game is over so not to 
+        // occlude cool end game segment
+        if (gameRunning)
+        {
+            adv_audio.PlaySystemSound(adv_audio.blip);
+        }
         popupController.Popup(message, imageName);
         if (durationSecs > 0)
         {

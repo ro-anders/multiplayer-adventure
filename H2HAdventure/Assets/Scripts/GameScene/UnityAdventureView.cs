@@ -91,7 +91,7 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
             localPlayerSlot = localPlayer.getSlot();
         }
         AdventureSetup(localPlayerSlot);
-        gameStarted = true;
+        gameInitialized = true;
     }
 
     // Called only on server
@@ -121,6 +121,7 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
 
     public override void Platform_GameChange(GAME_CHANGES change)
     {
+        base.Platform_GameChange(change);
         if (change == GAME_CHANGES.GAME_ENDED)
         {
             // Change the Respawn button to a Quit button
