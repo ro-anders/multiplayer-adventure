@@ -28,9 +28,13 @@ public class ShowcasePrestartController : MonoBehaviour
         okButton = transform.Find("OkButton").gameObject.GetComponent<Button>();
         startText = transform.Find("StartText").gameObject.GetComponent<Text>();
 
+        Reset();
+    }
+
+    public void Reset()
+    {
         okButton.interactable = true;
         startText.gameObject.SetActive(false);
-
     }
 
     // ----- Button and Other UI Handlers -----------------------------------------------------

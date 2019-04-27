@@ -91,7 +91,7 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
             localPlayerSlot = localPlayer.getSlot();
         }
         AdventureSetup(localPlayerSlot);
-        gameInitialized = true;
+        gameRenderable = true;
     }
 
     // Called only on server

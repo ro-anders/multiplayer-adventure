@@ -66,6 +66,9 @@ public class AdventureAudio : MonoBehaviour {
     {
         speaker.clip = clip;
         speaker.volume = 1;
-        speaker.Play();
+        if (clip != null)
+        {
+            speaker.Play();
+        }
     }
 }

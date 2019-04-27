@@ -31,7 +31,7 @@ public class ShowcaseAdventureView : UnityAdventureBase
         gameEngine = new AdventureGame(this, game.numPlayers, thisPlayerSlot, xport,
             game.gameNumber, game.diff1 == 0, game.diff2 == 0,
             SessionInfo.ThisPlayerInfo.needsPopupHelp, SessionInfo.ThisPlayerInfo.needsMazeGuides);
-        gameInitialized = true;
+        gameRenderable = true;
     }
 
 }

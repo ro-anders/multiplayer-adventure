@@ -51,8 +51,11 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     public Text messageText;
     public GameObject popupPanel;
 
-    protected bool gameInitialized;
-    private bool gameRunning; 
+    protected bool gameRenderable; // This is true from the moment the game 
+    // game engine starts showing the opening number room to when the user leaves
+    // the screen, returning to game setup
+    private bool gameRunning; // This is true from the moment the players can
+    // start moving to when someone wins
     protected AdventureGame gameEngine;
     private int rectsBufferSize = RECTS_START_SIZE;
     private int numRects;
@@ -72,7 +75,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     // FixedUpdate is called exactly 60 times per second
     public void FixedUpdate()
     {
-        if (gameInitialized)
+        if (gameRenderable)
         {
             AdventureUpdate();
         }
@@ -82,24 +85,33 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     // on device and load
     public virtual void Update()
     {
-        // Make the game screen as big as possible
-        if (gamePanel != null)
+        if (gameRenderable)
         {
-            RectTransform rt = (RectTransform)gamePanel.transform;
-            float maxWidth = rt.rect.width;
-            float maxHeight = rt.rect.height;
-            float scale1 = maxWidth / DRAW_AREA_WIDTH;
-            float scale2 = maxHeight / DRAW_AREA_HEIGHT;
-            float newScale = (scale1 <= scale2 ? scale1 : scale2);
-            if (Math.Abs(scale - newScale) > 0.01)
+            // Make the game screen as big as possible
+            if (gamePanel != null)
             {
-                RectTransform screenRect = screen.GetComponent<RectTransform>();
-                screenRect.sizeDelta = new Vector2(newScale * DRAW_AREA_WIDTH, newScale * DRAW_AREA_HEIGHT);
+                RectTransform rt = (RectTransform)gamePanel.transform;
+                float maxWidth = rt.rect.width;
+                float maxHeight = rt.rect.height;
+                float scale1 = maxWidth / DRAW_AREA_WIDTH;
+                float scale2 = maxHeight / DRAW_AREA_HEIGHT;
+                float newScale = (scale1 <= scale2 ? scale1 : scale2);
+                if (Math.Abs(scale - newScale) > 0.01)
+                {
+                    RectTransform screenRect = screen.GetComponent<RectTransform>();
+                    screenRect.sizeDelta = new Vector2(newScale * DRAW_AREA_WIDTH, newScale * DRAW_AREA_HEIGHT);
+                }
             }
+            DisplayRectangles();
         }
-        DisplayRectangles();
     }
 
+    public void ShutdownGame()
+    {
+        // Clear the audio so it doesn't replay
+        adv_audio.PlaySystemSound(null);
+        gameRenderable = false;
+    }
 
     public virtual void Platform_GameChange(GAME_CHANGES change)
     {

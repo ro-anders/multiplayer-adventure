@@ -50,6 +50,7 @@ public class ShowcaseController : MonoBehaviour
         titleController.gameObject.SetActive(false);
         lobbyController.gameObject.SetActive(false);
         prestartController.gameObject.SetActive(true);
+        prestartController.Reset();
     }
 
     public void StartGame(ProposedGame game, int thisClientSlot)
