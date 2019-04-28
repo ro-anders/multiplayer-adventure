@@ -28,6 +28,8 @@ public class ShowcaseAdventureView : UnityAdventureBase
 
     public void PlayGame(ProposedGame game, int thisPlayerSlot)
     {
+        // Make sure the xport is clear of any previous games' messages
+        xport.Reset();
         gameEngine = new AdventureGame(this, game.numPlayers, thisPlayerSlot, xport,
             game.gameNumber, game.diff1 == 0, game.diff2 == 0,
             SessionInfo.ThisPlayerInfo.needsPopupHelp, SessionInfo.ThisPlayerInfo.needsMazeGuides);
