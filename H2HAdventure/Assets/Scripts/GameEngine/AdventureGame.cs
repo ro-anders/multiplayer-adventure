@@ -639,7 +639,7 @@ namespace GameEngine
                         PlayerWinAction won = new PlayerWinAction(objectBall.room);
                         sync.BroadcastAction(won);
                         // Report back to the server.
-                        view.Platform_ReportToServer("Has won a game");
+                        view.Platform_ReportToServer(AdventureReports.WON_GAME);
                     }
                     else if (EasterEgg.isGauntletTimeUp(frameNumber))
                     {

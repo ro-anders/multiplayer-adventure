@@ -137,7 +137,7 @@ public class NotifyMeController : MonoBehaviour {
                 string payloadStr = Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray());
                 LambdaError errorResponse = JsonUtility.FromJson<LambdaError>(payloadStr);
                 Debug.LogError("Error calling " + NEW_SUBSCRIPTION_LAMBDA +
-                " lambda returned error message " + errorResponse.errorMessage);
+                " lambda returned error message: " + errorResponse.errorMessage);
                 OnUpsertReturn(false, "Unexpected error.");
             }
             else

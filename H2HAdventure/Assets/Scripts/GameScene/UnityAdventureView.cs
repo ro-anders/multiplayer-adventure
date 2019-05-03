@@ -6,11 +6,27 @@ using GameEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Amazon.Lambda;
+
+[Serializable]
+class WonGameReport
+{
+    public string Won;
+    public string[] Lost;
+    public WonGameReport(string inWon, string[] inLost)
+    {
+        Won = inWon;
+        Lost = inLost;
+    }
+}
 
 public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitter
 {
+    private const string UPDATE_STANDINGS_LAMBDA= "UpdateStandings";
+
     public IntroPanelController introPanel;
     public ChatPanelController chatPanel;
+    public AWS awsUtil;
 
     private UnityTransport xport;
 
@@ -128,6 +144,38 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
             respawnButton.GetComponentInChildren<Text>().text = "Quit";
             respawnButton.onClick.AddListener(OnQuitPressed);
         }
+    }
+
+    public override void Platform_ReportToServer(string message)
+    {
+        base.Platform_ReportToServer(message);
+        if (message == AdventureReports.WON_GAME)
+        {
+            UpdateStandingsWithWin();
+        }
+    }
+
+    private void UpdateStandingsWithWin()
+    {
+        // Records win and losses to server for leader board
+        List<string> losers = new List<string>();
+        if (SessionInfo.GameToPlay.playerOne != SessionInfo.ThisPlayerId)
+        {
+            losers.Add(SessionInfo.GameToPlay.playerOneName);
+        }
+        if (SessionInfo.GameToPlay.playerTwo != SessionInfo.ThisPlayerId)
+        {
+            losers.Add(SessionInfo.GameToPlay.playerTwoName);
+        }
+        if ((SessionInfo.GameToPlay.numPlayers > 2) &&
+            (SessionInfo.GameToPlay.playerThree != SessionInfo.ThisPlayerId))
+        {
+            losers.Add(SessionInfo.GameToPlay.playerThreeName);
+        }
+        WonGameReport report = new WonGameReport(SessionInfo.ThisPlayerName,
+            losers.ToArray());
+        string jsonStr = JsonUtility.ToJson(report);
+        awsUtil.CallLambdaAsync(UPDATE_STANDINGS_LAMBDA, jsonStr);
     }
 
 }

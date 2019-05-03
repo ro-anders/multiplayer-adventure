@@ -150,7 +150,7 @@ public class AWS : MonoBehaviour {
                     string payloadStr = Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray());
                     LambdaError errorResponse = JsonUtility.FromJson<LambdaError>(payloadStr);
                     Debug.LogError("Error calling " + lambdaName +
-                    " lambda returned error message " + errorResponse.errorMessage);
+                    " lambda returned error message: " + errorResponse.errorMessage);
                     callback(false, null);
                 }
                 else

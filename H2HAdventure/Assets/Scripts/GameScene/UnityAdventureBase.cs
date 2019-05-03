@@ -196,7 +196,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
         }
     }
 
-    public void Platform_ReportToServer(string message)
+    public virtual void Platform_ReportToServer(string message)
     {
         Debug.Log("Message to server: " + message);
     }
