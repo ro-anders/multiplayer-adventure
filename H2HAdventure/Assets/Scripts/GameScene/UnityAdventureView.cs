@@ -135,17 +135,6 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
         xport.Disconnect();
     }
 
-    public override void Platform_GameChange(GAME_CHANGES change)
-    {
-        base.Platform_GameChange(change);
-        if (change == GAME_CHANGES.GAME_ENDED)
-        {
-            // Change the Respawn button to a Quit button
-            respawnButton.GetComponentInChildren<Text>().text = "Quit";
-            respawnButton.onClick.AddListener(OnQuitPressed);
-        }
-    }
-
     public override void Platform_ReportToServer(string message)
     {
         base.Platform_ReportToServer(message);
