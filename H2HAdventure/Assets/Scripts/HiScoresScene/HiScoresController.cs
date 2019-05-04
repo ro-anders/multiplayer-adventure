@@ -43,14 +43,12 @@ public class HiScoresController : MonoBehaviour
     private HiscoreRecord[] hiscores = new HiscoreRecord[0];
 
     public GameObject hiscorePrefab;
+    public GameObject hiscoreContainer;
     public AWS awsUtil;
-
-    private GameObject hiscoreContainer;
-
+    
     // Start is called before the first frame update
     void Start()
     {
-        hiscoreContainer = transform.Find("PlayerList").gameObject;
         LoadScores();
     }
 

@@ -85,6 +85,11 @@ public class StartScreen : MonoBehaviour {
         SceneManager.LoadScene("NotifyMe");
     }
 
+    public void OnLeaderBoardClicked()
+    {
+        SceneManager.LoadScene("LeaderBoard");
+    }
+
 
 
     public void OnPlayClicked() {

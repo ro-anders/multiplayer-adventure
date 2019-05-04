@@ -20,6 +20,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/NotifyMe.unity
     guid: ce3d3fe463ed84881a3ca8323de5c210
+  - enabled: 1
+    path: Assets/Scenes/LeaderBoard.unity
+    guid: ebf99dad79d7345e7b235ec2f7882ee0
   - enabled: 0
     path: Assets/Scenes/Showcase.unity
     guid: a3a0e0f1442d44a09aaff5b32fafd282
