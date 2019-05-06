@@ -27,6 +27,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public GameObject overlay;
     public GameObject sendCallConf;
     public GameObject noOneElsePanel;
+    public GameObject reestablishPanel;
     public AWS awsUtil;
 
     private const string LOBBY_MATCH_NAME = "h2hlobby";
@@ -61,6 +62,10 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public void Start()
     {
         chatPanel.ChatSubmitter = this;
+        if (SessionInfo.LobbyEntrance == SessionInfo.LobbyCause.ONHOSTDROP)
+        {
+            reestablishPanel.SetActive(true);
+        }
         ConnectToLobby();
     }
 
@@ -71,12 +76,17 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
         {
             chatPanel.ServerSetup();
             // If you're hosting the lobby then you're the only one right now
-            noOneElsePanel.SetActive(true);
+            if (SessionInfo.LobbyEntrance == SessionInfo.LobbyCause.FIRSTTIME)
+            {
+                noOneElsePanel.SetActive(true);
+            }
         }
         else
         {
             overlay.SetActive(false);
         }
+        reestablishPanel.SetActive(false);
+        SessionInfo.LobbyEntrance = SessionInfo.LobbyCause.NORMAL;
     }
 
     public void ConnectToLobby() {
@@ -371,6 +381,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
             // We've gotten disconnected from the host of the lobby.
             // Most likely because that person has gone to a game.
             // Only thing to do is to disconnect and create a new lobby
+            SessionInfo.LobbyEntrance = SessionInfo.LobbyCause.ONHOSTDROP;
             SwitchToScene("Lobby");
         }
     }

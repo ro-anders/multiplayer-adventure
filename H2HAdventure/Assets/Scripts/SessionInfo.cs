@@ -38,6 +38,14 @@ public class SessionInfo {
         NONE
     }
 
+    // Depending on why we're entering the lobby, we display a 
+    // different message.
+    public enum LobbyCause
+    {
+        FIRSTTIME,
+        ONHOSTDROP,
+        NORMAL
+    }
     public const string DIRECT_CONNECT_HOST_FLAG = "host";
 
     private static uint thisPlayerId;
@@ -115,4 +123,18 @@ public class SessionInfo {
             directConnectIp = value;
         }
     }
+
+    private static LobbyCause lobbyCause = LobbyCause.FIRSTTIME;
+    public static LobbyCause LobbyEntrance
+    {
+        get
+        {
+            return lobbyCause;
+        }
+        set
+        {
+            lobbyCause = value;
+        }
+    }
+
 }
