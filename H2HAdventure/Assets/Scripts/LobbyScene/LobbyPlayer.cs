@@ -81,6 +81,12 @@ public class LobbyPlayer : NetworkBehaviour
         lobbyController.GetChatPanelController().BroadcastChatMessage(playerName, message);
     }
 
+    [ClientRpc]
+    public void RpcVoiceEnabledByHost()
+    {
+        lobbyController.GetChatPanelController().OnTalkEnabledOnHost();
+    }
+
     private void RefreshDisplay() {
         Text thisText = this.GetComponent<Text>();
         thisText.text = ((playerName != null) && (playerName != "") ? playerName : "unknown-" + Id);

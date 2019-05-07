@@ -27,6 +27,7 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
     public IntroPanelController introPanel;
     public ChatPanelController chatPanel;
     public AWS awsUtil;
+    public GameObject quitConfirmPanel;
 
     private UnityTransport xport;
 
@@ -130,9 +131,32 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
         localPlayer.CmdPostChat(message);
     }
 
+    public void AnnounceVoiceEnabledByHost()
+    {
+        localPlayer.RpcVoiceEnabledByHost();
+    }
+
     public void OnQuitPressed()
     {
+        if (gameRunning)
+        {
+            quitConfirmPanel.SetActive(true);
+        }
+        else
+        {
+            OnQuitConfirmed();
+        }
+    }
+
+    public void OnQuitConfirmed()
+    {
+        quitConfirmPanel.SetActive(false);
         xport.Disconnect();
+    }
+
+    public void OnQuitCanceled()
+    {
+        quitConfirmPanel.SetActive(false);
     }
 
     public override void Platform_ReportToServer(string message)

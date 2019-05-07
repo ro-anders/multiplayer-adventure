@@ -132,6 +132,10 @@ public class PlayerSync : NetworkBehaviour
         controller.GetChatPanelController().BroadcastChatMessage(playerName, message);
     }
 
-
+    [ClientRpc]
+    public void RpcVoiceEnabledByHost()
+    {
+        controller.GetChatPanelController().OnTalkEnabledOnHost();
+    }
 
 }

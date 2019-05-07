@@ -54,7 +54,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     protected bool gameRenderable; // This is true from the moment the game 
     // game engine starts showing the opening number room to when the user leaves
     // the screen, returning to game setup
-    private bool gameRunning; // This is true from the moment the players can
+    protected bool gameRunning; // This is true from the moment the players can
     // start moving to when someone wins
     protected AdventureGame gameEngine;
     private int rectsBufferSize = RECTS_START_SIZE;

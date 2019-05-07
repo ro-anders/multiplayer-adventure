@@ -79,6 +79,9 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
             if (SessionInfo.LobbyEntrance == SessionInfo.LobbyCause.FIRSTTIME)
             {
                 noOneElsePanel.SetActive(true);
+            } else
+            {
+                overlay.SetActive(false);
             }
         }
         else
@@ -142,10 +145,15 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
         localLobbyPlayer.CmdPostChat(message);
     }
 
+    public void AnnounceVoiceEnabledByHost()
+    {
+        localLobbyPlayer.RpcVoiceEnabledByHost();
+    }
+
     /**
      * Add a player to a game.
      * This method is only executed on the lobby host.
-     */    
+     */
     public void PlayerJoinGame(LobbyPlayer player, uint gameId) {
         GameInLobby[] games = gameList.GetComponentsInChildren<GameInLobby>();
         GameInLobby found = null;

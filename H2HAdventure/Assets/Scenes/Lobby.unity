@@ -4555,7 +4555,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1398486934
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6663,7 +6663,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 17.949951, y: -3}
-  m_SizeDelta: {x: 148.2, y: 30.8}
+  m_SizeDelta: {x: 220.1, y: 30.8}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &1801191448
 MonoBehaviour:
@@ -6698,7 +6698,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Voice Chat: Disabled'
+  m_Text: 'Voice Chat: Disabled on host'
 --- !u!222 &1801191449
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -8070,7 +8070,7 @@ MonoBehaviour:
   overlay: {fileID: 444025392}
   sendCallConf: {fileID: 767640160}
   noOneElsePanel: {fileID: 196514654}
-  reestablishPanel: {fileID: 0}
+  reestablishPanel: {fileID: 507536316}
   awsUtil: {fileID: 797188011}
 --- !u!1 &2030019964
 GameObject:
