@@ -1,5 +1,8 @@
 # This installs H2HAdventure files, creates a start menu shortcut, builds an uninstaller, and
 # adds uninstall information to the registry for Add/Remove Programs
+#
+# To run, copy this file and the H2HAdventure.ico file to the target\Windows directory.  Then run:
+#   "c:\Program Files (x86)\NSIS\makensis.exe" installer-script.nsi
  
 !define APPNAME "H2HAdventure"
 !define COMPANYNAME "H2HAdventure"
