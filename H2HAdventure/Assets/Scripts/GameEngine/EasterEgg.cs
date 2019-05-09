@@ -171,7 +171,7 @@ namespace GameEngine
             return test;
         }
 
-        public static void startGauntlet()
+        public static void startGauntlet(bool debug)
         {
 
             // Drop all objects
@@ -214,35 +214,37 @@ namespace GameEngine
             }
 
             // Plant the dragons
-            int[] dragonList = { Board.OBJECT_YELLOWDRAGON, Board.OBJECT_GREENDRAGON, Board.OBJECT_REDDRAGON };
-            for (int ctr = 0; ctr < 3; ++ctr)
+            if (!debug)
             {
-                Dragon dragon = (Dragon)board.getObject(dragonList[ctr]);
-                dragon.eaten = null;
-                dragon.state = Dragon.STALKING;
-                Dragon.setDifficulty(Dragon.Difficulty.HARD);
-                dragon.setMovementX(0);
-                dragon.setMovementY(0);
-                switch (dragon.getPKey())
+                int[] dragonList = { Board.OBJECT_YELLOWDRAGON, Board.OBJECT_GREENDRAGON, Board.OBJECT_REDDRAGON };
+                for (int ctr = 0; ctr < 3; ++ctr)
                 {
-                    case Board.OBJECT_YELLOWDRAGON:
-                        dragon.x = 20;
-                        dragon.y = 20;
-                        dragon.room = Map.MAIN_HALL_RIGHT;
-                        break;
-                    case Board.OBJECT_GREENDRAGON:
-                        dragon.x = 20;
-                        dragon.y = 100;
-                        dragon.room = Map.MAIN_HALL_CENTER;
-                        break;
-                    case Board.OBJECT_REDDRAGON:
-                        dragon.x = 80;
-                        dragon.y = 20;
-                        dragon.room = Map.BLUE_MAZE_1;
-                        break;
+                    Dragon dragon = (Dragon)board.getObject(dragonList[ctr]);
+                    dragon.eaten = null;
+                    dragon.state = Dragon.STALKING;
+                    Dragon.setDifficulty(Dragon.Difficulty.HARD);
+                    dragon.setMovementX(0);
+                    dragon.setMovementY(0);
+                    switch (dragon.getPKey())
+                    {
+                        case Board.OBJECT_YELLOWDRAGON:
+                            dragon.x = 20;
+                            dragon.y = 20;
+                            dragon.room = Map.MAIN_HALL_RIGHT;
+                            break;
+                        case Board.OBJECT_GREENDRAGON:
+                            dragon.x = 20;
+                            dragon.y = 100;
+                            dragon.room = Map.MAIN_HALL_CENTER;
+                            break;
+                        case Board.OBJECT_REDDRAGON:
+                            dragon.x = 80;
+                            dragon.y = 20;
+                            dragon.room = Map.BLUE_MAZE_1;
+                            break;
+                    }
                 }
             }
-
             darkenCastle(COLOR.DARK_CRYSTAL4);
 
             eggState = EGG_STATE.IN_GAUNTLET;

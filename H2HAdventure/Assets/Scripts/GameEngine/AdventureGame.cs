@@ -10,7 +10,7 @@
 // Any trademarks referenced herein are the property of their respective holders.
 // 
 // Original game written by Warren Robinett. Warren, you rock.
-#undef DEBUG_EASTEREGG
+#define DEBUG_EASTEREGG
 
 using System;
 using System.Collections;
@@ -655,7 +655,11 @@ namespace GameEngine
 
                         if (EasterEgg.shouldStartGauntlet(frameNumber))
                         {
-                            EasterEgg.startGauntlet();
+#if DEBUG_EASTEREGG
+                            EasterEgg.startGauntlet(true);
+#else
+                            EasterEgg.startGauntlet(false);
+#endif
                             gameMode = Adv.GAME_MODE_GAUNTLET;
                         }
 
