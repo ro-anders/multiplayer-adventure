@@ -104,6 +104,11 @@ public class HiScoresController : MonoBehaviour
         
     }
 
+    public void OnSwitchPressed()
+    {
+        SwitchDisplayedBoard();
+    }
+
     public void OnBackPressed()
     {
         SceneManager.LoadScene("Start");
