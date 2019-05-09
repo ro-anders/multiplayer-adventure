@@ -55,7 +55,6 @@ public class SessionInfo {
     private static string directConnectIp;
     private static UserInfo thisPlayerInfo = new UserInfo();
 
-
     public static uint ThisPlayerId
     {
         get
@@ -134,6 +133,19 @@ public class SessionInfo {
         set
         {
             lobbyCause = value;
+        }
+    }
+
+    private static bool raceCompleted = false;
+    public static bool RaceCompleted
+    {
+        get
+        {
+            return raceCompleted;
+        }
+        set
+        {
+            raceCompleted = value;
         }
     }
 

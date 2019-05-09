@@ -32,7 +32,7 @@ public class ShowcaseAdventureView : UnityAdventureBase
         xport.Reset();
         gameEngine = new AdventureGame(this, game.numPlayers, thisPlayerSlot, xport,
             game.gameNumber, game.diff1 == 0, game.diff2 == 0,
-            SessionInfo.ThisPlayerInfo.needsPopupHelp, SessionInfo.ThisPlayerInfo.needsMazeGuides);
+            SessionInfo.ThisPlayerInfo.needsPopupHelp, SessionInfo.ThisPlayerInfo.needsMazeGuides, false);
         gameRenderable = true;
     }
 

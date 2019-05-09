@@ -105,7 +105,7 @@ namespace GameEngine
 
         public AdventureGame(AdventureView inView, int inNumPlayers, int inThisPlayer,
             Transport inTransport, int inGameNum, bool leftDifficultyOn, bool rightDifficultyOn,
-            bool inUseHelpPopups, bool inUseMazeGuides)
+            bool inUseHelpPopups, bool inUseMazeGuides, bool raceCompleted)
         {
             view = inView;
 
@@ -128,7 +128,7 @@ namespace GameEngine
             {
                 popupMgr = new PopupMgr(gameBoard);
             }
-            EasterEgg.setup(view, gameBoard);
+            EasterEgg.setup(view, gameBoard, raceCompleted);
 
             surrounds = new OBJECT[numPlayers];
             for (int ctr = 0; ctr < numPlayers; ++ctr)

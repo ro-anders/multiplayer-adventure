@@ -28,11 +28,14 @@ namespace GameEngine
 
         private static DateTime startOfTimer;
 
-        public static void setup(AdventureView inView, Board inBoard)
+        private static bool eggAlreadyClaimed;
+
+        public static void setup(AdventureView inView, Board inBoard, bool inEggClaimed)
         {
             eggState = EGG_STATE.NOT_STARTED;
             view = inView;
             board = inBoard;
+            eggAlreadyClaimed = inEggClaimed;
         }
 
         public static void enteredRobinettRoom()
@@ -40,7 +43,7 @@ namespace GameEngine
             if (eggState < EGG_STATE.ENTERED_ROBINETT_ROOM)
             {
                 eggState = EGG_STATE.ENTERED_ROBINETT_ROOM;
-                view.Platform_ReportToServer("Robinett Room entered.");
+                view.Platform_ReportToServer(AdventureReports.FOUND_ROBINETT_ROOM);
             }
         }
 
@@ -55,7 +58,7 @@ namespace GameEngine
             else if (eggState < EGG_STATE.GLIMPSED_CASTLE)
             {
                 eggState = EGG_STATE.GLIMPSED_CASTLE;
-                view.Platform_ReportToServer("Crystal castle glimpsed.");
+                view.Platform_ReportToServer(AdventureReports.GLIMPSED_CRYSTAL_CASTLE);
             }
         }
 
@@ -65,12 +68,12 @@ namespace GameEngine
             {
                 eggState = EGG_STATE.FOUND_KEY;
                 darkenCastle(COLOR.DARK_CRYSTAL2);
-                view.Platform_ReportToServer("Crystal key found.");
+                view.Platform_ReportToServer(AdventureReports.FOUND_CRYSTAL_KEY);
             }
         }
 
         public static void openedCastle() {
-            view.Platform_ReportToServer("Crystal gate has been opened.");
+            view.Platform_ReportToServer(AdventureReports.OPENED_CRYSTAL_GATE);
         }
 
         /**
@@ -126,7 +129,15 @@ namespace GameEngine
             board.map.easterEggLayout1();
 
             // Display the message
-            view.Platform_DisplayStatus("First one to the black castle and back wins the egg.", 5);
+            if (eggAlreadyClaimed)
+            {
+                view.Platform_DisplayStatus("The egg has already been won, but "
+                    + "first one to the black castle and back wins the challenge.", 5);
+            }
+            else
+            {
+                view.Platform_DisplayStatus("First one to the black castle and back wins the egg.", 5);
+            }
 
             // Start counting down to start
             eggState = EGG_STATE.DEBRIEF;
@@ -276,13 +287,16 @@ namespace GameEngine
 
         public static void winEgg()
         {
-            // Display the Easter Egg
-            OBJECT egg = board.getObject(Board.OBJECT_EASTEREGG);
-            egg.setExists(true);
-            egg.room = Map.CRYSTAL_FOYER;
-            egg.x = 0x4A;
-            egg.y = 0x56;
-            view.Platform_ReportToServer("Easter egg has been claimed.");
+            if (!eggAlreadyClaimed)
+            {
+                // Display the Easter Egg
+                OBJECT egg = board.getObject(Board.OBJECT_EASTEREGG);
+                egg.setExists(true);
+                egg.room = Map.CRYSTAL_FOYER;
+                egg.x = 0x4A;
+                egg.y = 0x56;
+            }
+            view.Platform_ReportToServer(AdventureReports.BEAT_CRYSTAL_CHALLENGE);
         }
 
     }

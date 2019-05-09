@@ -172,7 +172,10 @@ public class HiScoresController : MonoBehaviour
     {
         string[] STAGES = new string[] {
             "", "",
-            "Found the crystal castle"
+            "Found the crystal castle",
+            "Found the crystal key",
+            "Opened the crystal gate",
+            "Beat the crystal challenge"
         };
         // First sort the achievments, first by stage second by time
         List<EggRaceRecord> list = new List<EggRaceRecord>(records);

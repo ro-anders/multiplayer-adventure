@@ -27,6 +27,9 @@ namespace GameEngine
         public const string FOUND_ROBINETT_ROOM = "Robinett Room entered";
         public const string GLIMPSED_CRYSTAL_CASTLE = "Crystal castle glimsed";
         public const string FOUND_CRYSTAL_CASTLE = "Crystal castle found";
+        public const string FOUND_CRYSTAL_KEY = "Crystal key found";
+        public const string OPENED_CRYSTAL_GATE = "Crystal gate opened";
+        public const string BEAT_CRYSTAL_CHALLENGE = "Crystal challenge beaten";
     }
 
 }

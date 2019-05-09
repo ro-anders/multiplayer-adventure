@@ -13,17 +13,9 @@ class StatusMessageEntry
     public string PK;
     public string SK;
     public int MinimumVersion;
-    public string SystemMessage;
+    public string SystemmMessage;
+    public bool EggStatus;
     public int MessageId;
-    public StatusMessageEntry(int inMinimumVersion, string inSystemMessage,
-        int inMessageId)
-    {
-        PK = "StatusMessage";
-        SK = "singleton";
-        MinimumVersion = inMinimumVersion;
-        SystemMessage = inSystemMessage;
-        MessageId = inMessageId;
-    }
 }
 
 public class StartScreen : MonoBehaviour {
@@ -201,7 +193,7 @@ public class StartScreen : MonoBehaviour {
             try
             {
                 statusMessage = JsonUtility.FromJson<StatusMessageEntry>(payload);
-                success = (statusMessage.MinimumVersion != 0) && (statusMessage.SystemMessage != null);
+                success = (statusMessage.MinimumVersion != 0) && (statusMessage.SystemmMessage != null);
             } catch (Exception e)
             {
                 Debug.LogError("Excpecting StatusMessageEntry fron lambda but received: " + payload +
@@ -210,22 +202,23 @@ public class StartScreen : MonoBehaviour {
             }
         }
 
-        if (success) { 
+        if (success) {
+            SessionInfo.RaceCompleted = statusMessage.EggStatus;
             if (statusMessage.MinimumVersion > SessionInfo.VERSION)
             {
                 Debug.LogError("Current version " + SessionInfo.VERSION +
                 " is too old.  Need to upgrade to version " + statusMessage.MinimumVersion);
                 AbortPopup.Show(abortPopup, NEED_DOWNLOAD_MESSAGE, NEED_DOWNLOAD_LINK);
             }
-            else if ((statusMessage.SystemMessage != null) && !statusMessage.SystemMessage.Equals("")) {
+            else if ((statusMessage.SystemmMessage != null) && !statusMessage.SystemmMessage.Equals("")) {
                 // Only show the message once (unless it doesn't have an ID, then
                 // show it every time).
-                Debug.Log("Message is \"" + statusMessage.SystemMessage + "\"");
+                Debug.Log("Message is \"" + statusMessage.SystemmMessage + "\"");
                 string LAST_SYSTEM_MESSAGE_PREF = "LastSystemMessage";
                 int lastMessage = PlayerPrefs.GetInt(LAST_SYSTEM_MESSAGE_PREF, 0);
                 if ((statusMessage.MessageId == 0) || (statusMessage.MessageId != lastMessage))
                 {
-                    systemMessageText.text = statusMessage.SystemMessage;
+                    systemMessageText.text = statusMessage.SystemmMessage;
                     overlay.SetActive(true);
                     systemMessagePanel.SetActive(true);
                     PlayerPrefs.SetInt(LAST_SYSTEM_MESSAGE_PREF, statusMessage.MessageId);

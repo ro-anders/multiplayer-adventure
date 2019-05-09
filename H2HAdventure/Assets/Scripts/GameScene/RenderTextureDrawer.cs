@@ -21,16 +21,6 @@ public class RenderTextureDrawer : MonoBehaviour
     {
         texture = new Texture2D(renderTexture.width, renderTexture.height);
         placeToDraw.texture = texture;
-
-        //// Start with the whole display black.
-        //RenderTexture.active = renderTexture;
-        //for (int i = 0; i < renderTexture.width; i++)
-        //    for (int j = 0; j < renderTexture.height; j++)
-        //    {
-        //        texture.SetPixel(i, j, new Color(0, 0, 0));
-        //    }
-        //texture.Apply();
-        //RenderTexture.active = null;
     }
 
     // Update is called once per frame

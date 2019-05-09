@@ -15,6 +15,9 @@ def lambda_handler(event, context):
         'Stage': int ( 0 = found Robinett room
                        1 = glimpsed crystal castle 
                        2 = found crystal castle
+                       3 = found crystal key
+                       4 = opened crystal gate
+                       5 = won challenge/egg
                  )
     }
 

@@ -40,7 +40,11 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
     List<string> eggMessages = new List<string>(new string[]{ 
         AdventureReports.FOUND_ROBINETT_ROOM,
         AdventureReports.GLIMPSED_CRYSTAL_CASTLE,
-        AdventureReports.FOUND_CRYSTAL_CASTLE });
+        AdventureReports.FOUND_CRYSTAL_CASTLE,
+        AdventureReports.FOUND_CRYSTAL_KEY,
+        AdventureReports.OPENED_CRYSTAL_GATE,
+        AdventureReports.BEAT_CRYSTAL_CHALLENGE
+      });
 
     public IntroPanelController introPanel;
     public ChatPanelController chatPanel;
@@ -141,7 +145,8 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
         UnityTransport xportToUse = (SessionInfo.NetworkSetup == SessionInfo.Network.NONE ? null : xport);
         gameEngine = new AdventureGame(this, game.numPlayers, inLocalPlayerSlot, xportToUse, 
             game.gameNumber, game.diff1 == DIFF.A, game.diff2 == DIFF.A,
-            SessionInfo.ThisPlayerInfo.needsPopupHelp, SessionInfo.ThisPlayerInfo.needsMazeGuides);
+            SessionInfo.ThisPlayerInfo.needsPopupHelp, SessionInfo.ThisPlayerInfo.needsMazeGuides,
+            SessionInfo.RaceCompleted);
     }
 
     public void PostChat(string message)

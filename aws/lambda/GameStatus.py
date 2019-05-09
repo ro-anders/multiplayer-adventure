@@ -27,24 +27,27 @@ def lambda_handler(event, context):
     RACE_TO_THE_EGG_MESSAGE_ID = 100;
     statusMessage = ''
     messageId = 0
+    eggStatus = False
 
-    # # If we have no system status message, then send
-    # # race to the egg status
-    # if statusMessage == '':
-    #     dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
-    #     table = dynamodb.Table('global')
-    #     response = table.query(
-    #         KeyConditionExpression=Key('PK').eq(SCOREBOARD_TOP_PK)
-    #     )
-    #     print("Response from race status query = " + json.dumps(response, cls=DecimalEncoder))
-    #     if 'Items' in response and len(response['Items']) > 0:
-    #         statusMessage = response['Items'][0]['Message'] + \
-    #           '.\nCheck the leader board for the race to the egg.'
-    #         messageId = RACE_TO_THE_EGG_MESSAGE_ID
+    # If we have no system status message, then send
+    # race to the egg status
+    if statusMessage == '':
+        dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
+        table = dynamodb.Table('global')
+        response = table.query(
+            KeyConditionExpression=Key('PK').eq(SCOREBOARD_TOP_PK)
+        )
+        print("Response from race status query = " + json.dumps(response, cls=DecimalEncoder))
+        if 'Items' in response and len(response['Items']) > 0:
+            statusMessage = response['Items'][0]['Message'] + \
+              '.\nCheck the leader board for the race to the egg.'
+            messageId = RACE_TO_THE_EGG_MESSAGE_ID
+            eggStatus = response['Items'][0]['Stage']==5
     
     response = {
         'MinimumVersion': MINIMAL_VIABLE_VERSION,
-        'SystemMessage': statusMessage,
+        'SystemmMessage': statusMessage,
+        'EggStatus': eggStatus,
         'MessageId': messageId
     }
     
