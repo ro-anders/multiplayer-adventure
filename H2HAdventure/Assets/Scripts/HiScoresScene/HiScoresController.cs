@@ -195,12 +195,12 @@ public class HiScoresController : MonoBehaviour
                     RaceStageEntry nextStage = nextStageObject.GetComponent<RaceStageEntry>();
                     nextStage.Title = STAGES[record.Stage];
                 }
+                GameObject nextGameObject = Instantiate(raceRecordPrefab);
+                nextGameObject.transform.SetParent(raceContainer.transform, false);
+                RaceEntry nextEntry = nextGameObject.GetComponent<RaceEntry>();
+                nextEntry.Name = record.Username;
+                nextEntry.Time = record.Time;
             }
-            GameObject nextGameObject = Instantiate(raceRecordPrefab);
-            nextGameObject.transform.SetParent(raceContainer.transform, false);
-            RaceEntry nextEntry = nextGameObject.GetComponent<RaceEntry>();
-            nextEntry.Name = record.Username;
-            nextEntry.Time = record.Time;
         }
         // Set the top title
         topInRaceTitle.text = raceStatus;
