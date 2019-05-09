@@ -50,7 +50,7 @@ namespace GameEngine
             {
                 eggState = EGG_STATE.FOUND_CASTLE;
                 darkenCastle(COLOR.DARK_CRYSTAL1);
-                view.Platform_ReportToServer("Crystal castle found.");
+                view.Platform_ReportToServer(AdventureReports.FOUND_CRYSTAL_CASTLE);
             }
             else if (eggState < EGG_STATE.GLIMPSED_CASTLE)
             {

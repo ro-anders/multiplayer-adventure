@@ -18,18 +18,34 @@ class DecimalEncoder(json.JSONEncoder):
         return super(DecimalEncoder, self).default(o)
 
 def lambda_handler(event, context):
+    STANDINGS_PK='Standing'
+    SCOREBOARD_PK='EggAchievment'
+    SCOREBOARD_TOP_PK='ScoreboardStatus'
 
     dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
     
     table = dynamodb.Table('global')
     
     response1 = table.query(
-        KeyConditionExpression=Key('PK').eq('Standing')
+        KeyConditionExpression=Key('PK').eq(STANDINGS_PK)
     )
+
+    response2 = table.query(
+        KeyConditionExpression=Key('PK').eq(SCOREBOARD_PK)
+    )
+
+    raceMessage = ''
+    response3 = table.query(
+        KeyConditionExpression=Key('PK').eq(SCOREBOARD_TOP_PK)
+    )
+    if 'Items' in response3 and len(response3['Items']) > 0:
+        raceMessage = response3['Items'][0]['Message'] + '.'
 
     returnObj = {
         'Status': True,
-        'Standings': response1['Items']
+        'Standings': response1['Items'],
+        'RaceToEgg': response2['Items'],
+        'RaceStatus': raceMessage
     }
 
     return {

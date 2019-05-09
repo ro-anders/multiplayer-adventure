@@ -20,9 +20,27 @@ class WonGameReport
     }
 }
 
+[Serializable]
+class EggReport
+{
+    public string Player;
+    public int Stage;
+    public EggReport(string inPlayer, int inStage)
+    {
+        Player = inPlayer;
+        Stage = inStage;
+    }
+}
+
 public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitter
 {
     private const string UPDATE_STANDINGS_LAMBDA= "UpdateStandings";
+    private const string UPDATE_EGG_SCOREBOARD_LAMBDA = "UpdateScoreboard";
+
+    List<string> eggMessages = new List<string>(new string[]{ 
+        AdventureReports.FOUND_ROBINETT_ROOM,
+        AdventureReports.GLIMPSED_CRYSTAL_CASTLE,
+        AdventureReports.FOUND_CRYSTAL_CASTLE });
 
     public IntroPanelController introPanel;
     public ChatPanelController chatPanel;
@@ -161,10 +179,15 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
 
     public override void Platform_ReportToServer(string message)
     {
+
         base.Platform_ReportToServer(message);
         if (message == AdventureReports.WON_GAME)
         {
             UpdateStandingsWithWin();
+        } else if (eggMessages.Contains(message))
+        {
+            int index = eggMessages.IndexOf(message);
+            ReportRaceToEgg(index);
         }
     }
 
@@ -189,6 +212,14 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
             losers.ToArray());
         string jsonStr = JsonUtility.ToJson(report);
         awsUtil.CallLambdaAsync(UPDATE_STANDINGS_LAMBDA, jsonStr);
+    }
+
+    private void ReportRaceToEgg(int stage)
+    {
+        // Records people getting closer to finding the easter egg
+        EggReport report = new EggReport(SessionInfo.ThisPlayerName, stage);
+        string jsonStr = JsonUtility.ToJson(report);
+        awsUtil.CallLambdaAsync(UPDATE_EGG_SCOREBOARD_LAMBDA, jsonStr);
     }
 
 }

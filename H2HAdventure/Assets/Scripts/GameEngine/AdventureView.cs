@@ -24,6 +24,9 @@ namespace GameEngine
     public class AdventureReports
     {
         public const string WON_GAME = "Has won a game";
+        public const string FOUND_ROBINETT_ROOM = "Robinett Room entered";
+        public const string GLIMPSED_CRYSTAL_CASTLE = "Crystal castle glimsed";
+        public const string FOUND_CRYSTAL_CASTLE = "Crystal castle found";
     }
 
 }
