@@ -16,7 +16,7 @@ namespace GameEngine
 
     public class EasterEgg
     {
-        public const long EGG_GAUNTLET_TIME_LIMIT = 600000; // 10 minutes
+        public const long EGG_GAUNTLET_TIME_LIMIT = 600; // 10 minutes
 
         public static EGG_STATE eggState = EGG_STATE.NOT_STARTED;
         
@@ -267,11 +267,11 @@ namespace GameEngine
                     {
                         test = true;
                     }
-                    else if ((timeLeft <= 120000) && (timeLeft > 119000))
+                    else if ((timeLeft <= 120) && (timeLeft > 119))
                     {
                         view.Platform_DisplayStatus("Two minute warning.", 3);
                     }
-                    else if ((timeLeft <= 60000) && (timeLeft > 59000))
+                    else if ((timeLeft <= 60) && (timeLeft > 59))
                     {
                         view.Platform_DisplayStatus("One minute warning.", 3);
                     }
