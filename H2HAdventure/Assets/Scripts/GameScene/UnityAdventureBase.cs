@@ -121,6 +121,10 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
         } else if (change == GAME_CHANGES.GAME_ENDED)
         {
             gameRunning = false;
+            // Keep track of how many games have been played
+            string PREF_KEY = "GamesPlayed";
+            int gamesPlayed = PlayerPrefs.GetInt(PREF_KEY, 0);
+            PlayerPrefs.SetInt(PREF_KEY, gamesPlayed + 1);
         }
     }
 

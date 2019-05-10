@@ -34,6 +34,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public GameObject overlay;
     public GameObject sendCallConf;
     public GameObject noOneElsePanel;
+    public GameObject pleaseSharePanel;
     public GameObject reestablishPanel;
     public GameObject othersPlaying;
     public AWS awsUtil;
@@ -89,15 +90,18 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
             if (SessionInfo.LobbyEntrance == SessionInfo.LobbyCause.FIRSTTIME)
             {
                 noOneElsePanel.SetActive(true);
-            } else
-            {
-                overlay.SetActive(false);
             }
         }
-        else
+        // Ask them to share after a couple times
+        string PREF_KEY = "GamesPlayed";
+        int numGames = PlayerPrefs.GetInt(PREF_KEY, 0);
+        if ((numGames == 2) || (numGames == 11))
         {
-            overlay.SetActive(false);
+            pleaseSharePanel.SetActive(true);
+            PlayerPrefs.SetInt(PREF_KEY, numGames + 1); // Just so they don't get the message again until they play more games
         }
+        overlay.SetActive(false);
+        
         reestablishPanel.SetActive(false);
         SessionInfo.LobbyEntrance = SessionInfo.LobbyCause.NORMAL;
     }
@@ -441,7 +445,11 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public void OnNoOneElseOkPressed()
     {
         noOneElsePanel.SetActive(false);
-        overlay.SetActive(false);
+    }
+
+    public void OnPleaseShareOkPressed()
+    {
+        pleaseSharePanel.SetActive(false);
     }
 
     public void OnBackPressed()
