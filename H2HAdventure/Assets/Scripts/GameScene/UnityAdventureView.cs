@@ -36,6 +36,7 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
 {
     private const string UPDATE_STANDINGS_LAMBDA= "UpdateStandings";
     private const string UPDATE_EGG_SCOREBOARD_LAMBDA = "UpdateScoreboard";
+    private const string PING_LAMBDA = "GamePing";
 
     List<string> eggMessages = new List<string>(new string[]{ 
         AdventureReports.FOUND_ROBINETT_ROOM,
@@ -59,6 +60,7 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
 
     public override void Start() {
         base.Start();
+        InvokeRepeating("SendPing", 0, 60);
         chatPanel.ChatSubmitter = this;
 
         xport = this.gameObject.GetComponent<UnityTransport>();
@@ -189,7 +191,8 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
         if (message == AdventureReports.WON_GAME)
         {
             UpdateStandingsWithWin();
-        } else if (eggMessages.Contains(message))
+        }
+        else if (eggMessages.Contains(message))
         {
             int index = eggMessages.IndexOf(message);
             ReportRaceToEgg(index);
@@ -225,6 +228,11 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
         EggReport report = new EggReport(SessionInfo.ThisPlayerName, stage);
         string jsonStr = JsonUtility.ToJson(report);
         awsUtil.CallLambdaAsync(UPDATE_EGG_SCOREBOARD_LAMBDA, jsonStr);
+    }
+
+    private void SendPing()
+    {
+        awsUtil.CallLambdaAsync(PING_LAMBDA, "{}");
     }
 
 }

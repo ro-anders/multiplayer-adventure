@@ -9,6 +9,13 @@ using UnityEngine.Networking.Types;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+[Serializable]
+class CheckGamesReturn
+{
+    public bool Found;
+}
+
+
 public class NewGameInfo {
     public int numPlayers;
     public int gameNumber;
@@ -28,9 +35,11 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public GameObject sendCallConf;
     public GameObject noOneElsePanel;
     public GameObject reestablishPanel;
+    public GameObject othersPlaying;
     public AWS awsUtil;
 
     private const string LOBBY_MATCH_NAME = "h2hlobby";
+    private const string CHECK_GAMES_LAMBDA = "CheckGames";
     private LobbyPlayer localLobbyPlayer;
     private ulong matchNetwork;
     private NodeID matchNode;
@@ -67,6 +76,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
             reestablishPanel.SetActive(true);
         }
         ConnectToLobby();
+        InvokeRepeating("CheckRunningGames", 0, 60);
     }
 
     public void OnConnectedToLobby(LobbyPlayer inLocalLobbyPlayer) {
@@ -479,6 +489,28 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     private void ShutdownNetworkManager() {
         Destroy(lobbyManager);
         NetworkManager.Shutdown();
+    }
+
+    private void CheckRunningGames()
+    {
+        awsUtil.CallLambdaAsync(CHECK_GAMES_LAMBDA, "", OnCheckGamesReturn);
+    }
+
+    private void OnCheckGamesReturn(bool success, string payload)
+    {
+        if (success)
+        {
+            try
+            {
+                CheckGamesReturn response = JsonUtility.FromJson<CheckGamesReturn>(payload);
+                othersPlaying.SetActive(response.Found);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Excpecting CheckGamesReturn fron lambda but received: " + payload +
+                    "\nError message was: " + e.Message);
+            }
+        }
     }
 
     private void SendCall()

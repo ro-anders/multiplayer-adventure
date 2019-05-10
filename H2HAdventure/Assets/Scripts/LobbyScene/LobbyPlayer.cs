@@ -21,6 +21,9 @@ public class LobbyPlayer : NetworkBehaviour
     {
         GameObject LobbyPlayerList = GameObject.FindGameObjectWithTag("LobbyPlayerParent");
         gameObject.transform.SetParent(LobbyPlayerList.transform, false);
+        // It will put the new player at the bottom of the list, but we don't want it 
+        // to go below the end note about other players
+        gameObject.transform.SetSiblingIndex(gameObject.transform.GetSiblingIndex() - 1);
         // The lobby controller needs someway to talk to the server, so it uses
         // the LobbyPlayer representing the local player
         GameObject lobbyControllerGO = GameObject.FindGameObjectWithTag("LobbyController");

@@ -166,7 +166,7 @@ public class AWS : MonoBehaviour {
                     }
                     else
                     {
-                        Debug.Log("Call to " + lambdaName + " successful.");
+                        //Debug.Log("Call to " + lambdaName + " successful.");
                         callback(true, lambdaResponse.body);
                     }
                 }
