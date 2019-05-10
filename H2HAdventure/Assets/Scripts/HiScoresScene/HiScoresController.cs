@@ -135,7 +135,6 @@ public class HiScoresController : MonoBehaviour
                     if (response.RaceToEgg.Length > 0)
                     {
                         FillRaceToEgg(response.RaceToEgg, response.RaceStatus);
-                        SwitchDisplayedBoard();
                     }
                 } 
                 else
@@ -194,6 +193,7 @@ public class HiScoresController : MonoBehaviour
                     nextStageObject.transform.SetParent(raceContainer.transform, false);
                     RaceStageEntry nextStage = nextStageObject.GetComponent<RaceStageEntry>();
                     nextStage.Title = STAGES[record.Stage];
+                    currentStage = record.Stage;
                 }
                 GameObject nextGameObject = Instantiate(raceRecordPrefab);
                 nextGameObject.transform.SetParent(raceContainer.transform, false);

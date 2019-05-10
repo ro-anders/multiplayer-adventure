@@ -1,6 +1,7 @@
 import boto3
 import json
 import time
+from boto3.dynamodb.conditions import Key, Attr
 
 '''
 Updates the race-to-the-egg scoreboard with new achievment
@@ -38,7 +39,7 @@ def lambda_handler(event, context):
         print("event = " + json.dumps(event))
     
         client = boto3.client('dynamodb')
-        table = 'global'
+        tablename = 'global'
 
         # First see if this player has already accomplished this
         # achievment.  If they have, we do nothing
@@ -47,7 +48,7 @@ def lambda_handler(event, context):
             'PK': {'S': SCOREBOARD_PK},
             'SK': {'S': sk}
         }
-        response = client.get_item(TableName=table, Key=key)
+        response = client.get_item(TableName=tablename, Key=key)
         if 'Item' not in response:
 
             new_acheivment = {
@@ -58,31 +59,31 @@ def lambda_handler(event, context):
                 'Time': {'N': str(int(time.time()))}
             }
             print("Upserting {} with new scoreboard acheivment {}".format(event['Player'], event['Stage']))
-            client.put_item(TableName=table, Item=new_acheivment)
+            client.put_item(TableName=tablename, Item=new_acheivment)
 
             # Figure out if this is the first time anyone has acheived
             # That acheivment
             stage = int(event['Stage'])
             if stage >= MINIMUM_STAGE_TO_ANNOUNCE:
-                key={
-                    'PK': {'S': SCOREBOARD_TOP_PK},
-                    'SK': {'S': SCOREBOARD_TOP_SK}
-                }
-                response = client.get_item(TableName=table, Key=key)
-                if 'Item' not in response or \
-                    int(response['Item']['Stage']) < stage:
+                dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
+                table = dynamodb.Table('global')
+                response = table.query(
+                    KeyConditionExpression=Key('PK').eq(SCOREBOARD_TOP_PK)
+                )
+                if 'Items' not in response or len(response['Items']) == 0 or \
+                    int(response['Items'][0]['Stage']) < stage:
 
-                 # Create a new entry for the top of the scoreboard
-                 message = MESSAGES[stage-MINIMUM_STAGE_TO_ANNOUNCE]
-                 new_top = {
-                    'PK': {'S': SCOREBOARD_TOP_PK},
-                    'SK': {'S': SCOREBOARD_TOP_SK},
-                    'Username': {'S': event['Player']},
-                    'Stage': {'N': str(stage)},
-                    'Message': {'S': message.format(event['Player'])}
-                 }
-                print("Upserting {} as new scoreboard leader".format(event['Player']))
-                client.put_item(TableName=table, Item=new_top)
+                    # Create a new entry for the top of the scoreboard
+                    message = MESSAGES[stage-MINIMUM_STAGE_TO_ANNOUNCE]
+                    new_top = {
+                        'PK': {'S': SCOREBOARD_TOP_PK},
+                        'SK': {'S': SCOREBOARD_TOP_SK},
+                        'Username': {'S': event['Player']},
+                        'Stage': {'N': str(stage)},
+                        'Message': {'S': message.format(event['Player'])}
+                    }
+                    print("Upserting {} as new scoreboard leader".format(event['Player']))
+                    client.put_item(TableName=tablename, Item=new_top)
 
         return {
             'statusCode': 200,
