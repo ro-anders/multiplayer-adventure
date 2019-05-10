@@ -60,7 +60,7 @@ namespace GameEngine
 
         }
 
-        public void setState(int newState, bool newAllowsEntry)
+        public virtual void setState(int newState, bool newAllowsEntry)
         {
             state = newState;
             allowsEntry = newAllowsEntry;

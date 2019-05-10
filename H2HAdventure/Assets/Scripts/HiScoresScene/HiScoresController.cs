@@ -132,9 +132,10 @@ public class HiScoresController : MonoBehaviour
                     FillLeaderBoard(response.Standings);
 
                     // If there are entries in the race to the egg, switch the board to displaying that
-                    if (response.RaceToEgg.Length > 0)
+                    if (response.RaceStatus != "")
                     {
                         FillRaceToEgg(response.RaceToEgg, response.RaceStatus);
+                        switchButton.gameObject.SetActive(true);
                     }
                 } 
                 else
@@ -214,7 +215,6 @@ public class HiScoresController : MonoBehaviour
         titleText.text = (displayingLeaderBoard ? LEADER_OPTION : RACE_OPTION);
         switchButton.GetComponentInChildren<Text>().text = 
             "See " + (displayingLeaderBoard ? RACE_OPTION : LEADER_OPTION) + " >";
-        switchButton.gameObject.SetActive(true);
         leaderTitleBar.SetActive(displayingLeaderBoard);
         leaderScrollView.SetActive(displayingLeaderBoard);
         raceTitleBar.SetActive(!displayingLeaderBoard);
