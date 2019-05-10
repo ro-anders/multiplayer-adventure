@@ -1993,7 +1993,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2000194505}
-        m_MethodName: OnNoOneElseOkPressed
+        m_MethodName: OnPleaseShareOkPressed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
