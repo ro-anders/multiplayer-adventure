@@ -1,3 +1,9 @@
 
 To build package for Mac:
 hdiutil create H2HAdventure.dmg -srcfolder <full path to cloned repo>/H2HAdventure/target/OSX/adventure.app/
+
+To build Linux package:
+Rename <full path to cloned repo>/H2HAdventure/Linux/ to .../H2HAdventure.Linux/
+zip .../H2HAdventure.Linux
+
+
