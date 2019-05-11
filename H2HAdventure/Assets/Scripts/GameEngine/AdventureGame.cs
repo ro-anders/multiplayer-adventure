@@ -10,7 +10,7 @@
 // Any trademarks referenced herein are the property of their respective holders.
 // 
 // Original game written by Warren Robinett. Warren, you rock.
-#define DEBUG_EASTEREGG
+#undef DEBUG_EASTEREGG
 
 using System;
 using System.Collections;
