@@ -1,0 +1,3 @@
+
+To build package for Mac:
+hdiutil create H2HAdventure.dmg -srcfolder <full path to cloned repo>/H2HAdventure/target/OSX/adventure.app/
