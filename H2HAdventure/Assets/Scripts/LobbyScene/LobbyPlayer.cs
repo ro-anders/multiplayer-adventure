@@ -36,6 +36,7 @@ public class LobbyPlayer : NetworkBehaviour
             lobbyController.OnConnectedToLobby(this);
             CmdSetPlayerName(lobbyController.ThisPlayerName);
         }
+        lobbyController.NewPlayerAudioSource.Play();
         RefreshDisplay();
     }
 

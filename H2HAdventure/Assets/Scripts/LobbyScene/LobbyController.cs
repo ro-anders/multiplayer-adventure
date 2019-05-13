@@ -27,6 +27,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
 {
     public NetworkManager lobbyManager;
     public ChatPanelController chatPanel;
+    public AudioSource NewPlayerAudioSource;
     public GameObject newGamePanel;
     public Button hostButton;
     public GameObject gamePrefab;
@@ -139,7 +140,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
             lobbyManager.matchMaker.ListMatches(0, 20, "", true, 0, 2, onMatchList);
         }
     }
-
+    
     public void CloseNewGameDialog(bool submitted) {
         newGamePanel.SetActive(false);
         overlay.SetActive(false);

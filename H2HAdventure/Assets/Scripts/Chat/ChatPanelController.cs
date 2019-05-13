@@ -15,6 +15,7 @@ public class ChatPanelController : MonoBehaviour
     private string voiceLabelOff = VOICE_LABEL_OFF;
     public GameObject chatPrefab;
     public bool narrow;
+    private AudioSource newChatAudioSource;
     private GameObject dissonanceSetup;
     private DissonanceComms voiceController;
     private VoiceBroadcastTrigger voiceBroadcast;
@@ -49,6 +50,8 @@ public class ChatPanelController : MonoBehaviour
         voiceController = dissonanceSetup.GetComponent<DissonanceComms>();
         voiceBroadcast = dissonanceSetup.GetComponent<VoiceBroadcastTrigger>();
         voiceReceipt = dissonanceSetup.GetComponent<VoiceReceiptTrigger>();
+        GameObject chatAudioGameObject = transform.Find("NewChatAudioSource").gameObject;
+        newChatAudioSource = chatAudioGameObject.GetComponent<AudioSource>();
         GameObject voiceLabelGameObject = transform.Find("Voice Text").gameObject;
         voiceLabel = voiceLabelGameObject.GetComponent<Text>();
         GameObject talkButtonGameObject = transform.Find("Talk Button").gameObject;

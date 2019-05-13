@@ -11,13 +11,16 @@ public class ChatSync : NetworkBehaviour
 
     private Text chatTextUI;
     private List<string> chatPosts = new List<string>();
+    private AudioSource newChatAudioSource;
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
         chatText = "No messages";
         GameObject chatTextGameObject = GameObject.Find("Chat Text").gameObject;
         chatTextUI = chatTextGameObject.GetComponent<Text>();
         gameObject.transform.SetParent(chatTextGameObject.transform.parent, false);
+        GameObject chatAudioGameObject = transform.Find("NewChatAudioSource").gameObject;
+        newChatAudioSource = chatAudioGameObject.GetComponent<AudioSource>();
 
         GameObject chatGameObject = GameObject.FindGameObjectWithTag("ChatController");
         ChatPanelController chatPanelController = chatGameObject.GetComponent<ChatPanelController>();
@@ -43,8 +46,12 @@ public class ChatSync : NetworkBehaviour
     }
 
     private void OnChangeChatText(string newChatText) {
-        chatText = newChatText;
-        RefreshGraphic();
+        if (chatText != newChatText)
+        {
+            chatText = newChatText;
+            newChatAudioSource.Play();
+            RefreshGraphic();
+        }
     }
 
     private void RefreshGraphic() {
