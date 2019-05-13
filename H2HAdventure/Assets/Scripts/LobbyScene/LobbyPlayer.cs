@@ -12,6 +12,9 @@ public class LobbyPlayer : NetworkBehaviour
     [SyncVar(hook = "OnChangePlayerName")]
     public string playerName = "";
 
+    [SyncVar(hook = "OnChangeVoiceOnHost")]
+    public bool voiceEnabledOnHost = false;
+
     public uint Id
     {
         get { return this.GetComponent<NetworkIdentity>().netId.Value; }
@@ -84,12 +87,6 @@ public class LobbyPlayer : NetworkBehaviour
         lobbyController.GetChatPanelController().BroadcastChatMessage(playerName, message);
     }
 
-    [ClientRpc]
-    public void RpcVoiceEnabledByHost()
-    {
-        lobbyController.GetChatPanelController().OnTalkEnabledOnHost();
-    }
-
     private void RefreshDisplay() {
         Text thisText = this.GetComponent<Text>();
         thisText.text = ((playerName != null) && (playerName != "") ? playerName : "unknown-" + Id);
@@ -99,6 +96,18 @@ public class LobbyPlayer : NetworkBehaviour
         playerName = newPlayerName;
         Debug.Log(newPlayerName + " connected to lobby");
         RefreshDisplay();
+    }
+
+    private void OnChangeVoiceOnHost(bool newValue)
+    {
+        if (voiceEnabledOnHost != newValue)
+        {
+            voiceEnabledOnHost = newValue;
+            if (voiceEnabledOnHost)
+            {
+                lobbyController.GetChatPanelController().OnTalkEnabledOnHost();
+            }
+        }
     }
 
     public override void OnNetworkDestroy()

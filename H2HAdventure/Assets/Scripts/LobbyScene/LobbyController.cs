@@ -161,7 +161,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
 
     public void AnnounceVoiceEnabledByHost()
     {
-        localLobbyPlayer.RpcVoiceEnabledByHost();
+        localLobbyPlayer.voiceEnabledOnHost = true;
     }
 
     /**

@@ -13,6 +13,9 @@ public class PlayerSync : NetworkBehaviour
     [SyncVar(hook = "OnChangePlayerId")]
     public uint playerId = GameInLobby.NO_PLAYER;
 
+    [SyncVar(hook = "OnChangeVoiceOnHost")]
+    public bool voiceEnabledOnHost = false;
+
     private int slot = -1;
 
     private UnityTransport xport;
@@ -132,10 +135,15 @@ public class PlayerSync : NetworkBehaviour
         controller.GetChatPanelController().BroadcastChatMessage(playerName, message);
     }
 
-    [ClientRpc]
-    public void RpcVoiceEnabledByHost()
+    private void OnChangeVoiceOnHost(bool newValue)
     {
-        controller.GetChatPanelController().OnTalkEnabledOnHost();
+        if (voiceEnabledOnHost != newValue)
+        {
+            voiceEnabledOnHost = newValue;
+            if (voiceEnabledOnHost)
+            {
+                controller.GetChatPanelController().OnTalkEnabledOnHost();
+            }
+        }
     }
-
 }

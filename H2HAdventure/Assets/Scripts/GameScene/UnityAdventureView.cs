@@ -158,7 +158,7 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
 
     public void AnnounceVoiceEnabledByHost()
     {
-        localPlayer.RpcVoiceEnabledByHost();
+        localPlayer.voiceEnabledOnHost = true;
     }
 
     public void OnQuitPressed()
