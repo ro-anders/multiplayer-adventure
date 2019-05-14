@@ -26,7 +26,7 @@ class HiscoreRecord : IComparable<HiscoreRecord>
 
     public int CompareTo(HiscoreRecord other)
     {
-        return -Wins;
+        return other.Wins-this.Wins;
     }
 }
 
