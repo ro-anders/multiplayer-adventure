@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class ChatSync : NetworkBehaviour
 {
+    private const string NO_CHAT_YET = "No messages";
+
     [SyncVar(hook = "OnChangeChatText")]
     public string chatText;
 
@@ -15,11 +17,11 @@ public class ChatSync : NetworkBehaviour
 
     // Use this for initialization
     void Start () {
-        chatText = "No messages";
+        chatText = NO_CHAT_YET;
         GameObject chatTextGameObject = GameObject.Find("Chat Text").gameObject;
         chatTextUI = chatTextGameObject.GetComponent<Text>();
         gameObject.transform.SetParent(chatTextGameObject.transform.parent, false);
-        GameObject chatAudioGameObject = transform.Find("NewChatAudioSource").gameObject;
+        GameObject chatAudioGameObject = GameObject.Find("NewChatAudioSource").gameObject;
         newChatAudioSource = chatAudioGameObject.GetComponent<AudioSource>();
 
         GameObject chatGameObject = GameObject.FindGameObjectWithTag("ChatController");
@@ -46,10 +48,13 @@ public class ChatSync : NetworkBehaviour
     }
 
     private void OnChangeChatText(string newChatText) {
-        if (chatText != newChatText)
+        if ((newChatText != chatText) && (newChatText != NO_CHAT_YET))
         {
             chatText = newChatText;
-            newChatAudioSource.Play();
+            if (newChatAudioSource != null)
+            {
+                newChatAudioSource.Play();
+            }
             RefreshGraphic();
         }
     }
