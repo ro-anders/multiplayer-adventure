@@ -638,8 +638,10 @@ namespace GameEngine
                         WinGame(objectBall.room);
                         PlayerWinAction won = new PlayerWinAction(objectBall.room);
                         sync.BroadcastAction(won);
-                        // Report back to the server.
-                        view.Platform_ReportToServer(AdventureReports.WON_GAME);
+                        // Report back to the server on competitive games
+                        if (!isCooperative) {
+                            view.Platform_ReportToServer(AdventureReports.WON_GAME);
+                        }
                     }
                     else if (EasterEgg.isGauntletTimeUp(frameNumber))
                     {
