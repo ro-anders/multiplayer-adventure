@@ -40,6 +40,11 @@ public class LobbyPlayer : NetworkBehaviour
         {
             lobbyController.NewPlayerAudioSource.Play();
         }
+        if (voiceEnabledOnHost)
+        {
+            UnityEngine.Debug.Log("VoiceOnHost started true");
+            lobbyController.GetChatPanelController().OnTalkEnabledOnHost();
+        }
         RefreshDisplay();
     }
 
