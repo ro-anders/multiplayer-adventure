@@ -153,8 +153,8 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
         UnityTransport xportToUse = (SessionInfo.NetworkSetup == SessionInfo.Network.NONE ? null : xport);
         gameEngine = new AdventureGame(this, game.numPlayers, inLocalPlayerSlot, xportToUse, 
             game.gameNumber, game.diff1 == DIFF.A, game.diff2 == DIFF.A,
-            SessionInfo.ThisPlayerInfo.needsPopupHelp, SessionInfo.ThisPlayerInfo.needsMazeGuides, useAi);
-            SessionInfo.RaceCompleted);
+            SessionInfo.ThisPlayerInfo.needsPopupHelp, SessionInfo.ThisPlayerInfo.needsMazeGuides,
+            SessionInfo.RaceCompleted, useAi);
     }
 
     public void PostChat(string message)

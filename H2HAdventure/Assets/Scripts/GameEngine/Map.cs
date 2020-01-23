@@ -78,7 +78,7 @@ namespace GameEngine
 
         static public int getNumRooms()
         {
-            return numRooms;
+            return NUM_ROOMS;
         }
 
         void defaultRooms()

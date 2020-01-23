@@ -30,9 +30,10 @@ public class ShowcaseAdventureView : UnityAdventureBase
     {
         // Make sure the xport is clear of any previous games' messages
         xport.Reset();
+        bool[] useAi = { false, false, false };
         gameEngine = new AdventureGame(this, game.numPlayers, thisPlayerSlot, xport,
             game.gameNumber, game.diff1 == 0, game.diff2 == 0,
-            SessionInfo.ThisPlayerInfo.needsPopupHelp, SessionInfo.ThisPlayerInfo.needsMazeGuides, false);
+            SessionInfo.ThisPlayerInfo.needsPopupHelp, SessionInfo.ThisPlayerInfo.needsMazeGuides, false, useAi);
         gameRenderable = true;
     }
 
