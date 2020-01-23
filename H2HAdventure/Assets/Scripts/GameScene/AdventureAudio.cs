@@ -21,6 +21,12 @@ public class AdventureAudio : MonoBehaviour {
 
     public AudioSource speaker;
 
+    //-------- System sounds
+
+    public AudioClip blip;
+
+
+
 	public void play (SOUND sound, float volume) {
         switch (sound)
         {
@@ -55,4 +61,14 @@ public class AdventureAudio : MonoBehaviour {
             speaker.Play();
         }
 	}
+
+    public void PlaySystemSound(AudioClip clip)
+    {
+        speaker.clip = clip;
+        speaker.volume = 1;
+        if (clip != null)
+        {
+            speaker.Play();
+        }
+    }
 }

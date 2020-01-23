@@ -6,11 +6,51 @@ using GameEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Amazon.Lambda;
+
+[Serializable]
+class WonGameReport
+{
+    public string Won;
+    public string[] Lost;
+    public WonGameReport(string inWon, string[] inLost)
+    {
+        Won = inWon;
+        Lost = inLost;
+    }
+}
+
+[Serializable]
+class EggReport
+{
+    public string Player;
+    public int Stage;
+    public EggReport(string inPlayer, int inStage)
+    {
+        Player = inPlayer;
+        Stage = inStage;
+    }
+}
 
 public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitter
 {
+    private const string UPDATE_STANDINGS_LAMBDA= "UpdateStandings";
+    private const string UPDATE_EGG_SCOREBOARD_LAMBDA = "UpdateScoreboard";
+    private const string PING_LAMBDA = "GamePing";
+
+    List<string> eggMessages = new List<string>(new string[]{ 
+        AdventureReports.FOUND_ROBINETT_ROOM,
+        AdventureReports.GLIMPSED_CRYSTAL_CASTLE,
+        AdventureReports.FOUND_CRYSTAL_CASTLE,
+        AdventureReports.FOUND_CRYSTAL_KEY,
+        AdventureReports.OPENED_CRYSTAL_GATE,
+        AdventureReports.BEAT_CRYSTAL_CHALLENGE
+      });
+
     public IntroPanelController introPanel;
     public ChatPanelController chatPanel;
+    public AWS awsUtil;
+    public GameObject quitConfirmPanel;
 
     private UnityTransport xport;
 
@@ -20,6 +60,7 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
 
     public override void Start() {
         base.Start();
+        InvokeRepeating("SendPing", 0, 60);
         chatPanel.ChatSubmitter = this;
 
         xport = this.gameObject.GetComponent<UnityTransport>();
@@ -91,7 +132,7 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
             localPlayerSlot = localPlayer.getSlot();
         }
         AdventureSetup(localPlayerSlot);
-        gameStarted = true;
+        gameRenderable = true;
     }
 
     // Called only on server
@@ -113,6 +154,7 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
         gameEngine = new AdventureGame(this, game.numPlayers, inLocalPlayerSlot, xportToUse, 
             game.gameNumber, game.diff1 == DIFF.A, game.diff2 == DIFF.A,
             SessionInfo.ThisPlayerInfo.needsPopupHelp, SessionInfo.ThisPlayerInfo.needsMazeGuides, useAi);
+            SessionInfo.RaceCompleted);
     }
 
     public void PostChat(string message)
@@ -120,19 +162,83 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
         localPlayer.CmdPostChat(message);
     }
 
+    public void AnnounceVoiceEnabledByHost()
+    {
+        localPlayer.voiceEnabledOnHost = true;
+    }
+
     public void OnQuitPressed()
     {
+        if (gameRunning)
+        {
+            quitConfirmPanel.SetActive(true);
+        }
+        else
+        {
+            OnQuitConfirmed();
+        }
+    }
+
+    public void OnQuitConfirmed()
+    {
+        quitConfirmPanel.SetActive(false);
         xport.Disconnect();
     }
 
-    public override void Platform_GameChange(GAME_CHANGES change)
+    public void OnQuitCanceled()
     {
-        if (change == GAME_CHANGES.GAME_ENDED)
+        quitConfirmPanel.SetActive(false);
+    }
+
+    public override void Platform_ReportToServer(string message)
+    {
+
+        base.Platform_ReportToServer(message);
+        if (message == AdventureReports.WON_GAME)
         {
-            // Change the Respawn button to a Quit button
-            respawnButton.GetComponentInChildren<Text>().text = "Quit";
-            respawnButton.onClick.AddListener(OnQuitPressed);
+            UpdateStandingsWithWin();
         }
+        else if (eggMessages.Contains(message))
+        {
+            int index = eggMessages.IndexOf(message);
+            ReportRaceToEgg(index);
+        }
+    }
+
+    private void UpdateStandingsWithWin()
+    {
+        // Records win and losses to server for leader board
+        List<string> losers = new List<string>();
+        if (SessionInfo.GameToPlay.playerOne != SessionInfo.ThisPlayerId)
+        {
+            losers.Add(SessionInfo.GameToPlay.playerOneName);
+        }
+        if (SessionInfo.GameToPlay.playerTwo != SessionInfo.ThisPlayerId)
+        {
+            losers.Add(SessionInfo.GameToPlay.playerTwoName);
+        }
+        if ((SessionInfo.GameToPlay.numPlayers > 2) &&
+            (SessionInfo.GameToPlay.playerThree != SessionInfo.ThisPlayerId))
+        {
+            losers.Add(SessionInfo.GameToPlay.playerThreeName);
+        }
+        WonGameReport report = new WonGameReport(SessionInfo.ThisPlayerName,
+            losers.ToArray());
+        string jsonStr = JsonUtility.ToJson(report);
+        awsUtil.CallLambdaAsync(UPDATE_STANDINGS_LAMBDA, jsonStr);
+    }
+
+    private void ReportRaceToEgg(int stage)
+    {
+        // Records people getting closer to finding the easter egg
+        EggReport report = new EggReport(SessionInfo.ThisPlayerName, stage);
+        string jsonStr = JsonUtility.ToJson(report);
+        awsUtil.CallLambdaAsync(UPDATE_EGG_SCOREBOARD_LAMBDA, jsonStr);
+    }
+
+    private void SendPing()
+    {
+        awsUtil.CallLambdaAsync(PING_LAMBDA, "{}");
     }
 
 }

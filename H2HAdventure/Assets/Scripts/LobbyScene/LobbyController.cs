@@ -9,6 +9,13 @@ using UnityEngine.Networking.Types;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+[Serializable]
+class CheckGamesReturn
+{
+    public bool Found;
+}
+
+
 public class NewGameInfo {
     public int numPlayers;
     public int gameNumber;
@@ -20,6 +27,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
 {
     public NetworkManager lobbyManager;
     public ChatPanelController chatPanel;
+    public AudioSource NewPlayerAudioSource;
     public GameObject newGamePanel;
     public Button hostButton;
     public GameObject gamePrefab;
@@ -27,9 +35,13 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public GameObject overlay;
     public GameObject sendCallConf;
     public GameObject noOneElsePanel;
+    public GameObject pleaseSharePanel;
+    public GameObject reestablishPanel;
+    public GameObject othersPlaying;
     public AWS awsUtil;
 
     private const string LOBBY_MATCH_NAME = "h2hlobby";
+    private const string CHECK_GAMES_LAMBDA = "CheckGames";
     private LobbyPlayer localLobbyPlayer;
     private ulong matchNetwork;
     private NodeID matchNode;
@@ -61,7 +73,12 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public void Start()
     {
         chatPanel.ChatSubmitter = this;
+        if (SessionInfo.LobbyEntrance == SessionInfo.LobbyCause.ONHOSTDROP)
+        {
+            reestablishPanel.SetActive(true);
+        }
         ConnectToLobby();
+        InvokeRepeating("CheckRunningGames", 0, 60);
     }
 
     public void OnConnectedToLobby(LobbyPlayer inLocalLobbyPlayer) {
@@ -71,12 +88,23 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
         {
             chatPanel.ServerSetup();
             // If you're hosting the lobby then you're the only one right now
-            noOneElsePanel.SetActive(true);
+            if (SessionInfo.LobbyEntrance == SessionInfo.LobbyCause.FIRSTTIME)
+            {
+                noOneElsePanel.SetActive(true);
+            }
         }
-        else
+        // Ask them to share after a couple times
+        string PREF_KEY = "GamesPlayed";
+        int numGames = PlayerPrefs.GetInt(PREF_KEY, 0);
+        if ((numGames == 2) || (numGames == 11))
         {
-            overlay.SetActive(false);
+            pleaseSharePanel.SetActive(true);
+            PlayerPrefs.SetInt(PREF_KEY, numGames + 1); // Just so they don't get the message again until they play more games
         }
+        overlay.SetActive(false);
+        
+        reestablishPanel.SetActive(false);
+        SessionInfo.LobbyEntrance = SessionInfo.LobbyCause.NORMAL;
     }
 
     public void ConnectToLobby() {
@@ -112,7 +140,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
             lobbyManager.matchMaker.ListMatches(0, 20, "", true, 0, 2, onMatchList);
         }
     }
-
+    
     public void CloseNewGameDialog(bool submitted) {
         newGamePanel.SetActive(false);
         overlay.SetActive(false);
@@ -132,10 +160,15 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
         localLobbyPlayer.CmdPostChat(message);
     }
 
+    public void AnnounceVoiceEnabledByHost()
+    {
+        localLobbyPlayer.voiceEnabledOnHost = true;
+    }
+
     /**
      * Add a player to a game.
      * This method is only executed on the lobby host.
-     */    
+     */
     public void PlayerJoinGame(LobbyPlayer player, uint gameId) {
         GameInLobby[] games = gameList.GetComponentsInChildren<GameInLobby>();
         GameInLobby found = null;
@@ -371,6 +404,7 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
             // We've gotten disconnected from the host of the lobby.
             // Most likely because that person has gone to a game.
             // Only thing to do is to disconnect and create a new lobby
+            SessionInfo.LobbyEntrance = SessionInfo.LobbyCause.ONHOSTDROP;
             SwitchToScene("Lobby");
         }
     }
@@ -412,7 +446,11 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     public void OnNoOneElseOkPressed()
     {
         noOneElsePanel.SetActive(false);
-        overlay.SetActive(false);
+    }
+
+    public void OnPleaseShareOkPressed()
+    {
+        pleaseSharePanel.SetActive(false);
     }
 
     public void OnBackPressed()
@@ -460,6 +498,28 @@ public class LobbyController : MonoBehaviour, ChatSubmitter
     private void ShutdownNetworkManager() {
         Destroy(lobbyManager);
         NetworkManager.Shutdown();
+    }
+
+    private void CheckRunningGames()
+    {
+        awsUtil.CallLambdaAsync(CHECK_GAMES_LAMBDA, "", OnCheckGamesReturn);
+    }
+
+    private void OnCheckGamesReturn(bool success, string payload)
+    {
+        if (success)
+        {
+            try
+            {
+                CheckGamesReturn response = JsonUtility.FromJson<CheckGamesReturn>(payload);
+                othersPlaying.SetActive(response.Found);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Excpecting CheckGamesReturn fron lambda but received: " + payload +
+                    "\nError message was: " + e.Message);
+            }
+        }
     }
 
     private void SendCall()

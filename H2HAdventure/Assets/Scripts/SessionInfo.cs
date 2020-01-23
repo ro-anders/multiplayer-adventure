@@ -12,7 +12,7 @@ public class UserInfo
 public class SessionInfo {
 
     // If true, show some other options only for developers
-    public const bool DEV_MODE = true;
+    public const bool DEV_MODE = false;
 
     // If doing development while offline, set this.  Will stub out
     // network calls.
@@ -21,7 +21,7 @@ public class SessionInfo {
     // The version number.  Every time there is a breaking change, this
     // needs to be updated.  Then the server can determine if the client
     // is talking to needs to be updated.
-    public const int VERSION = 2;
+    public const int VERSION = 5; // 2019-05-15 Change in how enabling voice is communicated between clients
 
     // Which scene to take users to once game is established.
     public const string GAME_SCENE = "AdvGame";
@@ -38,6 +38,14 @@ public class SessionInfo {
         NONE
     }
 
+    // Depending on why we're entering the lobby, we display a 
+    // different message.
+    public enum LobbyCause
+    {
+        FIRSTTIME,
+        ONHOSTDROP,
+        NORMAL
+    }
     public const string DIRECT_CONNECT_HOST_FLAG = "host";
 
     private static uint thisPlayerId;
@@ -46,7 +54,6 @@ public class SessionInfo {
     private static Network networkSetup;
     private static string directConnectIp;
     private static UserInfo thisPlayerInfo = new UserInfo();
-
 
     public static uint ThisPlayerId
     {
@@ -115,4 +122,31 @@ public class SessionInfo {
             directConnectIp = value;
         }
     }
+
+    private static LobbyCause lobbyCause = LobbyCause.FIRSTTIME;
+    public static LobbyCause LobbyEntrance
+    {
+        get
+        {
+            return lobbyCause;
+        }
+        set
+        {
+            lobbyCause = value;
+        }
+    }
+
+    private static bool raceCompleted = false;
+    public static bool RaceCompleted
+    {
+        get
+        {
+            return raceCompleted;
+        }
+        set
+        {
+            raceCompleted = value;
+        }
+    }
+
 }

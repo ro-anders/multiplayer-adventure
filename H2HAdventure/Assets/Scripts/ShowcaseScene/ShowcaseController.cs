@@ -36,7 +36,13 @@ public class ShowcaseController : MonoBehaviour
     public void TitleHasBeenDismissed()
     {
         titleController.gameObject.SetActive(false);
+        lobbyController.idleTime = 0;
         lobbyController.gameObject.SetActive(true);
+    }
+
+    public void SetupHasBeenIdle()
+    {
+        titleController.gameObject.SetActive(true);
     }
 
     public void GameHasBeenAgreed()
@@ -44,6 +50,7 @@ public class ShowcaseController : MonoBehaviour
         titleController.gameObject.SetActive(false);
         lobbyController.gameObject.SetActive(false);
         prestartController.gameObject.SetActive(true);
+        prestartController.Reset();
     }
 
     public void StartGame(ProposedGame game, int thisClientSlot)

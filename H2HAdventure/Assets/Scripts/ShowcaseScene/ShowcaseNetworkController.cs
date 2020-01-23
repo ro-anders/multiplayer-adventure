@@ -1,5 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -21,6 +24,7 @@ public class ShowcaseNetworkController : MonoBehaviour
     private Text errorText;
     private Button okButton;
     private string profile = DEFAULT_PROFILE;
+    private string localIp = "127.0.0.1";
 
     // A flag to indicate we've tried to connect to the Host.  Used when deciding to report an error.
     private bool waitingForSuccess = false;
@@ -39,8 +43,14 @@ public class ShowcaseNetworkController : MonoBehaviour
 
         errorText.text = "";
 
+        if (!SessionInfo.WORK_OFFLINE)
+        {
+            localIp = GetLocalIp();
+        }
+
         bool allSpecified = LoadConfig();
-        if (allSpecified)
+        // IN Dev mode we always wait to confirm the network settings
+        if (allSpecified && !SessionInfo.DEV_MODE)
         {
             Connect();
         }
@@ -69,7 +79,7 @@ public class ShowcaseNetworkController : MonoBehaviour
             profile = "";
             hostToggle.isOn = true;
             hostPortInput.text = "1981";
-            clientIpInput.text = "127.0.0.1";
+            clientIpInput.text = localIp;
             clientPortInput.text = "1981";
             fullscreenToggle.isOn = false;
             return false;
@@ -103,7 +113,7 @@ public class ShowcaseNetworkController : MonoBehaviour
             clientToggle.isOn = (networkMode == CLIENT_MODE);
             hostToggle.isOn = !clientToggle.isOn;
             string hostIp = PlayerPrefs.GetString(profile + "." + "setup.hostip", "");
-            clientIpInput.text = hostIp;
+            clientIpInput.text = (hostIp == "" ? localIp : hostIp);
             int hostPort = PlayerPrefs.GetInt(profile + "." + "setup.hostport", -1);
             hostPortInput.text = (hostPort > 0 ? hostPort.ToString() : "1981");
             clientPortInput.text = (hostPort > 0 ? hostPort.ToString() : "1981");
@@ -133,6 +143,7 @@ public class ShowcaseNetworkController : MonoBehaviour
         }
 
         hostToggle.interactable = false;
+        hostPortInput.interactable = false;
         clientToggle.interactable = false;
         clientIpInput.interactable = false;
         clientPortInput.interactable = false;
@@ -142,7 +153,7 @@ public class ShowcaseNetworkController : MonoBehaviour
         if (hostToggle.isOn)
         {
             networkManager.networkPort = int.Parse(hostPortInput.text);
-            networkManager.serverBindAddress = "127.0.0.1";
+            networkManager.serverBindAddress = localIp;
             networkManager.serverBindToIP = true;
             networkManager.StartHost();
         }
@@ -155,4 +166,29 @@ public class ShowcaseNetworkController : MonoBehaviour
         waitingForSuccess = true;
     }
 
+
+    private string GetLocalIp()
+    {
+        string output = "";
+
+        foreach (NetworkInterface item in NetworkInterface.GetAllNetworkInterfaces())
+        {
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+            NetworkInterfaceType _type1 = NetworkInterfaceType.Wireless80211;
+            NetworkInterfaceType _type2 = NetworkInterfaceType.Ethernet;
+
+            if ((item.NetworkInterfaceType == _type1 || item.NetworkInterfaceType == _type2) && item.OperationalStatus == OperationalStatus.Up)
+#endif 
+            {
+                foreach (UnicastIPAddressInformation ip in item.GetIPProperties().UnicastAddresses)
+                {
+                    if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        output = ip.Address.ToString();
+                    }
+                }
+            }
+        }
+        return output;
+    }
 }

@@ -1,6 +1,7 @@
 import boto3
 import decimal
 import json
+from boto3.dynamodb.conditions import Key, Attr
 
 '''
 Return two things all games need to check when they first run
@@ -21,13 +22,33 @@ class DecimalEncoder(json.JSONEncoder):
 
 def lambda_handler(event, context):
 
-    MINIMAL_VIABLE_VERSION = 2
-    
-    STATUS_MESSAGE = ""
+    SCOREBOARD_TOP_PK='ScoreboardStatus'
+    MINIMAL_VIABLE_VERSION = 5
+    RACE_TO_THE_EGG_MESSAGE_ID = 100;
+    statusMessage = ''
+    messageId = 0
+    eggStatus = False
+
+    # If we have no system status message, then send
+    # race to the egg status
+    if statusMessage == '':
+        dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
+        table = dynamodb.Table('global')
+        response = table.query(
+            KeyConditionExpression=Key('PK').eq(SCOREBOARD_TOP_PK)
+        )
+        print("Response from race status query = " + json.dumps(response, cls=DecimalEncoder))
+        if 'Items' in response and len(response['Items']) > 0:
+            statusMessage = response['Items'][0]['Message'] + \
+              '.\nCheck the leader board for the race to the egg.'
+            messageId = RACE_TO_THE_EGG_MESSAGE_ID
+            eggStatus = response['Items'][0]['Stage']==5
     
     response = {
         'MinimumVersion': MINIMAL_VIABLE_VERSION,
-        'SystemMessage': STATUS_MESSAGE
+        'SystemmMessage': statusMessage,
+        'EggStatus': eggStatus,
+        'MessageId': messageId
     }
     
     return {

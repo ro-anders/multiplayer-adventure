@@ -8,8 +8,10 @@ using Dissonance;
 public class ChatPanelController : MonoBehaviour
 {
     private const string VOICE_LABEL_ON = "Voice:";
-    private const string VOICE_LABEL_OFF = "Voice chat: Disabled";
+    private const string VOICE_LABEL_OFF = "Voice Chat: Disabled";
     private const string VOICE_LABEL_OFF_NARROW = "Voice: Disabled";
+    private const string VOICE_LABEL_DISABLED_BY_HOST = "Voice Chat: Disabled on host";
+    private const string VOICE_LABEL_DISABLED_BY_HOST_NARROW = "Voice disabled on host";
     private string voiceLabelOff = VOICE_LABEL_OFF;
     public GameObject chatPrefab;
     public bool narrow;
@@ -25,6 +27,7 @@ public class ChatPanelController : MonoBehaviour
     private InputField chatInput;
     private ChatSubmitter submitter;
     private ChatSync localChatSync;
+    private bool isHost = false;
     private bool voiceChatEnabled = false;
     private bool voiceChatSilenced = true;
 
@@ -56,7 +59,7 @@ public class ChatPanelController : MonoBehaviour
         silenceButton = silenceButtonGameObject.GetComponent<Button>();
         GameObject chatInputGameObject = transform.Find("Chat Input").gameObject;
         chatInput = chatInputGameObject.GetComponent<InputField>();
-        voiceLabel.text = voiceLabelOff;
+        voiceLabel.text = (narrow ? VOICE_LABEL_DISABLED_BY_HOST_NARROW : VOICE_LABEL_DISABLED_BY_HOST);
         if (SessionInfo.NetworkSetup == SessionInfo.Network.NONE)
         {
             silenceButton.interactable = false;
@@ -112,6 +115,8 @@ public class ChatPanelController : MonoBehaviour
         // The scene has just been created on the host.  So network the chat now.
         GameObject chatSyncGO = Instantiate(chatPrefab);
         NetworkServer.Spawn(chatSyncGO);
+        isHost = true;
+        OnTalkEnabledOnHost();
     }
 
     // Only called on server
@@ -133,6 +138,12 @@ public class ChatPanelController : MonoBehaviour
         }
     }
 
+    public void OnTalkEnabledOnHost()
+    {
+        voiceLabel.text = voiceLabelOff;
+        silenceButton.gameObject.SetActive(true);
+    }
+
     public void OnTalkPressed()
     {
         voiceBroadcast.Mode = CommActivationMode.VoiceActivation;
@@ -148,6 +159,10 @@ public class ChatPanelController : MonoBehaviour
         if (!voiceChatEnabled)
         {
             EnableVoiceChat();
+            if (isHost)
+            {
+                submitter.AnnounceVoiceEnabledByHost();
+            }
         }
         else
         {

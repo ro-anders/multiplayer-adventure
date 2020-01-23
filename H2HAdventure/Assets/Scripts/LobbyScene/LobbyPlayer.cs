@@ -12,6 +12,9 @@ public class LobbyPlayer : NetworkBehaviour
     [SyncVar(hook = "OnChangePlayerName")]
     public string playerName = "";
 
+    [SyncVar(hook = "OnChangeVoiceOnHost")]
+    public bool voiceEnabledOnHost = false;
+
     public uint Id
     {
         get { return this.GetComponent<NetworkIdentity>().netId.Value; }
@@ -21,6 +24,9 @@ public class LobbyPlayer : NetworkBehaviour
     {
         GameObject LobbyPlayerList = GameObject.FindGameObjectWithTag("LobbyPlayerParent");
         gameObject.transform.SetParent(LobbyPlayerList.transform, false);
+        // It will put the new player at the bottom of the list, but we don't want it 
+        // to go below the end note about other players
+        gameObject.transform.SetSiblingIndex(gameObject.transform.GetSiblingIndex() - 1);
         // The lobby controller needs someway to talk to the server, so it uses
         // the LobbyPlayer representing the local player
         GameObject lobbyControllerGO = GameObject.FindGameObjectWithTag("LobbyController");
@@ -29,6 +35,15 @@ public class LobbyPlayer : NetworkBehaviour
         {
             lobbyController.OnConnectedToLobby(this);
             CmdSetPlayerName(lobbyController.ThisPlayerName);
+        }
+        else
+        {
+            lobbyController.NewPlayerAudioSource.Play();
+        }
+        if (voiceEnabledOnHost)
+        {
+            UnityEngine.Debug.Log("VoiceOnHost started true");
+            lobbyController.GetChatPanelController().OnTalkEnabledOnHost();
         }
         RefreshDisplay();
     }
@@ -90,6 +105,18 @@ public class LobbyPlayer : NetworkBehaviour
         playerName = newPlayerName;
         Debug.Log(newPlayerName + " connected to lobby");
         RefreshDisplay();
+    }
+
+    private void OnChangeVoiceOnHost(bool newValue)
+    {
+        if (voiceEnabledOnHost != newValue)
+        {
+            voiceEnabledOnHost = newValue;
+            if (voiceEnabledOnHost)
+            {
+                lobbyController.GetChatPanelController().OnTalkEnabledOnHost();
+            }
+        }
     }
 
     public override void OnNetworkDestroy()

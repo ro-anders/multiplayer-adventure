@@ -21,8 +21,6 @@ namespace GameEngine
 
         private int numPlayers;
 
-        private int frameNum;
-
         private int[] msgsRcvdFromPlayer;
 
         public Sync(int inNumPlayers, int inThisPlayer, Transport inTransport)
@@ -31,7 +29,6 @@ namespace GameEngine
             thisPlayer = inThisPlayer;
             gameWon = null;
             transport = inTransport;
-            frameNum = 0;
             playersLastMove = new PlayerMoveAction[numPlayers];
             for (int ctr = 0; ctr < numPlayers; ++ctr)
             {
@@ -40,16 +37,6 @@ namespace GameEngine
             msgsRcvdFromPlayer = new int[numPlayers];
             resetMessagesReceived();
         }
-
-        /**
-         * Call this before the start of each frame.
-         * Allows the syncer to correlate how many frames ago an action was performed.
-         */
-        public void StartFrame()
-        {
-            ++frameNum;
-        }
-
 
         /**
          * This pulls messages off the socket until there are none waiting.
@@ -253,11 +240,6 @@ namespace GameEngine
 
         }
 
-
-        public int getFrameNumber()
-        {
-            return frameNum;
-        }
 
         public int getMessagesReceived(int player)
         {

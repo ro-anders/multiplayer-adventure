@@ -32,6 +32,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
 {
     private const int DRAW_AREA_WIDTH = Adv.ADVENTURE_SCREEN_WIDTH;
     private const int DRAW_AREA_HEIGHT = Adv.ADVENTURE_SCREEN_HEIGHT;
+    private const int POPUP_DURATION = 8;
 
     // We hold a big buffer of rectangles as compactly as possible, so we
     // convert a Rectange (red, green, blue, x, y, width, length) and store
@@ -48,25 +49,33 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     public Button respawnButton;
     public GameObject messagePanel;
     public Text messageText;
+    public GameObject popupPanel;
 
-    protected bool gameStarted;
+    protected bool gameRenderable; // This is true from the moment the game 
+    // game engine starts showing the opening number room to when the user leaves
+    // the screen, returning to game setup
+    protected bool gameRunning; // This is true from the moment the players can
+    // start moving to when someone wins
     protected AdventureGame gameEngine;
     private int rectsBufferSize = RECTS_START_SIZE;
     private int numRects;
     private bool painting;
     private bool displaying;
     private GameObject gamePanel;
+    private PopupController popupController;
+
 
     // Start is called before the first frame update
     public virtual void Start()
     {
         gamePanel = gameObject.transform.parent.gameObject;
+        popupController = popupPanel.GetComponent<PopupController>();
     }
 
     // FixedUpdate is called exactly 60 times per second
     public void FixedUpdate()
     {
-        if (gameStarted)
+        if (gameRenderable)
         {
             AdventureUpdate();
         }
@@ -76,26 +85,48 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     // on device and load
     public virtual void Update()
     {
-        // Make the game screen as big as possible
-        if (gamePanel != null)
+        if (gameRenderable)
         {
-            RectTransform rt = (RectTransform)gamePanel.transform;
-            float maxWidth = rt.rect.width;
-            float maxHeight = rt.rect.height;
-            float scale1 = maxWidth / DRAW_AREA_WIDTH;
-            float scale2 = maxHeight / DRAW_AREA_HEIGHT;
-            float newScale = (scale1 <= scale2 ? scale1 : scale2);
-            if (Math.Abs(scale - newScale) > 0.01)
+            // Make the game screen as big as possible
+            if (gamePanel != null)
             {
-                RectTransform screenRect = screen.GetComponent<RectTransform>();
-                screenRect.sizeDelta = new Vector2(newScale * DRAW_AREA_WIDTH, newScale * DRAW_AREA_HEIGHT);
+                RectTransform rt = (RectTransform)gamePanel.transform;
+                float maxWidth = rt.rect.width;
+                float maxHeight = rt.rect.height;
+                float scale1 = maxWidth / DRAW_AREA_WIDTH;
+                float scale2 = maxHeight / DRAW_AREA_HEIGHT;
+                float newScale = (scale1 <= scale2 ? scale1 : scale2);
+                if (Math.Abs(scale - newScale) > 0.01)
+                {
+                    RectTransform screenRect = screen.GetComponent<RectTransform>();
+                    screenRect.sizeDelta = new Vector2(newScale * DRAW_AREA_WIDTH, newScale * DRAW_AREA_HEIGHT);
+                }
             }
+            DisplayRectangles();
         }
-        DisplayRectangles();
     }
 
+    public void ShutdownGame()
+    {
+        // Clear the audio so it doesn't replay
+        adv_audio.PlaySystemSound(null);
+        gameRenderable = false;
+    }
 
-    public abstract void Platform_GameChange(GAME_CHANGES change);
+    public virtual void Platform_GameChange(GAME_CHANGES change)
+    {
+        if (change == GAME_CHANGES.GAME_STARTED)
+        {
+            gameRunning = true;
+        } else if (change == GAME_CHANGES.GAME_ENDED)
+        {
+            gameRunning = false;
+            // Keep track of how many games have been played
+            string PREF_KEY = "GamesPlayed";
+            int gamesPlayed = PlayerPrefs.GetInt(PREF_KEY, 0);
+            PlayerPrefs.SetInt(PREF_KEY, gamesPlayed + 1);
+        }
+    }
 
     public void Platform_PaintPixel(int r, int g, int b, int x, int y, int width, int height)
     {
@@ -169,16 +200,39 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
         }
     }
 
-    public void Platform_ReportToServer(string message)
+    public virtual void Platform_ReportToServer(string message)
     {
         Debug.Log("Message to server: " + message);
     }
 
 
+    public void Platform_PopupHelp(string message, string imageName)
+    {
+        StartCoroutine(DisplayPopupHelp(message, imageName, POPUP_DURATION));
+    }
+
     public void Platform_DisplayStatus(string message, int durationSecs)
     {
         Debug.Log("Message for player: " + message);
         StartCoroutine(DisplayStatus(message, durationSecs));
+    }
+
+    private IEnumerator DisplayPopupHelp(string message, string imageName, int durationSecs)
+    {
+        // We mute the sound if the game is over so not to 
+        // occlude cool end game segment
+        if (gameRunning)
+        {
+            adv_audio.PlaySystemSound(adv_audio.blip);
+        }
+        popupController.Popup(message, imageName);
+        if (durationSecs > 0)
+        {
+            yield return new WaitForSeconds(durationSecs);
+            // Check to make sure another popup hasn't come along
+            // superceding this one (it shouldn't)
+            popupController.Hide(message);
+        }
     }
 
     private IEnumerator DisplayStatus(string message, int durationSecs)

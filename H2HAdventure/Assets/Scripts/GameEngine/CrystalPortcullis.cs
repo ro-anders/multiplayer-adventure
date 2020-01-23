@@ -56,6 +56,16 @@ namespace GameEngine
             return gateAction;
         }
 
+        public override void setState(int newState, bool newAllowsEntry)
+        {
+            if (!allowsEntry && newAllowsEntry)
+            {
+                EasterEgg.openedCastle();
+            }
+            base.setState(newState, newAllowsEntry);
+        }
+
+
         /**
         * Update its internal state for this turn.  This involves lifting the gate if it is currently opening, etc...
         */

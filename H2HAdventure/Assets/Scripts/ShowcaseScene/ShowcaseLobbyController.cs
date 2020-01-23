@@ -15,6 +15,7 @@ public class ShowcaseLobbyController : MonoBehaviour
     private const string ACCEPT_SUPPLEMENT_LIMIT = "you have {} seconds to accept";
 
     private const float TIME_TO_JOIN_2P_GAME = 10;
+    private const float SCREENSAVER_TIMEOUT = 120;
 
     public ShowcaseController parent;
     public ShowcaseTransport xport;
@@ -34,6 +35,7 @@ public class ShowcaseLobbyController : MonoBehaviour
     private GameObject leftOutPanel;
 
     private float timeToAccept = -1;
+    public float idleTime = -1;
 
     // Start is called before the first frame update
     void Start()
@@ -52,17 +54,24 @@ public class ShowcaseLobbyController : MonoBehaviour
         waitGameDescText = transform.Find("WaitPanel/GameDescriptionText").gameObject.GetComponent<Text>();
         leftOutPanel = transform.Find("LeftOutPanel").gameObject;
 
-        proposalPanel.SetActive(true);
-        proposalTitleText.text = PROPOSAL_TITLE_NO_OTHER;
-        acceptPanel.SetActive(false);
-        waitPanel.SetActive(false);
-        leftOutPanel.SetActive(false);
-        timeToAccept = -1;
+        Reset();
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (Input.anyKeyDown)
+        {
+            idleTime = 0;
+        }
+        if (idleTime >= 0)
+        {
+            idleTime += Time.deltaTime;
+            if (idleTime > SCREENSAVER_TIMEOUT)
+            {
+                parent.SetupHasBeenIdle();
+            }
+        }
         if (timeToAccept > 0)
         {
             int currentSeconds = (int)Mathf.Ceil(timeToAccept);
@@ -76,6 +85,17 @@ public class ShowcaseLobbyController : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void Reset()
+    {
+        proposalPanel.SetActive(true);
+        proposalTitleText.text = PROPOSAL_TITLE_NO_OTHER;
+        acceptPanel.SetActive(false);
+        waitPanel.SetActive(false);
+        leftOutPanel.SetActive(false);
+        timeToAccept = -1;
+        idleTime = 0;
     }
 
     // ----- Button and Other UI Handlers -----------------------------------------------------
@@ -140,6 +160,7 @@ public class ShowcaseLobbyController : MonoBehaviour
                 parent.GameHasBeenAgreed();
             }
             timeToAccept = -1;
+            idleTime = -1;
         }
         else
         {
@@ -157,6 +178,7 @@ public class ShowcaseLobbyController : MonoBehaviour
                 acceptSupplementText.text = ACCEPT_SUPPLEMENT_NO_LIMIT;
                 leftOutPanel.SetActive(false);
                 timeToAccept = -1;
+                idleTime = (idleTime < 0 ? 0 : idleTime);
             }
             // If the game doesn't have me and is a 2 player game ready to go
             // display the accept panel only and put in the countdown
@@ -182,6 +204,7 @@ public class ShowcaseLobbyController : MonoBehaviour
         waitPanel.SetActive(false);
         leftOutPanel.SetActive(false);
         timeToAccept = -1;
+        idleTime = (idleTime < 0 ? 0 : idleTime);
     }
 
     public void OnStartGame()
@@ -191,16 +214,12 @@ public class ShowcaseLobbyController : MonoBehaviour
         acceptPanel.SetActive(false);
         waitPanel.SetActive(false);
         leftOutPanel.SetActive(true);
+        idleTime = -1;
     }
 
     public void OnGameOver()
     {
-        proposalPanel.SetActive(true);
-        proposalTitleText.text = PROPOSAL_TITLE_NO_OTHER;
-        acceptPanel.SetActive(false);
-        waitPanel.SetActive(false);
-        leftOutPanel.SetActive(false);
-        timeToAccept = -1;
+        Reset();
     }
 
     private string GameDisplayString(ProposedGame game)

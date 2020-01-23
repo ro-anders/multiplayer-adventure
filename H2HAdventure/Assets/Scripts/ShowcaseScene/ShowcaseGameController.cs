@@ -24,6 +24,7 @@ public class ShowcaseGameController : MonoBehaviour
 
     public void OnQuitPressed()
     {
+        advView.ShutdownGame();
         xport.ReqQuitGame();
         parent.GameHasBeenQuit();
     }
@@ -31,6 +32,7 @@ public class ShowcaseGameController : MonoBehaviour
     public void OnGameOver()
     {
         // TBD: Handle this better
+        advView.ShutdownGame();
         parent.GameHasBeenQuit();
     }
 }

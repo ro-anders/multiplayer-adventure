@@ -41,6 +41,11 @@ public class ShowcaseTransport : MonoBehaviour, GameEngine.Transport
         }
     }
 
+    public void Reset()
+    {
+        receviedActions.Clear();
+    }
+
     public void AddClient(ShowcasePlayer newClient)
     {
         allClients.Add(newClient);

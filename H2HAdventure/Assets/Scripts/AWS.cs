@@ -48,7 +48,6 @@ public class AWS : MonoBehaviour {
             );
             lambdaClient = new AmazonLambdaClient(credentials, RegionEndpoint.USEast2);
         isReady = true;
-        UnityEngine.Debug.Log("AWS setup");
         if (callOnReady != null)
         {
             Action action = callOnReady;
@@ -151,7 +150,7 @@ public class AWS : MonoBehaviour {
                     string payloadStr = Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray());
                     LambdaError errorResponse = JsonUtility.FromJson<LambdaError>(payloadStr);
                     Debug.LogError("Error calling " + lambdaName +
-                    " lambda returned error message " + errorResponse.errorMessage);
+                    " lambda returned error message: " + errorResponse.errorMessage);
                     callback(false, null);
                 }
                 else
@@ -167,7 +166,7 @@ public class AWS : MonoBehaviour {
                     }
                     else
                     {
-                        Debug.Log("Call to " + lambdaName + " successful.");
+                        //Debug.Log("Call to " + lambdaName + " successful.");
                         callback(true, lambdaResponse.body);
                     }
                 }

@@ -49,6 +49,7 @@ namespace GameEngine
         private AdventureView view;
 
         private int winFlashTimer;
+        private int frameNumber;
         private int winningRoom = -1; // The room number of the castle of the winning player.  -1 if the game is not won yet.
         private bool displayWinningRoom; // At the end of the game we show the player who won.
         private readonly int numPlayers;
@@ -60,7 +61,6 @@ namespace GameEngine
         private bool joyLeft, joyUp, joyRight, joyDown, joyFire;
         private bool joystickDisabled = false; // Only used when scripting and testing ai
         private bool switchReset;
-        private bool useHelpPopups;
         private bool useMazeGuides;
 
         private int turnsSinceTimeCheck;
@@ -99,6 +99,8 @@ namespace GameEngine
         private readonly ROOM[] roomDefs;
         private Map gameMap;
         private Board gameBoard;
+        private PopupMgr popupMgr;
+        private int lastPopupTime = int.MinValue;
 
         // This holds all the switches for whether to turn on or off different game options
         // It is a bitwise or of each game option
@@ -106,7 +108,7 @@ namespace GameEngine
 
         public AdventureGame(AdventureView inView, int inNumPlayers, int inThisPlayer,
             Transport inTransport, int inGameNum, bool leftDifficultyOn, bool rightDifficultyOn,
-            bool inUseHelpPopups, bool inUseMazeGuides, bool[] useAi)
+            bool inUseHelpPopups, bool inUseMazeGuides, bool raceCompleted, bool[] useAi)
         {
             view = inView;
 
@@ -114,9 +116,9 @@ namespace GameEngine
             thisPlayer = inThisPlayer;
             gameMode = inGameNum;
             isCooperative = (gameMode > Adv.GAME_MODE_3);
-            useHelpPopups = inUseHelpPopups;
             useMazeGuides = inUseMazeGuides;
             timeToStartGame = 60 * 3;
+            frameNumber = 0;
 
             // The map for game 3 is the same as 2.
             gameMapLayout = (gameMode == Adv.GAME_MODE_GAUNTLET ? Map.MAP_LAYOUT_SMALL :
@@ -125,7 +127,11 @@ namespace GameEngine
             gameMap = new Map(numPlayers, gameMapLayout, isCooperative, useMazeGuides);
             roomDefs = gameMap.roomDefs;
             gameBoard = new Board(gameMap, view);
-            EasterEgg.setup(view, gameBoard);
+            if (inUseHelpPopups)
+            {
+                popupMgr = new PopupMgr(gameBoard);
+            }
+            EasterEgg.setup(view, gameBoard, raceCompleted);
 
             surrounds = new OBJECT[numPlayers];
             for (int ctr = 0; ctr < numPlayers; ++ctr)
@@ -144,9 +150,9 @@ namespace GameEngine
                 Dragon.setSuperDragons();
             }
             dragons = new Dragon[numDragons];
-            dragons[0] = new Dragon("grindle", 0, COLOR.LIMEGREEN, 2, greenDragonMatrix);
-            dragons[1] = new Dragon("yorgle", 1, COLOR.YELLOW, 2, yellowDragonMatrix);
-            dragons[2] = new Dragon("rhindle", 2, COLOR.RED, 3, redDragonMatrix);
+            dragons[0] = new Dragon("grindle", 0, COLOR.LIMEGREEN, 2, greenDragonMatrix, popupMgr);
+            dragons[1] = new Dragon("yorgle", 1, COLOR.YELLOW, 2, yellowDragonMatrix, popupMgr);
+            dragons[2] = new Dragon("rhindle", 2, COLOR.RED, 3, redDragonMatrix, popupMgr);
             bat = new Bat(COLOR.BLACK);
 
             OBJECT goldKey = new OBJECT("gold key", objectGfxKey, new byte[0], 0, COLOR.YELLOW, OBJECT.RandomizedLocations.OUT_IN_OPEN);
@@ -248,6 +254,11 @@ namespace GameEngine
             SetupRoomObjects();
 
             ResetPlayers();
+
+            if (popupMgr != null)
+            {
+                popupMgr.SetupPopups();
+            }
         }
 
         public void PrintDisplay()
@@ -356,6 +367,12 @@ namespace GameEngine
                         first = next;
                         ++ctr;
                     }
+                }
+                IEnumerator<Guide.Marker> markers = guide.GetMarkers(displayedRoom);
+                while (markers.MoveNext())
+                {
+                    Guide.Marker nextMarker = markers.Current;
+                    DrawGraphic(nextMarker.X, nextMarker.Y, nextMarker.Gfx, nextMarker.Color, 1);
                 }
             }
 
@@ -527,6 +544,12 @@ namespace GameEngine
             while (otherReset != null)
             {
                 ResetPlayer(gameBoard.getPlayer(otherReset.sender));
+                if ((popupMgr != null) && popupMgr.needPopup[PopupMgr.RESPAWNED])
+                {
+                    popupMgr.ShowPopup(new Popup("dragon",
+                        "All dead dragons have come back to life because another player respawned.",
+                        popupMgr, PopupMgr.RESPAWNED));
+                }
                 otherReset = sync.GetNextResetAction();
             }
 
@@ -534,6 +557,12 @@ namespace GameEngine
             PlayerWinAction lost = sync.GetGameWon();
             if (lost != null)
             {
+                if (popupMgr != null)
+                {
+                    popupMgr.ShowPopupNow(new Popup("chalice",
+                        "Oh no! You lost.  Player " + (lost.sender + 1) +
+                        "has won the game.", popupMgr));
+                }
                 WinGame(lost.winInRoom);
                 lost = null;
             }
@@ -543,7 +572,7 @@ namespace GameEngine
 
         public void Adventure_Run()
         {
-            ////            sync.StartFrame();
+            ++frameNumber;
             SyncWithOthers();
             checkPlayers();
 
@@ -569,6 +598,12 @@ namespace GameEngine
                     if ((gameMode != Adv.GAME_MODE_ROLE_PLAY) || (gameBoard.getPlayer(2).room == objectBall.room))
                     {
                         ResetPlayer(objectBall);
+                        if ((popupMgr != null) && popupMgr.needPopup[PopupMgr.RESPAWNED])
+                        {
+                            popupMgr.ShowPopup(new Popup("",
+                                "Now that you respawned, all dead dragons have come back to life",
+                                popupMgr, PopupMgr.RESPAWNED));
+                        }
                         // Broadcast to everyone else
                         PlayerResetAction action = new PlayerResetAction();
                         sync.BroadcastAction(action);
@@ -585,6 +620,11 @@ namespace GameEngine
                     {
                         gameState = GAMESTATE_ACTIVE_1;
                         ResetPlayers();
+                        view.Platform_GameChange(GAME_CHANGES.GAME_STARTED);
+                        if (popupMgr != null)
+                        {
+                            popupMgr.StartedGameShowPopups();
+                        }
                     }
                     else
                     {
@@ -607,13 +647,20 @@ namespace GameEngine
                     // Has someone won the game.
                     if (checkWonGame())
                     {
+                        if (popupMgr != null)
+                        {
+                            popupMgr.ShowPopupNow(new Popup("chalice",
+                                "You won!!!!  Congratulations.", popupMgr));
+                        }
                         WinGame(objectBall.room);
                         PlayerWinAction won = new PlayerWinAction(objectBall.room);
                         sync.BroadcastAction(won);
-                        // Report back to the server.
-                        view.Platform_ReportToServer("Has won a game");
+                        // Report back to the server on competitive games
+                        if (!isCooperative) {
+                            view.Platform_ReportToServer(AdventureReports.WON_GAME);
+                        }
                     }
-                    else if (EasterEgg.isGauntletTimeUp(sync.getFrameNumber()))
+                    else if (EasterEgg.isGauntletTimeUp(frameNumber))
                     {
                         EasterEgg.endGauntlet();
                         gameState = GAMESTATE_WIN;
@@ -625,9 +672,13 @@ namespace GameEngine
                         // Read joystick
                         view.Platform_ReadJoystick(ref joyLeft, ref joyUp, ref joyRight, ref joyDown, ref joyFire);
 
-                        if (EasterEgg.shouldStartGauntlet(sync.getFrameNumber()))
+                        if (EasterEgg.shouldStartGauntlet(frameNumber))
                         {
-                            EasterEgg.startGauntlet();
+#if DEBUG_EASTEREGG
+                            EasterEgg.startGauntlet(true);
+#else
+                            EasterEgg.startGauntlet(false);
+#endif
                             gameMode = Adv.GAME_MODE_GAUNTLET;
                         }
 
@@ -738,13 +789,32 @@ namespace GameEngine
                     }
 
                     // Increment the last object drawn
-                    if (sync.getFrameNumber() % 3 == 0)
+                    if (frameNumber % 3 == 0)
                     {
                         ++displayListIndex;
                     }
 
                     // Display the room and objects
                     PrintDisplay();
+                }
+            }
+
+            // Check for popups (only ten times a second)
+            if ((popupMgr != null) && (frameNumber % 6 == 0)) {
+                // Once a second we check for timed popups
+                if (frameNumber % 60 == 0)
+                {
+                    popupMgr.CheckTimedPopups(frameNumber);
+                }
+                if (popupMgr.HasPopups &&
+                     (frameNumber > lastPopupTime + (PopupMgr.MIN_SECONDS_BETWEEN_POPUPS * 60)))
+                {
+                    Popup popup = popupMgr.GetNextPopup();
+                    if (popup != null)
+                    {
+                        view.Platform_PopupHelp(popup.Message, popup.ImageName);
+                        lastPopupTime = frameNumber;
+                    }
                 }
             }
 
@@ -805,6 +875,7 @@ namespace GameEngine
             if ((numPlayers <= 2) || (isCooperative))
             {
                 gameBoard[Board.OBJECT_JADEKEY].setExists(false);
+                gameBoard[Board.OBJECT_JADEKEY].room = Map.NUMBER_ROOM;
                 gameBoard[Board.OBJECT_JADEKEY].randomPlacement = OBJECT.RandomizedLocations.FIXED_LOCATION;
             }
             if (isCooperative)
@@ -1127,12 +1198,12 @@ namespace GameEngine
 
         void BallMovement(BALL ball, bool broadcastMovement)
         {
+            bool newRoom = false;
             // If an AI player, compute direction
             if (aiPlayers[ball.playerNum] != null)
             {
                 aiPlayers[ball.playerNum].chooseDirection();
             }
-
             bool eaten = false;
             for (int ctr = 0; ctr < numDragons && !eaten; ++ctr)
             {
@@ -1166,6 +1237,7 @@ namespace GameEngine
             {
                 ball.y = Board.ENTER_AT_BOTTOM;
                 ball.room = roomDefs[ball.room].roomUp;
+                newRoom = true;
             }
             else if (ball.y < Board.BOTTOM_EDGE)
             {
@@ -1188,6 +1260,7 @@ namespace GameEngine
 
                             ball.room = port.room;
                             ball.previousRoom = ball.room;
+                            newRoom = true;
                             // If we were locked in the castle, open the portcullis.
                             if (port.state == Portcullis.CLOSED_STATE && canUnlockFromInside)
                             {
@@ -1206,6 +1279,7 @@ namespace GameEngine
                     // Wrap the ball to the top of the next screen
                     ball.y = Board.ENTER_AT_TOP;
                     ball.room = roomDefs[ball.room].roomDown;
+                    newRoom = true;
                 }
             }
 
@@ -1222,9 +1296,18 @@ namespace GameEngine
                     // Wrap the ball to the left side of the next screen
                     ball.x = Board.ENTER_AT_LEFT;
 
-                    // Figure out the room to the right (which might be the secret room)
-                    ball.room = (ball.room == Map.MAIN_HALL_RIGHT && gameBoard[Board.OBJECT_DOT].room == Map.MAIN_HALL_RIGHT ?
-                                  Map.ROBINETT_ROOM : roomDefs[ball.room].roomRight);
+                    int rightRoom = roomDefs[ball.room].roomRight;
+                    if (ball.room == Map.MAIN_HALL_RIGHT)
+                    {
+                        // Figure out the room to the right (which might be the secret room)
+                        if (gameBoard[Board.OBJECT_DOT].room == Map.MAIN_HALL_RIGHT ||
+                        EasterEgg.eggState == EGG_STATE.IN_GAUNTLET)
+                        {
+                            rightRoom = Map.ROBINETT_ROOM;
+                        }
+                    }
+                    ball.room = rightRoom;
+                    newRoom = true;
                 }
             }
             else if (ball.x < Board.LEFT_EDGE)
@@ -1239,6 +1322,15 @@ namespace GameEngine
                 {
                     ball.x = Board.ENTER_AT_RIGHT;
                     ball.room = roomDefs[ball.room].roomLeft;
+                    newRoom = true;
+                }
+            }
+
+            if (newRoom && (ball.playerNum == thisPlayer))
+            {
+                if (popupMgr != null)
+                {
+                    popupMgr.EnteredRoomShowPopups(ball.room);
                 }
             }
 
@@ -1400,6 +1492,10 @@ namespace GameEngine
                             PlayerMoveAction moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
                             sync.BroadcastAction(moveAction);
                         }
+                        if ((ctr == thisPlayer) && (popupMgr != null))
+                        {
+                            popupMgr.EnteredRoomShowPopups(nextPort.insideRoom);
+                        }
                         // If entering the black castle in the gauntlet, glow.
                         if ((gameMode == Adv.GAME_MODE_GAUNTLET) && (nextPort == gameBoard[Board.OBJECT_BLACK_PORT]) && !nextBall.isGlowing())
                         {
@@ -1495,9 +1591,6 @@ namespace GameEngine
             {
                 int actorNum = newaction.sender;
                 BALL actor = gameBoard.getPlayer(actorNum);
-                if (newaction.dropObject != Board.OBJECT_NONE)
-                {
-                }
                 if ((newaction.dropObject != Board.OBJECT_NONE) && (actor.linkedObject == newaction.dropObject))
                 {
                     actor.linkedObject = Board.OBJECT_NONE;
@@ -1585,6 +1678,10 @@ namespace GameEngine
 
                 // Play the sound
                 view.Platform_MakeSound(SOUND.PUTDOWN, MAX.VOLUME);
+                if (popupMgr != null)
+                {
+                    popupMgr.needPopup[PopupMgr.DROP_OBJECT] = false;
+                }
             }
             else
             {
@@ -1654,6 +1751,10 @@ namespace GameEngine
                             action.setPickup(hitIndex, objectBall.linkedObjectX, objectBall.linkedObjectY);
                             sync.BroadcastAction(action);
 
+                            if (popupMgr != null)
+                            {
+                                popupMgr.PickedUpObjectShowPopups(hitIndex);
+                            }
                         }
 
                         // Play the sound
@@ -1928,36 +2029,37 @@ namespace GameEngine
 
         private void DrawObject(OBJECT objct)
         {
-            // Get object color, size, and position
-            COLOR color = objct.color == COLOR.FLASH ? GetFlashColor() : COLOR.table(objct.color);
-            int cx = objct.x * 2;
-            int cy = objct.y * 2;
             int size = (objct.size / 2) + 1;
 
             // Look up the index to the current state for this object
             int stateIndex = objct.states.Length > objct.state ? objct.states[objct.state] : 0;
-
-            // Get the height, then the data
             byte[] dataP = objct.gfxData[stateIndex];
-            int objHeight = dataP.Length;
+            DrawGraphic(objct.x, objct.y, dataP, objct.color, size);
+        }
 
+        private void DrawGraphic(int gfxX, int gfxY, byte[] gfx, int colorCode, int widthMultiplier)
+        {
+            COLOR color = colorCode == COLOR.FLASH ? GetFlashColor() : COLOR.table(colorCode);
+            int cx = gfxX * 2;
+            int cy = gfxY * 2;
+            int gfxHeight = gfx.Length;
             // Adjust for proper position
             cx -= Board.CLOCKS_HSYNC;
             cy -= Board.CLOCKS_VSYNC;
 
             // scan the data
-            for (int i = 0; i < objHeight; i++)
+            for (int i = 0; i < gfxHeight; i++)
             {
-                byte rowByte = dataP[i];
+                byte rowByte = gfx[i];
                 // Parse the row - each bit is a 2 x 2 block
                 for (int bit = 0; bit < 8; bit++)
                 {
                     if ((rowByte & (1 << (7 - bit))) > 0)
                     {
-                        int x = cx + (bit * 2 * size);
+                        int x = cx + (bit * 2 * widthMultiplier);
                         if (x >= ADVENTURE_SCREEN_WIDTH)
                             x -= ADVENTURE_SCREEN_WIDTH;
-                        view.Platform_PaintPixel(color.r, color.g, color.b, x, cy, 2 * size, 2);
+                        view.Platform_PaintPixel(color.r, color.g, color.b, x, cy, 2 * widthMultiplier, 2);
                     }
                 }
 
@@ -2597,11 +2699,11 @@ namespace GameEngine
             {Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
             {Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
             {Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x20, 0x20, 0x00, 0, -3}, // Bat
-            #if DEBUG_EASTEREGG
+#if DEBUG_EASTEREGG
             {Board.OBJECT_DOT, Map.MAIN_HALL_RIGHT, 0x20, 0x10, 0x00, 0x00, 0x00}, // Dot
-            #else
+#else
             {Board.OBJECT_DOT, Map.BLACK_MAZE_3, 0x45, 0x12, 0x00, 0x00, 0x00}, // Dot
-            #endif
+#endif
             {Board.OBJECT_CHALISE, Map.BLACK_MAZE_2, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
             {Board.OBJECT_MAGNET, Map.SOUTHWEST_ROOM, 0x80, 0x20, 0x00, 0x00, 0x00}, // Magnet
         };

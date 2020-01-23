@@ -16,7 +16,7 @@ namespace GameEngine
 
     public class EasterEgg
     {
-        public const long EGG_GAUNTLET_TIME_LIMIT = 600000; // 10 minutes
+        public const long EGG_GAUNTLET_TIME_LIMIT = 600; // 10 minutes
 
         public static EGG_STATE eggState = EGG_STATE.NOT_STARTED;
         
@@ -28,11 +28,14 @@ namespace GameEngine
 
         private static DateTime startOfTimer;
 
-        public static void setup(AdventureView inView, Board inBoard)
+        private static bool eggAlreadyClaimed;
+
+        public static void setup(AdventureView inView, Board inBoard, bool inEggClaimed)
         {
             eggState = EGG_STATE.NOT_STARTED;
             view = inView;
             board = inBoard;
+            eggAlreadyClaimed = inEggClaimed;
         }
 
         public static void enteredRobinettRoom()
@@ -40,7 +43,7 @@ namespace GameEngine
             if (eggState < EGG_STATE.ENTERED_ROBINETT_ROOM)
             {
                 eggState = EGG_STATE.ENTERED_ROBINETT_ROOM;
-                view.Platform_ReportToServer("Robinett Room entered.");
+                view.Platform_ReportToServer(AdventureReports.FOUND_ROBINETT_ROOM);
             }
         }
 
@@ -50,12 +53,12 @@ namespace GameEngine
             {
                 eggState = EGG_STATE.FOUND_CASTLE;
                 darkenCastle(COLOR.DARK_CRYSTAL1);
-                view.Platform_ReportToServer("Crystal castle found.");
+                view.Platform_ReportToServer(AdventureReports.FOUND_CRYSTAL_CASTLE);
             }
             else if (eggState < EGG_STATE.GLIMPSED_CASTLE)
             {
                 eggState = EGG_STATE.GLIMPSED_CASTLE;
-                view.Platform_ReportToServer("Crystal castle glimpsed.");
+                view.Platform_ReportToServer(AdventureReports.GLIMPSED_CRYSTAL_CASTLE);
             }
         }
 
@@ -65,12 +68,12 @@ namespace GameEngine
             {
                 eggState = EGG_STATE.FOUND_KEY;
                 darkenCastle(COLOR.DARK_CRYSTAL2);
-                view.Platform_ReportToServer("Crystal key found.");
+                view.Platform_ReportToServer(AdventureReports.FOUND_CRYSTAL_KEY);
             }
         }
 
         public static void openedCastle() {
-            view.Platform_ReportToServer("Crystal gate has been opened.");
+            view.Platform_ReportToServer(AdventureReports.OPENED_CRYSTAL_GATE);
         }
 
         /**
@@ -126,7 +129,15 @@ namespace GameEngine
             board.map.easterEggLayout1();
 
             // Display the message
-            view.Platform_DisplayStatus("First one to the black castle and back wins the egg.", 5);
+            if (eggAlreadyClaimed)
+            {
+                view.Platform_DisplayStatus("The egg has already been won, but "
+                    + "first one to the black castle and back wins the challenge.", 5);
+            }
+            else
+            {
+                view.Platform_DisplayStatus("First one to the black castle and back wins the egg.", 5);
+            }
 
             // Start counting down to start
             eggState = EGG_STATE.DEBRIEF;
@@ -141,25 +152,26 @@ namespace GameEngine
                 // We only check the time 4 times a second.
                 if (frameNum % 15 == 0)
                 {
+                    const int DEBRIEF_SECONDS = 10;
                     DateTime currentTime = DateTime.Now;
                     int elapsed = (int)(DateTime.UtcNow - startOfTimer).TotalSeconds;
-                    if (elapsed >= 10000)
+                    if (elapsed >= DEBRIEF_SECONDS)
                     {
                         test = true;
                     }
-                    else if (elapsed > 7000)
+                    else if (DEBRIEF_SECONDS-elapsed <= 3)
                     {
                         OBJECT number = board.getObject(Board.OBJECT_NUMBER);
                         number.setExists(true);
                         number.room = Map.CRYSTAL_FOYER;
-                        number.state = (10000-elapsed) / 1000;
+                        number.state = (DEBRIEF_SECONDS - elapsed-1);
                     }
                 }
             }
             return test;
         }
 
-        public static void startGauntlet()
+        public static void startGauntlet(bool debug)
         {
 
             // Drop all objects
@@ -202,35 +214,37 @@ namespace GameEngine
             }
 
             // Plant the dragons
-            int[] dragonList = { Board.OBJECT_YELLOWDRAGON, Board.OBJECT_GREENDRAGON, Board.OBJECT_REDDRAGON };
-            for (int ctr = 0; ctr < 3; ++ctr)
+            if (!debug)
             {
-                Dragon dragon = (Dragon)board.getObject(dragonList[ctr]);
-                dragon.eaten = null;
-                dragon.state = Dragon.STALKING;
-                Dragon.setDifficulty(Dragon.Difficulty.HARD);
-                dragon.setMovementX(0);
-                dragon.setMovementY(0);
-                switch (dragon.getPKey())
+                int[] dragonList = { Board.OBJECT_YELLOWDRAGON, Board.OBJECT_GREENDRAGON, Board.OBJECT_REDDRAGON };
+                for (int ctr = 0; ctr < 3; ++ctr)
                 {
-                    case Board.OBJECT_YELLOWDRAGON:
-                        dragon.x = 20;
-                        dragon.y = 20;
-                        dragon.room = Map.MAIN_HALL_RIGHT;
-                        break;
-                    case Board.OBJECT_GREENDRAGON:
-                        dragon.x = 20;
-                        dragon.y = 100;
-                        dragon.room = Map.MAIN_HALL_CENTER;
-                        break;
-                    case Board.OBJECT_REDDRAGON:
-                        dragon.x = 80;
-                        dragon.y = 20;
-                        dragon.room = Map.BLUE_MAZE_1;
-                        break;
+                    Dragon dragon = (Dragon)board.getObject(dragonList[ctr]);
+                    dragon.eaten = null;
+                    dragon.state = Dragon.STALKING;
+                    Dragon.setDifficulty(Dragon.Difficulty.HARD);
+                    dragon.setMovementX(0);
+                    dragon.setMovementY(0);
+                    switch (dragon.getPKey())
+                    {
+                        case Board.OBJECT_YELLOWDRAGON:
+                            dragon.x = 20;
+                            dragon.y = 20;
+                            dragon.room = Map.MAIN_HALL_RIGHT;
+                            break;
+                        case Board.OBJECT_GREENDRAGON:
+                            dragon.x = 20;
+                            dragon.y = 100;
+                            dragon.room = Map.MAIN_HALL_CENTER;
+                            break;
+                        case Board.OBJECT_REDDRAGON:
+                            dragon.x = 80;
+                            dragon.y = 20;
+                            dragon.room = Map.BLUE_MAZE_1;
+                            break;
+                    }
                 }
             }
-
             darkenCastle(COLOR.DARK_CRYSTAL4);
 
             eggState = EGG_STATE.IN_GAUNTLET;
@@ -253,11 +267,11 @@ namespace GameEngine
                     {
                         test = true;
                     }
-                    else if ((timeLeft <= 120000) && (timeLeft > 119000))
+                    else if ((timeLeft <= 120) && (timeLeft > 119))
                     {
                         view.Platform_DisplayStatus("Two minute warning.", 3);
                     }
-                    else if ((timeLeft <= 60000) && (timeLeft > 59000))
+                    else if ((timeLeft <= 60) && (timeLeft > 59))
                     {
                         view.Platform_DisplayStatus("One minute warning.", 3);
                     }
@@ -275,13 +289,16 @@ namespace GameEngine
 
         public static void winEgg()
         {
-            // Display the Easter Egg
-            OBJECT egg = board.getObject(Board.OBJECT_EASTEREGG);
-            egg.setExists(true);
-            egg.room = Map.CRYSTAL_FOYER;
-            egg.x = 0x4A;
-            egg.y = 0x56;
-            view.Platform_ReportToServer("Easter egg has been claimed.");
+            if (!eggAlreadyClaimed)
+            {
+                // Display the Easter Egg
+                OBJECT egg = board.getObject(Board.OBJECT_EASTEREGG);
+                egg.setExists(true);
+                egg.room = Map.CRYSTAL_FOYER;
+                egg.x = 0x4A;
+                egg.y = 0x56;
+            }
+            view.Platform_ReportToServer(AdventureReports.BEAT_CRYSTAL_CHALLENGE);
         }
 
     }
