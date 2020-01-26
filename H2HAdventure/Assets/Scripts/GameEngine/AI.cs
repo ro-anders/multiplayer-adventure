@@ -351,6 +351,11 @@ namespace GameEngine
 
     }
 
+    /*
+     * A plot is simply a rectangle on the map with a unique id.
+     * It knows its room and xy boundaries and can compare itself
+     * with other plots.
+     */
     public class Plot
     {
         public const int NO_DIRECTION = -1;
@@ -465,6 +470,12 @@ namespace GameEngine
             return isAdjacent;
         }
 
+        // If two plots are adjacent, this will return the point just inside the
+        // other plot and adjacent to the this plot.  The point will be the
+        // midpoint of their intersection.
+        // If the plots are not adjacent or are adjacent in the direction other
+        // than the one specified, the return value is undefined.
+        // If the plots are adjacent across a room switch it will still work.
         public void GetOverlap(Plot otherPlot, int direction, ref int outX, ref int outY)
         {
             int side1a = this.Edge(direction + 3);

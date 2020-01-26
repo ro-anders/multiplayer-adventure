@@ -153,8 +153,8 @@ public class StartScreen : MonoBehaviour {
             playerThree = 14,
             playerThreeName = "chris"
         };
-        SessionInfo.ThisPlayerInfo.needsPopupHelp = true;
-        SessionInfo.ThisPlayerInfo.needsMazeGuides = true;
+        SessionInfo.ThisPlayerInfo.needsPopupHelp = false;
+        SessionInfo.ThisPlayerInfo.needsMazeGuides = false;
         SessionInfo.ThisPlayerId = SessionInfo.GameToPlay.playerOne;
         SessionInfo.ThisPlayerName = SessionInfo.GameToPlay.playerOneName;
         SessionInfo.GameToPlay.playerMapping = 0;
@@ -235,8 +235,15 @@ public class StartScreen : MonoBehaviour {
         }
         else
         {
-            Debug.LogError("Cannot get system status.  Need to abort.");
-            AbortPopup.Show(abortPopup, NO_SERVER_MESSAGE, NO_SERVER_LINK);
+            if (SessionInfo.DEV_MODE)
+            {
+                StartGame();
+            }
+            else
+            {
+                Debug.LogError("Cannot get system status.  Need to abort.");
+                AbortPopup.Show(abortPopup, NO_SERVER_MESSAGE, NO_SERVER_LINK);
+            }
         }
     }
 }
