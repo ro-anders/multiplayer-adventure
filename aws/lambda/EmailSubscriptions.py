@@ -10,6 +10,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import json
 import pickle
+import time
 
 '''
 Run through all subscriptions and send a message
@@ -35,8 +36,9 @@ def lambda_handler(event, context):
   """
 
   try:
+    print("Received request {}".format(json.dumps(event)))
     recipients = retrieveEmailSubscriptions(event['Reason'])
-    print("Retrieved {} email subscriptions to send to".format(len(recipients)))
+    print("Retrieved {} email subscriptions to send {} email".format(len(recipients), event['Reason']))
     creds = getCreds()
     print("Retrieved GMail credentials")
     sendEmails(creds, recipients, event['Subject'], event['Message'])
@@ -68,7 +70,7 @@ def retrieveEmailSubscriptions(reason):
       KeyConditionExpression=Key('PK').eq('Subscription')
       #QueryFilter=Attr(attribute).eq('true') + Attr('Type').eq('EMAIL')
   )
-  return [sub['Contact'] for sub in response['Items'] if sub['Type']=='EMAIL' and sub[attribute]]
+  return [sub['Contact'] for sub in response['Items'] if sub['Type']=='EMAIL' and attribute in sub and sub[attribute]]
 
 def getCreds():
   """
@@ -122,6 +124,7 @@ def refreshCreds(creds):
 
   if creds.expired:
     if creds.refresh_token:
+      print("Refreshing GMail credentials")
       creds.refresh(Request())
       if not creds.valid:
           raise ValueError("Failed to refresh token")
@@ -141,19 +144,30 @@ def refreshCreds(creds):
     'Token': pickled_creds
   }
   table.put_item(Item=item)
+
+  return creds
     
 def sendEmails(creds, recipients, subject, message):
-    print("Creating GMAIL service")
-    try:
-      service = build('gmail', 'v1', credentials=creds, cache_discovery=False)
-    except:
-      print("Failed to create GMAIL service")
-      raise
+    print("Creating GMail service")
+    num_failures = 0
+    while True:
+      if num_failures > 0:
+        print("Trying again...")
+      try:
+        service = build('gmail', 'v1', credentials=creds, cache_discovery=False)
+        break
+      except:
+        print("Failed to create GMail service")
+        num_failures += 1
+        if num_failures >= 5:
+            raise
+        time.sleep(60)
     print("Created GMAIL service")
     for recipient in recipients:
-        message = create_message(SENDER_EMAIL, recipient, subject, message)
+        email = create_message(SENDER_EMAIL, recipient, subject, message)
         print("Sending GMAIL message")
-        response = send_message(service, 'me', message)
+        response = send_message(service, 'me', email)
+        print('Sent "{}" message to {}'.format(subject, recipient))
     print('Sent "{}" message to {} recipients'.format(subject, len(recipients)))
 
 def create_message(sender, to, subject, message_text):
@@ -168,7 +182,11 @@ def create_message(sender, to, subject, message_text):
   Returns:
     An object containing a base64url encoded email object.
   """
-  message = MIMEText(message_text)
+  try:
+    message = MIMEText(message_text)
+  except:
+    print('Could nt create MIMEText from "{}"'.format(message_text))
+    raise
   message['to'] = to
   message['from'] = sender
   message['subject'] = subject

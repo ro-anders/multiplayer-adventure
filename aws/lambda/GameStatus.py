@@ -23,7 +23,7 @@ class DecimalEncoder(json.JSONEncoder):
 def lambda_handler(event, context):
 
     SCOREBOARD_TOP_PK='ScoreboardStatus'
-    MINIMAL_VIABLE_VERSION = 2
+    MINIMAL_VIABLE_VERSION = 5
     RACE_TO_THE_EGG_MESSAGE_ID = 100;
     statusMessage = ''
     messageId = 0
