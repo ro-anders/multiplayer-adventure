@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace GameEngine
 {
     public class AiPlayer
@@ -121,10 +123,26 @@ namespace GameEngine
                     nextStepY = desiredY;
                 }
             }
-            thisBall.velx = (nextStepX > thisBall.x ? BALL_MOVEMENT : -BALL_MOVEMENT);
-            thisBall.vely = (nextStepY > thisBall.y ? BALL_MOVEMENT : -BALL_MOVEMENT);
-            UnityEngine.Debug.Log("Choosing (" + thisBall.velx + "," + thisBall.vely +
-                ") at " + thisBall.room + "-(" + thisBall.x + "," + thisBall.y + ")");
+            int nextVelX = (nextStepX > thisBall.x ? BALL_MOVEMENT : -BALL_MOVEMENT);
+            int diffX = Math.Abs(thisBall.x - nextStepX);
+            int nextVelY = (nextStepY > thisBall.y ? BALL_MOVEMENT : -BALL_MOVEMENT);
+            int diffY = Math.Abs(thisBall.y - nextStepY);
+            if ((diffX < BALL_MOVEMENT / 2) && (diffY >= BALL_MOVEMENT / 2))
+            {
+                nextVelX = 0;
+            }
+            else if ((diffY < BALL_MOVEMENT/2) && (diffX >= BALL_MOVEMENT/2))
+            {
+                nextVelY = 0;
+            }
+            if ((nextVelX != thisBall.velx) || (nextVelY != thisBall.vely))
+            {
+                UnityEngine.Debug.Log("Changing (" + thisBall.velx + "," + thisBall.vely +
+                    ") to (" + nextVelX + ", " + nextVelY +
+                    ") at " + thisBall.room + "-(" + thisBall.x + "," + thisBall.y + ")");
+                thisBall.velx = nextVelX;
+                thisBall.vely = nextVelY;
+            }
         }
     }
 

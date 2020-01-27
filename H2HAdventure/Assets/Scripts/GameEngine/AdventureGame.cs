@@ -1160,7 +1160,7 @@ namespace GameEngine
             // Read the joystick and translate into a velocity
             int prevVelX = objectBall.velx;
             int prevVelY = objectBall.vely;
-            if (!joystickDisabled)
+            if (!joystickDisabled && aiPlayers[thisPlayer] == null)
             {
                 int newVelY = 0;
                 if (joyUp)

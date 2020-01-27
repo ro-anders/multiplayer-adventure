@@ -478,14 +478,12 @@ namespace GameEngine
         // If the plots are adjacent across a room switch it will still work.
         public void GetOverlap(Plot otherPlot, int direction, ref int outX, ref int outY)
         {
-            int side1a = this.Edge(direction + 3);
-            int side1b = this.Edge(direction + 1);
-            int side2a = otherPlot.Edge(direction + 3);
-            int side2b = otherPlot.Edge(direction + 1);
 
-            int sidea = (Math.Abs(side1a - side1b) < Math.Abs(side2b - side1b) ? side1a : side2b);
-            int sideb = (Math.Abs(side1b - side1a) < Math.Abs(side2a - side1a) ? side1b : side2a);
-            int midpoint = (sidea + sideb) / 2;
+            // Try this instead
+            int[] endpoints = new int[4]{ this.Edge(direction + 3), this.Edge(direction + 1),
+                otherPlot.Edge(direction + 3), otherPlot.Edge(direction + 1)};
+            Array.Sort(endpoints);
+            int midpoint = (endpoints[1] + endpoints[2]) / 2;
 
             switch(direction) {
                 case UP:
