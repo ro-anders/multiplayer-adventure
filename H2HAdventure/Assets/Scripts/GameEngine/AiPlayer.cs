@@ -127,11 +127,11 @@ namespace GameEngine
             int diffX = Math.Abs(thisBall.x - nextStepX);
             int nextVelY = (nextStepY > thisBall.y ? BALL_MOVEMENT : -BALL_MOVEMENT);
             int diffY = Math.Abs(thisBall.y - nextStepY);
-            if ((diffX < BALL_MOVEMENT / 2) && (diffY >= BALL_MOVEMENT / 2))
+            if ((diffX < BALL_MOVEMENT / 2) && (diffY > BALL_MOVEMENT / 2))
             {
                 nextVelX = 0;
             }
-            else if ((diffY < BALL_MOVEMENT/2) && (diffX >= BALL_MOVEMENT/2))
+            else if ((diffY < BALL_MOVEMENT/2) && (diffX > BALL_MOVEMENT/2))
             {
                 nextVelY = 0;
             }
