@@ -478,8 +478,8 @@ namespace GameEngine
         // If the plots are adjacent across a room switch it will still work.
         public void GetOverlap(Plot otherPlot, int direction, ref int outX, ref int outY)
         {
-
-            // Try this instead
+            // We know the two edges overlap so to find the segment of intersection we put the four
+            // endpoints in sorted order and make a segment between the middle two.
             int[] endpoints = new int[4]{ this.Edge(direction + 3), this.Edge(direction + 1),
                 otherPlot.Edge(direction + 3), otherPlot.Edge(direction + 1)};
             Array.Sort(endpoints);

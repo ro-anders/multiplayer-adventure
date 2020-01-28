@@ -14,7 +14,7 @@ namespace GameEngine
 
         private int desiredRoom = Map.BLACK_CASTLE;
         private int desiredX = 160;  //Portcullis.EXIT_X;
-        private int desiredY = 16;
+        private int desiredY = 48;
 
         private AiPathNode desiredPath = null;
         private int nextStepX = int.MinValue;
