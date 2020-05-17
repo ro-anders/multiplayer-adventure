@@ -12,9 +12,12 @@ namespace GameEngine
         private int thisPlayer;
         private BALL thisBall;
 
-        private int desiredRoom = Map.BLACK_CASTLE;
-        private int desiredX = 160;  //Portcullis.EXIT_X;
-        private int desiredY = 48;
+        // An AI Player has two objectives.  The overall objective,
+        // which is actually a whole tree of objectives to get them
+        // to win, and the current objective which is the next one in
+        // the plan that has to be completed
+        private AiObjective winGameObjective;
+        private AiObjective currentObjective;
 
         private AiPathNode desiredPath = null;
         private int nextStepX = int.MinValue;
@@ -26,10 +29,44 @@ namespace GameEngine
             ai = inAi;
             thisPlayer = inPlayerSlot;
             thisBall = gameBoard.getPlayer(thisPlayer);
+            winGameObjective = new WinGameObjective(gameBoard, inPlayerSlot);
         }
 
+        /**
+         * This checks the AI player's objectives and plan to win
+         * It may recompute the whole strategy or, for efficiency,
+         * just do a quick check or even not check but every so often.
+         */
+        public void checkStrategy()
+        {
+            // Right now we compute strategy once and never touch it again
+            if (currentObjective == null)
+            {
+                winGameObjective.computeStrategy();
+                currentObjective = winGameObjective.getNextObjective();
+            }
+            if (currentObjective.isCompleted())
+            {
+                currentObjective = winGameObjective.getNextObjective();
+                desiredPath = null;
+            }
+        }
+
+        /**
+         * Called once per 3 clicks, this determines determines which
+         * direction the AI player should be going and sets the ball's velocity
+         * accordingly
+         */
         public void chooseDirection()
         {
+            checkStrategy();
+
+            int desiredRoom = thisBall.room;
+            int desiredX = thisBall.x;
+            int desiredY = thisBall.y;
+            currentObjective.getDestination(ref desiredRoom, ref desiredX, ref desiredY);
+
+
             AiPathNode startingPath = desiredPath;
             if (desiredRoom < 0)
             {
