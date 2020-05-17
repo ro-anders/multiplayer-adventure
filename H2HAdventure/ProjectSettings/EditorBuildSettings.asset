@@ -8,19 +8,19 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Start.unity
     guid: 849c1646b4f374b4292a90213f11ccc9
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Lobby.unity
     guid: ab9cf333c1149447cbc2494d2ceba994
   - enabled: 1
     path: Assets/Scenes/AdvGame.unity
     guid: 0f136b38fc44f4455bce31b8681d5938
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Schedule.unity
     guid: 9bf6090a13e03e345b295333e86fe0c2
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/NotifyMe.unity
     guid: ce3d3fe463ed84881a3ca8323de5c210
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/LeaderBoard.unity
     guid: ebf99dad79d7345e7b235ec2f7882ee0
   - enabled: 0
