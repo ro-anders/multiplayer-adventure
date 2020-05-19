@@ -8,7 +8,7 @@ namespace GameEngine
         private const int BALL_MOVEMENT = 6;
 
         private Board gameBoard;
-        private AI ai;
+        private AINav ai;
         private int thisPlayer;
         private BALL thisBall;
 
@@ -23,7 +23,7 @@ namespace GameEngine
         private int nextStepX = int.MinValue;
         private int nextStepY = int.MinValue;
 
-        public AiPlayer(AI inAi, Board inBoard, int inPlayerSlot)
+        public AiPlayer(AINav inAi, Board inBoard, int inPlayerSlot)
         {
             gameBoard = inBoard;
             ai = inAi;

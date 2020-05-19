@@ -73,7 +73,7 @@ namespace GameEngine
 
         private readonly OBJECT[] surrounds;
 
-        private AI ai;
+        private AINav ai;
         private AiPlayer[] aiPlayers = { null, null, null };
 
         private Random randomGen = new Random();
@@ -229,7 +229,7 @@ namespace GameEngine
             bool willUseAi = useAi[0] || useAi[1] || useAi[2];
             if (willUseAi)
             {
-                ai = new AI(gameMap);
+                ai = new AINav(gameMap);
             }
             for (int ctr = 0; ctr < numPlayers; ++ctr)
             {
@@ -656,7 +656,8 @@ namespace GameEngine
                         PlayerWinAction won = new PlayerWinAction(objectBall.room);
                         sync.BroadcastAction(won);
                         // Report back to the server on competitive games
-                        if (!isCooperative) {
+                        if (!isCooperative)
+                        {
                             view.Platform_ReportToServer(AdventureReports.WON_GAME);
                         }
                     }
@@ -688,7 +689,7 @@ namespace GameEngine
                             bool broadcastMovement = ThisBallMovement();
                             for (int i = 0; i < numPlayers; ++i)
                             {
-                                BallMovement(gameBoard.getPlayer(i), (i==thisPlayer) && broadcastMovement);
+                                BallMovement(gameBoard.getPlayer(i), (i == thisPlayer) && broadcastMovement);
                             }
 
                             // Move the carried object
@@ -800,7 +801,8 @@ namespace GameEngine
             }
 
             // Check for popups (only ten times a second)
-            if ((popupMgr != null) && (frameNumber % 6 == 0)) {
+            if ((popupMgr != null) && (frameNumber % 6 == 0))
+            {
                 // Once a second we check for timed popups
                 if (frameNumber % 60 == 0)
                 {
@@ -844,7 +846,7 @@ namespace GameEngine
 
             // Read the object initialization table for the current game level
             int[,] p = new int[0, 0];
-            if((gameMode == Adv.GAME_MODE_1) || (gameMode == Adv.GAME_MODE_C_1))
+            if ((gameMode == Adv.GAME_MODE_1) || (gameMode == Adv.GAME_MODE_C_1))
             {
                 p = game1Objects;
             }
@@ -1191,7 +1193,7 @@ namespace GameEngine
                 objectBall.velx = newVelX;
             }
 
-            bool broadcastMovement = !joystickDisabled && 
+            bool broadcastMovement = !joystickDisabled &&
                  ((objectBall.velx != prevVelX) || (objectBall.vely != prevVelY));
             return broadcastMovement;
         }
@@ -1863,7 +1865,7 @@ namespace GameEngine
                 if ((objct.room == magnet.room) && (objct.exists()))
                 {
                     bool held = false;
-                    for(int playerCtr=0; playerCtr<numPlayers && !held; ++playerCtr)
+                    for (int playerCtr = 0; playerCtr < numPlayers && !held; ++playerCtr)
                     {
                         held = gameBoard.getPlayer(playerCtr).linkedObject == magnetMatrix[i];
                     }
@@ -2274,7 +2276,7 @@ namespace GameEngine
                 {
                     message = "All other players have rejoined the game.\n";
                 }
-                else if (playerRejoined > 0) 
+                else if (playerRejoined > 0)
                 {
                     message = "Player " + playerRejoined + " has rejoined the game.\n";
                 }
@@ -2282,11 +2284,12 @@ namespace GameEngine
                 {
                     message += "All other players have disconnected.\n";
                 }
-                else if (playerDroppedOff > 0) 
+                else if (playerDroppedOff > 0)
                 {
                     message += "Player " + playerDroppedOff + " has disconnected.\n";
                 }
-                if (message.Length > 0) {
+                if (message.Length > 0)
+                {
                     view.Platform_DisplayStatus(message, 5);
                 }
             }

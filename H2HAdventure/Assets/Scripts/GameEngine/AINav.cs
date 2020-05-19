@@ -6,7 +6,7 @@ using UnityEngine;
 namespace GameEngine
 {
 
-    public class AI {
+    public class AINav {
 
         private Map map;
 
@@ -16,7 +16,7 @@ namespace GameEngine
         // When finding a path to something, keep a table of plots you've already visited
         private bool[] alreadyVisited;
 
-        public AI(Map inMap)
+        public AINav(Map inMap)
         {
             map = inMap;
             ComputeAllPlots();
