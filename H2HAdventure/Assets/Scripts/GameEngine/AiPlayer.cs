@@ -5,10 +5,9 @@ namespace GameEngine
 {
     public class AiPlayer
     {
-        private const int BALL_MOVEMENT = 6;
-
         private Board gameBoard;
-        private AINav ai;
+        private AINav aiNav;
+        private AiTactical aiTactical;
         private int thisPlayer;
         private BALL thisBall;
 
@@ -26,9 +25,10 @@ namespace GameEngine
         public AiPlayer(AINav inAi, Board inBoard, int inPlayerSlot)
         {
             gameBoard = inBoard;
-            ai = inAi;
+            aiNav = inAi;
             thisPlayer = inPlayerSlot;
             thisBall = gameBoard.getPlayer(thisPlayer);
+            aiTactical = new AiTactical(thisBall);
             winGameObjective = new WinGameObjective(gameBoard, inPlayerSlot);
         }
 
@@ -67,7 +67,6 @@ namespace GameEngine
             currentObjective.getDestination(ref desiredRoom, ref desiredX, ref desiredY);
 
 
-            AiPathNode startingPath = desiredPath;
             if (desiredRoom < 0)
             {
                 // We have no goal.  Don't do anything.
@@ -79,9 +78,9 @@ namespace GameEngine
             {
                 // We don't even know where we are going.  Figure it out.
                 UnityEngine.Debug.Log("Get player " + thisPlayer + " from " +
-                    thisBall.room + "-(" + thisBall.x + "," + thisBall.y + ") to " +
+                    thisBall.room + "-(" + (thisBall.midX) + "," + (thisBall.midY) + ") to " +
                     desiredRoom + "-(" + desiredX + "," + desiredY + ")");
-                desiredPath = ai.ComputePath(thisBall.room, thisBall.x, thisBall.y, desiredRoom, desiredX, desiredY);
+                desiredPath = aiNav.ComputePath(thisBall.room, thisBall.midX, thisBall.midY, desiredRoom, desiredX, desiredY);
                 if (desiredPath == null)
                 {
                     // No way to get to where we want to go.  Give up
@@ -96,54 +95,22 @@ namespace GameEngine
                     desiredPath.nextDirection, ref nextStepX, ref nextStepY);
             }
 
-            // Make sure we're still on the path
-            if (!desiredPath.ThisPlot.Contains(thisBall.room, thisBall.x, thisBall.y)) {
-                // Most probable cause is we've gotten to the next step in the path
-                if ((desiredPath.nextNode != null) &&
-                    (desiredPath.nextNode.ThisPlot.Contains(thisBall.room, thisBall.x, thisBall.y)))
-                {
-                    desiredPath = desiredPath.nextNode;
-                }
-                // Next most probable cause is we've missed the path by just a little.
-                else if (desiredPath.ThisPlot.RoughlyContains(thisBall.room, thisBall.x, thisBall.y))
-                {
-                    // We're ok.  Don't need to do anything.
-                }
-                else
-                {
-                    // We're off the path.  See if, by any chance, we are now somewhere further on
-                    // the path
-                    AiPathNode found = null;
-                    for (AiPathNode newNode = desiredPath.nextNode;
-                        (newNode != null) && (found != null);
-                        newNode = newNode.nextNode)
-                    {
-                        if (newNode.ThisPlot.Contains(thisBall.room, thisBall.x, thisBall.y)) {
-                            found = newNode;
-                        }
-                    }
-                    if (found != null) {
-                        desiredPath = found;
-                    }
-                    else
-                    {
-                        UnityEngine.Debug.LogError(thisBall.room + "(" + thisBall.x + "," +
-                            thisBall.y + ")" + " has fallen off the AI path!\nNot in " + 
-                            desiredPath.ThisPlot + 
-                            (desiredPath.nextNode == null ? "" : " or " + desiredPath.nextNode.ThisPlot));
-                        // ABORT PATH
-                        desiredRoom = -1;
-                        thisBall.velx = 0;
-                        thisBall.vely = 0;
-                        return;
-                    }
-                }
+            AiPathNode nextPath = aiNav.checkPathProgress(desiredPath, thisBall.room, thisBall.midX, thisBall.midY);
+            if (nextPath == null)
+            {
+                // ABORT PATH
+                UnityEngine.Debug.LogError("Ball has fallen off the AI path! Aborting.");
+                desiredRoom = -1;
+                thisBall.velx = 0;
+                thisBall.vely = 0;
+                return;
             }
 
             // Go to the nextStep coordinates to get us to the next step on the path
             // or the desired coordinates.
-            if (desiredPath != startingPath)
+            if (nextPath != desiredPath)
             {
+                desiredPath = nextPath;
                 // Recompute how to get to the next step in the path
                 if (desiredPath.nextNode != null)
                 {
@@ -160,25 +127,21 @@ namespace GameEngine
                     nextStepY = desiredY;
                 }
             }
-            int nextVelX = (nextStepX > thisBall.x ? BALL_MOVEMENT : -BALL_MOVEMENT);
-            int diffX = Math.Abs(thisBall.x - nextStepX);
-            int nextVelY = (nextStepY > thisBall.y ? BALL_MOVEMENT : -BALL_MOVEMENT);
-            int diffY = Math.Abs(thisBall.y - nextStepY);
-            if ((diffX < BALL_MOVEMENT / 2) && (diffY > BALL_MOVEMENT / 2))
+
+            int nextVelx = 0;
+            int nextVely = 0;
+            bool canGetThere = aiTactical.computeDirection(nextStepX, nextStepY, ref nextVelx, ref nextVely);
+            if (canGetThere)
             {
-                nextVelX = 0;
-            }
-            else if ((diffY < BALL_MOVEMENT/2) && (diffX > BALL_MOVEMENT/2))
+                thisBall.velx = nextVelx;
+                thisBall.vely = nextVely;
+            } else
             {
-                nextVelY = 0;
-            }
-            if ((nextVelX != thisBall.velx) || (nextVelY != thisBall.vely))
-            {
-                UnityEngine.Debug.Log("Changing (" + thisBall.velx + "," + thisBall.vely +
-                    ") to (" + nextVelX + ", " + nextVelY +
-                    ") at " + thisBall.room + "-(" + thisBall.x + "," + thisBall.y + ")");
-                thisBall.velx = nextVelX;
-                thisBall.vely = nextVelY;
+                UnityEngine.Debug.LogError("Ball cannot get where it needs to go.");
+                desiredRoom = -1;
+                thisBall.velx = 0;
+                thisBall.vely = 0;
+                return;
             }
         }
     }

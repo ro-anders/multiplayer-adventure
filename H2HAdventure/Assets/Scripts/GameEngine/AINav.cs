@@ -71,7 +71,69 @@ namespace GameEngine
                 UnityEngine.Debug.Log("Could not find path from " + aiPlots[fromPlot] + " to " +
                     aiPlots[toPlot]);
             }
+            else
+            {
+                UnityEngine.Debug.Log("Computed path: " + found);
+            }
             return found;
+        }
+
+        /**
+         * See where the ai player is on their current path.
+         * If they have advanced upon the path, will return the advanced path.
+         * If they have fallen off the path, will return null.
+         */
+        public AiPathNode checkPathProgress(AiPathNode desiredPath, int currentRoom, int currentX, int currentY)
+        {
+            AiPathNode checkedPath = null;
+            // Make sure we're still on the path
+            if (desiredPath.ThisPlot.Contains(currentRoom, currentX, currentY))
+            {
+                checkedPath = desiredPath;
+            }
+            else
+            {
+                // Most probable cause is we've gotten to the next step in the path
+                if ((desiredPath.nextNode != null) &&
+                    (desiredPath.nextNode.ThisPlot.Contains(currentRoom, currentX, currentY)))
+                {
+                    checkedPath = desiredPath.nextNode;
+                }
+                // Next most probable cause is we've missed the path by just a little.
+                else if (desiredPath.ThisPlot.RoughlyContains(currentRoom, currentX, currentY))
+                {
+                    // We're ok.  Don't need to do anything.
+                    checkedPath = desiredPath;
+                }
+                else
+                {
+                    // We're off the path.  See if, by any chance, we are now somewhere further on
+                    // the path
+                    AiPathNode found = null;
+                    for (AiPathNode newNode = desiredPath.nextNode;
+                        (newNode != null) && (found != null);
+                        newNode = newNode.nextNode)
+                    {
+                        if (newNode.ThisPlot.Contains(currentRoom, currentX, currentY))
+                        {
+                            found = newNode;
+                        }
+                    }
+                    if (found != null)
+                    {
+                        checkedPath = found;
+                    }
+                    else
+                    {
+                        UnityEngine.Debug.LogError(currentRoom + "(" + currentX + "," +
+                            currentY + ")" + " has fallen off the AI path!\nNot in " +
+                            desiredPath.ThisPlot +
+                            (desiredPath.nextNode == null ? "" : " or " + desiredPath.nextNode.ThisPlot));
+                        checkedPath = null;
+                    }
+                }
+            }
+            return checkedPath;
         }
 
         private void ComputeAllPlots()
@@ -190,7 +252,7 @@ namespace GameEngine
         private static readonly byte[][] plotsCastle =
         {
             new byte[] {0,16, 0,23},
-            new byte[] {1,3,3,11},
+            new byte[] {1,2,3,11},
             new byte[] {1,12,1,27},
             new byte[] {1,28,1,37},
             new byte[] {2,18,2,21},

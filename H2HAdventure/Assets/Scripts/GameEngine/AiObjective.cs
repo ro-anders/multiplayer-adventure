@@ -229,10 +229,10 @@ public class PickupObjective : AiObjective
         {
             // Aim for the center
             room = objectToPickup.room;
-            int midWidth = 4; // Except for the bridge, everything is 8 pixels width
-            int midHeight = objectToPickup.gfxData[0].Length / 2;
-            x = 2 * objectToPickup.x + midWidth;
-            y = 2 * objectToPickup.y + midHeight;
+            int width = 8; // Except for the bridge, everything is 8 pixels width
+            int height = objectToPickup.gfxData[0].Length;
+            x = 2 * objectToPickup.x + width; // 2 * (x + width/2)
+            y = 2 * objectToPickup.y - height; // 2 * (y - hegiht/2)
         }
     }
 

@@ -49,6 +49,17 @@ namespace GameEngine
             glowing = false;
         }
 
+        /** x coordinate of the middle of the ball **/
+        public int midX
+        {
+            get { return x + 4; }
+        }
+        /** y coordinate of the middle of the ball **/
+        public int midY
+        {
+            get { return y - 4; }
+        }
+
         public bool isGlowing()
         {
             return glowing;
