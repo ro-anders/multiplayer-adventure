@@ -52,12 +52,15 @@ namespace GameEngine
         /** x coordinate of the middle of the ball **/
         public int midX
         {
-            get { return x + 4; }
+            get { return x; }
         }
         /** y coordinate of the middle of the ball **/
         public int midY
         {
-            get { return y - 4; }
+            // No idea why the ball's y coordinate is one pixel
+            // above the ball (might even be 2, seems object collisions use 1
+            // and wall collisions use 2)
+            get { return y - 5; }
         }
 
         public bool isGlowing()

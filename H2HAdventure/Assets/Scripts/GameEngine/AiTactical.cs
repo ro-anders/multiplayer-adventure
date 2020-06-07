@@ -23,18 +23,10 @@ public class AiTactical
      */
     public bool computeDirection(int nextStepX, int nextStepY, ref int nextVelX, ref int nextVelY)
     {
-        nextVelX = (nextStepX > thisBall.midX ? BALL_MOVEMENT : -BALL_MOVEMENT);
+        nextVelX = (nextStepX > thisBall.midX ? BALL_MOVEMENT : (nextStepX == thisBall.midX ? 0 : -BALL_MOVEMENT));
         int diffX = Math.Abs(thisBall.midX - nextStepX);
-        nextVelY = (nextStepY > thisBall.midY ? BALL_MOVEMENT : -BALL_MOVEMENT);
+        nextVelY = (nextStepY > thisBall.midY ? BALL_MOVEMENT : (nextStepY == thisBall.midY ? 0 :-BALL_MOVEMENT));
         int diffY = Math.Abs(thisBall.midY - nextStepY);
-        if ((diffX < BALL_MOVEMENT / 2) && (diffY > BALL_MOVEMENT / 2))
-        {
-            nextVelX = 0;
-        }
-        else if ((diffY < BALL_MOVEMENT / 2) && (diffX > BALL_MOVEMENT / 2))
-        {
-            nextVelY = 0;
-        }
         if ((nextVelX != thisBall.velx) || (nextVelY != thisBall.vely))
         {
             UnityEngine.Debug.Log("Changing (" + thisBall.velx + "," + thisBall.vely +
