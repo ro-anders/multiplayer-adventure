@@ -265,14 +265,17 @@ public class UnlockCastle : AiObjective
         AiObjective step1 = new PickupObjective(port.key.getPKey());
         this.addChild(step1);
         step1.computeStrategy();
+        AiObjective step2 = new GoToObjective(port.room, Portcullis.EXIT_X, 0x20);
+        this.addChild(step2);
+        step2.computeStrategy();
     }
 
     public override void getDestination(ref int room, ref int x, ref int y)
     {
         // TODO: Handle when the key is being held beneath us.
         room = port.room;
-        x = 2 * port.x + 4;
-        y = 2 * port.y + 6;
+        x = Portcullis.EXIT_X + aiPlayer.linkedObjectX;
+        y = 0x40;
     }
 
     protected override bool computeIsCompleted()

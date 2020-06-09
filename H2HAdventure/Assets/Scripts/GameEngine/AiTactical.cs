@@ -24,9 +24,7 @@ public class AiTactical
     public bool computeDirection(int nextStepX, int nextStepY, ref int nextVelX, ref int nextVelY)
     {
         nextVelX = (nextStepX > thisBall.midX ? BALL_MOVEMENT : (nextStepX == thisBall.midX ? 0 : -BALL_MOVEMENT));
-        int diffX = Math.Abs(thisBall.midX - nextStepX);
         nextVelY = (nextStepY > thisBall.midY ? BALL_MOVEMENT : (nextStepY == thisBall.midY ? 0 :-BALL_MOVEMENT));
-        int diffY = Math.Abs(thisBall.midY - nextStepY);
         if ((nextVelX != thisBall.velx) || (nextVelY != thisBall.vely))
         {
             UnityEngine.Debug.Log("Changing (" + thisBall.velx + "," + thisBall.vely +
@@ -34,5 +32,45 @@ public class AiTactical
                 ") at " + thisBall.room + "-(" + thisBall.midX + "," + thisBall.midY + ")");
         }
         return true;
+    }
+
+    /**
+     * To prevent a "drunken walk" pick a target point that the ball will hit and
+     * not overshoot with its 6 movement.
+     */
+    public void smoothMovement(ref int nextStepX, ref int nextStepY, int direction)
+    {
+        switch (direction)
+        {
+            case Plot.UP:
+            case Plot.DOWN:
+                int diff = (nextStepX - thisBall.midX) % BALL_MOVEMENT;
+                if (diff > BALL_MOVEMENT / 2)
+                {
+                    diff -= BALL_MOVEMENT;
+                }
+                else if (diff <= -BALL_MOVEMENT / 2)
+                {
+                    diff += BALL_MOVEMENT;
+                }
+                nextStepX -= diff;
+                return;
+            case Plot.LEFT:
+            case Plot.RIGHT:
+            default:
+                diff = (nextStepY - thisBall.midY) % BALL_MOVEMENT;
+                if (diff > BALL_MOVEMENT / 2)
+                {
+                    diff -= BALL_MOVEMENT;
+                }
+                else if (diff <= -BALL_MOVEMENT / 2)
+                {
+                    diff += BALL_MOVEMENT;
+                }
+                nextStepY -= diff;
+                return;
+        }
+
+
     }
 }

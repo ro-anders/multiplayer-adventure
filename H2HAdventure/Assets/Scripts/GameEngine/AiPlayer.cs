@@ -93,6 +93,7 @@ namespace GameEngine
                 }
                 desiredPath.ThisPlot.GetOverlap(desiredPath.nextNode.ThisPlot,
                     desiredPath.nextDirection, ref nextStepX, ref nextStepY);
+                aiTactical.smoothMovement(ref nextStepX, ref nextStepY, desiredPath.nextDirection);
             }
 
             AiPathNode nextPath = aiNav.checkPathProgress(desiredPath, thisBall.room, thisBall.midX, thisBall.midY);
@@ -116,6 +117,7 @@ namespace GameEngine
                 {
                     desiredPath.ThisPlot.GetOverlap(desiredPath.nextNode.ThisPlot,
                         desiredPath.nextDirection, ref nextStepX, ref nextStepY);
+                    aiTactical.smoothMovement(ref nextStepX, ref nextStepY, desiredPath.nextDirection);
                     UnityEngine.Debug.Log("Heading for (" + nextStepX + "," + nextStepY +
                         ") in plot " + desiredPath.ThisPlot);
                 }
