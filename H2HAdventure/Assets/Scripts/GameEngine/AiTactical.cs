@@ -11,9 +11,46 @@ public class AiTactical
     /** The ball that is being moved */
     private BALL thisBall;
 
+    private AiPathNode currentPath;
+    private int nextStepX;
+    private int nextStepY;
+
     public AiTactical(BALL inBall)
     {
         thisBall = inBall;
+    }
+
+    public bool computeDirectionOnPath(AiPathNode path, int finalX, int finalY,
+        ref int nextVelx, ref int nextVely)
+    {
+        // Go to the nextStep coordinates to get us to the next step on the path
+        // or the desired coordinates if we're at the end of the path.
+        if (path != currentPath)
+        {
+            currentPath = path;
+
+            // New path or reached new step in path.
+            // Recompute how to get to the next step in the path
+            if (currentPath.nextNode != null)
+            {
+                currentPath.ThisPlot.GetOverlap(currentPath.nextNode.ThisPlot,
+                    currentPath.nextDirection, ref nextStepX, ref nextStepY);
+                smoothMovement(ref nextStepX, ref nextStepY, currentPath.nextDirection);
+                UnityEngine.Debug.Log("Heading for (" + nextStepX + "," + nextStepY +
+                    ") in plot " + currentPath.ThisPlot);
+            }
+            else
+            {
+                // We've reached the last plot in the path.  
+                // Now go to the desired coordinates
+                nextStepX = finalX;
+                nextStepY = finalY;
+            }
+        }
+
+        bool canGetThere = computeDirection(nextStepX, nextStepY, ref nextVelx, ref nextVely);
+
+        return canGetThere;
     }
 
     /**
@@ -21,7 +58,7 @@ public class AiTactical
      * Usually this just makes a straight line towards it, but will choose alternate
      * directions to deal with dragons or impeding obstacles.
      */
-    public bool computeDirection(int nextStepX, int nextStepY, ref int nextVelX, ref int nextVelY)
+    private bool computeDirection(int nextStepX, int nextStepY, ref int nextVelX, ref int nextVelY)
     {
         nextVelX = (nextStepX > thisBall.midX ? BALL_MOVEMENT : (nextStepX == thisBall.midX ? 0 : -BALL_MOVEMENT));
         nextVelY = (nextStepY > thisBall.midY ? BALL_MOVEMENT : (nextStepY == thisBall.midY ? 0 :-BALL_MOVEMENT));

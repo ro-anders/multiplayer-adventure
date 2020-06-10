@@ -91,13 +91,10 @@ namespace GameEngine
                     thisBall.vely = 0;
                     return;
                 }
-                desiredPath.ThisPlot.GetOverlap(desiredPath.nextNode.ThisPlot,
-                    desiredPath.nextDirection, ref nextStepX, ref nextStepY);
-                aiTactical.smoothMovement(ref nextStepX, ref nextStepY, desiredPath.nextDirection);
             }
-
-            AiPathNode nextPath = aiNav.checkPathProgress(desiredPath, thisBall.room, thisBall.midX, thisBall.midY);
-            if (nextPath == null)
+         
+            desiredPath = aiNav.checkPathProgress(desiredPath, thisBall.room, thisBall.midX, thisBall.midY);
+            if (desiredPath == null)
             {
                 // ABORT PATH
                 UnityEngine.Debug.LogError("Ball has fallen off the AI path! Aborting.");
@@ -107,32 +104,9 @@ namespace GameEngine
                 return;
             }
 
-            // Go to the nextStep coordinates to get us to the next step on the path
-            // or the desired coordinates.
-            if (nextPath != desiredPath)
-            {
-                desiredPath = nextPath;
-                // Recompute how to get to the next step in the path
-                if (desiredPath.nextNode != null)
-                {
-                    desiredPath.ThisPlot.GetOverlap(desiredPath.nextNode.ThisPlot,
-                        desiredPath.nextDirection, ref nextStepX, ref nextStepY);
-                    aiTactical.smoothMovement(ref nextStepX, ref nextStepY, desiredPath.nextDirection);
-                    UnityEngine.Debug.Log("Heading for (" + nextStepX + "," + nextStepY +
-                        ") in plot " + desiredPath.ThisPlot);
-                }
-                else
-                {
-                    // We've reached the last plot in the path.  
-                    // Now go to the desired coordinates
-                    nextStepX = desiredX;
-                    nextStepY = desiredY;
-                }
-            }
-
             int nextVelx = 0;
             int nextVely = 0;
-            bool canGetThere = aiTactical.computeDirection(nextStepX, nextStepY, ref nextVelx, ref nextVely);
+            bool canGetThere = aiTactical.computeDirectionOnPath(desiredPath, desiredX, desiredY, ref nextVelx, ref nextVely);
             if (canGetThere)
             {
                 thisBall.velx = nextVelx;

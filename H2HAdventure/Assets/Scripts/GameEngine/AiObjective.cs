@@ -139,11 +139,6 @@ public class WinGameObjective: AiObjective
 
     public override void computeStrategy()
     {
-        // Temporarily trying simple strategy
-        //child = new UnlockCastle(board, (Portcullis)board.getObject(Board.OBJECT_YELLOW_PORT));
-        //child.computeStrategy();
-        //AiObjective nextChild = new PutObject();
-        //setSiblingOf(child, nextChild);
         AiObjective unlockCastle = new UnlockCastle(Board.OBJECT_YELLOW_PORT);
         this.addChild(unlockCastle);
         unlockCastle.computeStrategy();
@@ -265,7 +260,7 @@ public class UnlockCastle : AiObjective
         AiObjective step1 = new PickupObjective(port.key.getPKey());
         this.addChild(step1);
         step1.computeStrategy();
-        AiObjective step2 = new GoToObjective(port.room, Portcullis.EXIT_X, 0x20);
+        AiObjective step2 = new GoToObjective(port.room, Portcullis.EXIT_X, 0x30);
         this.addChild(step2);
         step2.computeStrategy();
     }
@@ -273,9 +268,10 @@ public class UnlockCastle : AiObjective
     public override void getDestination(ref int room, ref int x, ref int y)
     {
         // TODO: Handle when the key is being held beneath us.
+        UnityEngine.Debug.Log("Holding " + board.getObject(aiPlayer.linkedObject).label + " at x=" + aiPlayer.linkedObjectX + " y=" + aiPlayer.linkedObjectY);
         room = port.room;
-        x = Portcullis.EXIT_X + aiPlayer.linkedObjectX;
-        y = 0x40;
+        x = Portcullis.EXIT_X - aiPlayer.linkedObjectX;
+        y = 0x3D;
     }
 
     protected override bool computeIsCompleted()
