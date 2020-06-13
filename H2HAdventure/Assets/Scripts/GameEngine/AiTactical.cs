@@ -36,8 +36,8 @@ public class AiTactical
                 currentPath.ThisPlot.GetOverlap(currentPath.nextNode.ThisPlot,
                     currentPath.nextDirection, ref nextStepX, ref nextStepY);
                 smoothMovement(ref nextStepX, ref nextStepY, currentPath.nextDirection);
-                UnityEngine.Debug.Log("Heading for (" + nextStepX + "," + nextStepY +
-                    ") in plot " + currentPath.ThisPlot);
+                //UnityEngine.Debug.Log("Heading for (" + nextStepX + "," + nextStepY +
+                //    ") in plot " + currentPath.ThisPlot);
             }
             else
             {
@@ -45,6 +45,8 @@ public class AiTactical
                 // Now go to the desired coordinates
                 nextStepX = finalX;
                 nextStepY = finalY;
+                //UnityEngine.Debug.Log("Heading for (" + nextStepX + "," + nextStepY +
+                //    ") in final plot " + currentPath.ThisPlot);
             }
         }
 
@@ -64,9 +66,9 @@ public class AiTactical
         nextVelY = (nextStepY > thisBall.midY ? BALL_MOVEMENT : (nextStepY == thisBall.midY ? 0 :-BALL_MOVEMENT));
         if ((nextVelX != thisBall.velx) || (nextVelY != thisBall.vely))
         {
-            UnityEngine.Debug.Log("Changing (" + thisBall.velx + "," + thisBall.vely +
-                ") to (" + nextVelX + ", " + nextVelY +
-                ") at " + thisBall.room + "-(" + thisBall.midX + "," + thisBall.midY + ")");
+            //UnityEngine.Debug.Log("Changing (" + thisBall.velx + "," + thisBall.vely +
+            //    ") to (" + nextVelX + ", " + nextVelY +
+            //    ") at " + thisBall.room + "-(" + thisBall.midX + "," + thisBall.midY + ")");
         }
         return true;
     }

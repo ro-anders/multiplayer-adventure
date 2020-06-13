@@ -19,13 +19,31 @@ abstract public class AiObjective
 
     protected bool completed = false;
 
+    private bool computed = false;
+
     protected AiObjective()
     {}
 
     /**
      * Compute a set of objectives to complete this objective
      */
-    public abstract void computeStrategy();
+    public void computeStrategy()
+    {;
+        if (computed)
+        {
+            // Something went wrong
+            throw new Exception("Asking to recompute an already computed strategy");
+        }
+        doComputeStrategy();
+        computed = true;
+    }
+
+    public override abstract string ToString();
+
+    /**
+     * Compute a set of objectives to complete this objective
+     */
+    protected abstract void doComputeStrategy();
 
     /**
      * Whether an objective has been fulfilled
@@ -34,6 +52,10 @@ abstract public class AiObjective
     {
         if (!completed)
         {
+            if (!computed)
+            {
+                computeStrategy();
+            }
             completed = computeIsCompleted();
             // Once a task is completed, it doesn't get uncompleted.
             // That would imply bigger things have changed and we should
@@ -92,6 +114,12 @@ abstract public class AiObjective
         // other objectives will often leave this unimplemented
     }
 
+    public virtual bool shouldDropHeldObject()
+    {
+        // Default is to do nothing.
+        return false;
+    }
+
     /**
      * Presumably this objective is a sub-objective of a larger objective.
      * Add this next objective as the sub-objective to complete after completing
@@ -137,14 +165,17 @@ public class WinGameObjective: AiObjective
         base.aiPlayer = board.getPlayer(inAiPlayerNum);
     }
 
-    public override void computeStrategy()
+    public override string ToString() 
+    {
+        return "win game";
+    }
+
+    protected override void doComputeStrategy()
     {
         AiObjective unlockCastle = new UnlockCastle(Board.OBJECT_YELLOW_PORT);
         this.addChild(unlockCastle);
-        unlockCastle.computeStrategy();
         AiObjective step3 = new UnlockCastle(Board.OBJECT_BLACK_PORT);
         this.addChild(step3);
-        step3.computeStrategy();
     }
 
     protected override bool computeIsCompleted()
@@ -170,7 +201,7 @@ public class GoToObjective : AiObjective
         gotoY = inY;
     }
 
-    public override void computeStrategy()
+    protected override void doComputeStrategy()
     { }
 
     public override void getDestination(ref int room, ref int x, ref int y)
@@ -183,8 +214,13 @@ public class GoToObjective : AiObjective
     protected override bool computeIsCompleted()
     {
         return (aiPlayer.room == gotoRoom) &&
-            (Math.Abs(aiPlayer.x - gotoX) <= 3) &&
-            (Math.Abs(aiPlayer.y - gotoY) <= 3);
+            (Math.Abs(aiPlayer.midX - gotoX) <= 3) &&
+            (Math.Abs(aiPlayer.midY - gotoY) <= 3);
+    }
+
+    public override string ToString()
+    {
+        return "go to (" + gotoX + "," + gotoY + ") in room " + gotoRoom;
     }
 }
 
@@ -206,7 +242,7 @@ public class PickupObjective : AiObjective
         toPickup = inToPickup;
     }
 
-    public override void computeStrategy()
+    protected override void doComputeStrategy()
     {
         objectToPickup = board.getObject(toPickup);
     }
@@ -235,6 +271,11 @@ public class PickupObjective : AiObjective
     {
         return (aiPlayer.linkedObject == toPickup);
     }
+
+    public override string ToString()
+    {
+        return "get " + board.getObject(toPickup).label;
+    }
 }
 
 
@@ -253,22 +294,16 @@ public class UnlockCastle : AiObjective
         portId = inPortId;
     }
 
-    public override void computeStrategy()
+    protected override void doComputeStrategy()
     {
         port = (Portcullis)board.getObject(portId);
-        // To unlock the castle we first need the key
-        AiObjective step1 = new PickupObjective(port.key.getPKey());
-        this.addChild(step1);
-        step1.computeStrategy();
-        AiObjective step2 = new GoToObjective(port.room, Portcullis.EXIT_X, 0x30);
-        this.addChild(step2);
-        step2.computeStrategy();
+        this.addChild(new PickupObjective(port.key.getPKey()));
+        this.addChild(new GoToObjective(port.room, Portcullis.EXIT_X, 0x30));
+        this.addChild(new RepositionKey());
     }
 
     public override void getDestination(ref int room, ref int x, ref int y)
     {
-        // TODO: Handle when the key is being held beneath us.
-        UnityEngine.Debug.Log("Holding " + board.getObject(aiPlayer.linkedObject).label + " at x=" + aiPlayer.linkedObjectX + " y=" + aiPlayer.linkedObjectY);
         room = port.room;
         x = Portcullis.EXIT_X - aiPlayer.linkedObjectX;
         y = 0x3D;
@@ -278,5 +313,113 @@ public class UnlockCastle : AiObjective
     {
         return port.allowsEntry;
     }
+
+    public override string ToString()
+    {
+        return "unlock " + board.getObject(portId).label;
+    }
 }
 
+//-------------------------------------------------------------------------
+
+/**
+ * Reposition a key so you can unlock a castle.
+ * Assumes you are holding the key and you are directly below the portcullis where you
+ * have room to move around.
+ */
+public class RepositionKey : AiObjective
+{
+    private const int KEY_WIDTH = 8;
+    private const int KEY_HEIGHT = 3;
+    private int keyId;
+    private OBJECT key;
+    private int MINIMUM_Y = 1;
+    public RepositionKey()
+    {}
+
+    protected override void doComputeStrategy()
+    {
+        keyId = aiPlayer.linkedObject;
+        key = board.getObject(keyId);
+        if (aiPlayer.linkedObjectY < MINIMUM_Y)
+        {
+            this.addChild(new DropObjective());
+
+            //If right above the key, move to the closest top corner
+
+            // linkedObjectX = obj.x - ball.x/2
+            // linkedObjectY = obj.y - (ball.y-6)/2
+            int sideEdge;
+            if (aiPlayer.linkedObjectX > -KEY_WIDTH / 4)
+            {
+                // Move around to the left
+                sideEdge = key.x*2 - 4;
+                sideEdge -= (6 - (aiPlayer.midX - sideEdge) % 6) % 6;
+                if (aiPlayer.midX > sideEdge)
+                {
+                    this.addChild(new GoToObjective(aiPlayer.room, sideEdge, aiPlayer.midY));
+                }
+            }
+            else
+            {
+                // Move around to the right
+                sideEdge = key.x * 2 + KEY_WIDTH + 4;
+                sideEdge += (6 - (sideEdge - aiPlayer.midX) % 6) % 6;
+                if (aiPlayer.midX < sideEdge)
+                {
+                    this.addChild(new GoToObjective(aiPlayer.room, sideEdge, aiPlayer.midY));
+                }
+            }
+            // Then move to the closest bottom corner, then to the bottom middle, then re-pickup the key
+            int bottomEdge = key.y * 2 - KEY_HEIGHT - 4;
+            bottomEdge -= (6 - (aiPlayer.midY - bottomEdge) % 6) % 6;
+            this.addChild(new GoToObjective(aiPlayer.room, sideEdge, bottomEdge));
+            this.addChild(new GoToObjective(aiPlayer.room, key.x * 2 + KEY_WIDTH / 2, bottomEdge));
+            this.addChild(new GoToObjective(aiPlayer.room, key.x * 2 + KEY_WIDTH / 2, key.y * 2 - KEY_HEIGHT / 2));
+            UnityEngine.Debug.Log("REPOSITIONING KEY at (" + key.x * 2 + "," + key.y * 2 + ") with (" + aiPlayer.midX + "," + aiPlayer.midY + ")-(" + sideEdge + "," + aiPlayer.midY +
+                ")-(" + sideEdge + "," + bottomEdge + ")-(" + (key.x * 2 + KEY_WIDTH / 2) + "," + bottomEdge + ")");
+            UnityEngine.Debug.Log("REPOSITIONING KEY at (" + key.x * 2 + "," + key.y * 2 + ") with (" + aiPlayer.midX + "," + aiPlayer.midY + ")-(" + sideEdge + "," + aiPlayer.midY +
+                ")-(" + sideEdge + "," + bottomEdge + ")-(" + (key.x * 2 + KEY_WIDTH / 2) + "," + bottomEdge + ")");
+        }
+    }
+
+    protected override bool computeIsCompleted()
+    {
+        return (aiPlayer.linkedObject == keyId) && (aiPlayer.linkedObjectY >= MINIMUM_Y);
+    }
+
+    public override string ToString()
+    {
+        return "reposition " + (key != null ? key.label : board.getObject(aiPlayer.linkedObject).label);
+    }
+}
+
+
+//-------------------------------------------------------------------------
+
+/**
+ * Drop what is currently held
+ */
+public class DropObjective : AiObjective
+{
+    public override string ToString()
+    {
+        return "drop held object";
+    }
+
+    protected override bool computeIsCompleted()
+    {
+        return aiPlayer.linkedObject == Board.OBJECT_NONE;
+    }
+
+    protected override void doComputeStrategy()
+    {
+        // No strategy needed.  Just trigger drop.
+    }
+
+    public override bool shouldDropHeldObject()
+    {
+        return true;
+    }
+
+}

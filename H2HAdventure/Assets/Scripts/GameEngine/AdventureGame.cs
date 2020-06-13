@@ -1660,111 +1660,151 @@ namespace GameEngine
 
         void PickupPutdown()
         {
+            HandleAiPutdown();
             if (!joystickDisabled && joyFire && (objectBall.linkedObject >= 0))
             {
-                int dropped = objectBall.linkedObject;
-                OBJECT droppedObject = gameBoard[dropped];
-
-                // Put down the current object!
-                objectBall.linkedObject = Board.OBJECT_NONE;
-
-                if ((gameOptions & GAMEOPTION_NO_HIDE_KEY_IN_CASTLE) != 0)
-                {
-                    unhideKey(droppedObject);
-                }
-
-                // Tell other clients about the drop
-                PlayerPickupAction action = new PlayerPickupAction(Board.OBJECT_NONE, 0, 0, dropped, droppedObject.room,
-                                                                   droppedObject.x, droppedObject.y);
-                sync.BroadcastAction(action);
-
-                // Play the sound
-                view.Platform_MakeSound(SOUND.PUTDOWN, MAX.VOLUME);
-                if (popupMgr != null)
-                {
-                    popupMgr.needPopup[PopupMgr.DROP_OBJECT] = false;
-                }
+                Putdown();
             }
             else
             {
-                // See if we are touching any carryable objects
-                Board.ObjIter iter = gameBoard.getCarryableObjects();
-                int hitIndex = CollisionCheckBallWithObjects(objectBall, iter);
-                if (hitIndex > Board.OBJECT_NONE)
+                Pickup();
+            }
+        }
+
+        void Putdown()
+        {
+            int dropped = objectBall.linkedObject;
+            OBJECT droppedObject = gameBoard[dropped];
+
+            // Put down the current object!
+            objectBall.linkedObject = Board.OBJECT_NONE;
+
+            if ((gameOptions & GAMEOPTION_NO_HIDE_KEY_IN_CASTLE) != 0)
+            {
+                unhideKey(droppedObject);
+            }
+
+            // Tell other clients about the drop
+            PlayerPickupAction action = new PlayerPickupAction(Board.OBJECT_NONE, 0, 0, dropped, droppedObject.room,
+                                                                droppedObject.x, droppedObject.y);
+            sync.BroadcastAction(action);
+
+            // Play the sound
+            view.Platform_MakeSound(SOUND.PUTDOWN, MAX.VOLUME);
+            if (popupMgr != null)
+            {
+                popupMgr.needPopup[PopupMgr.DROP_OBJECT] = false;
+            }
+        }
+
+        void HandleAiPutdown()
+        {
+            // Check if any AI players are dropping
+            for (int ctr = 0; ctr < numPlayers; ++ctr)
+            {
+                if (aiPlayers[ctr] != null)
                 {
-                    // Ignore the object we are already carrying
-                    if (hitIndex == objectBall.linkedObject)
+                    BALL aiBall = gameBoard.getPlayer(ctr);
+                    if ((aiBall.linkedObject >= 0) && aiPlayers[ctr].shouldDropHeldObject())
                     {
-                        // Check the remainder of the objects
-                        hitIndex = CollisionCheckBallWithObjects(objectBall, iter);
-                    }
+                        int dropped = aiBall.linkedObject;
+                        OBJECT droppedObject = gameBoard[dropped];
 
-                    if (hitIndex > Board.OBJECT_NONE)
-                    {
-                        // Collect info about whether we are also dropping an object (for when we broadcast the action)
-                        PlayerPickupAction action = new PlayerPickupAction(Board.OBJECT_NONE, 0, 0, Board.OBJECT_NONE, 0, 0, 0);
-                        int dropIndex = objectBall.linkedObject;
-                        if (dropIndex > Board.OBJECT_NONE)
+                        // Put down the current object!
+                        aiBall.linkedObject = Board.OBJECT_NONE;
+
+                        if ((gameOptions & GAMEOPTION_NO_HIDE_KEY_IN_CASTLE) != 0)
                         {
-                            OBJECT dropped = gameBoard[dropIndex];
-                            action.setDrop(dropIndex, dropped.room, dropped.x, dropped.y);
-                        }
-
-                        // If the bat is holding the object we do some of the pickup things but not all.
-                        // We drop our current object and play the pickup sound, but we don't actually
-                        // pick up the object.
-                        // NOTE: Discrepancy here between C++ port behavior and original Atari behavior so
-                        // not totally sure what should be done.  As a guess, we just set linkedObject to none and
-                        // play the sound.
-                        if (bat.exists() && (bat.linkedObject == hitIndex))
-                        {
-                            if (dropIndex > Board.OBJECT_NONE)
-                            {
-                                // Drop our current object and broadcast it
-                                objectBall.linkedObject = Board.OBJECT_NONE;
-                                sync.BroadcastAction(action);
-                            }
-                        }
-                        else
-                        {
-
-                            // Pick up this object!
-                            objectBall.linkedObject = hitIndex;
-
-                            // calculate the XY offsets from the ball's position
-                            objectBall.linkedObjectX = gameBoard[hitIndex].x - (objectBall.x / 2);
-                            objectBall.linkedObjectY = gameBoard[hitIndex].y - (objectBall.y / 2);
-
-                            // Take it away from anyone else if they were holding it.
-                            for (int ctr = 0; ctr < numPlayers; ++ctr)
-                            {
-                                if ((ctr != thisPlayer) && (gameBoard.getPlayer(ctr).linkedObject == hitIndex))
-                                {
-                                    gameBoard.getPlayer(ctr).linkedObject = Board.OBJECT_NONE;
-                                }
-                            }
-
-                            if ((hitIndex >= Board.OBJECT_CRYSTALKEY1) && (hitIndex <= Board.OBJECT_CRYSTALKEY3))
-                            {
-                                EasterEgg.foundKey();
-                            }
-
-                            // Broadcast that we picked up an object
-                            action.setPickup(hitIndex, objectBall.linkedObjectX, objectBall.linkedObjectY);
-                            sync.BroadcastAction(action);
-
-                            if (popupMgr != null)
-                            {
-                                popupMgr.PickedUpObjectShowPopups(hitIndex);
-                            }
+                            unhideKey(droppedObject);
                         }
 
                         // Play the sound
-                        view.Platform_MakeSound(SOUND.PICKUP, MAX.VOLUME);
+                        view.Platform_MakeSound(SOUND.PUTDOWN, MAX.VOLUME);
+                        gameBoard.makeSound(SOUND.PUTDOWN, volumeAtDistance(aiBall.room));
                     }
                 }
             }
         }
+
+        void Pickup()
+        {
+            // See if we are touching any carryable objects
+            Board.ObjIter iter = gameBoard.getCarryableObjects();
+            int hitIndex = CollisionCheckBallWithObjects(objectBall, iter);
+            if (hitIndex > Board.OBJECT_NONE)
+            {
+                // Ignore the object we are already carrying
+                if (hitIndex == objectBall.linkedObject)
+                {
+                    // Check the remainder of the objects
+                    hitIndex = CollisionCheckBallWithObjects(objectBall, iter);
+                }
+
+                if (hitIndex > Board.OBJECT_NONE)
+                {
+                    // Collect info about whether we are also dropping an object (for when we broadcast the action)
+                    PlayerPickupAction action = new PlayerPickupAction(Board.OBJECT_NONE, 0, 0, Board.OBJECT_NONE, 0, 0, 0);
+                    int dropIndex = objectBall.linkedObject;
+                    if (dropIndex > Board.OBJECT_NONE)
+                    {
+                        OBJECT dropped = gameBoard[dropIndex];
+                        action.setDrop(dropIndex, dropped.room, dropped.x, dropped.y);
+                    }
+
+                    // If the bat is holding the object we do some of the pickup things but not all.
+                    // We drop our current object and play the pickup sound, but we don't actually
+                    // pick up the object.
+                    // NOTE: Discrepancy here between C++ port behavior and original Atari behavior so
+                    // not totally sure what should be done.  As a guess, we just set linkedObject to none and
+                    // play the sound.
+                    if (bat.exists() && (bat.linkedObject == hitIndex))
+                    {
+                        if (dropIndex > Board.OBJECT_NONE)
+                        {
+                            // Drop our current object and broadcast it
+                            objectBall.linkedObject = Board.OBJECT_NONE;
+                            sync.BroadcastAction(action);
+                        }
+                    }
+                    else
+                    {
+
+                        // Pick up this object!
+                        objectBall.linkedObject = hitIndex;
+
+                        // calculate the XY offsets from the ball's position
+                        objectBall.linkedObjectX = gameBoard[hitIndex].x - (objectBall.x / 2);
+                        objectBall.linkedObjectY = gameBoard[hitIndex].y - (objectBall.y / 2);
+
+                        // Take it away from anyone else if they were holding it.
+                        for (int ctr = 0; ctr < numPlayers; ++ctr)
+                        {
+                            if ((ctr != thisPlayer) && (gameBoard.getPlayer(ctr).linkedObject == hitIndex))
+                            {
+                                gameBoard.getPlayer(ctr).linkedObject = Board.OBJECT_NONE;
+                            }
+                        }
+
+                        if ((hitIndex >= Board.OBJECT_CRYSTALKEY1) && (hitIndex <= Board.OBJECT_CRYSTALKEY3))
+                        {
+                            EasterEgg.foundKey();
+                        }
+
+                        // Broadcast that we picked up an object
+                        action.setPickup(hitIndex, objectBall.linkedObjectX, objectBall.linkedObjectY);
+                        sync.BroadcastAction(action);
+
+                        if (popupMgr != null)
+                        {
+                            popupMgr.PickedUpObjectShowPopups(hitIndex);
+                        }
+                    }
+
+                    // Play the sound
+                    view.Platform_MakeSound(SOUND.PICKUP, MAX.VOLUME);
+                }
+            }
+    }
 
         void Surround()
         {

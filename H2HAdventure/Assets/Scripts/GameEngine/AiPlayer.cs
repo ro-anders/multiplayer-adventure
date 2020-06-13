@@ -44,11 +44,15 @@ namespace GameEngine
             {
                 winGameObjective.computeStrategy();
                 currentObjective = winGameObjective.getNextObjective();
+                UnityEngine.Debug.Log("New objective = " + currentObjective);
             }
-            if (currentObjective.isCompleted())
+            // Check to see if we've accomplished anything
+            AiObjective newObjective = winGameObjective.getNextObjective();
+            if (newObjective != currentObjective)
             {
-                currentObjective = winGameObjective.getNextObjective();
+                currentObjective = newObjective;
                 desiredPath = null;
+                UnityEngine.Debug.Log("New objective = " + currentObjective);
             }
         }
 
@@ -62,8 +66,8 @@ namespace GameEngine
             checkStrategy();
 
             int desiredRoom = thisBall.room;
-            int desiredX = thisBall.x;
-            int desiredY = thisBall.y;
+            int desiredX = thisBall.midX;
+            int desiredY = thisBall.midY;
             currentObjective.getDestination(ref desiredRoom, ref desiredX, ref desiredY);
 
 
@@ -120,6 +124,16 @@ namespace GameEngine
                 return;
             }
         }
+
+        /**
+         * Called during the pickup/putdown click, this will determine if the AI player
+         * wants to drop the held object, and drop it.
+         */
+        public bool shouldDropHeldObject()
+        {
+            return currentObjective.shouldDropHeldObject();
+        }
+
     }
 
 }
