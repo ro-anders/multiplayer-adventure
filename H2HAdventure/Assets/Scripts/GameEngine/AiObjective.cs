@@ -172,10 +172,10 @@ public class WinGameObjective: AiObjective
 
     protected override void doComputeStrategy()
     {
-        AiObjective unlockCastle = new UnlockCastle(Board.OBJECT_YELLOW_PORT);
-        this.addChild(unlockCastle);
-        AiObjective step3 = new UnlockCastle(Board.OBJECT_BLACK_PORT);
-        this.addChild(step3);
+        this.addChild(new UnlockCastle(Board.OBJECT_YELLOW_PORT));
+        this.addChild(new UnlockCastle(Board.OBJECT_BLACK_PORT));
+        this.addChild(new PickupObjective(Board.OBJECT_CHALISE));
+        this.addChild(new GoToObjective(Map.GOLD_FOYER, 160, 120));
     }
 
     protected override bool computeIsCompleted()

@@ -150,6 +150,7 @@ namespace GameEngine
             ComputePlotsInRoom(Map.MAIN_HALL_CENTER, plotsHallWithTop, allPlotsList);
             ComputePlotsInRoom(Map.MAIN_HALL_RIGHT, plotsRightHallWithBoth, allPlotsList);
             ComputePlotsInRoom(Map.GOLD_CASTLE, plotsCastle, allPlotsList);
+            ComputePlotsInRoom(Map.GOLD_FOYER, plotsRoomWithBottom, allPlotsList);
             ComputePlotsInRoom(Map.SOUTHEAST_ROOM, plotsRoomWithTop, allPlotsList);
             ComputePlotsInRoom(Map.COPPER_CASTLE, plotsCastle, allPlotsList);
             ComputePlotsInRoom(Map.BLUE_MAZE_5, plotsBlueMazeTop, allPlotsList);
@@ -158,6 +159,8 @@ namespace GameEngine
             ComputePlotsInRoom(Map.BLUE_MAZE_4, plotsBlueMazeCenter, allPlotsList);
             ComputePlotsInRoom(Map.BLUE_MAZE_1, plotsBlueMazeEntry, allPlotsList);
             ComputePlotsInRoom(Map.BLACK_CASTLE, plotsCastle, allPlotsList);
+            ComputePlotsInRoom(Map.BLACK_FOYER, plotsRoomWithBoth, allPlotsList);
+            ComputePlotsInRoom(Map.BLACK_INNERMOST_ROOM, plotsRoomWithBottom, allPlotsList);
 
             aiPlots = allPlotsList.ToArray();
         }
@@ -210,6 +213,30 @@ namespace GameEngine
             }
         }
 
+        /**
+         * A castle has just been unlocked.  Tell the AI that you can 
+         * now get from the outside of the castle to the inside.
+         */
+        public void ConnectPortcullisPlots(int outsideRoom, int insideRoom, bool open)
+        {
+            // Outside plot defined with {3,19,3,20},
+            // Inside plot define with {0,16, 0,23}
+            if (open)
+            {
+                UnityEngine.Debug.Log("Connecting castle outside " + outsideRoom + " with inside " + insideRoom);
+            }
+            int outsidePlotindex = FindPlot(outsideRoom, 160, 112);
+            // Just happen to know exactly which plots need to be connected
+            AiMapNode outsidePlot = aiPlotsByRoom[outsideRoom][5];
+            AiMapNode insidePlot = aiPlotsByRoom[insideRoom][0];
+            outsidePlot.SetNeighbor(Plot.UP, (open ? insidePlot : null));
+            insidePlot.SetNeighbor(Plot.DOWN, (open ? outsidePlot : null));
+        }
+
+        /**
+         * Find the plot in the room that contains that (x,y)
+         * @return the index into the aiPlotsByRoom[room] array of the desired node
+         */
         private int FindPlot(int room, int x, int y)
         {
             int found = -1;
@@ -268,13 +295,6 @@ namespace GameEngine
             new byte[] {6,16,6,23}
         };
 
-        private static readonly byte[][] plotsLeftHallWithBoth =
-        {
-            new byte[] {0,16,0,23},
-            new byte[] {1,3,5,39},
-            new byte[] {6,16,6,23}
-        };
-
         private static readonly byte[][] plotsHallWithTop =
         {
             new byte[] {1,0,5,39},
@@ -296,6 +316,19 @@ namespace GameEngine
 
         private static readonly byte[][] plotsRoomWithTop =
         {
+            new byte[] {1,2,5,37},
+            new byte[] {6,16, 6,23}
+        };
+
+        private static readonly byte[][] plotsRoomWithBottom =
+        {
+            new byte[] {0,16, 0,23},
+            new byte[] {1,2,5,37}
+        };
+
+        private static readonly byte[][] plotsRoomWithBoth =
+        {
+            new byte[] {0,16, 0,23},
             new byte[] {1,2,5,37},
             new byte[] {6,16, 6,23}
         };
@@ -418,7 +451,7 @@ namespace GameEngine
      * It knows its room and xy boundaries and can compare itself
      * with other plots.
      */
-    public class Plot
+        public class Plot
     {
         public const int NO_DIRECTION = -1;
         public const int UP = 0;

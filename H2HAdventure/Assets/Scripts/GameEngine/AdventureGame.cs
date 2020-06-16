@@ -1267,6 +1267,10 @@ namespace GameEngine
                             if (port.state == Portcullis.CLOSED_STATE && canUnlockFromInside)
                             {
                                 port.openFromInside();
+                                if (ai != null)
+                                {
+                                    ai.ConnectPortcullisPlots(port.room, port.insideRoom, true);
+                                }
                                 PortcullisStateAction gateAction = new PortcullisStateAction(port.getPKey(), port.state, port.allowsEntry);
                                 sync.BroadcastAction(gateAction);
 
@@ -1483,6 +1487,10 @@ namespace GameEngine
                         nextBall.velx = 0;
                         // make sure it stays unlocked in case we are walking in with the key
                         nextPort.forceOpen();
+                        if (ai != null)
+                        {
+                            ai.ConnectPortcullisPlots(nextPort.room, nextPort.insideRoom, true);
+                        }
                         // Report to all the other players only if its the current player entering
                         if (ctr == thisPlayer)
                         {
@@ -1859,6 +1867,10 @@ namespace GameEngine
                         PortcullisStateAction gateAction = port.checkKeyInteraction();
                         if (gateAction != null)
                         {
+                            if (ai != null)
+                            {
+                                ai.ConnectPortcullisPlots(port.room, port.insideRoom, port.allowsEntry);
+                            }
                             sync.BroadcastAction(gateAction);
                         }
 
