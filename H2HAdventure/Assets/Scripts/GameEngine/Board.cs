@@ -11,8 +11,8 @@ namespace GameEngine
         // The position you appear when you enter at the edge of the screen.
         public const int ENTER_AT_TOP = Adv.ADVENTURE_OVERSCAN + Adv.ADVENTURE_SCREEN_HEIGHT;
         public const int ENTER_AT_BOTTOM = Adv.ADVENTURE_OVERSCAN + Adv.ADVENTURE_OVERSCAN - 2;
-        public const int ENTER_AT_RIGHT = Adv.ADVENTURE_SCREEN_WIDTH - 5;
-        public const int ENTER_AT_LEFT = 5;
+        public const int ENTER_AT_RIGHT = Adv.ADVENTURE_SCREEN_WIDTH - 4;
+        public const int ENTER_AT_LEFT = 6;
 
 
         // The limit as to how close a ball can get to the edge
@@ -382,7 +382,9 @@ namespace GameEngine
                             wrappedX -= Adv.ADVENTURE_SCREEN_WIDTH;
 
                         if (HitTestRects(x, y, width, height, wrappedX, objectY, 2 * objectSize, 2))
+                        {
                             return true;
+                        }
                     }
                 }
 

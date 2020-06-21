@@ -98,7 +98,7 @@ public void roar(int atRoom, int atX, int atY)
 
     // Set the dragon's position to the same as the ball
     room = atRoom;
-    x = atX + 1; // Added one to get over disparity between C++ port and original atari game - not the best solution
+    x = atX;
     y = atY;
 }
 
