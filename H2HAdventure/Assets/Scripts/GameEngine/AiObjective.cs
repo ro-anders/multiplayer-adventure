@@ -214,8 +214,8 @@ public class GoToObjective : AiObjective
     protected override bool computeIsCompleted()
     {
         return (aiPlayer.room == gotoRoom) &&
-            (Math.Abs(aiPlayer.midX - gotoX) <= 3) &&
-            (Math.Abs(aiPlayer.midY - gotoY) <= 3);
+            (((Math.Abs(aiPlayer.midX - gotoX) <= 3) && (Math.Abs(aiPlayer.midY - gotoY) < 6)) ||
+            ((Math.Abs(aiPlayer.midY - gotoY) <= 3) && (Math.Abs(aiPlayer.midX - gotoX) < 6)));
     }
 
     public override string ToString()

@@ -2700,10 +2700,8 @@ namespace GameEngine
             {Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 3
             {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00}, // Robinett message
             {Board.OBJECT_NUMBER, Map.NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00}, // Starting number
-////XXXX            {Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00}, // Yellow Dragon
-////XXXX            {Board.OBJECT_GREENDRAGON, Map.SOUTHEAST_ROOM, 0x50, 0x20, 0x00, 0x00, 0x00}, // Green Dragon
-            {Board.OBJECT_YELLOWDRAGON, Map.NUMBER_ROOM, 0x50, 0x20, 0x00, 0x00, 0x00}, // Yellow Dragon
-            {Board.OBJECT_GREENDRAGON, Map.NUMBER_ROOM, 0x50, 0x20, 0x00, 0x00, 0x00}, // Green Dragon
+            {Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00}, // Yellow Dragon
+            {Board.OBJECT_GREENDRAGON, Map.SOUTHEAST_ROOM, 0x50, 0x20, 0x00, 0x00, 0x00}, // Green Dragon
             {Board.OBJECT_SWORD, Map.GOLD_FOYER, 0x20, 0x20, 0x00, 0x00, 0x00}, // Sword
             {Board.OBJECT_BRIDGE, Map.BLUE_MAZE_5, 0x2A, 0x37, 0x00, 0x00, 0x00}, // Bridge
             {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Yellow Key
