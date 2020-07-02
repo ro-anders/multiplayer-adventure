@@ -4,25 +4,40 @@ namespace GameEngine
     public class Board
     {
         public const int PLAYFIELD_HRES = 20;  // 40 with 2nd half mirrored/repeated
-        public const int PLAYFIELD_VRES = 20;
-        public const int CLOCKS_HSYNC = 2;
-        public const int CLOCKS_VSYNC = 4;
+
 
         // The position you appear when you enter at the edge of the screen.
-        public const int ENTER_AT_TOP = Adv.ADVENTURE_OVERSCAN + Adv.ADVENTURE_SCREEN_HEIGHT;
-        public const int ENTER_AT_BOTTOM = Adv.ADVENTURE_OVERSCAN + Adv.ADVENTURE_OVERSCAN - 2;
-        public const int ENTER_AT_RIGHT = Adv.ADVENTURE_SCREEN_WIDTH - 4;
-        public const int ENTER_AT_LEFT = 6;
+        public const int TOP_EDGE_FOR_BALL = Adv.ADVENTURE_OVERSCAN + Adv.ADVENTURE_SCREEN_HEIGHT;
+        public const int BOTTOM_EDGE_FOR_BALL = Adv.ADVENTURE_OVERSCAN + BALL.DIAMETER;
+        public const int RIGHT_EDGE_FOR_BALL = Adv.ADVENTURE_SCREEN_WIDTH - BALL.DIAMETER;
+        public const int LEFT_EDGE_FOR_BALL = 2; // Why is the ball never allowed to be up against the left edge? -RCA
+
+        // The limit as to how close an object can get to the edge
+        public const int TOP_EDGE_FOR_OBJECTS = TOP_EDGE_FOR_BALL / Adv.BALL_SCALE;
+        public const int BOTTOM_EDGE_FOR_OBJECTS = BOTTOM_EDGE_FOR_BALL / Adv.BALL_SCALE;
+        public const int RIGHT_EDGE_FOR_OBJECTS = RIGHT_EDGE_FOR_BALL / Adv.BALL_SCALE;
+        public const int LEFT_EDGE_FOR_OBJECTS = LEFT_EDGE_FOR_BALL / Adv.BALL_SCALE;
+
+        public const int STARTING_X = Adv.ADVENTURE_SCREEN_WIDTH/2 - BALL.RADIUS;
+        public const int STARTING_Y = 2 * Map.WALL_HEIGHT - 3; // 3 pixels below gate
 
 
-        // The limit as to how close a ball can get to the edge
-        public const int TOP_EDGE = Adv.ADVENTURE_OVERSCAN + Adv.ADVENTURE_SCREEN_HEIGHT + 6;
-        public const int BOTTOM_EDGE = 0x0D * 2;
-        public const int RIGHT_EDGE = Adv.ADVENTURE_SCREEN_WIDTH - 4;
-        public const int LEFT_EDGE = 4;
+
+
+        // The inside of the bridge (the part that lets the ball cross walls) in relation to its coordinates
+        public const int BRIDGE_SIZE = 0x07; // Bridge is 4 times wider than everything else ( 7/2 + 1 = 4 )
+        public const int BRIDGE_AREA_TOP = 0;
+        public const int BRIDGE_AREA_BOTTOM = 24 /* pixels */;
+        public const int BRIDGE_AREA_LEFT = 2 /*pixels*/ * (BRIDGE_SIZE/2 + 1);
+        public const int BRIDGE_AREA_RIGHT = 6 /*pixels*/ * (BRIDGE_SIZE/2 + 1);
 
         public const int OBJECT_BALL = -2;
         public const int OBJECT_SURROUND = -5; // Actually, up to 3 surrounds with values -5 to -7
+
+        public const int SURROUND_RADIUS_X = 0x1E;
+        public const int SURROUND_RADIUS_Y = 0x18;
+
+        public const int OBJECTWIDTH = 8;
 
         public enum OBJLIST
         {
@@ -297,10 +312,6 @@ namespace GameEngine
             byte[] dataP2 = object2.gfxData[stateIndex2];
             int objHeight2 = dataP2.Length;
 
-            // Adjust for proper position
-            objectX1 -= CLOCKS_HSYNC;
-            objectX2 -= CLOCKS_HSYNC;
-
             // Scan the the object1 data
             for (int i = 0; i < objHeight1; i++)
             {
@@ -362,9 +373,6 @@ namespace GameEngine
             // Get the height, then the data
             byte[] dataP = objct.gfxData[stateIndex];
             int objHeight = dataP.Length;
-
-            // Adjust for proper position
-            objectX -= CLOCKS_HSYNC;
 
             // scan the data
             for (int i = 0; i < objHeight; i++)

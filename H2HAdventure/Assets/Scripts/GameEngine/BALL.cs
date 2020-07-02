@@ -3,6 +3,9 @@ namespace GameEngine
 {
     public class BALL
     {
+        public const int RADIUS = 4;
+        public const int DIAMETER = 2 * RADIUS;
+
         public int playerNum;              // 0-2.  Which player this is.
         public int room;                   // room
         public int previousRoom;
@@ -52,15 +55,12 @@ namespace GameEngine
         /** x coordinate of the middle of the ball **/
         public int midX
         {
-            get { return x; }
+            get { return x+RADIUS; }
         }
         /** y coordinate of the middle of the ball **/
         public int midY
         {
-            // No idea why the ball's y coordinate is one pixel
-            // above the ball (might even be 2, seems object collisions use 1
-            // and wall collisions use 2)
-            get { return y - 5; }
+            get { return y - RADIUS; }
         }
 
         public bool isGlowing()
@@ -73,15 +73,21 @@ namespace GameEngine
             glowing = nowIsGlowing;
         }
 
-        public int distanceTo(int otherX, int otherY)
+        /**
+         * The distance to an object 
+         * @param objectX the x of the object (IN OBJECT COORDINATE SYSTEM)
+         * @param otherY the y of the object (IN OBJECT COORDINATE SYSTEM)
+         * @return the distance IN BALL COORDINATE SYSTEM to object
+         */
+        public int distanceTo(int objectMidX, int objectMidY)
         {
             // Figure out the distance (which is really the max difference along one axis)
-            int xdist = this.x / 2 - otherX;
+            int xdist = this.midX - 2 * objectMidX;
             if (xdist < 0)
             {
                 xdist = -xdist;
             }
-            int ydist = this.y / 2 - otherY;
+            int ydist = this.midY - 2 * objectMidY;
             if (ydist < 0)
             {
                 ydist = -ydist;

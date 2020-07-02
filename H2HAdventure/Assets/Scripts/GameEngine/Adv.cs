@@ -10,6 +10,8 @@ namespace GameEngine
         public const double ADVENTURE_FRAME_PERIOD = 0.017;
         public const int ADVENTURE_MAX_NAME_LENGTH = 40;
 
+        public const int BALL_SCALE = 2; // The ball's x,y is at twice the resolution as object's x,y
+
         // The game modes
         public const int GAME_MODE_1 = 0;
         public const int GAME_MODE_2 = 1;

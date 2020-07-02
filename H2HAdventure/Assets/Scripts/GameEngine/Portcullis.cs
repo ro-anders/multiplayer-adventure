@@ -5,17 +5,17 @@ namespace GameEngine
     public class Portcullis : OBJECT
     {
 
-        /** The x-coord you come out at when you leave a castle. */
-        public const int EXIT_X = 0xA0;
-
-        /** The y-coord you come out at when you leave a castle. */
-        public const int EXIT_Y = 0x58;
-
         /** The x-coordinate of where the portcullis is placed. */
-        public const int PORT_X = 0x4d;
+        public const int PORT_X = Adv.ADVENTURE_SCREEN_WIDTH / 2 / Adv.BALL_SCALE - Board.OBJECTWIDTH / 2;
 
         /** The y-coordinate of where the portcullis is placed. */
-        public const int PORT_Y = 0x31;
+        public const int PORT_Y = (3 * Map.WALL_HEIGHT - 1) / Adv.BALL_SCALE;
+
+        /** The x-coord you come out at when you leave a castle. */
+        public const int EXIT_X = Adv.ADVENTURE_SCREEN_WIDTH / 2 - BALL.RADIUS;
+
+        /** The y-coord you come out at when you leave a castle. (2 pixels below bottom of open gate) */
+        public const int EXIT_Y = PORT_Y * Adv.BALL_SCALE - 10;
 
         public const int OPEN_STATE = 0;
         public const int CLOSED_STATE = 12;
@@ -116,7 +116,7 @@ namespace GameEngine
                 if (!held && board.CollisionCheckObjectObject(this, objct))
                 {
                     objct.room = this.insideRoom;
-                    objct.y = Board.ENTER_AT_BOTTOM;
+                    objct.y = Board.BOTTOM_EDGE_FOR_BALL;
                     // We only generate an event if we are in the room.
                     newAction = new ObjectMoveAction(objct.getPKey(), objct.room, objct.x, objct.y);
                 }

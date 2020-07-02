@@ -20,6 +20,7 @@ namespace GameEngine
 
         private const int WARY_DISTANCE = 50;
         private const int RESURRECTION_WAIT = 1200; // One minute
+        public const int MIDHEIGHT = 10; // Approximate half-way up dragon
 
 
         private static bool runFromSword = false;
@@ -98,7 +99,7 @@ public void roar(int atRoom, int atX, int atY)
 
     // Set the dragon's position to the same as the ball
     room = atRoom;
-    x = atX;
+    x = atX+1;
     y = atY;
 }
 
@@ -194,7 +195,7 @@ public void syncAction(DragonMoveAction action)
             {
                 // Has the Ball hit the Dragon?
                 if ((objectBall.room == dragon.room) &&
-                    board.CollisionCheckObject(dragon, (objectBall.x - 4), (objectBall.y - 4), 8, 8))
+                    board.CollisionCheckObject(dragon, objectBall.x, objectBall.y, BALL.DIAMETER, BALL.DIAMETER))
                 {
                     dragon.roar(objectBall.room, objectBall.x / 2, objectBall.y / 2);
 
@@ -324,7 +325,7 @@ public void syncAction(DragonMoveAction action)
                             // Notify others if we've changed our direction
                             if ((dragon.room == objectBall.room) && ((newMovementX != dragon.movementX) || (newMovementY != dragon.movementY)))
                             {
-                                int distanceToMe = board.getCurrentPlayer().distanceTo(dragon.x, dragon.y);
+                                int distanceToMe = board.getCurrentPlayer().distanceTo(dragon.x+4, dragon.y-MIDHEIGHT);
                                 actionTaken = new DragonMoveAction(dragon.room, dragon.x, dragon.y, newMovementX, newMovementY, dragon.dragonNumber, distanceToMe);
                             }
                             dragon.movementX = newMovementX;
@@ -342,7 +343,7 @@ public void syncAction(DragonMoveAction action)
                 // Eaten
                 dragon.eaten.room = dragon.room;
                 dragon.eaten.previousRoom = dragon.room;
-                dragon.eaten.x = (dragon.x + 3) * 2;
+                dragon.eaten.x = (dragon.x + 2) * 2;
                 dragon.eaten.previousX = dragon.eaten.x;
                 dragon.eaten.y = (dragon.y - 10) * 2;
                 dragon.eaten.previousY = dragon.eaten.y;
@@ -353,7 +354,7 @@ public void syncAction(DragonMoveAction action)
                 if (dragon.timerExpired())
                 {
                     // Has the Ball hit the Dragon?
-                    if ((objectBall.room == dragon.room) && board.CollisionCheckObject(dragon, (objectBall.x - 4), (objectBall.y - 1), 8, 8))
+                    if ((objectBall.room == dragon.room) && board.CollisionCheckObject(dragon, objectBall.x, objectBall.y, BALL.DIAMETER, BALL.DIAMETER))
                     {
                         // Set the State to 01 (eaten)
                         dragon.eaten = objectBall;
@@ -416,7 +417,7 @@ BALL closestBall()
         BALL nextBall = board.getPlayer(ctr);
         if ((nextBall.room == room) && ((!waryOfSword) || nextBall.linkedObject != Board.OBJECT_SWORD))
         {
-            int dist = nextBall.distanceTo(x, y);
+            int dist = nextBall.distanceTo(x+4, y-MIDHEIGHT);
             if (dist < shortestDistance)
             {
                 shortestDistance = dist;

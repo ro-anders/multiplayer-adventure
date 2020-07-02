@@ -10,6 +10,7 @@ namespace GameEngine
 
         private static int MAX_FEDUP = 0xff;
         private static int BAT_SPEED = 3;
+        private static int MIDHEIGHT = 4; // Approximate half way up bat
 
         private int batFedUpTimer = 0;
         private int flapTimer = 0;
@@ -131,7 +132,7 @@ namespace GameEngine
                     // Otherwise, use the reported state.
                     BatMoveAction nextMove = (BatMoveAction)action;
                     if ((room != objectBall.room) ||
-                         (objectBall.distanceTo(x, y) > nextMove.distance))
+                         (objectBall.distanceTo(x+4, y-MIDHEIGHT) > nextMove.distance))
                     {
 
                         room = nextMove.room;
@@ -196,7 +197,7 @@ namespace GameEngine
 
             private void broadcastMoveAction(Sync sync, BALL objectBall)
             {
-                int distance = objectBall.distanceTo(x, y);
+                int distance = objectBall.distanceTo(x+4, y-MIDHEIGHT);
                 BatMoveAction action = new BatMoveAction(room, x, y, movementX, movementY, distance);
                 sync.BroadcastAction(action);
             }

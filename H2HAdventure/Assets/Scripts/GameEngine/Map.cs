@@ -4,6 +4,18 @@ namespace GameEngine
 {
     public class Map
     {
+
+        // When drawing on the display, each map block is an 8x32 block
+        public const int WALL_WIDTH = 8;
+        public const int WALL_HEIGHT = 32;
+        public const int MAX_WALL_X = (Adv.ADVENTURE_SCREEN_WIDTH / 2) / WALL_WIDTH; /* 2 because the screen is mirrored */
+        public const int MAX_WALL_Y = Adv.ADVENTURE_TOTAL_SCREEN_HEIGHT / WALL_HEIGHT;
+
+
+        public const int LEFT_THIN_WALL = 0x0D * 2;
+        public const int RIGHT_THIN_WALL = 0x96 * 2;
+        public const int THIN_WALL_WIDTH = 4;
+
         public const int MAP_LAYOUT_SMALL = 0;
         public const int MAP_LAYOUT_BIG = 1;
         public const int MAP_LAYOUT_GAUNTLET = 2;

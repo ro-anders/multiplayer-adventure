@@ -122,11 +122,6 @@ namespace GameEngine
 
             ch = gfxData[stateIndex].Length;
             ch *= 2;
-
-            // Adjust for proper position
-            cx -= Board.CLOCKS_HSYNC;
         }
-
-
     }
 }

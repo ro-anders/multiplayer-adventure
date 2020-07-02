@@ -199,7 +199,7 @@ namespace GameEngine
             gameBoard.addObject(Board.OBJECT_GREENDRAGON, dragons[0]);
             gameBoard.addObject(Board.OBJECT_SWORD, new OBJECT("sword", objectGfxSword, new byte[0], 0, COLOR.YELLOW));
             gameBoard.addObject(Board.OBJECT_BRIDGE, new OBJECT("bridge", objectGfxBridge, new byte[0], 0, COLOR.PURPLE,
-                                                                OBJECT.RandomizedLocations.OPEN_OR_IN_CASTLE, 0x07));
+                                                                OBJECT.RandomizedLocations.OPEN_OR_IN_CASTLE, Board.BRIDGE_SIZE));
             gameBoard.addObject(Board.OBJECT_YELLOWKEY, goldKey);
             gameBoard.addObject(Board.OBJECT_COPPERKEY, copperKey);
             gameBoard.addObject(Board.OBJECT_JADEKEY, jadeKey);
@@ -474,11 +474,11 @@ namespace GameEngine
 
         void ResetPlayer(BALL ball)
         {
-            ball.room = ball.homeGate.room;               // Put us at our home castle
+            ball.room = ball.homeGate.room;    // Put us at our home castle
             ball.previousRoom = ball.room;
             ball.displayedRoom = ball.room;
-            ball.x = 0x50 * 2;                  //
-            ball.y = 0x20 * 2;                  //
+            ball.x = Board.STARTING_X;
+            ball.y = Board.STARTING_Y;
             ball.previousX = ball.x;
             ball.previousY = ball.y;
             ball.linkedObject = Board.OBJECT_NONE;  // Not carrying anything
@@ -699,7 +699,7 @@ namespace GameEngine
                             for (int i = 0; i < numPlayers; ++i)
                             {
                                 BALL nextBall = gameBoard.getPlayer(i);
-                                CollisionCheckBallWithEverything(nextBall, nextBall.room, nextBall.x, nextBall.y, false);
+                                CollisionCheckBallWithEverything(nextBall, nextBall.room, false);
                             }
 
                             // Setup the room and object
@@ -1110,7 +1110,7 @@ namespace GameEngine
                     ball.x = ball.previousX;
                 }
                 // Try recompute hit allowing for the bridge.
-                CollisionCheckBallWithEverything(ball, ball.room, ball.x, ball.y, true);
+                CollisionCheckBallWithEverything(ball, ball.room, true);
             }
         }
 
@@ -1142,18 +1142,18 @@ namespace GameEngine
                 ball.y = ball.previousY;
                 ball.x += ball.velx;
                 // Need to check if new X takes us to new room (again)
-                if (ball.x >= Board.RIGHT_EDGE)
+                if (ball.x > Board.RIGHT_EDGE_FOR_BALL)
                 {
-                    ball.x = Board.ENTER_AT_LEFT;
+                    ball.x = Board.LEFT_EDGE_FOR_BALL;
                     ball.room = ball.displayedRoom; // The displayed room hasn't changed
                 }
-                else if (ball.x < Board.LEFT_EDGE)
+                else if (ball.x < Board.LEFT_EDGE_FOR_BALL)
                 {
-                    ball.x = Board.ENTER_AT_RIGHT;
+                    ball.x = Board.RIGHT_EDGE_FOR_BALL;
                     ball.room = ball.displayedRoom;
                 }
 
-                CollisionCheckBallWithEverything(ball, ball.displayedRoom, ball.x, ball.y, false);
+                CollisionCheckBallWithEverything(ball, ball.displayedRoom, false);
             }
         }
 
@@ -1235,13 +1235,13 @@ namespace GameEngine
 
 
             // Wrap rooms in Y if necessary
-            if (ball.y > Board.TOP_EDGE)
+            if (ball.y > Board.TOP_EDGE_FOR_BALL)
             {
-                ball.y = Board.ENTER_AT_BOTTOM;
+                ball.y = Board.BOTTOM_EDGE_FOR_BALL;
                 ball.room = roomDefs[ball.room].roomUp;
                 newRoom = true;
             }
-            else if (ball.y < Board.BOTTOM_EDGE)
+            else if (ball.y < Board.BOTTOM_EDGE_FOR_BALL)
             {
                 // Handle the ball leaving a castle.
                 bool canUnlockFromInside = ((gameOptions & GAMEOPTION_UNLOCK_GATES_FROM_INSIDE) != 0);
@@ -1283,13 +1283,13 @@ namespace GameEngine
                 if (!leftCastle)
                 {
                     // Wrap the ball to the top of the next screen
-                    ball.y = Board.ENTER_AT_TOP;
+                    ball.y = Board.TOP_EDGE_FOR_BALL;
                     ball.room = roomDefs[ball.room].roomDown;
                     newRoom = true;
                 }
             }
 
-            if (ball.x >= Board.RIGHT_EDGE)
+            if (ball.x > Board.RIGHT_EDGE_FOR_BALL)
             {
                 // Can't diagonally switch rooms.  If trying, only allow changing rooms vertically
                 if (ball.room != ball.previousRoom)
@@ -1300,7 +1300,7 @@ namespace GameEngine
                 else
                 {
                     // Wrap the ball to the left side of the next screen
-                    ball.x = Board.ENTER_AT_LEFT;
+                    ball.x = Board.LEFT_EDGE_FOR_BALL;
 
                     int rightRoom = roomDefs[ball.room].roomRight;
                     if (ball.room == Map.MAIN_HALL_RIGHT)
@@ -1316,7 +1316,7 @@ namespace GameEngine
                     newRoom = true;
                 }
             }
-            else if (ball.x < Board.LEFT_EDGE)
+            else if (ball.x < Board.LEFT_EDGE_FOR_BALL)
             {
                 // Can't diagonally switch rooms.  If trying, only allow changing rooms vertically
                 if (ball.room != ball.previousRoom)
@@ -1326,7 +1326,7 @@ namespace GameEngine
                 }
                 else
                 {
-                    ball.x = Board.ENTER_AT_RIGHT;
+                    ball.x = Board.RIGHT_EDGE_FOR_BALL;
                     ball.room = roomDefs[ball.room].roomLeft;
                     newRoom = true;
                 }
@@ -1371,14 +1371,14 @@ namespace GameEngine
         // allowBridge - if moving vertically, the bridge can allow you to not collide into a wall
         // hitObject - if we hit an object, will set this reference to the object we hit.  If NULL, will not try to set it.
         //
-        private void CollisionCheckBallWithEverything(BALL ball, int checkRoom, int checkX, int checkY, bool allowBridge)
+        private void CollisionCheckBallWithEverything(BALL ball, int checkRoom, bool allowBridge)
         {
             int hitObject = CollisionCheckBallWithAllObjects(ball);
             bool hitWall = false;
             if (hitObject == Board.OBJECT_NONE)
             {
-                bool crossingBridge = allowBridge && CrossingBridge(checkRoom, checkX, checkY, ball);
-                hitWall = !crossingBridge && CollisionCheckBallWithWalls(checkRoom, checkX, checkY);
+                bool crossingBridge = allowBridge && CrossingBridge(checkRoom, ball);
+                hitWall = !crossingBridge && CollisionCheckBallWithWalls(checkRoom, ball.x, ball.y);
             }
             ball.hitObject = hitObject;
             ball.hit = hitWall || (hitObject > Board.OBJECT_NONE);
@@ -1434,7 +1434,7 @@ namespace GameEngine
                     Dragon dragon = dragons[nextMove.dragonNum];
                     if ((dragon.state == Dragon.STALKING) &&
                         ((dragon.room != objectBall.room) ||
-                        (objectBall.distanceTo(dragon.x, dragon.y) > nextMove.distance)))
+                        (objectBall.distanceTo(dragon.x+4, dragon.y-Dragon.MIDHEIGHT) > nextMove.distance)))
                     {
 
                         dragon.syncAction(nextMove);
@@ -1481,7 +1481,7 @@ namespace GameEngine
                         nextBall.room = nextPort.insideRoom;
                         nextBall.previousRoom = nextBall.room;
                         nextBall.displayedRoom = nextBall.room;
-                        nextBall.y = Board.ENTER_AT_BOTTOM;
+                        nextBall.y = Board.BOTTOM_EDGE_FOR_BALL;
                         nextBall.previousY = nextBall.y;
                         nextBall.vely = 0;
                         nextBall.velx = 0;
@@ -1540,21 +1540,21 @@ namespace GameEngine
                 }
 
                 // Check and Deal with Up
-                if (objct.y > 0x6A)
+                if (objct.y > Board.TOP_EDGE_FOR_OBJECTS)
                 {
-                    objct.y = 0x0D;
+                    objct.y = Board.BOTTOM_EDGE_FOR_OBJECTS;
                     objct.room = roomDefs[objct.room].roomUp;
                 }
 
                 // Check and Deal with Left
-                if (objct.x < 0x03)
+                if (objct.x < Board.LEFT_EDGE_FOR_OBJECTS)
                 {
-                    objct.x = 0x9A;
+                    objct.x = Board.RIGHT_EDGE_FOR_OBJECTS-1;
                     objct.room = roomDefs[objct.room].roomLeft;
                 }
 
                 // Check and Deal with Down
-                if (objct.y < 0x0D)
+                if (objct.y < Board.BOTTOM_EDGE_FOR_OBJECTS)
                 {
                     // Handle object leaving the castles
                     bool leftCastle = false;
@@ -1571,19 +1571,19 @@ namespace GameEngine
                     }
                     if (!leftCastle)
                     {
-                        objct.y = 0x69;
+                        objct.y = Board.TOP_EDGE_FOR_OBJECTS-1;
                         objct.room = roomDefs[objct.room].roomDown;
                     }
                 }
 
                 // Check and Deal with Right
-                if (objct.x > 0x9B)
+                if (objct.x > Board.RIGHT_EDGE_FOR_OBJECTS)
                 {
-                    objct.x = 0x03;
+                    objct.x = Board.LEFT_EDGE_FOR_OBJECTS;
                     objct.room = roomDefs[objct.room].roomRight;
                 }
 
-                // If the objct has a linked object
+                // If the object has a linked object
                 if ((objct == bat) && (bat.linkedObject != Board.OBJECT_NONE))
                 {
                     OBJECT linkedObj = gameBoard[bat.linkedObject];
@@ -1828,8 +1828,8 @@ namespace GameEngine
                     {
                         // Put it in the same room as the ball (player) and center it under the ball
                         surrounds[ctr].room = roomNum;
-                        surrounds[ctr].x = (nextBall.x - 0x1E) / 2;
-                        surrounds[ctr].y = (nextBall.y + 0x18) / 2;
+                        surrounds[ctr].x = (nextBall.x - Board.SURROUND_RADIUS_X) / 2;
+                        surrounds[ctr].y = (nextBall.y + Board.SURROUND_RADIUS_Y) / 2;
                     }
                     else
                     {
@@ -2047,23 +2047,24 @@ namespace GameEngine
             {
                 // Position missile 00 to 0D,00 - left thin wall
                 COLOR color = COLOR.table((colorFirst > 0) ? colorFirst : COLOR.BLACK);
-                view.Platform_PaintPixel(color.r, color.g, color.b, 0x0D * 2, 0x00 * 2, 4, ADVENTURE_TOTAL_SCREEN_HEIGHT);
+                view.Platform_PaintPixel(color.r, color.g, color.b, Map.LEFT_THIN_WALL, 0x00, Map.THIN_WALL_WIDTH, ADVENTURE_TOTAL_SCREEN_HEIGHT);
             }
             if ((roomDefs[room].flags & ROOM.FLAG_RIGHTTHINWALL) > 0)
             {
                 // Position missile 01 to 96,00 - right thin wall
                 COLOR color = COLOR.table((colorFirst > 0) ? colorLast : COLOR.BLACK);
-                view.Platform_PaintPixel(color.r, color.g, color.b, 0x96 * 2, 0x00 * 2, 4, ADVENTURE_TOTAL_SCREEN_HEIGHT);
+                view.Platform_PaintPixel(color.r, color.g, color.b, Map.RIGHT_THIN_WALL, 0x00, Map.THIN_WALL_WIDTH, ADVENTURE_TOTAL_SCREEN_HEIGHT);
             }
         }
 
         private void DrawBall(BALL ball, COLOR color)
         {
-            int left = (ball.x - 4) & ~0x00000001;
-            int bottom = (ball.y - 10) & ~0x00000001; // Don't know why ball is drawn 2 pixels below y value
+            int left = ball.x; //& ~0x00000001;
+            int top = ball.y; // & ~0x00000001;
+            int bottom = top - BALL.DIAMETER;
 
             // scan the data
-            for (int row = bottom + 7, ctr = 0; row >= bottom; --row, ++ctr)
+            for (int row = top, ctr = 0; row > bottom; --row, ++ctr)
             {
                 byte rowByte = ball.gfxData[ctr];
                 for (int bit = 0; bit < 8; bit++)
@@ -2097,9 +2098,6 @@ namespace GameEngine
             int cx = gfxX * 2;
             int cy = gfxY * 2;
             int gfxHeight = gfx.Length;
-            // Adjust for proper position
-            cx -= Board.CLOCKS_HSYNC;
-            cy -= Board.CLOCKS_VSYNC;
 
             // scan the data
             for (int i = 0; i < gfxHeight; i++)
@@ -2127,9 +2125,6 @@ namespace GameEngine
         {
             bool hitWall = false;
 
-            // The playfield is drawn partially in the overscan area, so shift that out here
-            y -= 30;
-
             // get the playfield data
             ROOM currentRoom = roomDefs[room];
             byte[] roomData = currentRoom.graphicsData;
@@ -2145,15 +2140,16 @@ namespace GameEngine
         0x1,0x2,0x4,0x8,0x10,0x20,0x40,0x80
     };
 
-            // each cell is 8 x 32
-            int cell_width = 8;
-            int cell_height = 32;
 
-            if (((currentRoom.flags & ROOM.FLAG_LEFTTHINWALL) > 0) && ((x - (4 + 4)) < 0x0D * 2) && ((x + 4) > 0x0D * 2))
+            if (((currentRoom.flags & ROOM.FLAG_LEFTTHINWALL) > 0) &&
+                (x < Map.LEFT_THIN_WALL + Map.THIN_WALL_WIDTH ) &&
+                (x + BALL.DIAMETER >= Map.LEFT_THIN_WALL))
             {
                 hitWall = true;
             }
-            if (((currentRoom.flags & ROOM.FLAG_RIGHTTHINWALL) > 0) && ((x + 4) > 0x96 * 2) && ((x - (4 + 4) < 0x96 * 2)))
+            if (((currentRoom.flags & ROOM.FLAG_RIGHTTHINWALL) > 0) &&
+                (x < Map.RIGHT_THIN_WALL + Map.THIN_WALL_WIDTH) &&
+                (x + BALL.DIAMETER >= Map.RIGHT_THIN_WALL))
             {
                 // If the dot is in this room, allow passage through the wall into the Easter Egg room
                 if (gameBoard[Board.OBJECT_DOT].room != room)
@@ -2161,15 +2157,18 @@ namespace GameEngine
             }
 
             // Check each bit of the playfield data to see if they intersect the ball
-            for (int cy = 0; (cy <= 6) & !hitWall; cy++)
+            for (int cy = 0; (cy < Map.MAX_WALL_Y) & !hitWall; cy++)
             {
                 byte pf0 = roomData[(cy * 3) + 0];
                 byte pf1 = roomData[(cy * 3) + 1];
                 byte pf2 = roomData[(cy * 3) + 2];
 
-                int ypos = 6 - cy;
+                // y is not only counting down when we need it to count up,
+                // but is referring to the bottom left corner of its square
+                // when we need it to refer to the top left corner.
+                int ypos = (Map.MAX_WALL_Y - cy) * Map.WALL_HEIGHT - 1;
 
-                for (int cx = 0; cx < 20; cx++)
+                for (int cx = 0; cx < Map.MAX_WALL_X; cx++)
                 {
                     byte bit = 0;
 
@@ -2180,9 +2179,11 @@ namespace GameEngine
                     else
                         bit = (byte)(pf2 & shiftreg[cx]);
 
+                    int xpos = cx * Map.WALL_WIDTH;
                     if (bit != 0)
                     {
-                        if (Board.HitTestRects(x - 4, (y - 4), 8, 8, cx * cell_width, (ypos * cell_height), cell_width, cell_height))
+                        if (Board.HitTestRects(x, y, BALL.DIAMETER, BALL.DIAMETER,
+                            xpos, ypos, Map.WALL_WIDTH, Map.WALL_HEIGHT))
                         {
                             hitWall = true;
                             break;
@@ -2190,7 +2191,8 @@ namespace GameEngine
 
                         if (mirror)
                         {
-                            if (Board.HitTestRects(x - 4, (y - 4), 8, 8, (cx + 20) * cell_width, (ypos * cell_height), cell_width, cell_height))
+                            if (Board.HitTestRects(x, y, BALL.DIAMETER, BALL.DIAMETER,
+                                xpos + Adv.ADVENTURE_SCREEN_WIDTH/2, ypos, Map.WALL_WIDTH, Map.WALL_HEIGHT))
                             {
                                 hitWall = true;
                                 break;
@@ -2198,7 +2200,8 @@ namespace GameEngine
                         }
                         else
                         {
-                            if (Board.HitTestRects(x - 4, (y - 4), 8, 8, ((40 - (cx + 1)) * cell_width), (ypos * cell_height), cell_width, cell_height))
+                            if (Board.HitTestRects(x, y, BALL.DIAMETER, BALL.DIAMETER,
+                                Adv.ADVENTURE_SCREEN_WIDTH - xpos - Map.WALL_WIDTH, ypos, Map.WALL_WIDTH, Map.WALL_HEIGHT))
                             {
                                 hitWall = true;
                                 break;
@@ -2213,19 +2216,20 @@ namespace GameEngine
             return hitWall;
         }
 
-        private bool CrossingBridge(int room, int x, int y, BALL ball)
+        private bool CrossingBridge(int room, BALL ball)
         {
             // Check going through the bridge
             OBJECT bridge = gameBoard[Board.OBJECT_BRIDGE];
             if ((bridge.room == room)
                 && (ball.linkedObject != Board.OBJECT_BRIDGE))
             {
-                int xDiff = (x / 2) - bridge.x;
-                if ((xDiff >= 0x0A) && (xDiff <= 0x17))
+                int bridgeLeft = 2 * (bridge.x + Board.BRIDGE_AREA_LEFT);
+                int bridgeRight = 2 * (bridge.x + Board.BRIDGE_AREA_RIGHT);
+                if ((ball.x > bridgeLeft) && (ball.x + BALL.DIAMETER < bridgeRight))
                 {
-                    int yDiff = bridge.y - (y / 2);
-
-                    if ((yDiff >= -5) && (yDiff <= 0x15))
+                    int bridgeTop = 2 * (bridge.y - Board.BRIDGE_AREA_TOP);
+                    int bridgeBottom = 2 * (bridge.y - Board.BRIDGE_AREA_BOTTOM);
+                    if ((ball.y > bridgeBottom) && (ball.y-BALL.DIAMETER < bridgeTop))
                     {
                         return true;
                     }
@@ -2272,7 +2276,7 @@ namespace GameEngine
             bool collision = (objct.displayed &&
                               objct.isTangibleTo(thisPlayer) &&
                               (ball.room == objct.room) &&
-                              (CollisionCheckObject(objct, ball.x - 4, (ball.y - 1), 8, 8)) ? true : false);
+                              (CollisionCheckObject(objct, ball.x, ball.y, BALL.DIAMETER, BALL.DIAMETER)) ? true : false);
             return collision;
         }
 
@@ -2693,23 +2697,23 @@ namespace GameEngine
         //        - object, room, x, y, state, movement(x/y)
         private readonly int[,] game1Objects =
         {
-            {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 1
-            {Board.OBJECT_COPPER_PORT, Map.COPPER_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 4
-            {Board.OBJECT_JADE_PORT, Map.JADE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 5
-            {Board.OBJECT_WHITE_PORT, Map.WHITE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 2
-            {Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 3
-            {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00}, // Robinett message
-            {Board.OBJECT_NUMBER, Map.NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00}, // Starting number
-            {Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00}, // Yellow Dragon
-            {Board.OBJECT_GREENDRAGON, Map.SOUTHEAST_ROOM, 0x50, 0x20, 0x00, 0x00, 0x00}, // Green Dragon
-            {Board.OBJECT_SWORD, Map.GOLD_FOYER, 0x20, 0x20, 0x00, 0x00, 0x00}, // Sword
-            {Board.OBJECT_BRIDGE, Map.BLUE_MAZE_5, 0x2A, 0x37, 0x00, 0x00, 0x00}, // Bridge
-            {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Yellow Key
-            {Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Copper Key
-            {Board.OBJECT_JADEKEY, Map.JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Jade Key
-            {Board.OBJECT_BLACKKEY, Map.SOUTHEAST_ROOM, 0x20, 0x40, 0x00, 0x00, 0x00}, // Black Key
-            {Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
-            {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x80, 0x20, 0x00, 0x00, 0x00} // Magnet
+            {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, Portcullis.CLOSED_STATE, 0x00, 0x00}, // Port 1
+            {Board.OBJECT_COPPER_PORT, Map.COPPER_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, Portcullis.CLOSED_STATE, 0x00, 0x00}, // Port 4
+            {Board.OBJECT_JADE_PORT, Map.JADE_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, Portcullis.CLOSED_STATE, 0x00, 0x00}, // Port 5
+            {Board.OBJECT_WHITE_PORT, Map.WHITE_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, Portcullis.CLOSED_STATE, 0x00, 0x00}, // Port 2
+            {Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, Portcullis.CLOSED_STATE, 0x00, 0x00}, // Port 3
+            {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x4F, 0x67, 0x00, 0x00, 0x00}, // Robinett message
+            {Board.OBJECT_NUMBER, Map.NUMBER_ROOM, 0x4F, 0x3E, 0x00, 0x00, 0x00}, // Starting number
+            {Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_LEFT, 0x4F, 0x1E, 0x00, 0x00, 0x00}, // Yellow Dragon
+            {Board.OBJECT_GREENDRAGON, Map.SOUTHEAST_ROOM, 0x4F, 0x1E, 0x00, 0x00, 0x00}, // Green Dragon
+            {Board.OBJECT_SWORD, Map.GOLD_FOYER, 0x1F, 0x1E, 0x00, 0x00, 0x00}, // Sword
+            {Board.OBJECT_BRIDGE, Map.BLUE_MAZE_5, 0x29, 0x35, 0x00, 0x00, 0x00}, // Bridge
+            {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
+            {Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Copper Key
+            {Board.OBJECT_JADEKEY, Map.JADE_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Jade Key
+            {Board.OBJECT_BLACKKEY, Map.SOUTHEAST_ROOM, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Black Key
+            {Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x2F, 0x1E, 0x00, 0x00, 0x00}, // Challise
+            {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x7F, 0x1E, 0x00, 0x00, 0x00} // Magnet
         };
 
 
@@ -2719,59 +2723,59 @@ namespace GameEngine
         //        - object, room, x, y, state, movement(x/y)
         private readonly int[,] game2Objects =
         {
-            {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 1
-            {Board.OBJECT_COPPER_PORT, Map.COPPER_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 4
-            {Board.OBJECT_JADE_PORT, Map.JADE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 5
-            {Board.OBJECT_WHITE_PORT, Map.WHITE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 2
-            {Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 3
-            {Board.OBJECT_CRYSTAL_PORT, Map.CRYSTAL_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 3
-            {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00}, // Robinett message
-            {Board. OBJECT_NUMBER, Map.NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00}, // Starting number
-            {Board.OBJECT_REDDRAGON, Map.BLACK_MAZE_2, 0x50, 0x20, 0x00, 3, 3}, // Red Dragon
-            {Board.OBJECT_YELLOWDRAGON, Map.RED_MAZE_4, 0x50, 0x20, 0x00, 3, 3}, // Yellow Dragon
+            {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, Portcullis.CLOSED_STATE, 0x00, 0x00}, // Port 1
+            {Board.OBJECT_COPPER_PORT, Map.COPPER_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, Portcullis.CLOSED_STATE, 0x00, 0x00}, // Port 4
+            {Board.OBJECT_JADE_PORT, Map.JADE_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, Portcullis.CLOSED_STATE, 0x00, 0x00}, // Port 5
+            {Board.OBJECT_WHITE_PORT, Map.WHITE_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, Portcullis.CLOSED_STATE, 0x00, 0x00}, // Port 2
+            {Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, Portcullis.CLOSED_STATE, 0x00, 0x00}, // Port 3
+            {Board.OBJECT_CRYSTAL_PORT, Map.CRYSTAL_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, Portcullis.CLOSED_STATE, 0x00, 0x00}, // Port 3
+            {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x4F, 0x67, 0x00, 0x00, 0x00}, // Robinett message
+            {Board. OBJECT_NUMBER, Map.NUMBER_ROOM, 0x4F, 0x3E, 0x00, 0x00, 0x00}, // Starting number
+            {Board.OBJECT_REDDRAGON, Map.BLACK_MAZE_2, 0x4F, 0x1E, 0x00, 3, 3}, // Red Dragon
+            {Board.OBJECT_YELLOWDRAGON, Map.RED_MAZE_4, 0x4F, 0x1E, 0x00, 3, 3}, // Yellow Dragon
             // Commented out sections are for easy testing of Easter Egg
             #if DEBUG_EASTEREGG
-            {Board.OBJECT_GREENDRAGON, Map.NUMBER_ROOM, 0x50, 0x20, 0x00, 3, 3}, // Green Dragon
+            {Board.OBJECT_GREENDRAGON, Map.NUMBER_ROOM, 0x4F, 0x1E, 0x00, 3, 3}, // Green Dragon
             #else
-            {Board.OBJECT_GREENDRAGON, Map.BLUE_MAZE_3, 0x50, 0x20, 0x00, 3, 3}, // Green Dragon
+            {Board.OBJECT_GREENDRAGON, Map.BLUE_MAZE_3, 0x4F, 0x1E, 0x00, 3, 3}, // Green Dragon
             #endif
-            {Board.OBJECT_SWORD, Map.GOLD_CASTLE, 0x20, 0x20, 0x00, 0x00, 0x00}, // Sword
+            {Board.OBJECT_SWORD, Map.GOLD_CASTLE, 0x1F, 0x1E, 0x00, 0x00, 0x00}, // Sword
             #if DEBUG_EASTEREGG
-            {Board.OBJECT_BRIDGE, Map.MAIN_HALL_RIGHT, 0x40, 0x40, 0x00, 0x00, 0x00}, // Bridge
-            {Board.OBJECT_YELLOWKEY, Map.MAIN_HALL_RIGHT, 0x20, 0x40, 0x00, 0x00, 0x00}, // Yellow Key
-            {Board.OBJECT_COPPERKEY, Map.MAIN_HALL_RIGHT, 0x7a, 0x40, 0x00, 0x00, 0x00}, // Copper Key
+            {Board.OBJECT_BRIDGE, Map.MAIN_HALL_RIGHT, 0x3F, 0x3E, 0x00, 0x00, 0x00}, // Bridge
+            {Board.OBJECT_YELLOWKEY, Map.MAIN_HALL_RIGHT, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
+            {Board.OBJECT_COPPERKEY, Map.MAIN_HALL_RIGHT, 0x79, 0x3E, 0x00, 0x00, 0x00}, // Copper Key
             #else
-            {Board.OBJECT_BRIDGE, Map.WHITE_MAZE_3, 0x40, 0x40, 0x00, 0x00, 0x00}, // Bridge
-            {Board.OBJECT_YELLOWKEY, Map.WHITE_MAZE_2, 0x20, 0x40, 0x00, 0x00, 0x00}, // Yellow Key
-            {Board.OBJECT_COPPERKEY, Map.WHITE_MAZE_2, 0x7a, 0x40, 0x00, 0x00, 0x00}, // Copper Key
+            {Board.OBJECT_BRIDGE, Map.WHITE_MAZE_3, 0x3F, 0x3E, 0x00, 0x00, 0x00}, // Bridge
+            {Board.OBJECT_YELLOWKEY, Map.WHITE_MAZE_2, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
+            {Board.OBJECT_COPPERKEY, Map.WHITE_MAZE_2, 0x79, 0x3E, 0x00, 0x00, 0x00}, // Copper Key
             #endif
-            {Board.OBJECT_JADEKEY, Map.BLUE_MAZE_4, 0x7a, 0x40, 0x00, 0x00, 0x00}, // Jade Key
-            {Board.OBJECT_WHITEKEY, Map.BLUE_MAZE_3, 0x20, 0x40, 0x00, 0x00, 0x00}, // White Key
-            {Board.OBJECT_BLACKKEY, Map.RED_MAZE_4, 0x20, 0x40, 0x00, 0x00, 0x00}, // Black Key
-            {Board.OBJECT_CRYSTALKEY1, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 1
-            {Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
-            {Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
-            {Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x20, 0x20, 0x00, 0, -3}, // Bat
+            {Board.OBJECT_JADEKEY, Map.BLUE_MAZE_4, 0x79, 0x3E, 0x00, 0x00, 0x00}, // Jade Key
+            {Board.OBJECT_WHITEKEY, Map.BLUE_MAZE_3, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // White Key
+            {Board.OBJECT_BLACKKEY, Map.RED_MAZE_4, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Black Key
+            {Board.OBJECT_CRYSTALKEY1, Map.CRYSTAL_CASTLE, 0x4C, 0x53, 0x00, 0x00, 0x00}, // Crystal Key for Player 1
+            {Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x4C, 0x53, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
+            {Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x4C, 0x53, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
+            {Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x1F, 0x1E, 0x00, 0, -3}, // Bat
 #if DEBUG_EASTEREGG
-            {Board.OBJECT_DOT, Map.MAIN_HALL_RIGHT, 0x20, 0x10, 0x00, 0x00, 0x00}, // Dot
+            {Board.OBJECT_DOT, Map.MAIN_HALL_RIGHT, 0x1F, 0x0E, 0x00, 0x00, 0x00}, // Dot
 #else
-            {Board.OBJECT_DOT, Map.BLACK_MAZE_3, 0x45, 0x12, 0x00, 0x00, 0x00}, // Dot
+            {Board.OBJECT_DOT, Map.BLACK_MAZE_3, 0x44, 0x10, 0x00, 0x00, 0x00}, // Dot
 #endif
-            {Board.OBJECT_CHALISE, Map.BLACK_MAZE_2, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
-            {Board.OBJECT_MAGNET, Map.SOUTHWEST_ROOM, 0x80, 0x20, 0x00, 0x00, 0x00}, // Magnet
+            {Board.OBJECT_CHALISE, Map.BLACK_MAZE_2, 0x2F, 0x1E, 0x00, 0x00, 0x00}, // Challise
+            {Board.OBJECT_MAGNET, Map.SOUTHWEST_ROOM, 0x7F, 0x1E, 0x00, 0x00, 0x00}, // Magnet
         };
 
         // Object locations (room and coordinate) for game 01
         //        - object, room, x, y, state, movement(x/y)
         private readonly int[,] gameGauntletObjects =
         {
-            {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 1
-            {Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 3
-            {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00}, // Robinett message
-            {Board.OBJECT_NUMBER, Map.NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00}, // Starting number
-            {Board.OBJECT_REDDRAGON, Map.BLUE_MAZE_1, 0x50, 0x20, 0x00, 0x00, 0x00}, // Red Dragon
-            {Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_CENTER, 0x50, 0x20, 0x00, 0x00, 0x00}, // Yellow Dragon
-            {Board.OBJECT_GREENDRAGON, Map.MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00} // Green Dragon
+            {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, 0x0C, 0x00, 0x00}, // Port 1
+            {Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, 0x0C, 0x00, 0x00}, // Port 3
+            {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x4F, 0x67, 0x00, 0x00, 0x00}, // Robinett message
+            {Board.OBJECT_NUMBER, Map.NUMBER_ROOM, 0x4F, 0x3E, 0x00, 0x00, 0x00}, // Starting number
+            {Board.OBJECT_REDDRAGON, Map.BLUE_MAZE_1, 0x4F, 0x1E, 0x00, 0x00, 0x00}, // Red Dragon
+            {Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_CENTER, 0x4F, 0x1E, 0x00, 0x00, 0x00}, // Yellow Dragon
+            {Board.OBJECT_GREENDRAGON, Map.MAIN_HALL_LEFT, 0x4F, 0x1E, 0x00, 0x00, 0x00} // Green Dragon
         };
 
 
