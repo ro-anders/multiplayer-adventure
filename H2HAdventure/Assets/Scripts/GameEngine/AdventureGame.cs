@@ -406,6 +406,7 @@ namespace GameEngine
             //
             // Draw any objects in the room
             //
+            ClearDrawnObjects();
             DrawObjects(displayedRoom);
 
         }
@@ -1996,117 +1997,98 @@ namespace GameEngine
             }
         }
 
-        void DrawObjects(int room)
+        void ClearDrawnObjects()
         {
-            // Clear out the display list
-            int[] displayList = new int[MAX_OBJECTS];
-            for (int ctr = 0; ctr < MAX_OBJECTS; ctr++)
-            {
-                displayList[ctr] = Board.OBJECT_NONE;
-            }
-
-            // Create a list of all the objects that want to be drawn
-            int numAdded = 0;
-
-            for (int ctr = 0; ctr < numPlayers; ++ctr)
-            {
-                if (surrounds[ctr].room == room)
-                {
-                    displayList[numAdded++] = Board.OBJECT_SURROUND - ctr;
-                }
-            }
-
-            int colorFirst = -1;
-            int colorLast = -1;
-
             Board.ObjIter iter = gameBoard.getObjects();
             while (iter.hasNext())
             {
                 OBJECT toDisplay = iter.next();
                 // Init it to not displayed
                 toDisplay.displayed = false;
-                if (toDisplay.room == room)
-                {
-                    // This object is in the current room - add it to the list
-                    displayList[numAdded++] = toDisplay.getPKey();
-
-                    if (colorFirst < 0) colorFirst = toDisplay.color;
-                    colorLast = toDisplay.color;
-                }
-            }
-
-            // Now display the objects in the list, up to the max number of objects at a time
-
-            if (numAdded <= MAX_DISPLAYABLE_OBJECTS)
-                displayListIndex = 0;
-            else
-            {
-                if (displayListIndex > numAdded)
-                    displayListIndex = 0;
-                if (displayListIndex > MAX_OBJECTS)
-                    displayListIndex = 0;
-                if (displayList[displayListIndex] == Board.OBJECT_NONE)
-                    displayListIndex = 0;
             }
 
             for (int ctr = 0; ctr < numPlayers; ++ctr)
             {
                 surrounds[ctr].displayed = false;
             }
+        }
 
-            int numDisplayed = 0;
-            int i = displayListIndex;
-            //
+        void DrawObjects(int room)
+        {
+            // RCA - Completely redid how we compute which objects are displayed
+            // to handle AI players that need objects to flicker even when
+            // not displayed on the screen.
+
+            // This assumes ClearDrawnObjects() has been called before this.
+
+            // Create a list of objects in this room to be displayed
+            List<int> objectsToDisplay = new List<int>(MAX_OBJECTS);
+            Board.ObjIter iter = gameBoard.getObjects();
+            while (iter.hasNext())
+            {
+                OBJECT toDisplay = iter.next();
+                if (toDisplay.room == room)
+                {
+                    // This object is in the current room - add it to the list
+                    objectsToDisplay.Add(toDisplay.getPKey());
+                }
+            }
+
+            // Add the surrounds to the list
+            for (int ctr = 0; ctr < numPlayers; ++ctr)
+            {
+                if (surrounds[ctr].room == room)
+                {
+                    objectsToDisplay.Add(Board.OBJECT_SURROUND - ctr);
+                }
+            }
+
+
             // If more than MAX_DISPLAYABLE_OBJECTS are needed to be drawn, we multiplex/cycle through them
             // Note that this also (intentionally) effects collision checking, as per the original game!!
-            //
-            while ((numDisplayed++) < numAdded && (numDisplayed <= MAX_DISPLAYABLE_OBJECTS))
+            // RCA - Unlike the original game which used a state variable to track where in the list,
+            // we use the frame counter
+            int numObjects = objectsToDisplay.Count;
+            int numToDisplay = (numObjects > MAX_DISPLAYABLE_OBJECTS ? MAX_DISPLAYABLE_OBJECTS : numObjects);
+            int start = (numObjects > 0 ? (frameNumber / 3) % numObjects : 0);
+            // We need to keep track of these for weird reasons
+            int firstColorDrawn = -1;
+            int lastColorDrawn = COLOR.BLACK;
+            for(int ctr=0; ctr<numToDisplay; ++ctr)
             {
-                if (displayList[i] > Board.OBJECT_NONE)
+                int nextObjectKey = objectsToDisplay[(start + ctr) % numObjects];
+                // There are both objects and surrounds in the list.  Deal with each.
+                if (nextObjectKey > Board.OBJECT_NONE)
                 {
-                    OBJECT toDraw = gameBoard[displayList[i]];
-                    if (SHOW_OBJECT_FLICKER)
+                    OBJECT nextObject = gameBoard[nextObjectKey];
+                    nextObject.displayed = true;
+                    DrawObject(nextObject);
+                    if (firstColorDrawn < 0)
                     {
-                        DrawObject(toDraw);
+                        firstColorDrawn = nextObject.color;
                     }
-                    toDraw.displayed = true;
-                    colorLast = toDraw.color;
+                    lastColorDrawn = nextObject.color;
                 }
-                else if (displayList[i] <= Board.OBJECT_SURROUND)
+                else if (nextObjectKey <= Board.OBJECT_SURROUND)
                 {
-                    surrounds[Board.OBJECT_SURROUND - displayList[i]].displayed = true;
-                }
-
-                // wrap to the beginning of the list if we've reached the end
-                ++i;
-                if (i > MAX_OBJECTS)
-                    i = 0;
-                else if (displayList[i] == Board.OBJECT_NONE)
-                    i = 0;
-            }
-
-            if (!SHOW_OBJECT_FLICKER)
-            {
-                // Just paint everything in this room so we bypass the flicker if desired
-                Board.ObjIter iter2 = gameBoard.getObjects();
-                while (iter2.hasNext())
-                {
-                    OBJECT next = iter2.next();
-                    if (next.room == room)
-                        DrawObject(next);
+                    surrounds[Board.OBJECT_SURROUND - nextObjectKey].displayed = true;
                 }
             }
+            firstColorDrawn = (firstColorDrawn < 0 ? COLOR.BLACK : firstColorDrawn);
+
 
             if ((roomDefs[room].flags & ROOM.FLAG_LEFTTHINWALL) > 0)
             {
                 // Position missile 00 to 0D,00 - left thin wall
-                COLOR color = COLOR.table((colorFirst > 0) ? colorFirst : COLOR.BLACK);
+                // Left wall is the color of the first displayed object
+                COLOR color = COLOR.table(firstColorDrawn);
                 view.Platform_PaintPixel(color.r, color.g, color.b, Map.LEFT_THIN_WALL, 0x00, Map.THIN_WALL_WIDTH, ADVENTURE_TOTAL_SCREEN_HEIGHT);
             }
             if ((roomDefs[room].flags & ROOM.FLAG_RIGHTTHINWALL) > 0)
             {
                 // Position missile 01 to 96,00 - right thin wall
-                COLOR color = COLOR.table((colorFirst > 0) ? colorLast : COLOR.BLACK);
+                // Right thin wall is the color of the last displayed object
+                COLOR color = COLOR.table(lastColorDrawn);
                 view.Platform_PaintPixel(color.r, color.g, color.b, Map.RIGHT_THIN_WALL, 0x00, Map.THIN_WALL_WIDTH, ADVENTURE_TOTAL_SCREEN_HEIGHT);
             }
         }
