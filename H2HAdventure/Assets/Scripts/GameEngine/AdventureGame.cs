@@ -69,11 +69,11 @@ namespace GameEngine
         private Sync sync;
         private readonly Transport transport;
         private readonly int thisPlayer;
-        private BALL objectBall;
+        private BALL thisBall;
 
         private readonly OBJECT[] surrounds;
 
-        private AINav ai;
+        private AiNav ai;
         private AiPlayer[] aiPlayers = { null, null, null };
 
         private Random randomGen = new Random();
@@ -225,11 +225,11 @@ namespace GameEngine
                 Portcullis p3Home = (isCooperative ? ports[0] : ports[5]);
                 gameBoard.addPlayer(new BALL(2, p3Home, useAltIcons), thisPlayer == 2);
             }
-            objectBall = gameBoard.getPlayer(thisPlayer);
+            thisBall = gameBoard.getPlayer(thisPlayer);
             bool willUseAi = useAi[0] || useAi[1] || useAi[2];
             if (willUseAi)
             {
-                ai = new AINav(gameMap);
+                ai = new AiNav(gameMap);
             }
             for (int ctr = 0; ctr < numPlayers; ++ctr)
             {
@@ -261,10 +261,22 @@ namespace GameEngine
             }
         }
 
-        public void PrintDisplay()
+        /**
+         * There are three types of players, the local player, a remote player
+         * and an AI player.  Will return true if this is a remote player
+         * @param player_index the number of the player, 0-2
+         * @returns true if player is a remote player
+         */
+        public bool isPlayerRemote(int player_index)
+        {
+            // Returns if this is not the local player and not an ai player
+            return ((player_index != thisPlayer) && (aiPlayers[player_index] == null));
+        }
+
+        public void PrintDisplay(int thisPlayerRoom)
         {
             // get the playfield data
-            int displayedRoom = (displayWinningRoom ? winningRoom : objectBall.displayedRoom);
+            int displayedRoom = (displayWinningRoom ? winningRoom : thisPlayerRoom);
 
             ROOM currentRoom = roomDefs[displayedRoom];
             byte[] roomData = currentRoom.graphicsData;
@@ -526,7 +538,7 @@ namespace GameEngine
             RemoteAction batAction = sync.GetNextBatAction();
             while ((batAction != null) && bat.exists())
             {
-                bat.handleAction(batAction, objectBall);
+                bat.handleAction(batAction, thisBall);
                 batAction = sync.GetNextBatAction();
             }
 
@@ -557,13 +569,7 @@ namespace GameEngine
             PlayerWinAction lost = sync.GetGameWon();
             if (lost != null)
             {
-                if (popupMgr != null)
-                {
-                    popupMgr.ShowPopupNow(new Popup("chalice",
-                        "Oh no! You lost.  Player " + (lost.sender + 1) +
-                        "has won the game.", popupMgr));
-                }
-                WinGame(lost.winInRoom);
+                WinGame(lost.sender, lost.winInRoom);
                 lost = null;
             }
 
@@ -589,26 +595,9 @@ namespace GameEngine
             }
 
             // Reset switch
-            if ((gameState != GAMESTATE_WIN) && switchReset && !reset && (EasterEgg.eggState != EGG_STATE.DEBRIEF))
+            if (switchReset && !reset)
             {
-                if (gameState != GAMESTATE_GAMESELECT)
-                {
-                    // In the role playing version, the cleric has to be on the screen
-                    // to reset
-                    if ((gameMode != Adv.GAME_MODE_ROLE_PLAY) || (gameBoard.getPlayer(2).room == objectBall.room))
-                    {
-                        ResetPlayer(objectBall);
-                        if ((popupMgr != null) && popupMgr.needPopup[PopupMgr.RESPAWNED])
-                        {
-                            popupMgr.ShowPopup(new Popup("",
-                                "Now that you respawned, all dead dragons have come back to life",
-                                popupMgr, PopupMgr.RESPAWNED));
-                        }
-                        // Broadcast to everyone else
-                        PlayerResetAction action = new PlayerResetAction();
-                        sync.BroadcastAction(action);
-                    }
-                }
+                handleResetSwitch();
             }
             else
             {
@@ -631,42 +620,24 @@ namespace GameEngine
                         int displayNum = timeToStartGame / 60;
                         gameBoard[Board.OBJECT_NUMBER].state = displayNum;
 
-                        // Display the room and objects
-                        objectBall.room = 0;
-                        objectBall.previousRoom = 0;
-                        objectBall.displayedRoom = 0;
-                        objectBall.x = 0;
-                        objectBall.y = 0;
-                        objectBall.previousX = 0;
-                        objectBall.previousY = 0;
-                        PrintDisplay();
+                        // Display the pre-game room
+                        PrintDisplay(0);
                     }
                 }
                 else if ((gameState == GAMESTATE_ACTIVE_1) || (gameState == GAMESTATE_ACTIVE_2) || (gameState == GAMESTATE_ACTIVE_3))
                 {
                     // Has someone won the game.
-                    if (checkWonGame())
+                    int winner = checkWonGame();
+                    if (winner >= 0)
                     {
-                        if (popupMgr != null)
-                        {
-                            popupMgr.ShowPopupNow(new Popup("chalice",
-                                "You won!!!!  Congratulations.", popupMgr));
-                        }
-                        WinGame(objectBall.room);
-                        PlayerWinAction won = new PlayerWinAction(objectBall.room);
-                        sync.BroadcastAction(won);
-                        // Report back to the server on competitive games
-                        if (!isCooperative)
-                        {
-                            view.Platform_ReportToServer(AdventureReports.WON_GAME);
-                        }
+                        WinGame(winner, gameBoard.getPlayer(winner).room);
                     }
                     else if (EasterEgg.isGauntletTimeUp(frameNumber))
                     {
                         EasterEgg.endGauntlet();
                         gameState = GAMESTATE_WIN;
                         view.Platform_GameChange(GAME_CHANGES.GAME_ENDED);
-                        winningRoom = objectBall.displayedRoom;
+                        winningRoom = thisBall.displayedRoom;
                     }
                     else
                     {
@@ -703,7 +674,7 @@ namespace GameEngine
                             }
 
                             // Setup the room and object
-                            PrintDisplay();
+                            PrintDisplay(thisBall.displayedRoom);
 
                             ++gameState;
                         }
@@ -726,14 +697,14 @@ namespace GameEngine
                             // Move and deal with bat
                             if (bat.exists())
                             {
-                                bat.moveOneTurn(sync, objectBall);
+                                bat.moveOneTurn(sync, thisBall);
                             }
 
                             // Move and deal with portcullises
                             Portals();
 
                             // Display the room and objects
-                            PrintDisplay();
+                            PrintDisplay(thisBall.displayedRoom);
 
                             ++gameState;
                         }
@@ -749,13 +720,18 @@ namespace GameEngine
                                     sync.BroadcastAction(dragonAction);
                                 }
                                 // In gauntlet mode, getting eaten immediately triggers a reset.
-                                if ((gameMode == Adv.GAME_MODE_GAUNTLET) && (dragon.state == Dragon.EATEN) && (dragon.eaten == objectBall))
+                                if ((gameMode == Adv.GAME_MODE_GAUNTLET) && (dragon.state == Dragon.EATEN) && (dragon.eaten != null))
                                 {
-                                    ResetPlayer(objectBall);
-                                    // Broadcast to everyone else
-                                    PlayerResetAction action = new PlayerResetAction();
-                                    sync.BroadcastAction(action);
-
+                                    if (!isPlayerRemote(dragon.eaten.playerNum))
+                                    {
+                                        ResetPlayer(dragon.eaten);
+                                        if (dragon.eaten.playerNum == thisPlayer)
+                                        {
+                                            // Broadcast to everyone else
+                                            PlayerResetAction action = new PlayerResetAction();
+                                            sync.BroadcastAction(action);
+                                        }
+                                    }
                                 }
                             }
 
@@ -769,7 +745,7 @@ namespace GameEngine
                             Magnet();
 
                             // Display the room and objects
-                            PrintDisplay();
+                            PrintDisplay(thisBall.displayedRoom);
 
                             gameState = GAMESTATE_ACTIVE_1;
                         }
@@ -796,7 +772,7 @@ namespace GameEngine
                     }
 
                     // Display the room and objects
-                    PrintDisplay();
+                    PrintDisplay(thisBall.displayedRoom);
                 }
             }
 
@@ -1008,7 +984,7 @@ namespace GameEngine
             float NEAR_VOLUME = MAX.VOLUME / 3;
             float FAR_VOLUME = MAX.VOLUME / 9;
 
-            int distance = gameMap.distance(room, objectBall.room);
+            int distance = gameMap.distance(room, thisBall.room);
 
             float volume = 0.0f;
             switch (distance)
@@ -1029,50 +1005,96 @@ namespace GameEngine
             return volume;
         }
 
-        /**
-         * Returns true if this player has gotten the chalise to their home castle and won the game, or, if
-         * this is the gauntlet, if the player has reached the gold castle.
-         */
-        bool checkWonGame()
+        void handleResetSwitch()
         {
-            bool won = false;
-            if (gameMode == Adv.GAME_MODE_GAUNTLET)
+            // When can't you respawn?  Before the game starts, after it ends and
+            // before the Easter Egg race.
+            if ((gameState != GAMESTATE_WIN) && (gameState != GAMESTATE_GAMESELECT) && (EasterEgg.eggState != EGG_STATE.DEBRIEF))
             {
-                won = (objectBall.isGlowing() && (objectBall.room == objectBall.homeGate.insideRoom));
-                if (won && (EasterEgg.eggState == EGG_STATE.IN_GAUNTLET))
+                // In the role playing version, the cleric has to be on the screen
+                // to reset
+                if ((gameMode != Adv.GAME_MODE_ROLE_PLAY) || (gameBoard.getPlayer(2).room == thisBall.room))
                 {
-                    EasterEgg.winEgg();
+                    ResetPlayer(thisBall);
+                    if ((popupMgr != null) && popupMgr.needPopup[PopupMgr.RESPAWNED])
+                    {
+                        popupMgr.ShowPopup(new Popup("",
+                            "Now that you respawned, all dead dragons have come back to life",
+                            popupMgr, PopupMgr.RESPAWNED));
+                    }
+                    // Broadcast to everyone else
+                    PlayerResetAction action = new PlayerResetAction();
+                    sync.BroadcastAction(action);
                 }
             }
-            else
+        }
+
+        /**
+         * Checks if a player has gotten the chalise to their home castle and won the game, or, if
+         * this is the gauntlet, if the player has reached the gold castle.  Doesn't check remote players.
+         * @return number of the player who won, or -1 if no one won
+         */
+        int checkWonGame()
+        {
+            int winningPlayer = -1;
+            for (int ctr = 0; (ctr < numPlayers) && (winningPlayer < 0); ++ctr)
             {
-                // Player MUST be holding the chalise to win (or holding the bat holding the chalise).
-                // Another player can't win for you.
-                if ((objectBall.linkedObject == Board.OBJECT_CHALISE) ||
-                    ((objectBall.linkedObject == Board.OBJECT_BAT) && (bat.linkedObject == Board.OBJECT_CHALISE)))
+                // We don't calculate winning for remote players.  We rely on them
+                // sending a remote win message.
+                if (!isPlayerRemote(ctr))
                 {
-                    // Player either has to bring the chalise into the castle or touch the chalise to the gate
-                    if (gameBoard[Board.OBJECT_CHALISE].room == objectBall.homeGate.insideRoom)
+                    bool won = false;
+                    BALL nextBall = gameBoard.getPlayer(ctr);
+                    if (gameMode == Adv.GAME_MODE_GAUNTLET)
                     {
-                        won = true;
+                        won = (nextBall.isGlowing() && (nextBall.room == nextBall.homeGate.insideRoom));
                     }
                     else
                     {
-                        if ((objectBall.room == objectBall.homeGate.room) &&
-                            (objectBall.homeGate.state == Portcullis.OPEN_STATE) &&
-                            gameBoard.CollisionCheckObjectObject(objectBall.homeGate, gameBoard[Board.OBJECT_CHALISE]))
+                        // Player MUST be holding the chalise to win (or holding the bat holding the chalise).
+                        // Another player can't win for you.
+                        if ((nextBall.linkedObject == Board.OBJECT_CHALISE) ||
+                            ((nextBall.linkedObject == Board.OBJECT_BAT) && (bat.linkedObject == Board.OBJECT_CHALISE)))
                         {
-
-                            won = true;
+                            // Player either has to bring the chalise into the castle or touch the chalise to the gate
+                            if (gameBoard[Board.OBJECT_CHALISE].room == nextBall.homeGate.insideRoom)
+                            {
+                                won = true;
+                            }
+                            else if (nextBall.room == nextBall.homeGate.room) {
+                                won = (nextBall.homeGate.state == Portcullis.OPEN_STATE) &&
+                                    gameBoard.CollisionCheckObjectObject(nextBall.homeGate, gameBoard[Board.OBJECT_CHALISE]);
+                            }
                         }
                     }
+                    winningPlayer = (won ? ctr : -1);
                 }
             }
-            return won;
+            return winningPlayer;
         }
 
-        void WinGame(int winRoom)
+        /**
+         * Handle the mechanics when a game is won.
+         * @param winningPlayer the player who won
+         * @param winRoom the room where the game was won
+         */
+        void WinGame(int winningPlayer, int winRoom)
         {
+
+            if (popupMgr != null)
+            {
+                if (winningPlayer == thisPlayer)
+                {
+                    popupMgr.ShowPopupNow(new Popup("chalice",
+                        "You won!!!!  Congratulations.", popupMgr));
+                } else
+                {
+                    popupMgr.ShowPopupNow(new Popup("chalice",
+                        "Oh no! You lost.  Player " + (winningPlayer + 1) +
+                        "has won the game.", popupMgr));
+                }
+            }
+
             // Go to won state
             gameState = GAMESTATE_WIN;
             winFlashTimer = 0xff;
@@ -1081,6 +1103,24 @@ namespace GameEngine
 
             // Play the sound
             view.Platform_MakeSound(SOUND.WON, MAX.VOLUME);
+
+            if (winningPlayer == thisPlayer)
+            {
+                PlayerWinAction won = new PlayerWinAction(winningRoom);
+                sync.BroadcastAction(won);
+                // Report back to the server on competitive games
+                if (!isCooperative)
+                {
+                    view.Platform_ReportToServer(AdventureReports.WON_GAME);
+                }
+
+                if (EasterEgg.eggState == EGG_STATE.IN_GAUNTLET)
+                {
+                    EasterEgg.winEgg();
+                }
+
+            }
+
         }
 
         void ReactToCollisionX(BALL ball)
@@ -1092,12 +1132,12 @@ namespace GameEngine
                     if ((ball.hitObject > Board.OBJECT_NONE) && (ball.hitObject == ball.linkedObject))
                     {
                         ball.linkedObjectX += ball.velx;
-                        if (ball == objectBall)
+                        if (ball.playerNum == thisPlayer)
                         {
                             // If this is adjusting how the current player holds an object,
                             // we broadcast to other players as a pickup action
                             PlayerPickupAction action = new PlayerPickupAction(ball.hitObject,
-                                objectBall.linkedObjectX, objectBall.linkedObjectY, Board.OBJECT_NONE, 0, 0, 0);
+                                ball.linkedObjectX, ball.linkedObjectY, Board.OBJECT_NONE, 0, 0, 0);
                             sync.BroadcastAction(action);
                         }
                     }
@@ -1121,12 +1161,12 @@ namespace GameEngine
                 if ((ball.hitObject > Board.OBJECT_NONE) && (ball.hitObject == ball.linkedObject))
                 {
                     ball.linkedObjectY += ball.vely;
-                    if (ball == objectBall)
+                    if (ball.playerNum == thisPlayer)
                     {
                         // If this is adjusting how the current player holds an object,
                         // we broadcast to other players as a pickup action
                         PlayerPickupAction action = new PlayerPickupAction(ball.hitObject,
-                            objectBall.linkedObjectX, objectBall.linkedObjectY, Board.OBJECT_NONE, 0, 0, 0);
+                            ball.linkedObjectX, ball.linkedObjectY, Board.OBJECT_NONE, 0, 0, 0);
                         sync.BroadcastAction(action);
                     }
                 }
@@ -1160,8 +1200,8 @@ namespace GameEngine
         private bool ThisBallMovement()
         {
             // Read the joystick and translate into a velocity
-            int prevVelX = objectBall.velx;
-            int prevVelY = objectBall.vely;
+            int prevVelX = thisBall.velx;
+            int prevVelY = thisBall.vely;
             if (!joystickDisabled && aiPlayers[thisPlayer] == null)
             {
                 int newVelY = 0;
@@ -1176,7 +1216,7 @@ namespace GameEngine
                 {
                     newVelY = -6;
                 }
-                objectBall.vely = newVelY;
+                thisBall.vely = newVelY;
 
                 int newVelX = 0;
                 if (joyRight)
@@ -1190,11 +1230,11 @@ namespace GameEngine
                 {
                     newVelX = -6;
                 }
-                objectBall.velx = newVelX;
+                thisBall.velx = newVelX;
             }
 
             bool broadcastMovement = !joystickDisabled &&
-                 ((objectBall.velx != prevVelX) || (objectBall.vely != prevVelY));
+                 ((thisBall.velx != prevVelX) || (thisBall.vely != prevVelY));
             return broadcastMovement;
         }
 
@@ -1340,11 +1380,11 @@ namespace GameEngine
                 }
             }
 
-            if (ball == objectBall)
+            if (ball.playerNum == thisPlayer)
             {
                 if (ball.room == Map.CRYSTAL_CASTLE)
                 {
-                    EasterEgg.foundCastle(objectBall);
+                    EasterEgg.foundCastle(ball);
                 }
                 else if (ball.room == Map.ROBINETT_ROOM)
                 {
@@ -1356,7 +1396,7 @@ namespace GameEngine
 
             if (broadcastMovement)
             {
-                PlayerMoveAction moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
+                PlayerMoveAction moveAction = new PlayerMoveAction(ball.room, ball.x, ball.y, ball.velx, ball.vely);
                 sync.BroadcastAction(moveAction);
             }
 
@@ -1433,8 +1473,8 @@ namespace GameEngine
                     DragonMoveAction nextMove = (DragonMoveAction)nextAction;
                     Dragon dragon = dragons[nextMove.dragonNum];
                     if ((dragon.state == Dragon.STALKING) &&
-                        ((dragon.room != objectBall.room) ||
-                        (objectBall.distanceTo(dragon.x+4, dragon.y-Dragon.MIDHEIGHT) > nextMove.distance)))
+                        ((dragon.room != thisBall.room) ||
+                        (thisBall.distanceToObject(dragon.x+4, dragon.y-Dragon.MIDHEIGHT) > nextMove.distance)))
                     {
 
                         dragon.syncAction(nextMove);
@@ -1499,7 +1539,7 @@ namespace GameEngine
                             sync.BroadcastAction(gateAction);
 
                             // Report the ball entering the castle
-                            PlayerMoveAction moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
+                            PlayerMoveAction moveAction = new PlayerMoveAction(nextBall.room, nextBall.x, nextBall.y, nextBall.velx, nextBall.vely);
                             sync.BroadcastAction(moveAction);
                         }
                         if ((ctr == thisPlayer) && (popupMgr != null))
@@ -1668,10 +1708,10 @@ namespace GameEngine
 
         void PickupPutdown()
         {
-            HandleAiPutdown();
-            if (!joystickDisabled && joyFire && (objectBall.linkedObject >= 0))
+            AiPutdown();
+            if (!joystickDisabled && joyFire)
             {
-                Putdown();
+                Putdown(thisBall);
             }
             else
             {
@@ -1679,33 +1719,7 @@ namespace GameEngine
             }
         }
 
-        void Putdown()
-        {
-            int dropped = objectBall.linkedObject;
-            OBJECT droppedObject = gameBoard[dropped];
-
-            // Put down the current object!
-            objectBall.linkedObject = Board.OBJECT_NONE;
-
-            if ((gameOptions & GAMEOPTION_NO_HIDE_KEY_IN_CASTLE) != 0)
-            {
-                unhideKey(droppedObject);
-            }
-
-            // Tell other clients about the drop
-            PlayerPickupAction action = new PlayerPickupAction(Board.OBJECT_NONE, 0, 0, dropped, droppedObject.room,
-                                                                droppedObject.x, droppedObject.y);
-            sync.BroadcastAction(action);
-
-            // Play the sound
-            view.Platform_MakeSound(SOUND.PUTDOWN, MAX.VOLUME);
-            if (popupMgr != null)
-            {
-                popupMgr.needPopup[PopupMgr.DROP_OBJECT] = false;
-            }
-        }
-
-        void HandleAiPutdown()
+        void AiPutdown()
         {
             // Check if any AI players are dropping
             for (int ctr = 0; ctr < numPlayers; ++ctr)
@@ -1715,109 +1729,149 @@ namespace GameEngine
                     BALL aiBall = gameBoard.getPlayer(ctr);
                     if ((aiBall.linkedObject >= 0) && aiPlayers[ctr].shouldDropHeldObject())
                     {
-                        int dropped = aiBall.linkedObject;
-                        OBJECT droppedObject = gameBoard[dropped];
-
-                        // Put down the current object!
-                        aiBall.linkedObject = Board.OBJECT_NONE;
-
-                        if ((gameOptions & GAMEOPTION_NO_HIDE_KEY_IN_CASTLE) != 0)
-                        {
-                            unhideKey(droppedObject);
-                        }
-
-                        // Play the sound
-                        view.Platform_MakeSound(SOUND.PUTDOWN, MAX.VOLUME);
-                        gameBoard.makeSound(SOUND.PUTDOWN, volumeAtDistance(aiBall.room));
+                        Putdown(aiBall);
                     }
                 }
             }
         }
 
+        void Putdown(BALL ball)
+        {
+            if (thisBall.linkedObject >= 0)
+            {
+                int dropped = ball.linkedObject;
+                OBJECT droppedObject = gameBoard[dropped];
+
+                // Put down the current object!
+                ball.linkedObject = Board.OBJECT_NONE;
+
+                if ((gameOptions & GAMEOPTION_NO_HIDE_KEY_IN_CASTLE) != 0)
+                {
+                    unhideKey(droppedObject);
+                }
+
+                if (ball.playerNum == thisPlayer)
+                {
+                    // Tell other clients about the drop
+                    PlayerPickupAction action = new PlayerPickupAction(Board.OBJECT_NONE, 0, 0, dropped, droppedObject.room,
+                                                                        droppedObject.x, droppedObject.y);
+                    sync.BroadcastAction(action);
+
+                    if (popupMgr != null)
+                    {
+                        popupMgr.needPopup[PopupMgr.DROP_OBJECT] = false;
+                    }
+                }
+
+                // Play the sound
+                gameBoard.makeSound(SOUND.PUTDOWN, volumeAtDistance(ball.room));
+            }
+        }
+
+
         void Pickup()
         {
-            // See if we are touching any carryable objects
-            Board.ObjIter iter = gameBoard.getCarryableObjects();
-            int hitIndex = CollisionCheckBallWithObjects(objectBall, iter);
-            if (hitIndex > Board.OBJECT_NONE)
+            for (int playerctr = 0; playerctr < numPlayers; ++playerctr)
             {
-                // Ignore the object we are already carrying
-                if (hitIndex == objectBall.linkedObject)
+                // We don't calculate pickup for remote players.  We rely on them
+                // sending a remote pickup message.
+                if (!isPlayerRemote(playerctr))
                 {
-                    // Check the remainder of the objects
-                    hitIndex = CollisionCheckBallWithObjects(objectBall, iter);
-                }
-
-                if (hitIndex > Board.OBJECT_NONE)
-                {
-                    // Collect info about whether we are also dropping an object (for when we broadcast the action)
-                    PlayerPickupAction action = new PlayerPickupAction(Board.OBJECT_NONE, 0, 0, Board.OBJECT_NONE, 0, 0, 0);
-                    int dropIndex = objectBall.linkedObject;
-                    if (dropIndex > Board.OBJECT_NONE)
+                    bool isThisPlayer = (playerctr == thisPlayer);
+                    // See if we are touching any carryable objects
+                    Board.ObjIter iter = gameBoard.getCarryableObjects();
+                    BALL nextBall = gameBoard.getPlayer(playerctr);
+                    int hitIndex = CollisionCheckBallWithObjects(nextBall, iter);
+                    if (hitIndex > Board.OBJECT_NONE)
                     {
-                        OBJECT dropped = gameBoard[dropIndex];
-                        action.setDrop(dropIndex, dropped.room, dropped.x, dropped.y);
-                    }
-
-                    // If the bat is holding the object we do some of the pickup things but not all.
-                    // We drop our current object and play the pickup sound, but we don't actually
-                    // pick up the object.
-                    // NOTE: Discrepancy here between C++ port behavior and original Atari behavior so
-                    // not totally sure what should be done.  As a guess, we just set linkedObject to none and
-                    // play the sound.
-                    if (bat.exists() && (bat.linkedObject == hitIndex))
-                    {
-                        if (dropIndex > Board.OBJECT_NONE)
+                        // Ignore the object we are already carrying
+                        if (hitIndex == nextBall.linkedObject)
                         {
-                            // Drop our current object and broadcast it
-                            objectBall.linkedObject = Board.OBJECT_NONE;
-                            sync.BroadcastAction(action);
+                            // Check the remainder of the objects
+                            hitIndex = CollisionCheckBallWithObjects(nextBall, iter);
                         }
-                    }
-                    else
-                    {
 
-                        // Pick up this object!
-                        objectBall.linkedObject = hitIndex;
-
-                        // calculate the XY offsets from the ball's position
-                        objectBall.linkedObjectX = gameBoard[hitIndex].x - (objectBall.x / 2);
-                        objectBall.linkedObjectY = gameBoard[hitIndex].y - (objectBall.y / 2);
-
-                        // Take it away from anyone else if they were holding it.
-                        for (int ctr = 0; ctr < numPlayers; ++ctr)
+                        if (hitIndex > Board.OBJECT_NONE)
                         {
-                            if ((ctr != thisPlayer) && (gameBoard.getPlayer(ctr).linkedObject == hitIndex))
+                            // Collect info about whether we are also dropping an object (for when we broadcast the action)
+                            PlayerPickupAction action = new PlayerPickupAction(Board.OBJECT_NONE, 0, 0, Board.OBJECT_NONE, 0, 0, 0);
+                            int dropIndex = nextBall.linkedObject;
+                            if (dropIndex > Board.OBJECT_NONE)
                             {
-                                gameBoard.getPlayer(ctr).linkedObject = Board.OBJECT_NONE;
+                                OBJECT dropped = gameBoard[dropIndex];
+                                action.setDrop(dropIndex, dropped.room, dropped.x, dropped.y);
                             }
-                        }
 
-                        if ((hitIndex >= Board.OBJECT_CRYSTALKEY1) && (hitIndex <= Board.OBJECT_CRYSTALKEY3))
-                        {
-                            EasterEgg.foundKey();
-                        }
+                            // If the bat is holding the object we do some of the pickup things but not all.
+                            // We drop our current object and play the pickup sound, but we don't actually
+                            // pick up the object.
+                            // NOTE: Discrepancy here between C++ port behavior and original Atari behavior so
+                            // not totally sure what should be done.  As a guess, we just set linkedObject to none and
+                            // play the sound.
+                            if (bat.exists() && (bat.linkedObject == hitIndex))
+                            {
+                                if (dropIndex > Board.OBJECT_NONE)
+                                {
+                                    // Drop our current object and broadcast it
+                                    nextBall.linkedObject = Board.OBJECT_NONE;
+                                    if (isThisPlayer)
+                                    {
+                                        sync.BroadcastAction(action);
+                                    }
+                                }
+                            }
+                            else
+                            {
 
-                        // Broadcast that we picked up an object
-                        action.setPickup(hitIndex, objectBall.linkedObjectX, objectBall.linkedObjectY);
-                        sync.BroadcastAction(action);
+                                // Pick up this object!
+                                nextBall.linkedObject = hitIndex;
 
-                        if (popupMgr != null)
-                        {
-                            popupMgr.PickedUpObjectShowPopups(hitIndex);
+                                // calculate the XY offsets from the ball's position
+                                nextBall.linkedObjectX = gameBoard[hitIndex].x - (nextBall.x / Adv.BALL_SCALE);
+                                nextBall.linkedObjectY = gameBoard[hitIndex].y - (nextBall.y / Adv.BALL_SCALE);
+
+                                // Take it away from anyone else if they were holding it.
+                                for (int otherPlayerCtr = 0; otherPlayerCtr < numPlayers; ++otherPlayerCtr)
+                                {
+                                    if ((otherPlayerCtr != playerctr) && (gameBoard.getPlayer(otherPlayerCtr).linkedObject == hitIndex))
+                                    {
+                                        gameBoard.getPlayer(otherPlayerCtr).linkedObject = Board.OBJECT_NONE;
+                                    }
+                                }
+
+                                if ((hitIndex >= Board.OBJECT_CRYSTALKEY1) && (hitIndex <= Board.OBJECT_CRYSTALKEY3))
+                                {
+                                    EasterEgg.foundKey();
+                                }
+
+                                // Broadcast that we picked up an object
+                                if (isThisPlayer)
+                                {
+                                    action.setPickup(hitIndex, nextBall.linkedObjectX, nextBall.linkedObjectY);
+                                    sync.BroadcastAction(action);
+                                }
+
+                                if (isThisPlayer)
+                                {
+                                    if (popupMgr != null)
+                                    {
+                                        popupMgr.PickedUpObjectShowPopups(hitIndex);
+                                    }
+                                }
+                            }
+
+                            // Play the sound
+                            view.Platform_MakeSound(SOUND.GLOW, volumeAtDistance(nextBall.room));
                         }
                     }
-
-                    // Play the sound
-                    view.Platform_MakeSound(SOUND.PICKUP, MAX.VOLUME);
                 }
             }
-    }
+        }
 
         void Surround()
         {
-            // get the playfield data
-            int roomNum = objectBall.room;
+            // Calculate which surrounds are visible in the currently displayed room
+            int roomNum = thisBall.room;
             ROOM currentRoom = roomDefs[roomNum];
             if (currentRoom.color == COLOR.LTGRAY)
             {
@@ -2357,47 +2411,50 @@ namespace GameEngine
          */
         private void checkPlayers()
         {
-            // We check for players every 15 seconds (900 turns actually). We check to see if 
-            // we've received anything from the other players.  If they've missed 3 15 second marks
-            // in a row we assume they have disconnected and remove them from the game.
-            // We also send out a ping every 15 seconds to others so we know they've heard from us.
-            const int TURNS_BETWEEN_CHECKS = 900; // About 15 seconds.
-            const int MAX_MISSED_CHECKS = 3;
-
-            ++turnsSinceTimeCheck;
-            if (turnsSinceTimeCheck >= TURNS_BETWEEN_CHECKS)
+            if (sync.IsNetworked)
             {
-                int offline = 0;
-                int online = 0;
-                for (int ctr = 0; ctr < numPlayers; ++ctr)
+                // We check for players every 15 seconds (900 turns actually). We check to see if 
+                // we've received anything from the other players.  If they've missed 3 15 second marks
+                // in a row we assume they have disconnected and remove them from the game.
+                // We also send out a ping every 15 seconds to others so we know they've heard from us.
+                const int TURNS_BETWEEN_CHECKS = 900; // About 15 seconds.
+                const int MAX_MISSED_CHECKS = 3;
+
+                ++turnsSinceTimeCheck;
+                if (turnsSinceTimeCheck >= TURNS_BETWEEN_CHECKS)
                 {
-                    if (ctr != thisPlayer)
+                    int offline = 0;
+                    int online = 0;
+                    for (int ctr = 0; ctr < numPlayers; ++ctr)
                     {
-                        if (sync.getMessagesReceived(ctr) == 0)
+                        if (ctr != thisPlayer)
                         {
-                            ++missedChecks[ctr];
-                            if (missedChecks[ctr] == MAX_MISSED_CHECKS)
+                            if (sync.getMessagesReceived(ctr) == 0)
                             {
-                                dropPlayer(ctr);
-                                offline = (offline == 0 ? ctr + 1 : -1);
+                                ++missedChecks[ctr];
+                                if (missedChecks[ctr] == MAX_MISSED_CHECKS)
+                                {
+                                    dropPlayer(ctr);
+                                    offline = (offline == 0 ? ctr + 1 : -1);
+                                }
                             }
-                        }
-                        else
-                        {
-                            if (missedChecks[ctr] >= MAX_MISSED_CHECKS)
+                            else
                             {
-                                online = (online == 0 ? ctr + 1 : -1);
+                                if (missedChecks[ctr] >= MAX_MISSED_CHECKS)
+                                {
+                                    online = (online == 0 ? ctr + 1 : -1);
+                                }
+                                missedChecks[ctr] = 0;
                             }
-                            missedChecks[ctr] = 0;
                         }
                     }
-                }
-                warnOfDropoffRejoin(offline, online);
-                PingAction action = new PingAction();
-                sync.BroadcastAction(action);
-                sync.resetMessagesReceived();
+                    warnOfDropoffRejoin(offline, online);
+                    PingAction action = new PingAction();
+                    sync.BroadcastAction(action);
+                    sync.resetMessagesReceived();
 
-                turnsSinceTimeCheck = 0;
+                    turnsSinceTimeCheck = 0;
+                }
             }
         }
 

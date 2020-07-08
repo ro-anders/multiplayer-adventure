@@ -74,12 +74,12 @@ namespace GameEngine
         }
 
         /**
-         * The distance to an object 
+         * The distance to an object
          * @param objectX the x of the object (IN OBJECT COORDINATE SYSTEM)
          * @param otherY the y of the object (IN OBJECT COORDINATE SYSTEM)
          * @return the distance IN BALL COORDINATE SYSTEM to object
          */
-        public int distanceTo(int objectMidX, int objectMidY)
+        public int distanceToObject(int objectMidX, int objectMidY)
         {
             // Figure out the distance (which is really the max difference along one axis)
             int xdist = this.midX - 2 * objectMidX;

@@ -39,6 +39,15 @@ namespace GameEngine
         }
 
         /**
+         * Return whether this sync is actually doing anything.
+         * If this is a 1-player-vs-ai game or just a solo game will 
+         * return false.
+         */
+        public bool IsNetworked {
+            get { return transport != null; }
+        }
+
+        /**
          * This pulls messages off the socket until there are none waiting.
          * This does not process them, but demuxes them and puts them where they can be grabbed
          * when it is time to process that type of message.

@@ -325,7 +325,7 @@ public void syncAction(DragonMoveAction action)
                             // Notify others if we've changed our direction
                             if ((dragon.room == objectBall.room) && ((newMovementX != dragon.movementX) || (newMovementY != dragon.movementY)))
                             {
-                                int distanceToMe = board.getCurrentPlayer().distanceTo(dragon.x+4, dragon.y-MIDHEIGHT);
+                                int distanceToMe = board.getCurrentPlayer().distanceToObject(dragon.x+4, dragon.y-MIDHEIGHT);
                                 actionTaken = new DragonMoveAction(dragon.room, dragon.x, dragon.y, newMovementX, newMovementY, dragon.dragonNumber, distanceToMe);
                             }
                             dragon.movementX = newMovementX;
@@ -417,7 +417,7 @@ BALL closestBall()
         BALL nextBall = board.getPlayer(ctr);
         if ((nextBall.room == room) && ((!waryOfSword) || nextBall.linkedObject != Board.OBJECT_SWORD))
         {
-            int dist = nextBall.distanceTo(x+4, y-MIDHEIGHT);
+            int dist = nextBall.distanceToObject(x+4, y-MIDHEIGHT);
             if (dist < shortestDistance)
             {
                 shortestDistance = dist;

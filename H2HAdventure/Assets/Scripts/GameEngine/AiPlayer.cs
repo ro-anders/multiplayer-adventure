@@ -6,7 +6,7 @@ namespace GameEngine
     public class AiPlayer
     {
         private Board gameBoard;
-        private AINav aiNav;
+        private AiNav aiNav;
         private AiTactical aiTactical;
         private int thisPlayer;
         private BALL thisBall;
@@ -22,7 +22,7 @@ namespace GameEngine
         private int nextStepX = int.MinValue;
         private int nextStepY = int.MinValue;
 
-        public AiPlayer(AINav inAi, Board inBoard, int inPlayerSlot)
+        public AiPlayer(AiNav inAi, Board inBoard, int inPlayerSlot)
         {
             gameBoard = inBoard;
             aiNav = inAi;
@@ -96,7 +96,7 @@ namespace GameEngine
                     return;
                 }
             }
-         
+
             desiredPath = aiNav.checkPathProgress(desiredPath, thisBall.room, thisBall.midX, thisBall.midY);
             if (desiredPath == null)
             {
@@ -115,7 +115,8 @@ namespace GameEngine
             {
                 thisBall.velx = nextVelx;
                 thisBall.vely = nextVely;
-            } else
+            }
+            else
             {
                 UnityEngine.Debug.LogError("Ball cannot get where it needs to go.");
                 desiredRoom = -1;

@@ -144,12 +144,14 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
     public void AdventureSetup(int inLocalPlayerSlot) {
         Debug.Log("Starting game.");
         GameInLobby game = SessionInfo.GameToPlay;
-        bool[] useAi = { false, false, false};
-        for(int ctr=0; ctr<game.numPlayers; ++ctr)
-        {
-            //useAi[ctr] = (SessionInfo.NetworkSetup == SessionInfo.Network.NONE) && (ctr != inLocalPlayerSlot);
-            //useAi[ctr] = (SessionInfo.NetworkSetup == SessionInfo.Network.NONE) && (ctr == 0);
-        }
+        // TODOX: Right now we are manually jamming the AI
+        bool[] useAi = { false, true, false };
+        //// Setup AI whenever there is no network.  Turn it on for everyone but the local player
+        //bool[] useAi = { false, false, false};
+        //for(int ctr=0; ctr<game.numPlayers; ++ctr)
+        //{
+        //    useAi[ctr] = (SessionInfo.NetworkSetup == SessionInfo.Network.NONE) && (ctr != inLocalPlayerSlot);
+        //}
         UnityTransport xportToUse = (SessionInfo.NetworkSetup == SessionInfo.Network.NONE ? null : xport);
         gameEngine = new AdventureGame(this, game.numPlayers, inLocalPlayerSlot, xportToUse, 
             game.gameNumber, game.diff1 == DIFF.A, game.diff2 == DIFF.A,

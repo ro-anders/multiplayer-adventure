@@ -172,10 +172,11 @@ public class WinGameObjective: AiObjective
 
     protected override void doComputeStrategy()
     {
-        this.addChild(new UnlockCastle(Board.OBJECT_YELLOW_PORT));
+        Portcullis homeGate = this.aiPlayer.homeGate;
+        this.addChild(new UnlockCastle(homeGate.getPKey()));
         this.addChild(new UnlockCastle(Board.OBJECT_BLACK_PORT));
         this.addChild(new PickupObjective(Board.OBJECT_CHALISE));
-        this.addChild(new GoToObjective(Map.GOLD_FOYER, 160, 120));
+        this.addChild(new GoToObjective(homeGate.insideRoom, 160, 120));
     }
 
     protected override bool computeIsCompleted()
@@ -353,7 +354,7 @@ public class RepositionKey : AiObjective
             if (aiPlayer.linkedObjectX > -KEY_WIDTH / 4)
             {
                 // Move around to the left
-                sideEdge = key.x*2 - 4;
+                sideEdge = key.x*2 - BALL.RADIUS;
                 sideEdge -= (6 - (aiPlayer.midX - sideEdge) % 6) % 6;
                 if (aiPlayer.midX > sideEdge)
                 {
@@ -363,7 +364,7 @@ public class RepositionKey : AiObjective
             else
             {
                 // Move around to the right
-                sideEdge = key.x * 2 + KEY_WIDTH + 4;
+                sideEdge = key.x * 2 + KEY_WIDTH + BALL.RADIUS;
                 sideEdge += (6 - (sideEdge - aiPlayer.midX) % 6) % 6;
                 if (aiPlayer.midX < sideEdge)
                 {
@@ -371,7 +372,7 @@ public class RepositionKey : AiObjective
                 }
             }
             // Then move to the closest bottom corner, then to the bottom middle, then re-pickup the key
-            int bottomEdge = key.y * 2 - KEY_HEIGHT - 4;
+            int bottomEdge = key.y * 2 - KEY_HEIGHT - BALL.RADIUS;
             bottomEdge -= (6 - (aiPlayer.midY - bottomEdge) % 6) % 6;
             this.addChild(new GoToObjective(aiPlayer.room, sideEdge, bottomEdge));
             this.addChild(new GoToObjective(aiPlayer.room, key.x * 2 + KEY_WIDTH / 2, bottomEdge));

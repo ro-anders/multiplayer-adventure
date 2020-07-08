@@ -25,7 +25,7 @@ namespace GameEngine
             flapTimer = 0;
         }
         
-        public void moveOneTurn(Sync sync, BALL objectBall)
+        public void moveOneTurn(Sync sync, BALL localBall)
         {
             if (++flapTimer >= 0x04)
             {
@@ -92,7 +92,7 @@ namespace GameEngine
                         movementY = newMoveY;
                         if (sendMessage)
                         {
-                            broadcastMoveAction(sync, objectBall);
+                            broadcastMoveAction(sync, localBall);
                         }
 
                         // If the bat is within 7 pixels of the seek object it can pick the object up
@@ -122,7 +122,7 @@ namespace GameEngine
         /**
          * A bat can process BatMoveActions and BatPickupActions and update its internal state accordingly.
          */
-        public void handleAction(RemoteAction action, BALL objectBall)
+        public void handleAction(RemoteAction action, BALL localPlayer)
             {
                 if (action.typeCode == BatMoveAction.CODE)
                 {
@@ -131,8 +131,8 @@ namespace GameEngine
                     // then we ignore reports and trust our internal state.
                     // Otherwise, use the reported state.
                     BatMoveAction nextMove = (BatMoveAction)action;
-                    if ((room != objectBall.room) ||
-                         (objectBall.distanceTo(x+4, y-MIDHEIGHT) > nextMove.distance))
+                    if ((room != localPlayer.room) ||
+                         (localPlayer.distanceToObject(x+4, y-MIDHEIGHT) > nextMove.distance))
                     {
 
                         room = nextMove.room;
@@ -195,9 +195,9 @@ namespace GameEngine
                 batFedUpTimer = 0;
             }
 
-            private void broadcastMoveAction(Sync sync, BALL objectBall)
+            private void broadcastMoveAction(Sync sync, BALL localBall)
             {
-                int distance = objectBall.distanceTo(x+4, y-MIDHEIGHT);
+                int distance = localBall.distanceToObject(x+4, y-MIDHEIGHT);
                 BatMoveAction action = new BatMoveAction(room, x, y, movementX, movementY, distance);
                 sync.BroadcastAction(action);
             }

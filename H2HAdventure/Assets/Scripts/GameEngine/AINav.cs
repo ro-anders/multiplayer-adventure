@@ -6,7 +6,12 @@ using UnityEngine;
 namespace GameEngine
 {
 
-    public class AINav {
+    /**
+     * AI Logic for navigating the game board - knowing how to traverse mazes, 
+     * and when castles can be entered.  This is not player specific and is 
+     * shared between the AIs.
+     */
+    public class AiNav {
 
         private Map map;
 
@@ -16,7 +21,7 @@ namespace GameEngine
         // When finding a path to something, keep a table of plots you've already visited
         private bool[] alreadyVisited;
 
-        public AINav(Map inMap)
+        public AiNav(Map inMap)
         {
             map = inMap;
             ComputeAllPlots();
@@ -44,8 +49,8 @@ namespace GameEngine
             {
                 return new AiPathNode(aiPlots[toPlot], Plot.NO_DIRECTION, null);
             }
-            UnityEngine.Debug.Log("Computing path from " + aiPlots[fromPlot].thisPlot + 
-                " to " + aiPlots[toPlot].thisPlot);
+            //UnityEngine.Debug.Log("Computing path from " + aiPlots[fromPlot].thisPlot + 
+            //    " to " + aiPlots[toPlot].thisPlot);
 
 
             // Reset the already visited array
@@ -70,10 +75,6 @@ namespace GameEngine
             {
                 UnityEngine.Debug.Log("Could not find path from " + aiPlots[fromPlot] + " to " +
                     aiPlots[toPlot]);
-            }
-            else
-            {
-                UnityEngine.Debug.Log("Computed path: " + found);
             }
             return found;
         }
@@ -153,6 +154,9 @@ namespace GameEngine
             ComputePlotsInRoom(Map.GOLD_FOYER, plotsRoomWithBottom, allPlotsList);
             ComputePlotsInRoom(Map.SOUTHEAST_ROOM, plotsRoomWithTop, allPlotsList);
             ComputePlotsInRoom(Map.COPPER_CASTLE, plotsCastle, allPlotsList);
+            ComputePlotsInRoom(Map.COPPER_FOYER, plotsRoomWithBottom, allPlotsList);
+            ComputePlotsInRoom(Map.JADE_CASTLE, plotsCastle, allPlotsList);
+            ComputePlotsInRoom(Map.JADE_FOYER, plotsRoomWithBottom, allPlotsList);
             ComputePlotsInRoom(Map.BLUE_MAZE_5, plotsBlueMazeTop, allPlotsList);
             ComputePlotsInRoom(Map.BLUE_MAZE_2, plotsBlueMaze2, allPlotsList);
             ComputePlotsInRoom(Map.BLUE_MAZE_3, plotsBlueMazeBottom, allPlotsList);
