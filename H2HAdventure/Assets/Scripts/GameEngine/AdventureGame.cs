@@ -217,13 +217,13 @@ namespace GameEngine
 
             // Setup the players
             bool useAltIcons = (gameMode == Adv.GAME_MODE_ROLE_PLAY);
-            gameBoard.addPlayer(new BALL(0, ports[0], useAltIcons), thisPlayer == 0);
+            gameBoard.addPlayer(new BALL(0, ports[0], useAltIcons, useAi[0]), thisPlayer == 0);
             Portcullis p2Home = (isCooperative ? ports[0] : ports[4]);
-            gameBoard.addPlayer(new BALL(1, p2Home, useAltIcons), thisPlayer == 1);
+            gameBoard.addPlayer(new BALL(1, p2Home, useAltIcons, useAi[1]), thisPlayer == 1);
             if (numPlayers > 2)
             {
                 Portcullis p3Home = (isCooperative ? ports[0] : ports[5]);
-                gameBoard.addPlayer(new BALL(2, p3Home, useAltIcons), thisPlayer == 2);
+                gameBoard.addPlayer(new BALL(2, p3Home, useAltIcons, useAi[2]), thisPlayer == 2);
             }
             thisBall = gameBoard.getPlayer(thisPlayer);
             bool willUseAi = useAi[0] || useAi[1] || useAi[2];
@@ -259,18 +259,6 @@ namespace GameEngine
             {
                 popupMgr.SetupPopups();
             }
-        }
-
-        /**
-         * There are three types of players, the local player, a remote player
-         * and an AI player.  Will return true if this is a remote player
-         * @param player_index the number of the player, 0-2
-         * @returns true if player is a remote player
-         */
-        public bool isPlayerRemote(int player_index)
-        {
-            // Returns if this is not the local player and not an ai player
-            return ((player_index != thisPlayer) && (aiPlayers[player_index] == null));
         }
 
         public void PrintDisplay(int thisPlayerRoom)
@@ -407,8 +395,21 @@ namespace GameEngine
             // Draw any objects in the room
             //
             ClearDrawnObjects();
-            DrawObjects(displayedRoom);
-
+            MarkDrawnObjects(displayedRoom);
+            // We also compute what objects in the AI's room are displayed
+            // even if we don't print them to the screen
+            for(int ctr=0; ctr<numPlayers; ++ctr)
+            {
+                if (aiPlayers[ctr] != null)
+                {
+                    BALL aiBall = gameBoard.getPlayer(ctr);
+                    if (aiBall.displayedRoom != displayedRoom)
+                    {
+                        MarkDrawnObjects(aiBall.displayedRoom);
+                    }
+                }
+            }
+            DrawObjectsAndThinWalls(displayedRoom);
         }
 
         COLOR GetFlashColor()
@@ -723,7 +724,7 @@ namespace GameEngine
                                 // In gauntlet mode, getting eaten immediately triggers a reset.
                                 if ((gameMode == Adv.GAME_MODE_GAUNTLET) && (dragon.state == Dragon.EATEN) && (dragon.eaten != null))
                                 {
-                                    if (!isPlayerRemote(dragon.eaten.playerNum))
+                                    if (!gameBoard.isPlayerRemote(dragon.eaten.playerNum))
                                     {
                                         ResetPlayer(dragon.eaten);
                                         if (dragon.eaten.playerNum == thisPlayer)
@@ -980,32 +981,6 @@ namespace GameEngine
             }
         }
 
-        float volumeAtDistance(int room)
-        {
-            float NEAR_VOLUME = MAX.VOLUME / 3;
-            float FAR_VOLUME = MAX.VOLUME / 9;
-
-            int distance = gameMap.distance(room, thisBall.room);
-
-            float volume = 0.0f;
-            switch (distance)
-            {
-                case 0:
-                    volume = MAX.VOLUME;
-                    break;
-                case 1:
-                    volume = NEAR_VOLUME;
-                    break;
-                case 2:
-                    volume = FAR_VOLUME;
-                    break;
-                default:
-                    volume = 0;
-                    break;
-            }
-            return volume;
-        }
-
         void handleResetSwitch()
         {
             // When can't you respawn?  Before the game starts, after it ends and
@@ -1042,7 +1017,7 @@ namespace GameEngine
             {
                 // We don't calculate winning for remote players.  We rely on them
                 // sending a remote win message.
-                if (!isPlayerRemote(ctr))
+                if (!gameBoard.isPlayerRemote(ctr))
                 {
                     bool won = false;
                     BALL nextBall = gameBoard.getPlayer(ctr);
@@ -1461,9 +1436,7 @@ namespace GameEngine
                 {
                     DragonStateAction nextState = (DragonStateAction)nextAction;
                     Dragon dragon = dragons[nextState.dragonNum];
-                    // If something causes a sound, we need to know how far away it is.
-                    float volume = volumeAtDistance(dragon.room);
-                    dragon.syncAction(nextState, volume);
+                    dragon.syncAction(nextState);
                 }
                 else
                 {
@@ -1551,7 +1524,7 @@ namespace GameEngine
                         if ((gameMode == Adv.GAME_MODE_GAUNTLET) && (nextPort == gameBoard[Board.OBJECT_BLACK_PORT]) && !nextBall.isGlowing())
                         {
                             nextBall.setGlowing(true);
-                            view.Platform_MakeSound(SOUND.GLOW, volumeAtDistance(nextBall.room));
+                            gameBoard.makeSound(SOUND.GLOW, nextBall.room);
                         }
                         // If entering the crystal castle, trigger the easter egg
                         if ((nextBall.room == Map.CRYSTAL_FOYER) && (EasterEgg.shouldStartChallenge()))
@@ -1652,7 +1625,7 @@ namespace GameEngine
                     // Only play a sound if the drop isn't caused by picking up a different object.
                     if (newaction.pickupObject == Board.OBJECT_NONE)
                     {
-                        gameBoard.makeSound(SOUND.PUTDOWN, volumeAtDistance(actor.room));
+                        gameBoard.makeSound(SOUND.PUTDOWN, actor.room);
                     }
                 }
                 if (newaction.pickupObject != Board.OBJECT_NONE)
@@ -1676,7 +1649,7 @@ namespace GameEngine
                     }
 
                     // If they are within hearing distance play the pickup sound
-                    gameBoard.makeSound(SOUND.PICKUP, volumeAtDistance(actor.room));
+                    gameBoard.makeSound(SOUND.PICKUP, actor.room);
                 }
                 newaction = sync.GetNextPickupAction();
             }
@@ -1765,7 +1738,7 @@ namespace GameEngine
                 }
 
                 // Play the sound
-                gameBoard.makeSound(SOUND.PUTDOWN, volumeAtDistance(ball.room));
+                gameBoard.makeSound(SOUND.PUTDOWN, ball.room);
             }
         }
 
@@ -1776,7 +1749,7 @@ namespace GameEngine
             {
                 // We don't calculate pickup for remote players.  We rely on them
                 // sending a remote pickup message.
-                if (!isPlayerRemote(playerctr))
+                if (!gameBoard.isPlayerRemote(playerctr))
                 {
                     bool isThisPlayer = (playerctr == thisPlayer);
                     // See if we are touching any carryable objects
@@ -1862,7 +1835,7 @@ namespace GameEngine
                             }
 
                             // Play the sound
-                            view.Platform_MakeSound(SOUND.GLOW, volumeAtDistance(nextBall.room));
+                            gameBoard.makeSound(SOUND.PICKUP, nextBall.room);
                         }
                     }
                 }
@@ -1911,11 +1884,8 @@ namespace GameEngine
                 {
 
                     // Someone has to be in the room for the key to trigger the gate
-                    bool seen = false;
-                    for (int ctr = 0; !seen && ctr < numPlayers; ++ctr)
-                    {
-                        seen = (gameBoard.getPlayer(ctr).room == port.room);
-                    }
+                    // or for any object to go into a gate
+                    bool seen = gameBoard.isWitnessed(port.room);
                     if (seen)
                     {
                         // Check if a key unlocks the gate
@@ -2004,16 +1974,16 @@ namespace GameEngine
             {
                 OBJECT toDisplay = iter.next();
                 // Init it to not displayed
-                toDisplay.displayed = false;
+                toDisplay.displayed = -1;
             }
 
             for (int ctr = 0; ctr < numPlayers; ++ctr)
             {
-                surrounds[ctr].displayed = false;
+                surrounds[ctr].displayed = -1;
             }
         }
 
-        void DrawObjects(int room)
+        void MarkDrawnObjects(int room)
         {
             // RCA - Completely redid how we compute which objects are displayed
             // to handle AI players that need objects to flicker even when
@@ -2051,9 +2021,6 @@ namespace GameEngine
             int numObjects = objectsToDisplay.Count;
             int numToDisplay = (numObjects > MAX_DISPLAYABLE_OBJECTS ? MAX_DISPLAYABLE_OBJECTS : numObjects);
             int start = (numObjects > 0 ? (frameNumber / 3) % numObjects : 0);
-            // We need to keep track of these for weird reasons
-            int firstColorDrawn = -1;
-            int lastColorDrawn = COLOR.BLACK;
             for(int ctr=0; ctr<numToDisplay; ++ctr)
             {
                 int nextObjectKey = objectsToDisplay[(start + ctr) % numObjects];
@@ -2061,21 +2028,38 @@ namespace GameEngine
                 if (nextObjectKey > Board.OBJECT_NONE)
                 {
                     OBJECT nextObject = gameBoard[nextObjectKey];
-                    nextObject.displayed = true;
-                    DrawObject(nextObject);
-                    if (firstColorDrawn < 0)
-                    {
-                        firstColorDrawn = nextObject.color;
-                    }
-                    lastColorDrawn = nextObject.color;
+                    nextObject.displayed = room;
                 }
                 else if (nextObjectKey <= Board.OBJECT_SURROUND)
                 {
-                    surrounds[Board.OBJECT_SURROUND - nextObjectKey].displayed = true;
+                    surrounds[Board.OBJECT_SURROUND - nextObjectKey].displayed = room;
+                }
+            }
+        }
+
+        void DrawObjectsAndThinWalls(int room)
+        {
+            // We need to keep track of these for weird reasons
+            int firstColorDrawn = -1;
+            int lastColorDrawn = COLOR.BLACK;
+            Board.ObjIter iter = gameBoard.getObjects();
+            while (iter.hasNext())
+            {
+                OBJECT toDisplay = iter.next();
+                if (toDisplay.displayed == room)
+                {
+                    DrawObject(toDisplay);
+                    if (firstColorDrawn < 0)
+                    {
+                        firstColorDrawn = toDisplay.color;
+                    }
+                    else
+                    {
+                        lastColorDrawn = toDisplay.color;
+                    }
                 }
             }
             firstColorDrawn = (firstColorDrawn < 0 ? COLOR.BLACK : firstColorDrawn);
-
 
             if ((roomDefs[room].flags & ROOM.FLAG_LEFTTHINWALL) > 0)
             {
@@ -2091,6 +2075,7 @@ namespace GameEngine
                 COLOR color = COLOR.table(lastColorDrawn);
                 view.Platform_PaintPixel(color.r, color.g, color.b, Map.RIGHT_THIN_WALL, 0x00, Map.THIN_WALL_WIDTH, ADVENTURE_TOTAL_SCREEN_HEIGHT);
             }
+
         }
 
         private void DrawBall(BALL ball, COLOR color)
@@ -2309,7 +2294,7 @@ namespace GameEngine
          */
         private bool CollisionCheckBallWithObject(BALL ball, OBJECT objct)
         {
-            bool collision = (objct.displayed &&
+            bool collision = ((objct.displayed >= 0) &&
                               objct.isTangibleTo(thisPlayer) &&
                               (ball.room == objct.room) &&
                               (CollisionCheckObject(objct, ball.x, ball.y, BALL.DIAMETER, BALL.DIAMETER)) ? true : false);

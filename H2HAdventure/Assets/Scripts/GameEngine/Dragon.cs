@@ -108,18 +108,12 @@ public static void setDifficulty(Difficulty newDifficulty)
     dragonResetTime = (int)newDifficulty;
 }
 
-public bool hasEatenCurrentPlayer()
-{
-    return (state == EATEN) && (eaten == board.getCurrentPlayer());
-}
 
-    /**
-     * Incorporate a state change from another machine into this dragon's state.
-     * action - the state change message
-     * volume - given how far this dragon is from this player, how loud would any
-     *          sound be
-     */
-public void syncAction(DragonStateAction action, float volume)
+/**
+ * Incorporate a state change from another machine into this dragon's state.
+ * action - the state change message
+ */
+public void syncAction(DragonStateAction action)
 {
     if (action.newState == EATEN)
     {
@@ -137,7 +131,7 @@ public void syncAction(DragonStateAction action, float volume)
             movementX = action.velx;
             movementY = action.vely;
             // Play the sound
-            board.makeSound(SOUND.EATEN, volume);
+            board.makeSound(SOUND.EATEN, room);
         }
     }
     else if (action.newState == DEAD)
@@ -153,7 +147,7 @@ public void syncAction(DragonStateAction action, float volume)
             movementX = action.velx;
             movementY = action.vely;
             // Play the sound
-            board.makeSound(SOUND.DRAGONDIE, volume);
+            board.makeSound(SOUND.DRAGONDIE, room);
         }
     }
     else if (action.newState == ROAR)
@@ -165,7 +159,7 @@ public void syncAction(DragonStateAction action, float volume)
             movementX = action.velx;
             movementY = action.vely;
             // Play the sound
-            board.makeSound(SOUND.ROAR, volume);
+            board.makeSound(SOUND.ROAR, room);
         }
     }
 }
@@ -190,27 +184,32 @@ public void syncAction(DragonMoveAction action)
         {
             RemoteAction actionTaken = null;
             Dragon dragon = this;
-            BALL objectBall = board.getCurrentPlayer();
+            int numPlayers = board.getNumPlayers();
             if (dragon.state == STALKING)
             {
-                // Has the Ball hit the Dragon?
-                if ((objectBall.room == dragon.room) &&
-                    board.CollisionCheckObject(dragon, objectBall.x, objectBall.y, BALL.DIAMETER, BALL.DIAMETER))
+                // Has a Ball hit the Dragon?  Don't check remote balls.
+                for (int ctr = 0; ctr < numPlayers; ++ctr)
                 {
-                    dragon.roar(objectBall.room, objectBall.x / 2, objectBall.y / 2);
+                    BALL nextBall = board.getPlayer(ctr);
+                    if (!board.isPlayerRemote(ctr) &&
+                        (nextBall.room == dragon.room) &&
+                        board.CollisionCheckObject(dragon, nextBall.x, nextBall.y, BALL.DIAMETER, BALL.DIAMETER))
+                    {
+                        dragon.roar(nextBall.room, nextBall.x / 2, nextBall.y / 2);
 
-                    // Notify others
-                    actionTaken = new DragonStateAction(dragon.dragonNumber, ROAR, dragon.room, dragon.x, dragon.y,
-                                                        dragon.movementX, dragon.movementY);
+                        // Notify others
+                        actionTaken = new DragonStateAction(dragon.dragonNumber, ROAR, dragon.room, dragon.x, dragon.y,
+                                                            dragon.movementX, dragon.movementY);
 
-                    // Play the sound
-                    board.makeSound(SOUND.ROAR, MAX.VOLUME);
+                        // Play the sound
+                        board.makeSound(SOUND.ROAR, dragon.room);
+                    }
                 }
 
                 // Has the Sword hit the Dragon?
-                // Note, you have to be in the same room for a dragon to die on the sword
-                if ((objectBall.room == dragon.room) &&
-                    (board.CollisionCheckObjectObject(dragon, board.getObject(Board.OBJECT_SWORD))))
+                // Note, someone local has to be in the same room for a dragon to die on the sword
+                if (board.isWitnessed(dragon.room, true) &&
+                    board.CollisionCheckObjectObject(dragon, board.getObject(Board.OBJECT_SWORD)))
                 {
                     // Set the State to 01 (Dead)
                     dragon.state = DEAD;
@@ -221,7 +220,7 @@ public void syncAction(DragonMoveAction action)
                                                         dragon.movementX, dragon.movementY);
 
                     // Play the sound
-                    board.makeSound(SOUND.DRAGONDIE, MAX.VOLUME);
+                    board.makeSound(SOUND.DRAGONDIE, dragon.room);
                 }
 
                 if (dragon.state == STALKING)
@@ -323,9 +322,10 @@ public void syncAction(DragonMoveAction action)
                             }
 
                             // Notify others if we've changed our direction
-                            if ((dragon.room == objectBall.room) && ((newMovementX != dragon.movementX) || (newMovementY != dragon.movementY)))
+                            BALL currentPlayer = board.getCurrentPlayer();
+                            if ((dragon.room == currentPlayer.room) && ((newMovementX != dragon.movementX) || (newMovementY != dragon.movementY)))
                             {
-                                int distanceToMe = board.getCurrentPlayer().distanceToObject(dragon.x+4, dragon.y-MIDHEIGHT);
+                                int distanceToMe = currentPlayer.distanceToObject(dragon.x+4, dragon.y-MIDHEIGHT);
                                 actionTaken = new DragonMoveAction(dragon.room, dragon.x, dragon.y, newMovementX, newMovementY, dragon.dragonNumber, distanceToMe);
                             }
                             dragon.movementX = newMovementX;
@@ -354,33 +354,46 @@ public void syncAction(DragonMoveAction action)
                 if (dragon.timerExpired())
                 {
                     // Has the Ball hit the Dragon?
-                    if ((objectBall.room == dragon.room) && board.CollisionCheckObject(dragon, objectBall.x, objectBall.y, BALL.DIAMETER, BALL.DIAMETER))
+                    bool ateSomething = false;
+                    for (int ctr = 0; ctr < numPlayers; ++ctr)
                     {
-                        // Set the State to 01 (eaten)
-                        dragon.eaten = objectBall;
-                        dragon.state = EATEN;
-                        // Move the dragon up so that eating never causes the ball to shift screens
-                        if (objectBall.y < 48)
+                        if (!board.isPlayerRemote(ctr))
                         {
-                            dragon.y = 24;
-                        }
+                            BALL nextBall = board.getPlayer(ctr);
+                            if ((nextBall.room == dragon.room) &&
+                                board.CollisionCheckObject(dragon, nextBall.x, nextBall.y, BALL.DIAMETER, BALL.DIAMETER))
+                            {
+                                ateSomething = true;
+                                // Set the State to 01 (eaten)
+                                dragon.eaten = nextBall;
+                                dragon.state = EATEN;
+                                // Move the dragon up so that eating never causes the ball to shift screens
+                                if (nextBall.y < 48)
+                                {
+                                    dragon.y = 24;
+                                }
 
-                        // Notify others
-                        actionTaken = new DragonStateAction(dragon.dragonNumber, EATEN, dragon.room,
-                                                            dragon.x, dragon.y, dragon.movementX, dragon.movementY);
-                                
-                        // Play the sound
-                        board.makeSound(SOUND.EATEN, MAX.VOLUME);
+                                // Play the sound
+                                board.makeSound(SOUND.EATEN, dragon.room);
 
-                        if ((popupMgr != null) && (popupMgr.needPopup[PopupMgr.EATEN_BY_DRAGON]))
-                        {
-                            popupMgr.ShowPopup(new Popup("dragon",
-                                "You've been eaten by a dragon.\n" +
-                                "Click 'Respawn' to continue.", 
-                                popupMgr, PopupMgr.EATEN_BY_DRAGON));
+                                if (nextBall == board.getCurrentPlayer())
+                                {
+                                    // Notify others
+                                    actionTaken = new DragonStateAction(dragon.dragonNumber, EATEN, dragon.room,
+                                                                        dragon.x, dragon.y, dragon.movementX, dragon.movementY);
+
+                                    if ((popupMgr != null) && (popupMgr.needPopup[PopupMgr.EATEN_BY_DRAGON]))
+                                    {
+                                        popupMgr.ShowPopup(new Popup("dragon",
+                                            "You've been eaten by a dragon.\n" +
+                                            "Click 'Respawn' to continue.",
+                                            popupMgr, PopupMgr.EATEN_BY_DRAGON));
+                                    }
+                                }
+                            }
                         }
                     }
-                    else
+                    if (!ateSomething)
                     {
                         // Go back to stalking
                         dragon.state = STALKING;

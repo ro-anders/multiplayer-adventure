@@ -23,12 +23,13 @@ namespace GameEngine
         public int hitObject;              // the object that the ball hit
         public readonly byte[] gfxData;        // graphics data for ball
         public Portcullis homeGate;       // The gate of the castle you start at
+        public bool isAi;                   // Whether this ball is for an AI player
 
         /** During the gauntlet, once you reach the black castle you flash like the chalise until you reset or you reach the
             * gold castle where you win. */
         private bool glowing;
 
-        public BALL(int inPlayerNum, Portcullis inHomeGate, bool altIcons)
+        public BALL(int inPlayerNum, Portcullis inHomeGate, bool inAltIcons, bool inIsAi)
         {
             playerNum = inPlayerNum;
             room = 0;
@@ -45,11 +46,12 @@ namespace GameEngine
             linkedObjectY = 0;
             hit = false;
             hitObject = Board.OBJECT_NONE;
-            gfxData = (altIcons ? 
+            gfxData = (inAltIcons ? 
                 (playerNum == 0 ? ballGfxShield : (playerNum == 1 ? ballGfxSmall : ballGfxCross)) :
                 (playerNum == 0 ? ballGfxSolid : (playerNum == 1 ? ballGfxOne : ballGfxTwo)));
             homeGate = inHomeGate;
             glowing = false;
+            isAi = inIsAi;
         }
 
         /** x coordinate of the middle of the ball **/

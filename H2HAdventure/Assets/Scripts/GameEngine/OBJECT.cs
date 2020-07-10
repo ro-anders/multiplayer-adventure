@@ -20,7 +20,8 @@ namespace GameEngine
         public int x;                      // x position
         public int y;                      // y position
         public int size;                   // size (used for bridge and surround)
-        public bool displayed;             // flag indicating object was displayed (when more than maxDisplayableObjects for instance)
+        public int displayed;             // flag indicating object was displayed (when more than maxDisplayableObjects for instance)
+                                          // will be -1 if not displayed or the room number if displayed  
         public String label;                // a short, unique name for the object
         public RandomizedLocations randomPlacement; // How to randomly place this object in game 3
 

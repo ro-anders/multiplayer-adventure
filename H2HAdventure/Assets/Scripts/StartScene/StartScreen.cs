@@ -155,8 +155,8 @@ public class StartScreen : MonoBehaviour {
         };
         SessionInfo.ThisPlayerInfo.needsPopupHelp = false;
         SessionInfo.ThisPlayerInfo.needsMazeGuides = false;
-        SessionInfo.ThisPlayerId = SessionInfo.GameToPlay.playerOne;
-        SessionInfo.ThisPlayerName = SessionInfo.GameToPlay.playerOneName;
+        SessionInfo.ThisPlayerId = SessionInfo.GameToPlay.playerThree;
+        SessionInfo.ThisPlayerName = SessionInfo.GameToPlay.playerThreeName;
         SessionInfo.GameToPlay.playerMapping = 0;
         SessionInfo.GameToPlay.numPlayers = 3;
         SessionInfo.GameToPlay.gameNumber = 0;

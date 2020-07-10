@@ -258,6 +258,37 @@ namespace GameEngine
             return players[currentPlayer];
         }
 
+        /**
+         * There are three types of players, the local player, a remote player
+         * and an AI player.  Will return true if this is a remote player
+         * @param player_index the number of the player, 0-2
+         * @returns true if player is a remote player
+         */
+        public bool isPlayerRemote(int player_index)
+        {
+            // Returns if this is not the local player and not an ai player
+            return ((player_index < numPlayers) && (player_index != currentPlayer) && (!players[player_index].isAi));
+        }
+
+        /**
+         * Lots of things don't happen unless the ball is in the room at
+         * the time (e.g. sword killing dragon).  Return whether any ball is
+         * in this room.
+         * @room the room to see if anyone is in
+         * @mustBeLocal true if we don't count remote people watching and only 
+         * count if the local player or an ai sees it.
+         */
+        public bool isWitnessed(int room, bool mustBeLocal=false)
+        {
+            bool witnessed = false;
+            for (int ctr = 0; !witnessed && ctr < numPlayers; ++ctr)
+            {
+                witnessed = (players[ctr].room == room) &&
+                    (!mustBeLocal || (ctr == currentPlayer) || (players[ctr].isAi));
+            }
+            return witnessed;
+        }
+
         public static bool HitTestRects(int ax, int ay, int awidth, int aheight,
                       int bx, int by, int bwidth, int bheight)
         {
@@ -422,9 +453,39 @@ namespace GameEngine
             return heldBy;
         }
 
-        public void makeSound(SOUND sound, float volume) {
-            view.Platform_MakeSound(sound, volume);
+        public void makeSound(SOUND sound, int fromRoom)
+        {
+            view.Platform_MakeSound(sound, volumeAtDistance(fromRoom));
         }
+
+        private float volumeAtDistance(int room)
+        {
+            float NEAR_VOLUME = MAX.VOLUME / 3;
+            float FAR_VOLUME = MAX.VOLUME / 9;
+
+            int currentPlayerRoom = players[currentPlayer].room;
+            int distance = map.distance(room, currentPlayerRoom);
+
+            float volume = 0.0f;
+            switch (distance)
+            {
+                case 0:
+                    volume = MAX.VOLUME;
+                    break;
+                case 1:
+                    volume = NEAR_VOLUME;
+                    break;
+                case 2:
+                    volume = FAR_VOLUME;
+                    break;
+                default:
+                    volume = 0;
+                    break;
+            }
+            return volume;
+        }
+
+
 
 
     }
