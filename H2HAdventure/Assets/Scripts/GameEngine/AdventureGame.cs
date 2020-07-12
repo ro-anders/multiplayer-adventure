@@ -1711,7 +1711,7 @@ namespace GameEngine
 
         void Putdown(BALL ball)
         {
-            if (thisBall.linkedObject >= 0)
+            if (ball.linkedObject >= 0)
             {
                 int dropped = ball.linkedObject;
                 OBJECT droppedObject = gameBoard[dropped];
@@ -1896,7 +1896,13 @@ namespace GameEngine
                             {
                                 ai.ConnectPortcullisPlots(port.room, port.insideRoom, port.allowsEntry);
                             }
-                            sync.BroadcastAction(gateAction);
+                            // Broadcast a state change if we are holding the key or if no one is holding the key and we
+                            // are a witness
+                            int heldBy = gameBoard.getPlayerHoldingObject(port.key);
+                            if ((heldBy == thisPlayer) || ((heldBy < 0) && (thisBall.room == port.room)))
+                            {
+                                sync.BroadcastAction(gateAction);
+                            }
                         }
 
                         // Check if anything runs into the gate

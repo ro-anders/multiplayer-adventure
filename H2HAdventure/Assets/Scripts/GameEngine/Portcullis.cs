@@ -171,14 +171,7 @@ namespace GameEngine
 
                     if (stateChange)
                     {
-                        // Broadcast a state change if we are holding the key or if no one is holding the key and we
-                        // are a witness
-
-                        BALL thisPlayer = board.getCurrentPlayer();
-                        if ((heldBy == thisPlayer.playerNum) || ((heldBy < 0) && (thisPlayer.room == room)))
-                        {
-                            gateAction = new PortcullisStateAction(getPKey(), state, allowsEntry);
-                        }
+                        gateAction = new PortcullisStateAction(getPKey(), state, allowsEntry);
                     }
                 }
             }
