@@ -1185,12 +1185,12 @@ namespace GameEngine
                 {
                     if (!joyDown)
                     {
-                        newVelY = 6;
+                        newVelY = BALL.MOVEMENT;
                     }
                 }
                 else if (joyDown)
                 {
-                    newVelY = -6;
+                    newVelY = -BALL.MOVEMENT;
                 }
                 thisBall.vely = newVelY;
 
@@ -1199,12 +1199,12 @@ namespace GameEngine
                 {
                     if (!joyLeft)
                     {
-                        newVelX = 6;
+                        newVelX = BALL.MOVEMENT;
                     }
                 }
                 else if (joyLeft)
                 {
-                    newVelX = -6;
+                    newVelX = -BALL.MOVEMENT;
                 }
                 thisBall.velx = newVelX;
             }
@@ -1220,7 +1220,7 @@ namespace GameEngine
             // If an AI player, compute direction
             if (aiPlayers[ball.playerNum] != null)
             {
-                aiPlayers[ball.playerNum].chooseDirection();
+                aiPlayers[ball.playerNum].chooseDirection(frameNumber);
             }
             bool eaten = false;
             for (int ctr = 0; ctr < numDragons && !eaten; ++ctr)

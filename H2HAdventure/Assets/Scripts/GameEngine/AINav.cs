@@ -466,7 +466,7 @@ namespace GameEngine
         public const int LAST_DIRECTION = 3;
 
         // When computing overlap, how far beyond the edge of the plot to shoot for
-        private const int OVERLAP_EXTENT = 6; // Distance ball can move in one turn
+        private const int OVERLAP_EXTENT = BALL.MOVEMENT;
 
         public const int inputXScale = 8;
         public const int inputYScale = 32;
@@ -665,10 +665,25 @@ namespace GameEngine
             nextDirection = inDirection;
             nextNode = inPath;
         }
+
         public Plot ThisPlot
         {
             get { return thisNode.thisPlot; }
         }
+
+        public bool leadsTo(int room, int x, int y)
+        {
+            if (nextNode == null)
+            {
+                // Final node.  See if the coordinates are in this plot.
+                return thisNode.thisPlot.RoughlyContains(room, x, y);
+            }
+            else
+            {
+                return nextNode.leadsTo(room, x, y);
+            }
+        }
+
         public override string ToString()
         {
             string str = "" + ThisPlot.Key;

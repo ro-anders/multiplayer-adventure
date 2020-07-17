@@ -5,6 +5,7 @@ namespace GameEngine
     {
         public const int RADIUS = 4;
         public const int DIAMETER = 2 * RADIUS;
+        public const int MOVEMENT = 6;
 
         public int playerNum;              // 0-2.  Which player this is.
         public int room;                   // room

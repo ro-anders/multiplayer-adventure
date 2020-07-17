@@ -6,8 +6,6 @@ using UnityEngine;
 
 public class AiTactical
 {
-    private const int BALL_MOVEMENT = 6;
-
     /** The ball that is being moved */
     private BALL thisBall;
 
@@ -36,18 +34,15 @@ public class AiTactical
                 currentPath.ThisPlot.GetOverlap(currentPath.nextNode.ThisPlot,
                     currentPath.nextDirection, ref nextStepX, ref nextStepY);
                 smoothMovement(ref nextStepX, ref nextStepY, currentPath.nextDirection);
-                //UnityEngine.Debug.Log("Heading for (" + nextStepX + "," + nextStepY +
-                //    ") in plot " + currentPath.ThisPlot);
             }
-            else
-            {
-                // We've reached the last plot in the path.  
-                // Now go to the desired coordinates
-                nextStepX = finalX;
-                nextStepY = finalY;
-                //UnityEngine.Debug.Log("Heading for (" + nextStepX + "," + nextStepY +
-                //    ") in final plot " + currentPath.ThisPlot);
-            }
+        }
+
+        if (currentPath.nextNode == null)
+        {
+            // We've reached the last plot in the path.  
+            // Now go to the desired coordinates
+            nextStepX = finalX;
+            nextStepY = finalY;
         }
 
         bool canGetThere = computeDirection(nextStepX, nextStepY, ref nextVelx, ref nextVely);
@@ -62,8 +57,8 @@ public class AiTactical
      */
     private bool computeDirection(int nextStepX, int nextStepY, ref int nextVelX, ref int nextVelY)
     {
-        nextVelX = (nextStepX > thisBall.midX ? BALL_MOVEMENT : (nextStepX == thisBall.midX ? 0 : -BALL_MOVEMENT));
-        nextVelY = (nextStepY > thisBall.midY ? BALL_MOVEMENT : (nextStepY == thisBall.midY ? 0 :-BALL_MOVEMENT));
+        nextVelX = (nextStepX > thisBall.midX ? BALL.MOVEMENT : (nextStepX == thisBall.midX ? 0 : -BALL.MOVEMENT));
+        nextVelY = (nextStepY > thisBall.midY ? BALL.MOVEMENT : (nextStepY == thisBall.midY ? 0 :-BALL.MOVEMENT));
         if ((nextVelX != thisBall.velx) || (nextVelY != thisBall.vely))
         {
             //UnityEngine.Debug.Log("Changing (" + thisBall.velx + "," + thisBall.vely +
@@ -83,28 +78,28 @@ public class AiTactical
         {
             case Plot.UP:
             case Plot.DOWN:
-                int diff = (nextStepX - thisBall.midX) % BALL_MOVEMENT;
-                if (diff > BALL_MOVEMENT / 2)
+                int diff = (nextStepX - thisBall.midX) % BALL.MOVEMENT;
+                if (diff > BALL.MOVEMENT / 2)
                 {
-                    diff -= BALL_MOVEMENT;
+                    diff -= BALL.MOVEMENT;
                 }
-                else if (diff <= -BALL_MOVEMENT / 2)
+                else if (diff <= -BALL.MOVEMENT / 2)
                 {
-                    diff += BALL_MOVEMENT;
+                    diff += BALL.MOVEMENT;
                 }
                 nextStepX -= diff;
                 return;
             case Plot.LEFT:
             case Plot.RIGHT:
             default:
-                diff = (nextStepY - thisBall.midY) % BALL_MOVEMENT;
-                if (diff > BALL_MOVEMENT / 2)
+                diff = (nextStepY - thisBall.midY) % BALL.MOVEMENT;
+                if (diff > BALL.MOVEMENT / 2)
                 {
-                    diff -= BALL_MOVEMENT;
+                    diff -= BALL.MOVEMENT;
                 }
-                else if (diff <= -BALL_MOVEMENT / 2)
+                else if (diff <= -BALL.MOVEMENT / 2)
                 {
-                    diff += BALL_MOVEMENT;
+                    diff += BALL.MOVEMENT;
                 }
                 nextStepY -= diff;
                 return;

@@ -6,6 +6,12 @@ using UnityEngine;
 
 abstract public class AiObjective
 {
+    /**
+     * This is thrown when an objective can't be completed anymore.
+     * If things change that make an objective impossible (e.g. a go to command
+     * when the gate just closed) then the objective is aborted.*/
+    public class Abort : Exception { }
+
     /** The next objective after this to accomplish parent objective */
     protected AiObjective sibling;
 
@@ -17,72 +23,14 @@ abstract public class AiObjective
     protected int aiPlayerNum;
     protected BALL aiPlayer;
 
+    /** Whether this objective has been successfully completed */
     protected bool completed = false;
 
+    /** Whether this objective has computed all the steps necessary to
+     * be achieved.  This is done once.  If things change after that, this
+     * objective must be aborted and a new one created. */
     private bool computed = false;
 
-    protected AiObjective()
-    {}
-
-    /**
-     * Compute a set of objectives to complete this objective
-     */
-    public void computeStrategy()
-    {;
-        if (computed)
-        {
-            // Something went wrong
-            throw new Exception("Asking to recompute an already computed strategy");
-        }
-        doComputeStrategy();
-        computed = true;
-    }
-
-    public override abstract string ToString();
-
-    /**
-     * Compute a set of objectives to complete this objective
-     */
-    protected abstract void doComputeStrategy();
-
-    /**
-     * Whether an objective has been fulfilled
-     */
-    public bool isCompleted()
-    {
-        if (!completed)
-        {
-            if (!computed)
-            {
-                computeStrategy();
-            }
-            completed = computeIsCompleted();
-            // Once a task is completed, it doesn't get uncompleted.
-            // That would imply bigger things have changed and we should
-            // recompute our strategy.
-        }
-        return completed;
-    }
-
-    /**
-     * If this objective is achieved by completing sub-objectives
-     * add this sub-objective as the next.
-     */
-    public void addChild(AiObjective nextChild)
-    {
-        // The root of the objective tree provides the board and the player num
-        nextChild.board = this.board;
-        nextChild.aiPlayerNum = this.aiPlayerNum;
-        nextChild.aiPlayer = this.aiPlayer;
-
-        if (child == null)
-        {
-            child = nextChild;
-        } else
-        {
-            child.addSibling(nextChild);
-        }
-    }
 
     /**
      * Return the next objective that needs to be completed
@@ -106,8 +54,6 @@ abstract public class AiObjective
         return next;
     }
 
-    protected abstract bool computeIsCompleted();
-
     public virtual void getDestination(ref int room, ref int x, ref int y)
     {
         // Default is to do nothing.  Objectives that are composed of
@@ -119,6 +65,71 @@ abstract public class AiObjective
         // Default is to do nothing.
         return false;
     }
+
+    public override abstract string ToString();
+
+    protected AiObjective()
+    {}
+
+    /**
+     * Compute a set of objectives to complete this objective
+     */
+    protected void computeStrategy()
+    {;
+        if (computed)
+        {
+            // Something went wrong
+            throw new Exception("Asking to recompute an already computed strategy");
+        }
+        doComputeStrategy();
+        computed = true;
+    }
+
+    /**
+     * Compute a set of objectives to complete this objective
+     */
+    protected abstract void doComputeStrategy();
+
+    /**
+     * Whether an objective has been fulfilled
+     */
+    protected bool isCompleted()
+    {
+        if (!completed)
+        {
+            if (!computed)
+            {
+                computeStrategy();
+            }
+            completed = computeIsCompleted();
+            // Once a task is completed, it doesn't get uncompleted.
+            // That would imply bigger things have changed and we should
+            // recompute our strategy.
+        }
+        return completed;
+    }
+
+    /**
+     * If this objective is achieved by completing sub-objectives
+     * add this sub-objective as the next.
+     */
+    protected void addChild(AiObjective nextChild)
+    {
+        // The root of the objective tree provides the board and the player num
+        nextChild.board = this.board;
+        nextChild.aiPlayerNum = this.aiPlayerNum;
+        nextChild.aiPlayer = this.aiPlayer;
+
+        if (child == null)
+        {
+            child = nextChild;
+        } else
+        {
+            child.addSibling(nextChild);
+        }
+    }
+
+    protected abstract bool computeIsCompleted();
 
     /**
      * Presumably this objective is a sub-objective of a larger objective.
@@ -147,7 +158,6 @@ abstract public class AiObjective
     {
         otherObjective.sibling = newObjective;
     }
-
 
 }
 
@@ -185,6 +195,7 @@ public class WinGameObjective: AiObjective
         // ever call this anymore
         return false;
     }
+
 }
 
 //-------------------------------------------------------------------------
@@ -215,8 +226,10 @@ public class GoToObjective : AiObjective
     protected override bool computeIsCompleted()
     {
         return (aiPlayer.room == gotoRoom) &&
-            (((Math.Abs(aiPlayer.midX - gotoX) <= 3) && (Math.Abs(aiPlayer.midY - gotoY) < 6)) ||
-            ((Math.Abs(aiPlayer.midY - gotoY) <= 3) && (Math.Abs(aiPlayer.midX - gotoX) < 6)));
+            (((Math.Abs(aiPlayer.midX - gotoX) <= (BALL.MOVEMENT / 2)) &&
+              (Math.Abs(aiPlayer.midY - gotoY) < BALL.MOVEMENT)) ||
+            ((Math.Abs(aiPlayer.midY - gotoY) <= (BALL.MOVEMENT / 2)) &&
+              (Math.Abs(aiPlayer.midX - gotoX) < BALL.MOVEMENT)));
     }
 
     public override string ToString()
@@ -298,9 +311,10 @@ public class UnlockCastle : AiObjective
     protected override void doComputeStrategy()
     {
         port = (Portcullis)board.getObject(portId);
-        this.addChild(new PickupObjective(port.key.getPKey()));
+        int key = port.key.getPKey();
+        this.addChild(new PickupObjective(key));
         this.addChild(new GoToObjective(port.room, Portcullis.EXIT_X, 0x30));
-        this.addChild(new RepositionKey());
+        this.addChild(new RepositionKey(key));
     }
 
     public override void getDestination(ref int room, ref int x, ref int y)
@@ -335,52 +349,54 @@ public class RepositionKey : AiObjective
     private int keyId;
     private OBJECT key;
     private int MINIMUM_Y = 1;
-    public RepositionKey()
-    {}
+    public RepositionKey(int inKeyId)
+    {
+        keyId = inKeyId;
+    }
 
     protected override void doComputeStrategy()
     {
-        keyId = aiPlayer.linkedObject;
-        key = board.getObject(keyId);
-        if (aiPlayer.linkedObjectY < MINIMUM_Y)
+        if (aiPlayer.linkedObject != keyId)
         {
-            this.addChild(new DropObjective());
-
-            //If right above the key, move to the closest top corner
-
-            // linkedObjectX = obj.x - ball.x/2
-            // linkedObjectY = obj.y - (ball.y-6)/2
-            int sideEdge;
-            if (aiPlayer.linkedObjectX > -KEY_WIDTH / 4)
+            throw new Abort();
+        }
+        else
+        {
+            key = board.getObject(keyId);
+            if (aiPlayer.linkedObjectY < MINIMUM_Y)
             {
-                // Move around to the left
-                sideEdge = key.x*2 - BALL.RADIUS;
-                sideEdge -= (6 - (aiPlayer.midX - sideEdge) % 6) % 6;
-                if (aiPlayer.midX > sideEdge)
+                this.addChild(new DropObjective());
+
+                //If right above the key, move to the closest top corner
+
+                int sideEdge;
+                if (aiPlayer.linkedObjectX > -KEY_WIDTH / 4)
                 {
-                    this.addChild(new GoToObjective(aiPlayer.room, sideEdge, aiPlayer.midY));
+                    // Move around to the left
+                    sideEdge = key.x * 2 - BALL.RADIUS;
+                    sideEdge -= (BALL.MOVEMENT - (aiPlayer.midX - sideEdge) % BALL.MOVEMENT) % BALL.MOVEMENT;
+                    if (aiPlayer.midX > sideEdge)
+                    {
+                        this.addChild(new GoToObjective(aiPlayer.room, sideEdge, aiPlayer.midY));
+                    }
                 }
-            }
-            else
-            {
-                // Move around to the right
-                sideEdge = key.x * 2 + KEY_WIDTH + BALL.RADIUS;
-                sideEdge += (6 - (sideEdge - aiPlayer.midX) % 6) % 6;
-                if (aiPlayer.midX < sideEdge)
+                else
                 {
-                    this.addChild(new GoToObjective(aiPlayer.room, sideEdge, aiPlayer.midY));
+                    // Move around to the right
+                    sideEdge = key.x * 2 + KEY_WIDTH + BALL.RADIUS;
+                    sideEdge += (BALL.MOVEMENT - (sideEdge - aiPlayer.midX) % BALL.MOVEMENT) % BALL.MOVEMENT;
+                    if (aiPlayer.midX < sideEdge)
+                    {
+                        this.addChild(new GoToObjective(aiPlayer.room, sideEdge, aiPlayer.midY));
+                    }
                 }
+                // Then move to the closest bottom corner, then to the bottom middle, then re-pickup the key
+                int bottomEdge = key.y * 2 - KEY_HEIGHT - BALL.RADIUS;
+                bottomEdge -= (BALL.MOVEMENT - (aiPlayer.midY - bottomEdge) % BALL.MOVEMENT) % BALL.MOVEMENT;
+                this.addChild(new GoToObjective(aiPlayer.room, sideEdge, bottomEdge));
+                this.addChild(new GoToObjective(aiPlayer.room, key.x * 2 + KEY_WIDTH / 2, bottomEdge));
+                this.addChild(new GoToObjective(aiPlayer.room, key.x * 2 + KEY_WIDTH / 2, key.y * 2 - KEY_HEIGHT / 2));
             }
-            // Then move to the closest bottom corner, then to the bottom middle, then re-pickup the key
-            int bottomEdge = key.y * 2 - KEY_HEIGHT - BALL.RADIUS;
-            bottomEdge -= (6 - (aiPlayer.midY - bottomEdge) % 6) % 6;
-            this.addChild(new GoToObjective(aiPlayer.room, sideEdge, bottomEdge));
-            this.addChild(new GoToObjective(aiPlayer.room, key.x * 2 + KEY_WIDTH / 2, bottomEdge));
-            this.addChild(new GoToObjective(aiPlayer.room, key.x * 2 + KEY_WIDTH / 2, key.y * 2 - KEY_HEIGHT / 2));
-            UnityEngine.Debug.Log("REPOSITIONING KEY at (" + key.x * 2 + "," + key.y * 2 + ") with (" + aiPlayer.midX + "," + aiPlayer.midY + ")-(" + sideEdge + "," + aiPlayer.midY +
-                ")-(" + sideEdge + "," + bottomEdge + ")-(" + (key.x * 2 + KEY_WIDTH / 2) + "," + bottomEdge + ")");
-            UnityEngine.Debug.Log("REPOSITIONING KEY at (" + key.x * 2 + "," + key.y * 2 + ") with (" + aiPlayer.midX + "," + aiPlayer.midY + ")-(" + sideEdge + "," + aiPlayer.midY +
-                ")-(" + sideEdge + "," + bottomEdge + ")-(" + (key.x * 2 + KEY_WIDTH / 2) + "," + bottomEdge + ")");
         }
     }
 

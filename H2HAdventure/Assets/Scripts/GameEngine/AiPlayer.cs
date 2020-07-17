@@ -5,9 +5,11 @@ namespace GameEngine
 {
     public class AiPlayer
     {
+        private const int FRAMES_BETWEEN_STRATEGY_RECOMPUTE = 5 * 60; // Every 5 seconds
         private Board gameBoard;
         private AiNav aiNav;
         private AiTactical aiTactical;
+        private AiStrategy aiStrategy;
         private int thisPlayer;
         private BALL thisBall;
 
@@ -15,12 +17,18 @@ namespace GameEngine
         // which is actually a whole tree of objectives to get them
         // to win, and the current objective which is the next one in
         // the plan that has to be completed
-        private AiObjective winGameObjective;
-        private AiObjective currentObjective;
+        private AiObjective winGameObjective = null;
+        private AiObjective currentObjective = null;
 
+        /** When the winning strategy should next be recomputed */
+        private int recomputeStrategyAtFrame;
+
+        /** The room & coordinates of where we want to get to */
+        private int desiredRoom = -1;
+        private int desiredX = -1;
+        private int desiredY = -1;
+        /** The path we intend on taking to get to the desired location */
         private AiPathNode desiredPath = null;
-        private int nextStepX = int.MinValue;
-        private int nextStepY = int.MinValue;
 
         public AiPlayer(AiNav inAi, Board inBoard, int inPlayerSlot)
         {
@@ -29,7 +37,7 @@ namespace GameEngine
             thisPlayer = inPlayerSlot;
             thisBall = gameBoard.getPlayer(thisPlayer);
             aiTactical = new AiTactical(thisBall);
-            winGameObjective = new WinGameObjective(gameBoard, inPlayerSlot);
+            aiStrategy = new AiStrategy(gameBoard, inPlayerSlot);
         }
 
         /**
@@ -37,20 +45,36 @@ namespace GameEngine
          * It may recompute the whole strategy or, for efficiency,
          * just do a quick check or even not check but every so often.
          */
-        public void checkStrategy()
+        public void checkStrategy(int frameNumber)
         {
-            // Right now we compute strategy once and never touch it again
-            if (currentObjective == null)
+            AiObjective newObjective = null;
+            // Compute a new strategy every few seconds
+            if ((currentObjective == null) || (frameNumber >= recomputeStrategyAtFrame))
             {
-                winGameObjective.computeStrategy();
+                winGameObjective = new WinGameObjective(gameBoard, thisPlayer);
                 currentObjective = winGameObjective.getNextObjective();
-                UnityEngine.Debug.Log("New objective = " + currentObjective);
+                recomputeStrategyAtFrame = frameNumber + FRAMES_BETWEEN_STRATEGY_RECOMPUTE;
             }
-            // Check to see if we've accomplished anything
-            AiObjective newObjective = winGameObjective.getNextObjective();
-            if (newObjective != currentObjective)
+            else
             {
-                currentObjective = newObjective;
+                try
+                {
+                    // Check to see if we've accomplished anything
+                    newObjective = winGameObjective.getNextObjective();
+                    if (newObjective != currentObjective)
+                    {
+                        currentObjective = newObjective;
+                    }
+                } catch (AiObjective.Abort)
+                {
+                    // Things have changed.  Just recompute the whole strategy
+                    winGameObjective = new WinGameObjective(gameBoard, thisPlayer);
+                    currentObjective = winGameObjective.getNextObjective();
+                    recomputeStrategyAtFrame = frameNumber + FRAMES_BETWEEN_STRATEGY_RECOMPUTE;
+                }
+            }
+            if ((newObjective != null) && (newObjective != currentObjective))
+            {
                 desiredPath = null;
                 UnityEngine.Debug.Log("New objective = " + currentObjective);
             }
@@ -61,22 +85,34 @@ namespace GameEngine
          * direction the AI player should be going and sets the ball's velocity
          * accordingly
          */
-        public void chooseDirection()
+        public void chooseDirection(int frameNumber)
         {
-            checkStrategy();
+            checkStrategy(frameNumber);
 
-            int desiredRoom = thisBall.room;
-            int desiredX = thisBall.midX;
-            int desiredY = thisBall.midY;
-            currentObjective.getDestination(ref desiredRoom, ref desiredX, ref desiredY);
+            int newDesiredRoom = thisBall.room;
+            int newDesiredX = thisBall.midX;
+            int newDesiredY = thisBall.midY;
+            currentObjective.getDestination(ref newDesiredRoom, ref newDesiredX, ref newDesiredY);
 
 
-            if (desiredRoom < 0)
+            if (newDesiredRoom < 0)
             {
                 // We have no goal.  Don't do anything.
                 return;
 
             }
+
+            // We need to recompute the path if where we
+            // are going has changed and is no longer at the end of the path.
+            if (((newDesiredRoom != desiredRoom) || (newDesiredX != desiredX) || (newDesiredY != desiredY)) &&
+                (desiredPath != null) &&
+                !desiredPath.leadsTo(newDesiredRoom, newDesiredX, newDesiredY)) {
+
+                desiredPath = null;
+            }
+            desiredRoom = newDesiredRoom;
+            desiredX = newDesiredX;
+            desiredY = newDesiredY;
 
             if (desiredPath == null)
             {
@@ -132,6 +168,8 @@ namespace GameEngine
          */
         public bool shouldDropHeldObject()
         {
+            // We don't recheck the strategy.  We assume that is done
+            // at least once every three frames in the chooseDirection() method.
             return currentObjective.shouldDropHeldObject();
         }
 
