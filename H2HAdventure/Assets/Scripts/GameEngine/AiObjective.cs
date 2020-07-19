@@ -22,6 +22,7 @@ abstract public class AiObjective
     protected Board board;
     protected int aiPlayerNum;
     protected BALL aiPlayer;
+    protected AiStrategy aiStrategy;
 
     /** Whether this objective has been successfully completed */
     protected bool completed = false;
@@ -119,6 +120,7 @@ abstract public class AiObjective
         nextChild.board = this.board;
         nextChild.aiPlayerNum = this.aiPlayerNum;
         nextChild.aiPlayer = this.aiPlayer;
+        nextChild.aiStrategy = this.aiStrategy;
 
         if (child == null)
         {
@@ -168,11 +170,12 @@ abstract public class AiObjective
 
 public class WinGameObjective: AiObjective
 {
-    public WinGameObjective(Board inBoard, int inAiPlayerNum)
+    public WinGameObjective(Board inBoard, int inAiPlayerNum, AiStrategy inAiStrategy)
     {
         base.board = inBoard;
         base.aiPlayerNum = inAiPlayerNum;
         base.aiPlayer = board.getPlayer(inAiPlayerNum);
+        base.aiStrategy = inAiStrategy;
     }
 
     public override string ToString() 
@@ -184,8 +187,7 @@ public class WinGameObjective: AiObjective
     {
         Portcullis homeGate = this.aiPlayer.homeGate;
         this.addChild(new UnlockCastle(homeGate.getPKey()));
-        this.addChild(new UnlockCastle(Board.OBJECT_BLACK_PORT));
-        this.addChild(new PickupObjective(Board.OBJECT_CHALISE));
+        this.addChild(new ObtainObjective(Board.OBJECT_CHALISE));
         this.addChild(new GoToObjective(homeGate.insideRoom, 160, 120));
     }
 
@@ -194,6 +196,111 @@ public class WinGameObjective: AiObjective
         // This is never completed, or by the time it is we don't
         // ever call this anymore
         return false;
+    }
+
+}
+
+//-------------------------------------------------------------------------
+
+/**
+ * This is the high-level objective for getting an object.  It can
+ * deal with stuff like the object is held by the bat or locked in a 
+ * castle.  It relies on the low level PickupObject objective, which 
+ * assumes the object is unheld and reachable.
+ */
+public class ObtainObjective : AiObjective
+{
+
+    private int toPickup;
+    private OBJECT objectToPickup;
+
+    public ObtainObjective(int inToPickup)
+    {
+        toPickup = inToPickup;
+    }
+
+    public override string ToString()
+    {
+        return "obtain  " + board.getObject(toPickup).label;
+    }
+
+    protected override bool computeIsCompleted()
+    {
+        return (aiPlayer.linkedObject == toPickup);
+    }
+
+    protected override void doComputeStrategy()
+    {
+        objectToPickup = board.getObject(toPickup);
+
+        int portcullis = aiStrategy.behindLockedGate(objectToPickup);
+        if (portcullis >= 0)
+        {
+            addChild(new UnlockCastle(portcullis));
+            // By the time the castle is unlocked, things might have changed.
+            // So calculate a new strategy
+            // TODO: Better way to do this
+            addChild(new ObtainObjective(toPickup));
+        }
+        else
+        {
+            addChild(new PickupObjective(toPickup));
+        }
+    }
+}
+
+
+//-------------------------------------------------------------------------
+
+/**
+ * Go and pick up an object.
+ */
+public class PickupObjective : AiObjective
+{
+    private int toPickup;
+    private OBJECT objectToPickup;
+
+    /**
+     * The object the AI player needs to pickup
+     */
+    public PickupObjective(int inToPickup)
+    {
+        toPickup = inToPickup;
+    }
+
+    public override string ToString()
+    {
+        return "go pickup " + board.getObject(toPickup).label;
+    }
+
+    protected override void doComputeStrategy()
+    {
+        objectToPickup = board.getObject(toPickup);
+    }
+
+    public override void getDestination(ref int room, ref int x, ref int y)
+    {
+        if (toPickup == Board.OBJECT_BRIDGE)
+        {
+            // Bridge is tricky.  Aim for the corner for now.
+            room = objectToPickup.room;
+            x = 2 * objectToPickup.x;
+            y = 2 * objectToPickup.y;
+        }
+        else
+        {
+            // Aim for the center
+            room = objectToPickup.room;
+            int width = 8; // Except for the bridge, everything is 8 pixels width
+            int height = objectToPickup.gfxData[0].Length;
+            x = 2 * objectToPickup.x + width; // 2 * (x + width/2)
+            y = 2 * objectToPickup.y - height; // 2 * (y - hegiht/2)
+        }
+    }
+
+    protected override bool computeIsCompleted()
+    {
+        return (aiPlayer.linkedObject == toPickup);
     }
 
 }
@@ -238,59 +345,6 @@ public class GoToObjective : AiObjective
     }
 }
 
-//-------------------------------------------------------------------------
-
-/**
- * Go and pick up an object.
- */
-public class PickupObjective : AiObjective
-{
-    private int toPickup;
-    private OBJECT objectToPickup;
-
-    /**
-     * The object the AI player needs to pickup
-     */
-    public PickupObjective(int inToPickup)
-    {
-        toPickup = inToPickup;
-    }
-
-    protected override void doComputeStrategy()
-    {
-        objectToPickup = board.getObject(toPickup);
-    }
-
-    public override void getDestination(ref int room, ref int x, ref int y)
-    {
-        if (toPickup == Board.OBJECT_BRIDGE)
-        {
-            // Bridge is tricky.  Aim for the corner for now.
-            room = objectToPickup.room;
-            x = 2 * objectToPickup.x;
-            y = 2 * objectToPickup.y;
-        }
-        else
-        {
-            // Aim for the center
-            room = objectToPickup.room;
-            int width = 8; // Except for the bridge, everything is 8 pixels width
-            int height = objectToPickup.gfxData[0].Length;
-            x = 2 * objectToPickup.x + width; // 2 * (x + width/2)
-            y = 2 * objectToPickup.y - height; // 2 * (y - hegiht/2)
-        }
-    }
-
-    protected override bool computeIsCompleted()
-    {
-        return (aiPlayer.linkedObject == toPickup);
-    }
-
-    public override string ToString()
-    {
-        return "get " + board.getObject(toPickup).label;
-    }
-}
 
 
 //-------------------------------------------------------------------------
@@ -312,7 +366,7 @@ public class UnlockCastle : AiObjective
     {
         port = (Portcullis)board.getObject(portId);
         int key = port.key.getPKey();
-        this.addChild(new PickupObjective(key));
+        this.addChild(new ObtainObjective(key));
         this.addChild(new GoToObjective(port.room, Portcullis.EXIT_X, 0x30));
         this.addChild(new RepositionKey(key));
     }

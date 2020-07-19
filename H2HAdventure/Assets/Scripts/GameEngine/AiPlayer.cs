@@ -51,7 +51,7 @@ namespace GameEngine
             // Compute a new strategy every few seconds
             if ((currentObjective == null) || (frameNumber >= recomputeStrategyAtFrame))
             {
-                winGameObjective = new WinGameObjective(gameBoard, thisPlayer);
+                winGameObjective = new WinGameObjective(gameBoard, thisPlayer, aiStrategy);
                 currentObjective = winGameObjective.getNextObjective();
                 recomputeStrategyAtFrame = frameNumber + FRAMES_BETWEEN_STRATEGY_RECOMPUTE;
             }
@@ -68,7 +68,7 @@ namespace GameEngine
                 } catch (AiObjective.Abort)
                 {
                     // Things have changed.  Just recompute the whole strategy
-                    winGameObjective = new WinGameObjective(gameBoard, thisPlayer);
+                    winGameObjective = new WinGameObjective(gameBoard, thisPlayer, aiStrategy);
                     currentObjective = winGameObjective.getNextObjective();
                     recomputeStrategyAtFrame = frameNumber + FRAMES_BETWEEN_STRATEGY_RECOMPUTE;
                 }
