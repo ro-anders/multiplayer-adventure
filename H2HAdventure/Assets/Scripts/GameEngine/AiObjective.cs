@@ -22,7 +22,7 @@ abstract public class AiObjective
     protected Board board;
     protected int aiPlayerNum;
     protected BALL aiPlayer;
-    protected AiStrategy aiStrategy;
+    protected AiStrategy strategy;
 
     /** Whether this objective has been successfully completed */
     protected bool completed = false;
@@ -120,7 +120,7 @@ abstract public class AiObjective
         nextChild.board = this.board;
         nextChild.aiPlayerNum = this.aiPlayerNum;
         nextChild.aiPlayer = this.aiPlayer;
-        nextChild.aiStrategy = this.aiStrategy;
+        nextChild.strategy = this.strategy;
 
         if (child == null)
         {
@@ -175,7 +175,7 @@ public class WinGameObjective: AiObjective
         base.board = inBoard;
         base.aiPlayerNum = inAiPlayerNum;
         base.aiPlayer = board.getPlayer(inAiPlayerNum);
-        base.aiStrategy = inAiStrategy;
+        base.strategy = inAiStrategy;
     }
 
     public override string ToString() 
@@ -233,17 +233,16 @@ public class ObtainObjective : AiObjective
     {
         objectToPickup = board.getObject(toPickup);
 
-        int portcullis = aiStrategy.behindLockedGate(objectToPickup);
+        int portcullis = strategy.behindLockedGate(objectToPickup);
         if (portcullis >= 0)
         {
             addChild(new UnlockCastle(portcullis));
-            // By the time the castle is unlocked, things might have changed.
-            // So calculate a new strategy
-            // TODO: Better way to do this
-            addChild(new ObtainObjective(toPickup));
         }
-        else
+        BALL otherPlayer = strategy.heldByOtherPlayer(objectToPickup);
+        if (otherPlayer != null)
         {
+            addChild(new GetObjectFromPlayer(toPickup, otherPlayer.playerNum));
+        } else { 
             addChild(new PickupObjective(toPickup));
         }
     }
@@ -276,6 +275,10 @@ public class PickupObjective : AiObjective
     protected override void doComputeStrategy()
     {
         objectToPickup = board.getObject(toPickup);
+        if (strategy.heldByOtherPlayer(objectToPickup) != null)
+        {
+            throw new Abort();
+        }
     }
 
     public override void getDestination(ref int room, ref int x, ref int y)
@@ -307,7 +310,93 @@ public class PickupObjective : AiObjective
 
 //-------------------------------------------------------------------------
 
-public class GoToObjective : AiObjective
+/**
+ * Take an object currently carried by another player.
+ */
+public class GetObjectFromPlayer : AiObjective
+{
+    private int toSteal;
+    private OBJECT objectToSteal;
+    private int toStealFrom;
+    private BALL ballToStealFrom;
+
+    /**
+     * The object the AI player needs to pickup
+     */
+    public GetObjectFromPlayer(int inToSteal, int inToStealFrom)
+    {
+        toSteal = inToSteal;
+        toStealFrom = inToStealFrom;
+    }
+
+    public override string ToString()
+    {
+        return "steal " + board.getObject(toSteal).label + " from player #" + toStealFrom;
+    }
+
+    protected override void doComputeStrategy()
+    {
+        objectToSteal = board.getObject(toSteal);
+        ballToStealFrom = board.getPlayer(toStealFrom);
+        if (ballToStealFrom.linkedObject != toSteal)
+        {
+            throw new Abort();
+        }
+    }
+
+    public override void getDestination(ref int room, ref int x, ref int y)
+    {
+        // If we're really close, go for the object, otherwise go for the ball
+        if (aiPlayer.room != ballToStealFrom.room)
+        {
+            room = ballToStealFrom.room;
+            x = ballToStealFrom.x;
+            y = ballToStealFrom.y;
+        }
+        else
+        {
+            int distanceX = Math.Abs(aiPlayer.midX - ballToStealFrom.midX);
+            int distanceY = Math.Abs(aiPlayer.midY - ballToStealFrom.midY);
+            int distance = (distanceX > distanceY ? distanceX : distanceY);
+            if (distance > 2 * BALL.MOVEMENT)
+            {
+                room = ballToStealFrom.room;
+                x = ballToStealFrom.x;
+                y = ballToStealFrom.y;
+
+            }
+            else
+            {
+                if (toSteal == Board.OBJECT_BRIDGE)
+                {
+                    // Bridge is tricky.  Aim for the corner for now.
+                    room = objectToSteal.room;
+                    x = 2 * objectToSteal.x;
+                    y = 2 * objectToSteal.y;
+                }
+                else
+                {
+                    // Aim for the center
+                    room = objectToSteal.room;
+                    int width = 8; // Except for the bridge, everything is 8 pixels width
+                    int height = objectToSteal.gfxData[0].Length;
+                    x = 2 * objectToSteal.x + width; // 2 * (x + width/2)
+                    y = 2 * objectToSteal.y - height; // 2 * (y - hegiht/2)
+                }
+            }
+        }
+    }
+
+    protected override bool computeIsCompleted()
+    {
+        return (aiPlayer.linkedObject == toSteal);
+    }
+}
+
+
+    //-------------------------------------------------------------------------
+
+    public class GoToObjective : AiObjective
 {
     private int gotoRoom;
     private int gotoX;
