@@ -36,8 +36,15 @@ namespace GameEngine
             aiNav = inAi;
             thisPlayer = inPlayerSlot;
             thisBall = gameBoard.getPlayer(thisPlayer);
-            aiTactical = new AiTactical(thisBall);
+            aiTactical = new AiTactical(thisBall, gameBoard);
             aiStrategy = new AiStrategy(gameBoard, inPlayerSlot);
+        }
+
+        public void resetPlayer()
+        {
+            winGameObjective = null;
+            currentObjective = null;
+            desiredPath = null;
         }
 
         /**
@@ -52,7 +59,7 @@ namespace GameEngine
             if ((currentObjective == null) || (frameNumber >= recomputeStrategyAtFrame))
             {
                 winGameObjective = new WinGameObjective(gameBoard, thisPlayer, aiStrategy);
-                currentObjective = winGameObjective.getNextObjective();
+                newObjective = winGameObjective.getNextObjective();
                 recomputeStrategyAtFrame = frameNumber + FRAMES_BETWEEN_STRATEGY_RECOMPUTE;
             }
             else
@@ -63,20 +70,21 @@ namespace GameEngine
                     newObjective = winGameObjective.getNextObjective();
                     if (newObjective != currentObjective)
                     {
-                        currentObjective = newObjective;
+                        UnityEngine.Debug.Log("New player " + thisBall.playerNum + " objective = " + newObjective);
                     }
                 } catch (AiObjective.Abort)
                 {
                     // Things have changed.  Just recompute the whole strategy
                     winGameObjective = new WinGameObjective(gameBoard, thisPlayer, aiStrategy);
-                    currentObjective = winGameObjective.getNextObjective();
+                    newObjective = winGameObjective.getNextObjective();
                     recomputeStrategyAtFrame = frameNumber + FRAMES_BETWEEN_STRATEGY_RECOMPUTE;
+                    UnityEngine.Debug.Log("New objective = " + newObjective);
                 }
             }
             if ((newObjective != null) && (newObjective != currentObjective))
             {
+                currentObjective = newObjective;
                 desiredPath = null;
-                UnityEngine.Debug.Log("New objective = " + currentObjective);
             }
         }
 
@@ -117,14 +125,16 @@ namespace GameEngine
             if (desiredPath == null)
             {
                 // We don't even know where we are going.  Figure it out.
-                UnityEngine.Debug.Log("Get player " + thisPlayer + " from " +
-                    thisBall.room + "-(" + (thisBall.midX) + "," + (thisBall.midY) + ") to " +
-                    desiredRoom + "-(" + desiredX + "," + desiredY + ")");
+
+                //UnityEngine.Debug.Log("Get player " + thisPlayer + " from " +
+                //    thisBall.room + "-(" + (thisBall.midX) + "," + (thisBall.midY) + ") to " +
+                //    desiredRoom + "-(" + desiredX + "," + desiredY + ")");
                 desiredPath = aiNav.ComputePath(thisBall.room, thisBall.midX, thisBall.midY, desiredRoom, desiredX, desiredY);
                 if (desiredPath == null)
                 {
                     // No way to get to where we want to go.  Give up
-                    UnityEngine.Debug.Log("Couldn't compute path for AI player " + thisPlayer);
+                    UnityEngine.Debug.Log("Couldn't compute path for AI player #" + thisPlayer + " for objective \"" + currentObjective +
+                        "\" to get to ("+desiredX+","+desiredY+")@"+desiredRoom);
                     // ABORT PATH
                     desiredRoom = -1;
                     thisBall.velx = 0;
@@ -137,7 +147,7 @@ namespace GameEngine
             if (desiredPath == null)
             {
                 // ABORT PATH
-                UnityEngine.Debug.LogError("Ball has fallen off the AI path! Aborting.");
+                UnityEngine.Debug.LogError("Ball " + thisBall.playerNum + " has fallen off the AI path! Aborting.");
                 desiredRoom = -1;
                 thisBall.velx = 0;
                 thisBall.vely = 0;
@@ -146,7 +156,8 @@ namespace GameEngine
 
             int nextVelx = 0;
             int nextVely = 0;
-            bool canGetThere = aiTactical.computeDirectionOnPath(desiredPath, desiredX, desiredY, ref nextVelx, ref nextVely);
+            bool canGetThere = aiTactical.computeDirectionOnPath(desiredPath, desiredX, desiredY,
+                currentObjective, ref nextVelx, ref nextVely);
             if (canGetThere)
             {
                 thisBall.velx = nextVelx;
@@ -173,6 +184,16 @@ namespace GameEngine
             return currentObjective.shouldDropHeldObject();
         }
 
+        /**
+         * Called during the checking reset switch, this will determine if the AI player
+         * wants to reset.  This call clears the "wants to reset" flag. so only
+         * call when you intend to issue a reset.
+         */
+        public bool shouldReset()
+        {
+            // We don't recheck the strategy.
+            return (currentObjective == null ? false : currentObjective.collectShouldReset());
+        }
     }
 
 }

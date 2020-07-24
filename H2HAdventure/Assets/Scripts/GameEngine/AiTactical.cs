@@ -9,16 +9,32 @@ public class AiTactical
     /** The ball that is being moved */
     private BALL thisBall;
 
+    /** The game board */
+    private Board board;
+
     private AiPathNode currentPath;
     private int nextStepX;
     private int nextStepY;
 
-    public AiTactical(BALL inBall)
+    private static int[][] directions = new int[][]{
+            new int[]{ 0, BALL.MOVEMENT},
+            new int[]{-BALL.MOVEMENT, BALL.MOVEMENT },
+            new int[]{-BALL.MOVEMENT, 0 },
+            new int[]{-BALL.MOVEMENT, -BALL.MOVEMENT },
+            new int[]{ 0, -BALL.MOVEMENT },
+            new int[]{ BALL.MOVEMENT, -BALL.MOVEMENT },
+            new int[]{ BALL.MOVEMENT, 0 },
+            new int[]{ BALL.MOVEMENT, BALL.MOVEMENT }
+        };
+
+
+    public AiTactical(BALL inBall, Board inBoard)
     {
         thisBall = inBall;
+        board = inBoard;
     }
 
-    public bool computeDirectionOnPath(AiPathNode path, int finalX, int finalY,
+    public bool computeDirectionOnPath(AiPathNode path, int finalX, int finalY, AiObjective currentObjective,
         ref int nextVelx, ref int nextVely)
     {
         // Go to the nextStep coordinates to get us to the next step on the path
@@ -45,7 +61,7 @@ public class AiTactical
             nextStepY = finalY;
         }
 
-        bool canGetThere = computeDirection(nextStepX, nextStepY, ref nextVelx, ref nextVely);
+        bool canGetThere = computeDirection(nextStepX, nextStepY, currentObjective.getDesiredObject(), ref nextVelx, ref nextVely);
 
         return canGetThere;
     }
@@ -55,10 +71,39 @@ public class AiTactical
      * Usually this just makes a straight line towards it, but will choose alternate
      * directions to deal with dragons or impeding obstacles.
      */
-    private bool computeDirection(int nextStepX, int nextStepY, ref int nextVelX, ref int nextVelY)
+    private bool computeDirection(int nextStepX, int nextStepY, int desiredObject, ref int nextVelX, ref int nextVelY)
     {
         nextVelX = (nextStepX > thisBall.midX ? BALL.MOVEMENT : (nextStepX == thisBall.midX ? 0 : -BALL.MOVEMENT));
         nextVelY = (nextStepY > thisBall.midY ? BALL.MOVEMENT : (nextStepY == thisBall.midY ? 0 :-BALL.MOVEMENT));
+
+        // Collect a list of objects that may be in the way
+        // TODO: Not sure how to handle portcullis's and the Robinett message,
+        // so for right now just worrying about dragons and objects you can
+        // pickup
+        Board.ObjIter iter = board.getMovableObjects();
+        while (iter.hasNext())
+        {
+            OBJECT objct = iter.next();
+            if (objct.room == thisBall.room)
+            {
+                // Ignore stalking dragons.  We deal with them differently.
+                int pkey = objct.getPKey();
+                if (((pkey < Board.FIRST_DRAGON) || (pkey > Board.LAST_DRAGON) ||
+                    (objct.state != Dragon.STALKING)) &&
+                    (pkey != desiredObject) &&
+                    (pkey != thisBall.linkedObject))
+                {
+                    // TODO: This isn't handling bridge correctly
+                    if ((objct.room == thisBall.room) &&
+                        quickCheckCollision(thisBall.x + nextVelX, thisBall.y + nextVelY, objct)) {
+                        // Ball would connect with object next turn, figure a different direction
+                        avoidObject(objct, ref nextVelX, ref nextVelY);
+                        break;
+                    }
+                }
+            }
+        }
+
         if ((nextVelX != thisBall.velx) || (nextVelY != thisBall.vely))
         {
             //UnityEngine.Debug.Log("Changing (" + thisBall.velx + "," + thisBall.vely +
@@ -66,6 +111,53 @@ public class AiTactical
             //    ") at " + thisBall.room + "-(" + thisBall.midX + "," + thisBall.midY + ")");
         }
         return true;
+    }
+
+    /**
+     * Check if a ball at a given position will collide with an object.
+     * This just checks the object's bounding box, it doesn't do pixel level
+     * collision checking.
+     * @param ballx the x position of the ball (the top left corner)
+     * @param bally the y position of the ball (the top left corner)
+     * @param objct the object to check
+     */
+    private bool quickCheckCollision(int ballx, int bally, OBJECT objct)
+    {
+        // TODO: This doesn't handle bridge correctly
+        int graphic = (objct.states.Length > 0 ? objct.states[objct.state] : 0);
+        int objectHt = objct.gfxData[graphic].Length;
+        return Board.HitTestRects(ballx, bally, BALL.DIAMETER, BALL.DIAMETER,
+          objct.x * 2, objct.y * 2, Board.OBJECTWIDTH * 2, objectHt * 2);
+    }
+
+    /**
+     * Desired movement would cause ball to hit object.  Figure out a direction to 
+     * avoid collision and still get to destination.
+     */
+    private void avoidObject(OBJECT objct, ref int nextVelX, ref int nextVelY)
+    {
+        // Simple algorithm.  Move around the object clockwise until we are passed it.
+        // TODO: Doesn't handle hitting a wall or hitting another object
+        // Find which direction we are currently supposed to go
+        int start = -1;
+        for (int ctr = 0; (start == -1) && (ctr < directions.Length); ++ctr)
+        {
+            if ((directions[ctr][0] == nextVelX) && (directions[ctr][1] == nextVelY)) {
+                start = ctr;
+            }
+        }
+
+        bool foundClearDirection = false;
+        for (int ctr = 1; !foundClearDirection && (ctr < directions.Length); ++ctr)
+        {
+            int check = (start + ctr) % directions.Length;
+            if (!quickCheckCollision(thisBall.x + directions[check][0], thisBall.y + directions[check][1], objct))
+            {
+                nextVelX = directions[check][0];
+                nextVelY = directions[check][1];
+                foundClearDirection = true;
+            }
+        }
     }
 
     /**

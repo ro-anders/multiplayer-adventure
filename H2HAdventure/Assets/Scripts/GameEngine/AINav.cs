@@ -112,7 +112,7 @@ namespace GameEngine
                     // the path
                     AiPathNode found = null;
                     for (AiPathNode newNode = desiredPath.nextNode;
-                        (newNode != null) && (found != null);
+                        (newNode != null) && (found == null);
                         newNode = newNode.nextNode)
                     {
                         if (newNode.ThisPlot.Contains(currentRoom, currentX, currentY))
@@ -126,10 +126,10 @@ namespace GameEngine
                     }
                     else
                     {
-                        UnityEngine.Debug.LogError(currentRoom + "(" + currentX + "," +
-                            currentY + ")" + " has fallen off the AI path!\nNot in " +
-                            desiredPath.ThisPlot +
-                            (desiredPath.nextNode == null ? "" : " or " + desiredPath.nextNode.ThisPlot));
+                        //UnityEngine.Debug.LogError(currentRoom + "(" + currentX + "," +
+                        //    currentY + ")" + " has fallen off the AI path!\nNot in " +
+                        //    desiredPath.ThisPlot +
+                        //    (desiredPath.nextNode == null ? "" : " or " + desiredPath.nextNode.ThisPlot));
                         checkedPath = null;
                     }
                 }
@@ -225,10 +225,6 @@ namespace GameEngine
         {
             // Outside plot defined with {3,19,3,20},
             // Inside plot define with {0,16, 0,23}
-            if (open)
-            {
-                UnityEngine.Debug.Log("Connecting castle outside " + outsideRoom + " with inside " + insideRoom);
-            }
             int outsidePlotindex = FindPlot(outsideRoom, 160, 112);
             // Just happen to know exactly which plots need to be connected
             AiMapNode outsidePlot = aiPlotsByRoom[outsideRoom][5];

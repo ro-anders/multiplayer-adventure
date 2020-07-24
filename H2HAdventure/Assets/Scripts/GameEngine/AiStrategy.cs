@@ -17,6 +17,21 @@ public class AiStrategy
     }
 
     /**
+     * If the ball has been eaten by a dragon
+     */
+    public bool eatenByDragon()
+    {
+        bool eaten = false;
+        for (int ctr = Board.FIRST_DRAGON; !eaten && (ctr <= Board.LAST_DRAGON); ++ctr)
+        {
+            Dragon dragon = (Dragon)board.getObject(ctr);
+            eaten = (dragon.eaten == thisBall);
+        }
+        return eaten;
+    }
+
+
+    /**
      * If an object is behind a locked gate, returns that gate.  Otherwise
      * returns -1.
      */

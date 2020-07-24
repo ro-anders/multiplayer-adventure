@@ -597,6 +597,7 @@ namespace GameEngine
             }
 
             // Reset switch
+            handleAiReset();
             if (switchReset && !reset)
             {
                 handleResetSwitch();
@@ -901,7 +902,7 @@ namespace GameEngine
 
             // Run through all the objects in the game.  The ones that shouldn't be
             // randomized will have their random location flag turned off.
-            int numObjects = gameBoard.getNumObjects();
+            int numObjects = Board.NUM_OBJECTS;
             for (int objCtr = 0; objCtr < numObjects; ++objCtr)
             {
                 OBJECT nextObj = gameBoard.getObject(objCtr);
@@ -1001,6 +1002,21 @@ namespace GameEngine
                     // Broadcast to everyone else
                     PlayerResetAction action = new PlayerResetAction();
                     sync.BroadcastAction(action);
+                }
+            }
+        }
+
+        private void handleAiReset()
+        {
+            for(int ctr=0; ctr<numPlayers; ++ctr)
+            {
+                if (aiPlayers[ctr] != null)
+                {
+                    if (aiPlayers[ctr].shouldReset())
+                    {
+                        ResetPlayer(gameBoard.getPlayer(ctr));
+                        aiPlayers[ctr].resetPlayer();
+                    }
                 }
             }
         }

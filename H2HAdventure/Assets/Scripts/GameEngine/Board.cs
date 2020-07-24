@@ -98,6 +98,17 @@ namespace GameEngine
         public const int OBJECT_CHALISE = (int)OBJLIST.OBJECTLIST_CHALISE;
         public const int OBJECT_MAGNET = (int)OBJLIST.OBJECTLIST_MAGNET;
 
+        /** useful for iterating through dragons. */
+        public const int FIRST_DRAGON = OBJECT_REDDRAGON;
+        public const int LAST_DRAGON = OBJECT_GREENDRAGON;
+
+        /**
+         * The number of objects on the board.
+         * This does not include the "null" object that the old game used to mark the end of the list.
+         * This does include all game 2 objects even on game 1 when they are all shoved into the unreachable first room.
+         */
+        public const int NUM_OBJECTS = OBJECT_MAGNET + 1; 
+
         public class ObjIter
         {
             private Board board;
@@ -144,7 +155,7 @@ namespace GameEngine
                 int nextAt = -1;
                 if (inBoard != null)
                 {
-                    int maxCtr = inBoard.getNumObjects();
+                    int maxCtr = Board.NUM_OBJECTS;
                     for (int nextCtr = startAt; (nextAt < 0) && (nextCtr < maxCtr); ++nextCtr)
                     {
                         OBJECT nextOnBoard = inBoard.getObject(nextCtr);
@@ -159,7 +170,6 @@ namespace GameEngine
         }
 
 
-        private int numObjects; // Includes the "null" object which the old game used to mark the end of the list
         private OBJECT[] objects;
 
         private int numPlayers;
@@ -174,13 +184,12 @@ namespace GameEngine
             map = inMap;
             view = inView;
 
-            numObjects = OBJECT_MAGNET + 2;
-            objects = new OBJECT[numObjects];
-            for (int ctr = 0; ctr < numObjects; ++ctr)
+            objects = new OBJECT[NUM_OBJECTS + 1]; // Includes the "null" object which the old game used to mark the end of the list
+            for (int ctr = 0; ctr < NUM_OBJECTS; ++ctr)
             {
                 objects[ctr] = null;
             }
-            objects[numObjects - 1] = new OBJECT("", new byte[0][], new byte[0], 0, 0);  // #12 Null
+            objects[NUM_OBJECTS] = new OBJECT("", new byte[0][], new byte[0], 0, 0);  // #12 Null
 
             int MAX_PLAYERS = 3;
             players = new BALL[MAX_PLAYERS];
@@ -200,17 +209,6 @@ namespace GameEngine
         public int getNumPlayers()
         {
             return numPlayers;
-        }
-
-        /**
-         * Get the number of objects on the board.
-         * This does not include the "null" object that the old game used to mark the end of the list.
-         * This does include all game 2 objects even on game 1 when they are all shoved into the unreachable first room.
-         */
-        public int getNumObjects()
-        {
-            // Don't include the "null" object.
-            return numObjects - 1;
         }
 
         public ObjIter getObjects()

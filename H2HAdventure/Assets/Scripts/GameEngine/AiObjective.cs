@@ -6,6 +6,9 @@ using UnityEngine;
 
 abstract public class AiObjective
 {
+    public const int CARRY_NO_OBJECT = -10; // We specifically don't want to carry or bump into anything
+    public const int DONT_DESIRE_OBJECT = -20; // We don't care if we bump into an object or not
+
     /**
      * This is thrown when an objective can't be completed anymore.
      * If things change that make an objective impossible (e.g. a go to command
@@ -32,6 +35,10 @@ abstract public class AiObjective
      * objective must be aborted and a new one created. */
     private bool computed = false;
 
+    /** Useful to keep this info in the objective.  Whether or not 
+     * the player should reset. */
+    private bool needToReset = false;
+
 
     /**
      * Return the next objective that needs to be completed
@@ -55,17 +62,57 @@ abstract public class AiObjective
         return next;
     }
 
+    /**
+     * Following this objective, what are the next coordinates the
+     * ball should go to.
+     */
     public virtual void getDestination(ref int room, ref int x, ref int y)
     {
         // Default is to do nothing.  Objectives that are composed of
         // other objectives will often leave this unimplemented
     }
 
+    /**
+     * Following this objective, do we now need to drop an object
+     */
     public virtual bool shouldDropHeldObject()
     {
         // Default is to do nothing.
         return false;
     }
+
+    /**
+     * Following this objective, what object should we be carrying or
+     * trying to pickup.
+     * May be a key to an object or may be CARRY_NO_OBJECT or DONT_DESIRE_OBJECT
+     */
+    public virtual int getDesiredObject()
+    {
+        // Default is don't care
+        return DONT_DESIRE_OBJECT;
+    }
+
+    /**
+     * Set that this player should reset.  Gets unset
+     * when it actually resets.
+     */
+    public void markShouldReset()
+    {
+        needToReset = true;
+    }
+
+    /**
+     * This checks to see if the reset flag is marked, but 
+     * actually clears the reset flag after checking.  Don't
+     * call this if you don't plan to make the reset happen.
+     */
+    public bool collectShouldReset()
+    {
+        bool rtn = needToReset;
+        needToReset = false;
+        return rtn;
+    }
+
 
     public override abstract string ToString();
 
@@ -185,10 +232,17 @@ public class WinGameObjective: AiObjective
 
     protected override void doComputeStrategy()
     {
-        Portcullis homeGate = this.aiPlayer.homeGate;
-        this.addChild(new UnlockCastle(homeGate.getPKey()));
-        this.addChild(new ObtainObjective(Board.OBJECT_CHALISE));
-        this.addChild(new GoToObjective(homeGate.insideRoom, 160, 120));
+        if (strategy.eatenByDragon())
+        {
+            markShouldReset();
+        }
+        else
+        {
+            Portcullis homeGate = this.aiPlayer.homeGate;
+            this.addChild(new UnlockCastle(homeGate.getPKey()));
+            this.addChild(new ObtainObjective(Board.OBJECT_CHALISE));
+            this.addChild(new GoToObjective(homeGate.insideRoom, 160, 120));
+        }
     }
 
     protected override bool computeIsCompleted()
@@ -306,6 +360,11 @@ public class PickupObjective : AiObjective
         return (aiPlayer.linkedObject == toPickup);
     }
 
+    public override int getDesiredObject()
+    {
+        return toPickup;
+    }
+
 }
 
 //-------------------------------------------------------------------------
@@ -391,12 +450,17 @@ public class GetObjectFromPlayer : AiObjective
     {
         return (aiPlayer.linkedObject == toSteal);
     }
+
+    public override int getDesiredObject()
+    {
+        return toSteal;
+    }
 }
 
 
-    //-------------------------------------------------------------------------
+//-------------------------------------------------------------------------
 
-    public class GoToObjective : AiObjective
+public class GoToObjective : AiObjective
 {
     private int gotoRoom;
     private int gotoX;
@@ -538,7 +602,7 @@ public class RepositionKey : AiObjective
                 bottomEdge -= (BALL.MOVEMENT - (aiPlayer.midY - bottomEdge) % BALL.MOVEMENT) % BALL.MOVEMENT;
                 this.addChild(new GoToObjective(aiPlayer.room, sideEdge, bottomEdge));
                 this.addChild(new GoToObjective(aiPlayer.room, key.x * 2 + KEY_WIDTH / 2, bottomEdge));
-                this.addChild(new GoToObjective(aiPlayer.room, key.x * 2 + KEY_WIDTH / 2, key.y * 2 - KEY_HEIGHT / 2));
+                this.addChild(new PickupObjective(keyId));
             }
         }
     }
