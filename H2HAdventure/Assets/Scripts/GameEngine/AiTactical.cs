@@ -124,8 +124,7 @@ public class AiTactical
     private bool quickCheckCollision(int ballx, int bally, OBJECT objct)
     {
         // TODO: This doesn't handle bridge correctly
-        int graphic = (objct.states.Length > 0 ? objct.states[objct.state] : 0);
-        int objectHt = objct.gfxData[graphic].Length;
+        int objectHt = objct.Height;
         return Board.HitTestRects(ballx, bally, BALL.DIAMETER, BALL.DIAMETER,
           objct.x * 2, objct.y * 2, Board.OBJECTWIDTH * 2, objectHt * 2);
     }

@@ -441,35 +441,35 @@ BALL closestBall()
     return found;
 }
 
-        public int distanceTo(OBJECT other)
-        {
-            // Figure out the distance (which is really the max difference along one axis)
-            int xdist = 0;
-            if (this.x < other.x)
-            {
-                // Measure from the dragon's right side to the object's left side
-                xdist = other.x - (this.x + 8);
-            }
-            else
-            {
-                // Measure from the object's right side to the dragon's left side
-                int width = 8 * (other.size / 2 + 1);
-                xdist = this.x - (other.x + width);
-            }
-            int ydist;
-            if (this.y < other.y)
-            {
-                // Measure from the dragon's top to the object's bottom
-                ydist = (other.y-other.gfxData[other.state].Length) - this.y;
-            }
-            else
-            {
-                // Measure from the object's top to the dragon's bottom
-                ydist = this.y-this.gfxData[this.state].Length - other.y;
-            }
-            int dist = (xdist > ydist ? xdist : ydist);
-            return dist;
-        }
+public int distanceTo(OBJECT other)
+{
+    // Figure out the distance (which is really the max difference along one axis)
+    int xdist = 0;
+    if (this.x < other.x)
+    {
+        // Measure from the dragon's right side to the object's left side
+        xdist = other.x - (this.x + 8);
+    }
+    else
+    {
+        // Measure from the object's right side to the dragon's left side
+        int width = 8 * (other.size / 2 + 1);
+        xdist = this.x - (other.x + width);
+    }
+    int ydist;
+    if (this.y < other.y)
+    {
+        // Measure from the dragon's top to the object's bottom
+        ydist = other.y - other.Height - this.y;
+    }
+    else
+    {
+        // Measure from the object's top to the dragon's bottom
+        ydist = this.y - this.Height - other.y;
+    }
+    int dist = (xdist > ydist ? xdist : ydist);
+    return dist;
+}
 
 
         private static byte[][] objectGfxDragon = new byte[][]

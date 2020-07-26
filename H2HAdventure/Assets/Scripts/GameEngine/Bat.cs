@@ -38,19 +38,13 @@ namespace GameEngine
 
             if (batFedUpTimer >= 0xff)
             {
-                // Get the bat's current extents
-                int batX = 0;
-                int batY = 0;
-                int batW = 0;
-                int batH = 0;
-                CalcSpriteExtents( ref batX,  ref batY, ref batW, ref batH);
-
                 // Enlarge the bat extent by 7 pixels for the proximity checks below
                 // (doing the bat once is faster than doing each object and the results are the same)
-                batX -= 7;
-                batY += 7;
-                batW += 7 * 2;
-                batH += 7 * 2;
+                const int BAT_RANGE = 7;
+                int batX = x * Adv.BALL_SCALE - BAT_RANGE;
+                int batY = y * Adv.BALL_SCALE + BAT_RANGE;
+                int batW = Width * Adv.BALL_SCALE + 2 * BAT_RANGE;
+                int batH = Height * Adv.BALL_SCALE + 2 * BAT_RANGE;
 
                 // Go through the bat's object matrix
                 for (int matrixIndex = 0; matrixIndex < batMatrix.Length; ++matrixIndex)
@@ -99,13 +93,9 @@ namespace GameEngine
                         // The bat extents have already been expanded by 7 pixels above, so a simple
                         // rectangle intersection test is good enought here
 
-                        int objX = 0;
-                        int objY = 0;
-                        int objW = 0;
-                        int objH = 0;
-                        seekObject.CalcSpriteExtents(ref objX, ref objY, ref objW, ref objH);
-
-                        if (Board.HitTestRects(batX, batY, batW, batH, objX, objY, objW, objH))
+                        if (Board.HitTestRects(batX, batY, batW, batH,
+                            seekObject.x * Adv.BALL_SCALE, seekObject.y * Adv.BALL_SCALE,
+                            seekObject.Width * Adv.BALL_SCALE, seekObject.Height * Adv.BALL_SCALE))
                         {
                             // Hit something we want
                             pickupObject(seekObjKey, sync);

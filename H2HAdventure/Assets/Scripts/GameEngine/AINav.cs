@@ -80,6 +80,27 @@ namespace GameEngine
         }
 
         /**
+         * Returns true if an object is in or overlapping a path.
+         * Returns false if the object is totally embedded in the wall.
+         */
+        public bool IsReachable(int room, int x, int y, int width, int height)
+        {
+            int[] plots = FindPlots(room, x, y, width, height, true);
+            return plots.Length > 0;
+        }
+
+        public Plot[] GetPlots(int room, int x, int y, int width, int height)
+        {
+            int[] plotIndexes = FindPlots(room, x, y, width, height, false);
+            Plot[] plots = new Plot[plotIndexes.Length];
+            for(int ctr=0; ctr<plotIndexes.Length; ++ctr)
+            {
+                plots[ctr] = aiPlots[plotIndexes[ctr]].thisPlot;
+            }
+            return plots;
+        }
+
+        /**
          * See where the ai player is on their current path.
          * If they have advanced upon the path, will return the advanced path.
          * If they have fallen off the path, will return null.
@@ -249,6 +270,27 @@ namespace GameEngine
                 }
             }
             return found;
+        }
+
+        /**
+         * Find all plots that overlap this region
+         */
+        private int[] FindPlots(int room, int x, int y, int width, int height, bool abortAfterOne = false)
+        {
+            List<int> found = new List<int>(12); // Even the bridge can only touch 8 plots at once
+            AiMapNode[] plots = aiPlotsByRoom[room];
+            for (int ctr = 0; ctr < plots.Length; ++ctr)
+            {
+                if (plots[ctr].thisPlot.Touches(x, y, width, height))
+                {
+                    found.Add(plots[ctr].thisPlot.Key);
+                    if (abortAfterOne)
+                    {
+                        break;
+                    }
+                }
+            }
+            return found.ToArray();
         }
 
         private AiPathNode ComputeNextStep(int goalPlot, List<AiPathNode> q, bool[] alreadyFound)
@@ -526,6 +568,12 @@ namespace GameEngine
             return ((inRoom == room) && 
                     (x >= edges[LEFT]) && (x <= edges[RIGHT]) &&
                     (y >= edges[DOWN]) && (y <= edges[UP]));
+        }
+
+        public bool Touches(int x, int y, int width, int height)
+        {
+            return !((x > edges[RIGHT]) || (x + width -1 < edges[LEFT]) ||
+                (y < edges[DOWN]) || (y - height + 1 > edges[UP])); 
         }
 
         /**

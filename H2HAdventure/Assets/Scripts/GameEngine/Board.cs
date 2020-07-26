@@ -287,20 +287,35 @@ namespace GameEngine
             return witnessed;
         }
 
-        public static bool HitTestRects(int ax, int ay, int awidth, int aheight,
-                      int bx, int by, int bwidth, int bheight)
+        public static bool HitTestRects(int x1, int y1, int w1, int h1,
+                      int x2, int y2, int w2, int h2)
         {
-            bool intersects = true;
-
-            if (((ay - aheight) >= by) || (ay <= (by - bheight)) || ((ax + awidth) <= bx) || (ax >= (bx + bwidth)))
-            {
-                // Does not intersect
-                intersects = false;
-            }
-            // else must intersect
-
-            return intersects;
+            return !(((y1 - h1) >= y2) || (y1 <= (y2 - h2)) ||
+                ((x1 + w1) <= x2) || (x1 >= (x2 + w2)));
         }
+
+        /**
+         * Computes the intersection of two rectangles
+         * Returns false if they don't intersect
+         */
+        public static bool intersect(int x1, int y1, int w1, int h1,
+                                int x2, int y2, int w2, int h2,
+                                ref int xi, ref int yi, ref int wi, ref int hi)
+        {
+            if (!HitTestRects(x1, y1, w1, h1, x2, y2, w2, h2))
+            {
+                return false;
+            }
+            else
+            {
+                xi = (x1 > x2 ? x1 : x2);
+                yi = (y1 < y2 ? y1 : y2);
+                wi = (x1 + w1 < x2 + w2 ? (x1 + w1) - xi : (x2 + w2) - xi);
+                hi = (y1 - h1 > y2 - h2 ? yi - (y1 - h1) : yi - (y2 - h2));
+                return true;
+            }
+        }
+
 
         // Collision check two objects
         // On the 2600 this is done in hardware by the Player/Missile collision registers
@@ -312,11 +327,10 @@ namespace GameEngine
             if (object1.room != object2.room)
                 return false;
 
-            int cx1 = 0, cy1 = 0, cw1 = 0, ch1 = 0;
-            int cx2 = 0, cy2 = 0, cw2 = 0, ch2 = 0;
-            object1.CalcSpriteExtents(ref cx1, ref cy1, ref cw1, ref ch1);
-            object2.CalcSpriteExtents(ref cx2, ref cy2, ref cw2, ref ch2);
-            if (!HitTestRects(cx1, cy1, cw1, ch1, cx2, cy2, cw2, ch2))
+            // We don't convert the coordinates to ball scale, because everything
+            // is in object scale.
+            if (!HitTestRects(object1.x, object1.y, object1.Width, object1.Height,
+                object2.x, object2.y, object2.Width, object2.Height))
                 return false;
 
             // Object extents overlap go pixel by pixel

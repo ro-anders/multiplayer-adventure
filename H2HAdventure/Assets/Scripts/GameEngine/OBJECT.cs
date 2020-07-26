@@ -11,6 +11,9 @@ namespace GameEngine
             FIXED_LOCATION
         };
 
+        // Unless the "size" modifier is used, objects are 8 blocks (16 pixels) wide
+        public const int OBJECT_WIDTH = 8; 
+
 
         public readonly byte[][] gfxData;        // graphics data for each state
         public readonly byte[] states;         // array of indicies for each state
@@ -62,6 +65,20 @@ namespace GameEngine
         public bool exists() {return objExists;}
         public void setExists(bool inExists) { objExists = inExists; }
 
+        public int Width
+        {
+            get { return OBJECT_WIDTH * (size / 2 + 1); }
+        }
+
+        public int Height
+        {
+            get
+            {
+                int graphic = (states.Length > 0 ? states[state] : 0);
+                return gfxData[graphic].Length;
+            }
+        }
+
         public void setBoard(Board newBoard, int newPKey)
         {
             board = newBoard;
@@ -108,21 +125,5 @@ namespace GameEngine
             return board.getObject(objKey);
         }
 
-        public void CalcSpriteExtents(ref int cx, ref int cy, ref int cw, ref int ch)
-        {
-            // Calculate the object's size and position
-            cx = x * 2;
-            cy = y * 2;
-
-            int adjSize = (size / 2) + 1;
-            cw = (8 * 2) * adjSize;
-
-            // Look up the index to the current state for this object
-            int stateIndex = states.Length > state ? states[state] : 0;
-
-
-            ch = gfxData[stateIndex].Length;
-            ch *= 2;
-        }
     }
 }

@@ -287,17 +287,29 @@ public class ObtainObjective : AiObjective
     {
         objectToPickup = board.getObject(toPickup);
 
+        // Check if the object is locked in a castle
         int portcullis = strategy.behindLockedGate(objectToPickup);
         if (portcullis >= 0)
         {
             addChild(new UnlockCastle(portcullis));
         }
+
+        // Check if the object is held by another player
         BALL otherPlayer = strategy.heldByOtherPlayer(objectToPickup);
         if (otherPlayer != null)
         {
             addChild(new GetObjectFromPlayer(toPickup, otherPlayer.playerNum));
-        } else { 
-            addChild(new PickupObjective(toPickup));
+        } else {
+
+            // Check if the object is stuck in a wall
+            if (strategy.isObjectReachable(objectToPickup))
+            {
+                addChild(new PickupObjective(toPickup));
+            } else
+            {
+                // Need to get the object out of the wall
+                addChild(new PickupObjective(toPickup));
+            }
         }
     }
 }
@@ -341,17 +353,26 @@ public class PickupObjective : AiObjective
         {
             // Bridge is tricky.  Aim for the corner for now.
             room = objectToPickup.room;
-            x = 2 * objectToPickup.x;
-            y = 2 * objectToPickup.y;
+            x = objectToPickup.x * Adv.BALL_SCALE;
+            y = objectToPickup.y * Adv.BALL_SCALE;
         }
         else
         {
-            // Aim for the center
+            // Aim for the center of reachable object
             room = objectToPickup.room;
-            int width = 8; // Except for the bridge, everything is 8 pixels width
-            int height = objectToPickup.gfxData[0].Length;
-            x = 2 * objectToPickup.x + width; // 2 * (x + width/2)
-            y = 2 * objectToPickup.y - height; // 2 * (y - hegiht/2)
+            int rx = objectToPickup.x * Adv.BALL_SCALE;
+            int ry = objectToPickup.y * Adv.BALL_SCALE;
+            int rw = objectToPickup.Width * Adv.BALL_SCALE;
+            int rh = objectToPickup.Height * Adv.BALL_SCALE;
+            bool found = strategy.closestReachableRectangle(objectToPickup, ref rx, ref ry, ref rw, ref rh);
+            if (!found)
+            {
+                // Something went wrong.  Shoudn't get that here
+                UnityEngine.Debug.LogError("Request to pick up object " + objectToPickup.label + " that is at not reachable place (" +
+                    objectToPickup.x + "," + objectToPickup.y + ")@" + objectToPickup.room);
+            }
+            x = rx + (rw / 2);
+            y = ry - (rh / 2);
         }
     }
 
@@ -430,17 +451,15 @@ public class GetObjectFromPlayer : AiObjective
                 {
                     // Bridge is tricky.  Aim for the corner for now.
                     room = objectToSteal.room;
-                    x = 2 * objectToSteal.x;
-                    y = 2 * objectToSteal.y;
+                    x = objectToSteal.x * Adv.BALL_SCALE;
+                    y = objectToSteal.y * Adv.BALL_SCALE;
                 }
                 else
                 {
                     // Aim for the center
                     room = objectToSteal.room;
-                    int width = 8; // Except for the bridge, everything is 8 pixels width
-                    int height = objectToSteal.gfxData[0].Length;
-                    x = 2 * objectToSteal.x + width; // 2 * (x + width/2)
-                    y = 2 * objectToSteal.y - height; // 2 * (y - hegiht/2)
+                    x = Adv.BALL_SCALE * objectToSteal.x + objectToSteal.Width; // 2 * (x + width/2)
+                    y = Adv.BALL_SCALE * objectToSteal.y - objectToSteal.Height; // 2 * (y - hegiht/2)
                 }
             }
         }
@@ -580,7 +599,7 @@ public class RepositionKey : AiObjective
                 if (aiPlayer.linkedObjectX > -KEY_WIDTH / 4)
                 {
                     // Move around to the left
-                    sideEdge = key.x * 2 - BALL.RADIUS;
+                    sideEdge = key.x * Adv.BALL_SCALE - BALL.RADIUS;
                     sideEdge -= (BALL.MOVEMENT - (aiPlayer.midX - sideEdge) % BALL.MOVEMENT) % BALL.MOVEMENT;
                     if (aiPlayer.midX > sideEdge)
                     {
@@ -590,7 +609,7 @@ public class RepositionKey : AiObjective
                 else
                 {
                     // Move around to the right
-                    sideEdge = key.x * 2 + KEY_WIDTH + BALL.RADIUS;
+                    sideEdge = key.x * Adv.BALL_SCALE + KEY_WIDTH + BALL.RADIUS;
                     sideEdge += (BALL.MOVEMENT - (sideEdge - aiPlayer.midX) % BALL.MOVEMENT) % BALL.MOVEMENT;
                     if (aiPlayer.midX < sideEdge)
                     {
@@ -598,10 +617,10 @@ public class RepositionKey : AiObjective
                     }
                 }
                 // Then move to the closest bottom corner, then to the bottom middle, then re-pickup the key
-                int bottomEdge = key.y * 2 - KEY_HEIGHT - BALL.RADIUS;
+                int bottomEdge = key.y * Adv.BALL_SCALE - KEY_HEIGHT - BALL.RADIUS;
                 bottomEdge -= (BALL.MOVEMENT - (aiPlayer.midY - bottomEdge) % BALL.MOVEMENT) % BALL.MOVEMENT;
                 this.addChild(new GoToObjective(aiPlayer.room, sideEdge, bottomEdge));
-                this.addChild(new GoToObjective(aiPlayer.room, key.x * 2 + KEY_WIDTH / 2, bottomEdge));
+                this.addChild(new GoToObjective(aiPlayer.room, key.x * Adv.BALL_SCALE + KEY_WIDTH / 2, bottomEdge));
                 this.addChild(new PickupObjective(keyId));
             }
         }

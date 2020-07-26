@@ -37,7 +37,7 @@ namespace GameEngine
             thisPlayer = inPlayerSlot;
             thisBall = gameBoard.getPlayer(thisPlayer);
             aiTactical = new AiTactical(thisBall, gameBoard);
-            aiStrategy = new AiStrategy(gameBoard, inPlayerSlot);
+            aiStrategy = new AiStrategy(gameBoard, thisPlayer, aiNav);
         }
 
         public void resetPlayer()
