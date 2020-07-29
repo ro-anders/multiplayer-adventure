@@ -158,6 +158,13 @@ namespace GameEngine
             return checkedPath;
         }
 
+        public Plot closestPlotInRoom(int fromRoom, int fromX, int fromY, int toRoom)
+        {
+            AiMapNode[] plots = aiPlotsByRoom[toRoom];
+            // TODO: Right now returns just the first plot it finds.
+            return plots[0].thisPlot;
+        }
+
         private void ComputeAllPlots()
         {
             // Right now this is hardcoded and just for a couple of rooms

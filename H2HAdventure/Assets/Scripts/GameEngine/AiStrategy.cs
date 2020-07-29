@@ -20,6 +20,60 @@ public class AiStrategy
     }
 
     /**
+     * If we need to block a player, return the player that most needs to be blocked.
+     * Or -1 if no one needs to be blocked. 
+    */
+    public int shouldBlockPlayer()
+    {
+        if (clearPathToVictory(thisBall.playerNum))
+        {
+            return -1;
+        }
+        for (int ctr=0; ctr<board.getNumPlayers(); ++ctr)
+        {
+            if ((ctr != thisBall.playerNum) && clearPathToVictory(ctr))
+            {
+                return ctr;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns whether a player has all they need to win.
+     * This means their castle is unlocked and either the
+     * chalice is out in the open or the castle is protected
+     * but they have the key or bridge or magnet to get the chalice.
+     */
+    private bool clearPathToVictory(int otherPlayer)
+    {
+        BALL otherBall = board.getPlayer(otherPlayer);
+        bool clearPath = true;
+        if (!otherBall.homeGate.allowsEntry)
+        {
+            clearPath = false;
+        }
+
+        OBJECT chalice = board.getObject(Board.OBJECT_CHALISE);
+        if (clearPath)
+        {
+            Portcullis behindGate = behindLockedGate(chalice);
+            if ((behindGate != null) && (otherBall.linkedObject != behindGate.key.getPKey())) {
+                clearPath = false;
+            }
+        }
+
+        if (clearPath)
+        {
+            if (!isObjectReachable(chalice) && (otherBall.linkedObject != Board.OBJECT_MAGNET))
+            {
+                clearPath = false;
+            }
+        }
+        return clearPath;
+    }
+
+    /**
      * If the ball has been eaten by a dragon
      */
     public bool eatenByDragon()
@@ -38,19 +92,19 @@ public class AiStrategy
      * If an object is behind a locked gate, returns that gate.  Otherwise
      * returns -1.
      */
-    public int behindLockedGate(OBJECT obj)
+    public Portcullis behindLockedGate(OBJECT obj)
     {
-        int gate = -1;
-        for (int ctr = Board.OBJECT_YELLOW_PORT; (gate < 0) && (ctr <= Board.OBJECT_CRYSTAL_PORT); ++ctr)
+        Portcullis behindGate = null;
+        for (int ctr = Board.OBJECT_YELLOW_PORT; (behindGate == null) && (ctr <= Board.OBJECT_CRYSTAL_PORT); ++ctr)
         {
             Portcullis nextPort = (Portcullis)board.getObject(ctr);
             if ((nextPort != null) && (!nextPort.allowsEntry) && (nextPort.containsRoom(obj.room)))
             {
-                gate = ctr;
+                behindGate = nextPort;
             }
 
         }
-        return gate;
+        return behindGate;
     }
 
     /**
@@ -82,6 +136,24 @@ public class AiStrategy
         return nav.IsReachable(objct.room,
             objct.x * Adv.BALL_SCALE, objct.y * Adv.BALL_SCALE,
             objct.Width * Adv.BALL_SCALE, objct.Height * Adv.BALL_SCALE);
+    }
+
+    /**
+     * Returns the point in the room that is the quickest to get to.
+     * Will place the point slightly within the room.
+     */
+    public bool closestPointInRoom(int toRoom, ref int x, ref int y)
+    {
+        Plot closestPlot = nav.closestPlotInRoom(thisBall.room, thisBall.x, thisBall.y, toRoom);
+        bool found = false;
+        if (closestPlot != null)
+        {
+            // TODO: Right now just picking a point in the middle of the plot
+            x = (closestPlot.Left + closestPlot.Right) / 2;
+            y = (closestPlot.Top + closestPlot.Bottom) / 2;
+            found = true;
+        }
+        return found;
     }
 
 

@@ -236,12 +236,24 @@ public class WinGameObjective: AiObjective
         {
             markShouldReset();
         }
-        else
+        else 
         {
-            Portcullis homeGate = this.aiPlayer.homeGate;
-            this.addChild(new UnlockCastle(homeGate.getPKey()));
-            this.addChild(new ObtainObjective(Board.OBJECT_CHALISE));
-            this.addChild(new GoToObjective(homeGate.insideRoom, 160, 120));
+            int playerToBlock = strategy.shouldBlockPlayer();
+            if (playerToBlock >= 0)
+            {
+                this.addChild(new LockCastleAndHideKeyObjective(playerToBlock));
+                // Once the first player is blocked, we want to recompute whether
+                // we need to block the second player or if we can try to win
+                // TODO: Do we want to do this through recursion or some other way
+                this.addChild(new WinGameObjective(board, aiPlayerNum, strategy));
+            }
+            else
+            {
+                Portcullis homeGate = this.aiPlayer.homeGate;
+                this.addChild(new UnlockCastle(homeGate.getPKey()));
+                this.addChild(new ObtainObjective(Board.OBJECT_CHALISE));
+                this.addChild(new GoToObjective(homeGate.insideRoom, 160, 120, Board.OBJECT_CHALISE));
+            }
         }
     }
 
@@ -288,10 +300,10 @@ public class ObtainObjective : AiObjective
         objectToPickup = board.getObject(toPickup);
 
         // Check if the object is locked in a castle
-        int portcullis = strategy.behindLockedGate(objectToPickup);
-        if (portcullis >= 0)
+        Portcullis portcullis = strategy.behindLockedGate(objectToPickup);
+        if (portcullis != null)
         {
-            addChild(new UnlockCastle(portcullis));
+            addChild(new UnlockCastle(portcullis.getPKey()));
         }
 
         // Check if the object is held by another player
@@ -308,6 +320,9 @@ public class ObtainObjective : AiObjective
             } else
             {
                 // Need to get the object out of the wall
+                // Only options supported right now is magnet
+                addChild(new ObtainObjective(Board.OBJECT_MAGNET));
+                addChild(new GoToRoomObjective(objectToPickup.room));
                 addChild(new PickupObjective(toPickup));
             }
         }
@@ -484,12 +499,14 @@ public class GoToObjective : AiObjective
     private int gotoRoom;
     private int gotoX;
     private int gotoY;
+    private int carrying;
 
-    public GoToObjective(int inRoom, int inX, int inY)
+    public GoToObjective(int inRoom, int inX, int inY, int inCarrying = DONT_DESIRE_OBJECT)
     {
         gotoRoom = inRoom;
         gotoX = inX;
         gotoY = inY;
+        carrying = inCarrying;
     }
 
     protected override void doComputeStrategy()
@@ -515,6 +532,61 @@ public class GoToObjective : AiObjective
     {
         return "go to (" + gotoX + "," + gotoY + ") in room " + gotoRoom;
     }
+
+    public override int getDesiredObject()
+    {
+        return carrying;
+    }
+}
+
+
+
+//-------------------------------------------------------------------------
+
+
+/**
+ * Finds the shortest route to the room
+ */
+public class GoToRoomObjective : AiObjective
+{
+    private int gotoRoom;
+    private int carrying;
+    private int gotoX;
+    private int gotoY;
+
+    public GoToRoomObjective(int inRoom, int inCarrying = DONT_DESIRE_OBJECT)
+    {
+        gotoRoom = inRoom;
+        carrying = inCarrying;
+    }
+
+    protected override void doComputeStrategy()
+    {
+        // Figure out what point in the room is closest.
+        bool found = strategy.closestPointInRoom(gotoRoom, ref gotoX, ref gotoY); 
+    }
+
+    public override void getDestination(ref int room, ref int x, ref int y)
+    {
+        room = gotoRoom;
+        x = gotoX;
+        y = gotoY;
+    }
+
+    protected override bool computeIsCompleted()
+    {
+        return (aiPlayer.room == gotoRoom);
+    }
+
+    public override string ToString()
+    {
+        return "go to room " + gotoRoom;
+    }
+
+    public override int getDesiredObject()
+    {
+        return carrying;
+    }
 }
 
 
@@ -539,7 +611,7 @@ public class UnlockCastle : AiObjective
         port = (Portcullis)board.getObject(portId);
         int key = port.key.getPKey();
         this.addChild(new ObtainObjective(key));
-        this.addChild(new GoToObjective(port.room, Portcullis.EXIT_X, 0x30));
+        this.addChild(new GoToObjective(port.room, Portcullis.EXIT_X, 0x30, key));
         this.addChild(new RepositionKey(key));
     }
 
@@ -589,38 +661,16 @@ public class RepositionKey : AiObjective
         else
         {
             key = board.getObject(keyId);
-            if (aiPlayer.linkedObjectY < MINIMUM_Y)
+            if ((aiPlayer.linkedObjectY < 0)  ||
+                (aiPlayer.linkedObjectX < -KEY_WIDTH) ||
+                (aiPlayer.linkedObjectX > BALL.DIAMETER))
             {
                 this.addChild(new DropObjective());
 
-                //If right above the key, move to the closest top corner
-
-                int sideEdge;
-                if (aiPlayer.linkedObjectX > -KEY_WIDTH / 4)
-                {
-                    // Move around to the left
-                    sideEdge = key.x * Adv.BALL_SCALE - BALL.RADIUS;
-                    sideEdge -= (BALL.MOVEMENT - (aiPlayer.midX - sideEdge) % BALL.MOVEMENT) % BALL.MOVEMENT;
-                    if (aiPlayer.midX > sideEdge)
-                    {
-                        this.addChild(new GoToObjective(aiPlayer.room, sideEdge, aiPlayer.midY));
-                    }
-                }
-                else
-                {
-                    // Move around to the right
-                    sideEdge = key.x * Adv.BALL_SCALE + KEY_WIDTH + BALL.RADIUS;
-                    sideEdge += (BALL.MOVEMENT - (sideEdge - aiPlayer.midX) % BALL.MOVEMENT) % BALL.MOVEMENT;
-                    if (aiPlayer.midX < sideEdge)
-                    {
-                        this.addChild(new GoToObjective(aiPlayer.room, sideEdge, aiPlayer.midY));
-                    }
-                }
-                // Then move to the closest bottom corner, then to the bottom middle, then re-pickup the key
+                // Pick a point under the key and let the tactical algorithms get around the key
                 int bottomEdge = key.y * Adv.BALL_SCALE - KEY_HEIGHT - BALL.RADIUS;
                 bottomEdge -= (BALL.MOVEMENT - (aiPlayer.midY - bottomEdge) % BALL.MOVEMENT) % BALL.MOVEMENT;
-                this.addChild(new GoToObjective(aiPlayer.room, sideEdge, bottomEdge));
-                this.addChild(new GoToObjective(aiPlayer.room, key.x * Adv.BALL_SCALE + KEY_WIDTH / 2, bottomEdge));
+                this.addChild(new GoToObjective(aiPlayer.room, key.x * Adv.BALL_SCALE + KEY_WIDTH / 2, bottomEdge, CARRY_NO_OBJECT));
                 this.addChild(new PickupObjective(keyId));
             }
         }
@@ -628,7 +678,10 @@ public class RepositionKey : AiObjective
 
     protected override bool computeIsCompleted()
     {
-        return (aiPlayer.linkedObject == keyId) && (aiPlayer.linkedObjectY >= MINIMUM_Y);
+        return ((aiPlayer.linkedObject == keyId) &&
+            (aiPlayer.linkedObjectY > 0) &&
+            (aiPlayer.linkedObjectX >= -KEY_WIDTH) &&
+            (aiPlayer.linkedObjectX <= BALL.DIAMETER));
     }
 
     public override string ToString()
@@ -664,5 +717,49 @@ public class DropObjective : AiObjective
     {
         return true;
     }
+
+}
+
+//-------------------------------------------------------------------------
+
+/**
+ * Lock another player's castle and hide the key
+ */
+public class LockCastleAndHideKeyObjective : AiObjective
+{
+    int otherPlayerNum;
+    Portcullis otherGate;
+    int otherKeyId;
+
+    public LockCastleAndHideKeyObjective(int inOtherPlayerNum)
+    {
+        otherPlayerNum = inOtherPlayerNum;
+    }
+
+    public override string ToString()
+    {
+        return "lock player #"+otherPlayerNum + "'s castle and hide key";
+    }
+
+    protected override bool computeIsCompleted()
+    {
+        return !otherGate.allowsEntry && (aiPlayer.linkedObject != otherKeyId);
+    }
+
+    protected override void doComputeStrategy()
+    {
+        otherGate = board.getPlayer(otherPlayerNum).homeGate;
+        otherKeyId = otherGate.key.getPKey();
+
+        if (otherGate.allowsEntry)
+        {
+            this.addChild(new ObtainObjective(otherKeyId));
+            this.addChild(new GoToObjective(otherGate.room, Portcullis.EXIT_X, 0x30, otherKeyId));
+            this.addChild(new RepositionKey(otherKeyId));
+            this.addChild(new GoToObjective(otherGate.insideRoom, Portcullis.EXIT_X, Map.WALL_HEIGHT, otherKeyId));
+            this.addChild(new GoToObjective(otherGate.room, Portcullis.EXIT_X, Map.WALL_HEIGHT, otherKeyId));
+        }
+    }
+
 
 }
