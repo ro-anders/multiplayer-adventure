@@ -30,7 +30,6 @@ namespace GameEngine
         private const int ADVENTURE_MAX_NAME_LENGTH = Adv.ADVENTURE_MAX_NAME_LENGTH;
         private const int MAX_OBJECTS = 32;                      // Should be plenty
         private const int MAX_DISPLAYABLE_OBJECTS = 2;             // The 2600 only has 2 Player (sprite) objects. Accuracy will be compromised if this is changed!
-        private static readonly bool SHOW_OBJECT_FLICKER = true;
 
         // finite state machine values
         private const int GAMESTATE_GAMESELECT = 0;
@@ -2753,7 +2752,7 @@ namespace GameEngine
             {Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_LEFT, 0x4F, 0x1E, 0x00, 0x00, 0x00}, // Yellow Dragon
             {Board.OBJECT_GREENDRAGON, Map.SOUTHEAST_ROOM, 0x4F, 0x1E, 0x00, 0x00, 0x00}, // Green Dragon
             {Board.OBJECT_SWORD, Map.GOLD_FOYER, 0x1F, 0x1E, 0x00, 0x00, 0x00}, // Sword
-            {Board.OBJECT_BRIDGE, Map.BLUE_MAZE_5, 0x29, 0x35, 0x00, 0x00, 0x00}, // Bridge
+            //TODOX: Temporarily removing bridge {Board.OBJECT_BRIDGE, Map.BLUE_MAZE_5, 0x29, 0x35, 0x00, 0x00, 0x00}, // Bridge
             {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
             {Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Copper Key
             {Board.OBJECT_JADEKEY, Map.JADE_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Jade Key

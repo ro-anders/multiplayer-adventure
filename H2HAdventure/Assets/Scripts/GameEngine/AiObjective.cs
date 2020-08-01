@@ -7,7 +7,7 @@ using UnityEngine;
 abstract public class AiObjective
 {
     public const int CARRY_NO_OBJECT = -10; // We specifically don't want to carry or bump into anything
-    public const int DONT_DESIRE_OBJECT = -20; // We don't care if we bump into an object or not
+    public const int DONT_CARE_OBJECT = -20; // We don't care if we bump into an object or not
 
     /**
      * This is thrown when an objective can't be completed anymore.
@@ -89,7 +89,7 @@ abstract public class AiObjective
     public virtual int getDesiredObject()
     {
         // Default is don't care
-        return DONT_DESIRE_OBJECT;
+        return DONT_CARE_OBJECT;
     }
 
     /**
@@ -501,7 +501,7 @@ public class GoToObjective : AiObjective
     private int gotoY;
     private int carrying;
 
-    public GoToObjective(int inRoom, int inX, int inY, int inCarrying = DONT_DESIRE_OBJECT)
+    public GoToObjective(int inRoom, int inX, int inY, int inCarrying = DONT_CARE_OBJECT)
     {
         gotoRoom = inRoom;
         gotoX = inX;
@@ -554,7 +554,7 @@ public class GoToRoomObjective : AiObjective
     private int gotoX;
     private int gotoY;
 
-    public GoToRoomObjective(int inRoom, int inCarrying = DONT_DESIRE_OBJECT)
+    public GoToRoomObjective(int inRoom, int inCarrying = DONT_CARE_OBJECT)
     {
         gotoRoom = inRoom;
         carrying = inCarrying;
@@ -646,7 +646,6 @@ public class RepositionKey : AiObjective
     private const int KEY_HEIGHT = 3;
     private int keyId;
     private OBJECT key;
-    private int MINIMUM_Y = 1;
     public RepositionKey(int inKeyId)
     {
         keyId = inKeyId;
@@ -663,12 +662,12 @@ public class RepositionKey : AiObjective
             key = board.getObject(keyId);
             if ((aiPlayer.linkedObjectY < 0)  ||
                 (aiPlayer.linkedObjectX < -KEY_WIDTH) ||
-                (aiPlayer.linkedObjectX > BALL.DIAMETER))
+                (aiPlayer.linkedObjectX > BALL.DIAMETER/Adv.BALL_SCALE)) 
             {
                 this.addChild(new DropObjective());
 
                 // Pick a point under the key and let the tactical algorithms get around the key
-                int bottomEdge = key.y * Adv.BALL_SCALE - KEY_HEIGHT - BALL.RADIUS;
+                int bottomEdge = key.y * Adv.BALL_SCALE - KEY_HEIGHT * Adv.BALL_SCALE - BALL.RADIUS;
                 bottomEdge -= (BALL.MOVEMENT - (aiPlayer.midY - bottomEdge) % BALL.MOVEMENT) % BALL.MOVEMENT;
                 this.addChild(new GoToObjective(aiPlayer.room, key.x * Adv.BALL_SCALE + KEY_WIDTH / 2, bottomEdge, CARRY_NO_OBJECT));
                 this.addChild(new PickupObjective(keyId));
@@ -681,7 +680,7 @@ public class RepositionKey : AiObjective
         return ((aiPlayer.linkedObject == keyId) &&
             (aiPlayer.linkedObjectY > 0) &&
             (aiPlayer.linkedObjectX >= -KEY_WIDTH) &&
-            (aiPlayer.linkedObjectX <= BALL.DIAMETER));
+            (aiPlayer.linkedObjectX <= BALL.DIAMETER / Adv.BALL_SCALE));
     }
 
     public override string ToString()

@@ -86,15 +86,18 @@ public class AiTactical
             OBJECT objct = iter.next();
             if (objct.room == thisBall.room)
             {
-                // Ignore stalking dragons.  We deal with them differently.
                 int pkey = objct.getPKey();
-                // Ignore stalking dragons
+                // Ignore stalking dragons.  We deal with them differently.
                 bool ignore = ((pkey >= Board.FIRST_DRAGON) && (pkey <= Board.LAST_DRAGON) &&
                     (objct.state == Dragon.STALKING));
                 // Ignore objects we are currently holding or desiring
                 ignore = ignore || ((pkey == desiredObject) || (pkey == thisBall.linkedObject));
-                // Ignore any objects that can be picked up when we don't care
-                ignore = ignore || ((pkey >= Board.FIRST_CARRYABLE) && (desiredObject == AiObjective.DONT_DESIRE_OBJECT));
+                // Ignore any objects that can be picked up when we don't care or when we
+                // are looking for some other object (and don't care if we pick up a different one
+                // along the way)
+                bool dontCare = (desiredObject == AiObjective.DONT_CARE_OBJECT) ||
+                    ((desiredObject >= 0) && (desiredObject != thisBall.linkedObject));
+                ignore = ignore || ((pkey >= Board.FIRST_CARRYABLE) && dontCare);
                 if (!ignore)
                 {
                     // TODO: This isn't handling bridge correctly
