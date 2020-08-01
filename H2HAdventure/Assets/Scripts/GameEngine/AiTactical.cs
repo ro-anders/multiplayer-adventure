@@ -88,10 +88,14 @@ public class AiTactical
             {
                 // Ignore stalking dragons.  We deal with them differently.
                 int pkey = objct.getPKey();
-                if (((pkey < Board.FIRST_DRAGON) || (pkey > Board.LAST_DRAGON) ||
-                    (objct.state != Dragon.STALKING)) &&
-                    (pkey != desiredObject) &&
-                    (pkey != thisBall.linkedObject))
+                // Ignore stalking dragons
+                bool ignore = ((pkey >= Board.FIRST_DRAGON) && (pkey <= Board.LAST_DRAGON) &&
+                    (objct.state == Dragon.STALKING));
+                // Ignore objects we are currently holding or desiring
+                ignore = ignore || ((pkey == desiredObject) || (pkey == thisBall.linkedObject));
+                // Ignore any objects that can be picked up when we don't care
+                ignore = ignore || ((pkey >= Board.FIRST_CARRYABLE) && (desiredObject == AiObjective.DONT_DESIRE_OBJECT));
+                if (!ignore)
                 {
                     // TODO: This isn't handling bridge correctly
                     if ((objct.room == thisBall.room) &&
@@ -135,6 +139,10 @@ public class AiTactical
      */
     private void avoidObject(OBJECT objct, ref int nextVelX, ref int nextVelY)
     {
+        if (objct.getPKey() == Board.OBJECT_CHALISE)
+        {
+            UnityEngine.Debug.Log("Avoiding chalice");
+        }
         // Simple algorithm.  Move around the object clockwise until we are passed it.
         // TODO: Doesn't handle hitting a wall or hitting another object
         // Find which direction we are currently supposed to go

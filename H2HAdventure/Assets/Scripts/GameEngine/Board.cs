@@ -101,6 +101,7 @@ namespace GameEngine
         /** useful for iterating through dragons. */
         public const int FIRST_DRAGON = OBJECT_REDDRAGON;
         public const int LAST_DRAGON = OBJECT_GREENDRAGON;
+        public const int FIRST_CARRYABLE = OBJECT_SWORD;
 
         /**
          * The number of objects on the board.
@@ -225,7 +226,7 @@ namespace GameEngine
 
         public ObjIter getCarryableObjects()
         {
-            ObjIter iter = new ObjIter(this, OBJECT_SWORD);
+            ObjIter iter = new ObjIter(this, FIRST_CARRYABLE);
             return iter;
         }
 
