@@ -96,79 +96,79 @@ namespace GameEngine
         void defaultRooms()
         {
 
-            addRoom(NUMBER_ROOM, new ROOM(roomGfxNumberRoom, ROOM.FLAG_NONE, COLOR.PURPLE,                       // 0x00
+            addRoom(NUMBER_ROOM, new ROOM(roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.PURPLE,                       // 0x00
                                                 NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM, "Number Room", ROOM.RandomVisibility.HIDDEN));
-            addRoom(MAIN_HALL_LEFT, new ROOM(roomGfxBelowYellowCastle, ROOM.FLAG_LEFTTHINWALL, COLOR.OLIVEGREEN, // 0x01
+            addRoom(MAIN_HALL_LEFT, new ROOM(roomGfxBelowYellowCastle, ROOM.FLAG_MIRROR | ROOM.FLAG_LEFTTHINWALL, COLOR.OLIVEGREEN, // 0x01
                                              BLUE_MAZE_1, MAIN_HALL_CENTER, BLACK_CASTLE, MAIN_HALL_RIGHT, "Main Hall Left"));
-            addRoom(MAIN_HALL_CENTER, new ROOM(roomGfxBelowYellowCastle, ROOM.FLAG_NONE, COLOR.LIMEGREEN,        // 0x02
+            addRoom(MAIN_HALL_CENTER, new ROOM(roomGfxBelowYellowCastle, ROOM.FLAG_MIRROR, COLOR.LIMEGREEN,        // 0x02
                                                GOLD_CASTLE, MAIN_HALL_RIGHT, BLUE_MAZE_2, MAIN_HALL_LEFT, "Main Hall Center"));
-            addRoom(MAIN_HALL_RIGHT, new ROOM(roomGfxSideCorridor, ROOM.FLAG_RIGHTTHINWALL, COLOR.TAN,          // 0x03
+            addRoom(MAIN_HALL_RIGHT, new ROOM(roomGfxSideCorridor, ROOM.FLAG_MIRROR | ROOM.FLAG_RIGHTTHINWALL, COLOR.TAN,          // 0x03
                                             COPPER_CASTLE, MAIN_HALL_LEFT, SOUTHEAST_ROOM, MAIN_HALL_CENTER, "Main Hall Right"));
-            addRoom(BLUE_MAZE_5, new ROOM(roomGfxBlueMazeTop, ROOM.FLAG_NONE, COLOR.BLUE,                        // 0x04
+            addRoom(BLUE_MAZE_5, new ROOM(roomGfxBlueMazeTop, ROOM.FLAG_MIRROR, COLOR.BLUE,                        // 0x04
                                           0x10, 0x05, 0x07, 0x06, "Blue Maze 5"));
-            addRoom(BLUE_MAZE_2, new ROOM(roomGfxBlueMaze2, ROOM.FLAG_NONE, COLOR.BLUE,                          // 0x05
+            addRoom(BLUE_MAZE_2, new ROOM(roomGfxBlueMaze2, ROOM.FLAG_MIRROR, COLOR.BLUE,                          // 0x05
                                           0x1D, 0x06, 0x08, 0x04, "Blue Maze 2"));
-            addRoom(BLUE_MAZE_3, new ROOM(roomGfxBlueMazeBottom, ROOM.FLAG_NONE, COLOR.BLUE,                     // 0x06
+            addRoom(BLUE_MAZE_3, new ROOM(roomGfxBlueMazeBottom, ROOM.FLAG_MIRROR, COLOR.BLUE,                     // 0x06
                                           0x07, 0x04, 0x03, 0x05, "Blue Maze 3"));
-            addRoom(BLUE_MAZE_4, new ROOM(roomGfxBlueMazeCenter, ROOM.FLAG_NONE, COLOR.BLUE,                     // 0x07
+            addRoom(BLUE_MAZE_4, new ROOM(roomGfxBlueMazeCenter, ROOM.FLAG_MIRROR, COLOR.BLUE,                     // 0x07
                                           0x04, 0x08, 0x06, 0x08, "Blue Maze 4"));
-            addRoom(BLUE_MAZE_1, new ROOM(roomGfxBlueMazeEntry, ROOM.FLAG_NONE, COLOR.BLUE,                      // 0x08
+            addRoom(BLUE_MAZE_1, new ROOM(roomGfxBlueMazeEntry, ROOM.FLAG_MIRROR, COLOR.BLUE,                      // 0x08
                                           0x05, 0x07, 0x01, 0x07, "Blue Maze 1"));
-            addRoom(WHITE_MAZE_2, new ROOM(roomGfxMazeMiddle, ROOM.FLAG_NONE, COLOR.LTGRAY,                      // 0x09
+            addRoom(WHITE_MAZE_2, new ROOM(roomGfxMazeMiddle, ROOM.FLAG_MIRROR, COLOR.LTGRAY,                      // 0x09
                                            WHITE_MAZE_1, WHITE_MAZE_1, WHITE_MAZE_3, WHITE_MAZE_1, "White Maze 2"));
-            addRoom(WHITE_MAZE_1, new ROOM(roomGfxMazeEntry, ROOM.FLAG_NONE, COLOR.LTGRAY,                       // 0x0A
+            addRoom(WHITE_MAZE_1, new ROOM(roomGfxMazeEntry, ROOM.FLAG_MIRROR, COLOR.LTGRAY,                       // 0x0A
                                            MAIN_HALL_RIGHT, WHITE_MAZE_2, WHITE_MAZE_2, WHITE_MAZE_2, "White Maze 1"));
-            addRoom(WHITE_MAZE_3, new ROOM(roomGfxMazeSide, ROOM.FLAG_NONE, COLOR.LTGRAY,                        // 0x0B
+            addRoom(WHITE_MAZE_3, new ROOM(roomGfxMazeSide, ROOM.FLAG_MIRROR, COLOR.LTGRAY,                        // 0x0B
                                            WHITE_MAZE_2, SOUTH_HALL_RIGHT, BLACK_INNERMOST_ROOM, SOUTH_HALL_LEFT, "White Maze 3"));
-            addRoom(SOUTH_HALL_RIGHT, new ROOM(roomGfxSideCorridor, ROOM.FLAG_RIGHTTHINWALL, COLOR.LTCYAN,       // 0x0C
+            addRoom(SOUTH_HALL_RIGHT, new ROOM(roomGfxSideCorridor, ROOM.FLAG_MIRROR | ROOM.FLAG_RIGHTTHINWALL, COLOR.LTCYAN,       // 0x0C
                                                BLACK_INNERMOST_ROOM, SOUTH_HALL_LEFT, SOUTHEAST_ROOM, WHITE_MAZE_3, "South Hall Right"));
-            addRoom(SOUTH_HALL_LEFT, new ROOM(roomGfxSideCorridor, ROOM.FLAG_LEFTTHINWALL, COLOR.DKGREEN,        // 0x0D
+            addRoom(SOUTH_HALL_LEFT, new ROOM(roomGfxSideCorridor, ROOM.FLAG_MIRROR | ROOM.FLAG_LEFTTHINWALL, COLOR.DKGREEN,        // 0x0D
                                               0x0F, 0x0B, 0x0E, 0x0C, "South Hall Left"));                         // 0x0E
-            addRoom(SOUTHWEST_ROOM, new ROOM(roomGfxTopEntryRoom, ROOM.FLAG_NONE, COLOR.CYAN,
+            addRoom(SOUTHWEST_ROOM, new ROOM(roomGfxTopEntryRoom, ROOM.FLAG_MIRROR, COLOR.CYAN,
                                              0x0D, 0x10, 0x0F, 0x10, "Southwest Room"));
-            addRoom(WHITE_CASTLE, new ROOM(roomGfxCastle, ROOM.FLAG_NONE, COLOR.WHITE,                           // 0x0F
+            addRoom(WHITE_CASTLE, new ROOM(roomGfxCastle, ROOM.FLAG_MIRROR, COLOR.WHITE,                           // 0x0F
                                            0x0E, 0x0F, 0x0D, 0x0F, "White Castle"));
-            addRoom(BLACK_CASTLE, new ROOM(roomGfxCastle, ROOM.FLAG_NONE, COLOR.BLACK,                           // 0x10
+            addRoom(BLACK_CASTLE, new ROOM(roomGfxCastle, ROOM.FLAG_MIRROR, COLOR.BLACK,                           // 0x10
                                            0x01, 0x1C, 0x04, 0x1C, "Black Castle"));
-            addRoom(GOLD_CASTLE, new ROOM(roomGfxCastle, ROOM.FLAG_NONE, COLOR.YELLOW,                           // 0x11
+            addRoom(GOLD_CASTLE, new ROOM(roomGfxCastle, ROOM.FLAG_MIRROR, COLOR.YELLOW,                           // 0x11
                                           0x06, 0x03, 0x02, 0x01, "Gold Castle"));
-            addRoom(GOLD_FOYER, new ROOM(roomGfxNumberRoom, ROOM.FLAG_NONE, COLOR.YELLOW,                        // 0x12
+            addRoom(GOLD_FOYER, new ROOM(roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.YELLOW,                        // 0x12
                                          GOLD_FOYER, GOLD_FOYER, GOLD_FOYER, GOLD_FOYER, "Gold Foyer"));
-            addRoom(BLACK_MAZE_1, new ROOM(roomGfxBlackMaze1, ROOM.FLAG_NONE, COLOR.LTGRAY,                      // 0x13
+            addRoom(BLACK_MAZE_1, new ROOM(roomGfxBlackMaze1, ROOM.FLAG_MIRROR, COLOR.LTGRAY,                      // 0x13
                                            0x15, 0x14, 0x15, 0x16, "Black Maze 1"));
-            addRoom(BLACK_MAZE_2, new ROOM(roomGfxBlackMaze2, ROOM.FLAG_MIRROR, COLOR.LTGRAY,                    // 0x14
+            addRoom(BLACK_MAZE_2, new ROOM(roomGfxBlackMaze2, ROOM.FLAG_NONE, COLOR.LTGRAY,                    // 0x14
                                            0x16, 0x15, 0x16, 0x13, "Black Maze 2"));
-            addRoom(BLACK_MAZE_3, new ROOM(roomGfxBlackMaze3, ROOM.FLAG_MIRROR, COLOR.LTGRAY,                    // 0x15
+            addRoom(BLACK_MAZE_3, new ROOM(roomGfxBlackMaze3, ROOM.FLAG_NONE, COLOR.LTGRAY,                    // 0x15
                                            0x13, 0x16, 0x13, 0x14, "Black Maze 3"));
-            addRoom(BLACK_MAZE_ENTRY, new ROOM(roomGfxBlackMazeEntry, ROOM.FLAG_NONE, COLOR.LTGRAY,              // 0x16
+            addRoom(BLACK_MAZE_ENTRY, new ROOM(roomGfxBlackMazeEntry, ROOM.FLAG_MIRROR, COLOR.LTGRAY,              // 0x16
                                                0x14, 0x13, 0x1B, 0x15, "Black Maze Entry"));
-            addRoom(RED_MAZE_3, new ROOM(roomGfxRedMaze1, ROOM.FLAG_NONE, COLOR.RED,                             // 0x17
+            addRoom(RED_MAZE_3, new ROOM(roomGfxRedMaze1, ROOM.FLAG_MIRROR, COLOR.RED,                             // 0x17
                                          0x19, 0x18, 0x19, 0x18, "Red Maze 3"));
-            addRoom(RED_MAZE_2, new ROOM(roomGfxRedMazeTop, ROOM.FLAG_NONE, COLOR.RED,                           // 0x18
+            addRoom(RED_MAZE_2, new ROOM(roomGfxRedMazeTop, ROOM.FLAG_MIRROR, COLOR.RED,                           // 0x18
                                          0x1A, 0x17, 0x1A, 0x17, "Red Maze 2"));
-            addRoom(RED_MAZE_4, new ROOM(roomGfxRedMazeBottom, ROOM.FLAG_NONE, COLOR.RED,                        // 0x19
+            addRoom(RED_MAZE_4, new ROOM(roomGfxRedMazeBottom, ROOM.FLAG_MIRROR, COLOR.RED,                        // 0x19
                                          0x17, 0x1A, 0x17, 0x1A, "Red Maze4 "));
-            addRoom(RED_MAZE_1, new ROOM(roomGfxWhiteCastleEntry, ROOM.FLAG_NONE, COLOR.RED,                     // 0x1A
+            addRoom(RED_MAZE_1, new ROOM(roomGfxWhiteCastleEntry, ROOM.FLAG_MIRROR, COLOR.RED,                     // 0x1A
                                          0x18, 0x19, 0x18, 0x19, "Red Maze 1"));
-            addRoom(BLACK_FOYER, new ROOM(roomGfxTwoExitRoom, ROOM.FLAG_NONE, COLOR.RED,                         // 0x1B
+            addRoom(BLACK_FOYER, new ROOM(roomGfxTwoExitRoom, ROOM.FLAG_MIRROR, COLOR.RED,                         // 0x1B
                                 BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, "Black Foyer"));
-            addRoom(BLACK_INNERMOST_ROOM, new ROOM(roomGfxNumberRoom, ROOM.FLAG_NONE, COLOR.PURPLE,              // 0x1C
+            addRoom(BLACK_INNERMOST_ROOM, new ROOM(roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.PURPLE,              // 0x1C
                                     SOUTHEAST_ROOM, BLUE_MAZE_4, BLACK_FOYER, BLUE_MAZE_1, "Black Innermost Room"));
-            addRoom(SOUTHEAST_ROOM, new ROOM(roomGfxTopEntryRoom, ROOM.FLAG_NONE, COLOR.RED,                     // 0x1D
+            addRoom(SOUTHEAST_ROOM, new ROOM(roomGfxTopEntryRoom, ROOM.FLAG_MIRROR, COLOR.RED,                     // 0x1D
                                              MAIN_HALL_RIGHT, MAIN_HALL_LEFT, BLACK_CASTLE, MAIN_HALL_RIGHT, "Southeast Room"));
-            addRoom(ROBINETT_ROOM, new ROOM(roomGfxBelowYellowCastle, ROOM.FLAG_NONE, COLOR.PURPLE,              // 0x1E
+            addRoom(ROBINETT_ROOM, new ROOM(roomGfxBelowYellowCastle, ROOM.FLAG_MIRROR, COLOR.PURPLE,              // 0x1E
                                             CRYSTAL_CASTLE, MAIN_HALL_LEFT, CRYSTAL_CASTLE, MAIN_HALL_RIGHT, "Robinett Room", ROOM.RandomVisibility.HIDDEN));
-            addRoom(JADE_CASTLE, new ROOM(roomGfxCastle3, ROOM.FLAG_NONE, COLOR.JADE,                            // 0x1F
+            addRoom(JADE_CASTLE, new ROOM(roomGfxCastle3, ROOM.FLAG_MIRROR, COLOR.JADE,                            // 0x1F
                                           SOUTHEAST_ROOM, BLUE_MAZE_3, BLUE_MAZE_2, BLUE_MAZE_5, "Jade Castle", ROOM.RandomVisibility.HIDDEN));
-            addRoom(JADE_FOYER, new ROOM(roomGfxNumberRoom, ROOM.FLAG_NONE, COLOR.JADE,                          // 0x20
+            addRoom(JADE_FOYER, new ROOM(roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.JADE,                          // 0x20
                                          JADE_FOYER, JADE_FOYER, JADE_FOYER, JADE_FOYER, "Jade Foyer", ROOM.RandomVisibility.HIDDEN));
-            addRoom(COPPER_CASTLE, new ROOM(roomGfxCastle2, ROOM.FLAG_NONE, COLOR.COPPER,                        // 0x21
+            addRoom(COPPER_CASTLE, new ROOM(roomGfxCastle2, ROOM.FLAG_MIRROR, COLOR.COPPER,                        // 0x21
                                             BLUE_MAZE_3, MAIN_HALL_LEFT, MAIN_HALL_RIGHT, GOLD_CASTLE, "Copper Castle"));
-            addRoom(COPPER_FOYER, new ROOM(roomGfxNumberRoom, ROOM.FLAG_NONE, COLOR.COPPER,                      // 0x22
+            addRoom(COPPER_FOYER, new ROOM(roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.COPPER,                      // 0x22
                                            COPPER_FOYER, COPPER_FOYER, COPPER_FOYER, COPPER_FOYER, "Copper Foyer"));
-            addRoom(CRYSTAL_CASTLE, new ROOM(roomGfxCastle4, ROOM.FLAG_NONE, COLOR.CRYSTAL,                        // 0x23
+            addRoom(CRYSTAL_CASTLE, new ROOM(roomGfxCastle4, ROOM.FLAG_MIRROR, COLOR.CRYSTAL,                        // 0x23
                                              ROBINETT_ROOM, CRYSTAL_CASTLE, ROBINETT_ROOM, CRYSTAL_CASTLE, "Crystal Castle", ROOM.RandomVisibility.HIDDEN));
-            addRoom(CRYSTAL_FOYER, new ROOM(roomGfxNumberRoom, ROOM.FLAG_NONE, COLOR.DARK_CRYSTAL4,                      // 0x24
+            addRoom(CRYSTAL_FOYER, new ROOM(roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.DARK_CRYSTAL4,                      // 0x24
                                             CRYSTAL_FOYER, CRYSTAL_FOYER, CRYSTAL_FOYER, CRYSTAL_FOYER, "Crystal Foyer", ROOM.RandomVisibility.HIDDEN));
         }
 
@@ -399,7 +399,7 @@ namespace GameEngine
             roomDefs[CRYSTAL_CASTLE].graphicsData = roomGfxCastle;
 
             // Remove the MAIN_HALL_RIGHT wall
-            roomDefs[MAIN_HALL_RIGHT].flags = ROOM.FLAG_NONE;
+            roomDefs[MAIN_HALL_RIGHT].flags = ROOM.FLAG_MIRROR;
 
         }
 

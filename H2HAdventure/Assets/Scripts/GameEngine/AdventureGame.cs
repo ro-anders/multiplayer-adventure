@@ -305,8 +305,8 @@ namespace GameEngine
             };
 
             // each cell is 8 x 32
-            const int cell_width = 8;
-            const int cell_height = 32;
+            const int cell_width = Map.WALL_WIDTH;
+            const int cell_height = Map.WALL_HEIGHT;
 
 
             // draw the playfield
@@ -333,9 +333,9 @@ namespace GameEngine
                     {
                         view.Platform_PaintPixel(color.r, color.g, color.b, cx * cell_width, ypos * cell_height, cell_width, cell_height);
                         if (mirror)
-                            view.Platform_PaintPixel(color.r, color.g, color.b, (cx + 20) * cell_width, ypos * cell_height, cell_width, cell_height);
-                        else
                             view.Platform_PaintPixel(color.r, color.g, color.b, ((40 - (cx + 1)) * cell_width), ypos * cell_height, cell_width, cell_height);
+                        else
+                            view.Platform_PaintPixel(color.r, color.g, color.b, (cx + 20) * cell_width, ypos * cell_height, cell_width, cell_height);
                     }
                 }
             }
@@ -2234,7 +2234,7 @@ namespace GameEngine
                         if (mirror)
                         {
                             if (Board.HitTestRects(x, y, BALL.DIAMETER, BALL.DIAMETER,
-                                xpos + Adv.ADVENTURE_SCREEN_WIDTH/2, ypos, Map.WALL_WIDTH, Map.WALL_HEIGHT))
+                                Adv.ADVENTURE_SCREEN_WIDTH - xpos - Map.WALL_WIDTH, ypos, Map.WALL_WIDTH, Map.WALL_HEIGHT))
                             {
                                 hitWall = true;
                                 break;
@@ -2243,7 +2243,7 @@ namespace GameEngine
                         else
                         {
                             if (Board.HitTestRects(x, y, BALL.DIAMETER, BALL.DIAMETER,
-                                Adv.ADVENTURE_SCREEN_WIDTH - xpos - Map.WALL_WIDTH, ypos, Map.WALL_WIDTH, Map.WALL_HEIGHT))
+                                xpos + Adv.ADVENTURE_SCREEN_WIDTH / 2, ypos, Map.WALL_WIDTH, Map.WALL_HEIGHT))
                             {
                                 hitWall = true;
                                 break;

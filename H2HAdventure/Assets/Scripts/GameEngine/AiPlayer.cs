@@ -126,15 +126,12 @@ namespace GameEngine
             {
                 // We don't even know where we are going.  Figure it out.
 
-                //UnityEngine.Debug.Log("Get player " + thisPlayer + " from " +
-                //    thisBall.room + "-(" + (thisBall.midX) + "," + (thisBall.midY) + ") to " +
-                //    desiredRoom + "-(" + desiredX + "," + desiredY + ")");
                 desiredPath = aiNav.ComputePath(thisBall.room, thisBall.midX, thisBall.midY, desiredRoom, desiredX, desiredY);
                 if (desiredPath == null)
                 {
                     // No way to get to where we want to go.  Give up
                     UnityEngine.Debug.Log("Couldn't compute path for AI player #" + thisPlayer + " for objective \"" + currentObjective +
-                        "\" to get to ("+desiredX+","+desiredY+")@"+desiredRoom);
+                        "\" to get to " + gameBoard.map.roomDefs[desiredRoom].label + "("+desiredX+","+desiredY+")");
                     // ABORT PATH
                     desiredRoom = -1;
                     thisBall.velx = 0;

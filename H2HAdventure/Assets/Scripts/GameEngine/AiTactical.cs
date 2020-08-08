@@ -76,6 +76,51 @@ public class AiTactical
         nextVelX = (nextStepX > thisBall.midX ? BALL.MOVEMENT : (nextStepX == thisBall.midX ? 0 : -BALL.MOVEMENT));
         nextVelY = (nextStepY > thisBall.midY ? BALL.MOVEMENT : (nextStepY == thisBall.midY ? 0 :-BALL.MOVEMENT));
 
+        avoidScrapingWalls(ref nextVelX, ref nextVelY);
+
+        avoidAllObjects(desiredObject, ref nextVelX, ref nextVelY);
+
+        if ((nextVelX != thisBall.velx) || (nextVelY != thisBall.vely))
+        {
+            //UnityEngine.Debug.Log("Changing (" + thisBall.velx + "," + thisBall.vely +
+            //    ") to (" + nextVelX + ", " + nextVelY +
+            //    ") at " + thisBall.room + "-(" + thisBall.midX + "," + thisBall.midY + ")");
+        }
+        return true;
+    }
+
+    // This handles running up against walls when we actually just want to move
+    // along beside them until we can get around them.
+    private void avoidScrapingWalls(ref int nextVelX, ref int nextVelY)
+    {
+        if ((nextVelX != 0) && (nextVelY != 0))
+        {
+            if (quickCheckWall(thisBall.x + nextVelX, thisBall.y + nextVelY, thisBall.room))
+            {
+                if (!quickCheckWall(thisBall.x, thisBall.y + nextVelY, thisBall.room))
+                {
+                    nextVelX = 0;
+                }
+                else if (!quickCheckWall(thisBall.x + nextVelX, thisBall.y, thisBall.room))
+                {
+                    nextVelY = 0;
+                }
+            }
+        }
+    }
+        
+    /**
+     * Check to see if our chosen direction will hit any objects, and, if it will,
+     * choose a new direction.
+     * @param desiredObject the object we would like (and don't mind running into) or
+     * AiObjective.DONT_CARE_OBJECT or AiObjective.CARRY_NO_OBJECT
+     * @param nextVelX the X velocity of the direction we plan on going.  Will be modified
+     * to avoid objects
+     * @param nextVelY the X velocity of the direction we plan on going.  Will be modified
+     * to avoid objects
+     */
+    private void avoidAllObjects(int desiredObject, ref int nextVelX, ref int nextVelY)
+    {
         // Collect a list of objects that may be in the way
         // TODO: Not sure how to handle portcullis's and the Robinett message,
         // so for right now just worrying about dragons and objects you can
@@ -102,7 +147,8 @@ public class AiTactical
                 {
                     // TODO: This isn't handling bridge correctly
                     if ((objct.room == thisBall.room) &&
-                        quickCheckCollision(thisBall.x + nextVelX, thisBall.y + nextVelY, objct)) {
+                        quickCheckCollision(thisBall.x + nextVelX, thisBall.y + nextVelY, objct))
+                    {
                         // Ball would connect with object next turn, figure a different direction
                         avoidObject(objct, ref nextVelX, ref nextVelY);
                         break;
@@ -110,14 +156,18 @@ public class AiTactical
                 }
             }
         }
+    }
 
-        if ((nextVelX != thisBall.velx) || (nextVelY != thisBall.vely))
-        {
-            //UnityEngine.Debug.Log("Changing (" + thisBall.velx + "," + thisBall.vely +
-            //    ") to (" + nextVelX + ", " + nextVelY +
-            //    ") at " + thisBall.room + "-(" + thisBall.midX + "," + thisBall.midY + ")");
-        }
-        return true;
+    /**
+     * Check if a ball at a given position will collide with a wall.
+     * @param ballx the x position of the ball (the top left corner)
+     * @param bally the y position of the ball (the top left corner)
+     * @param roomNum the room in which to check
+     */
+    private bool quickCheckWall(int ballx, int bally, int roomNum)
+    {
+        ROOM room = board.map.roomDefs[roomNum];
+        return room.hitsWall(ballx, bally, BALL.DIAMETER, BALL.DIAMETER);
     }
 
     /**

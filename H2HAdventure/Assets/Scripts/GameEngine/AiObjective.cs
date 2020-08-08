@@ -530,7 +530,7 @@ public class GoToObjective : AiObjective
 
     public override string ToString()
     {
-        return "go to (" + gotoX + "," + gotoY + ") in room " + gotoRoom;
+        return "go to (" + gotoX + "," + gotoY + ") in room " + board.map.roomDefs[gotoRoom].label;
     }
 
     public override int getDesiredObject()
@@ -580,7 +580,7 @@ public class GoToRoomObjective : AiObjective
 
     public override string ToString()
     {
-        return "go to room " + gotoRoom;
+        return "go to room " + board.map.roomDefs[gotoRoom].label;
     }
 
     public override int getDesiredObject()
