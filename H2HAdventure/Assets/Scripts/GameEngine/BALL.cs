@@ -55,6 +55,12 @@ namespace GameEngine
             isAi = inIsAi;
         }
 
+        public string toString()
+        {
+            return "player " + playerNum + " at (" + x + "," + y + ")@" + room +
+                (linkedObject >= 0 ? " with " + linkedObject : "");
+        }
+
         /** x coordinate of the middle of the ball **/
         public int midX
         {

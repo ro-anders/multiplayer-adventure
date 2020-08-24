@@ -7,8 +7,8 @@ namespace GameEngine
 
 
         // The position you appear when you enter at the edge of the screen.
-        public const int TOP_EDGE_FOR_BALL = Adv.ADVENTURE_OVERSCAN + Adv.ADVENTURE_SCREEN_HEIGHT;
-        public const int BOTTOM_EDGE_FOR_BALL = Adv.ADVENTURE_OVERSCAN + BALL.DIAMETER;
+        public const int TOP_EDGE_FOR_BALL = Adv.ADVENTURE_OVERSCAN + Adv.ADVENTURE_SCREEN_HEIGHT - 1;
+        public const int BOTTOM_EDGE_FOR_BALL = Adv.ADVENTURE_OVERSCAN + BALL.DIAMETER - 1;
         public const int RIGHT_EDGE_FOR_BALL = Adv.ADVENTURE_SCREEN_WIDTH - BALL.DIAMETER;
         public const int LEFT_EDGE_FOR_BALL = 2; // Why is the ball never allowed to be up against the left edge? -RCA
 
@@ -498,8 +498,14 @@ namespace GameEngine
             return volume;
         }
 
-
-
+        public string ballToString(BALL ball)
+        {
+            ROOM room = map.getRoom(ball.room);
+            OBJECT holding = (ball.linkedObject > Board.OBJECT_NONE ? getObject(ball.linkedObject) : null);
+                return "player " + ball.playerNum + " at (" + ball.x + "," + ball.y + ")@" + room.label +
+                (holding != null ? " with " + holding.label : "");
+        }
 
     }
+
 }

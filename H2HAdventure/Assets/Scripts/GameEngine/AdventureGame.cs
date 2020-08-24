@@ -1716,7 +1716,7 @@ namespace GameEngine
                 if (aiPlayers[ctr] != null)
                 {
                     BALL aiBall = gameBoard.getPlayer(ctr);
-                    if ((aiBall.linkedObject >= 0) && aiPlayers[ctr].shouldDropHeldObject())
+                    if ((aiBall.linkedObject > Board.OBJECT_NONE) && aiPlayers[ctr].shouldDropHeldObject())
                     {
                         Putdown(aiBall);
                     }
@@ -1726,7 +1726,7 @@ namespace GameEngine
 
         void Putdown(BALL ball)
         {
-            if (ball.linkedObject >= 0)
+            if (ball.linkedObject > Board.OBJECT_NONE)
             {
                 int dropped = ball.linkedObject;
                 OBJECT droppedObject = gameBoard[dropped];

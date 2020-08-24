@@ -22,6 +22,9 @@ abstract public class AiObjective
      * completed before this objective is completed. */
     protected AiObjective child;
 
+    /** the objective that has this objective as a child or in the sibling chain of its child */
+    protected AiObjective parent;
+
     protected Board board;
     protected int aiPlayerNum;
     protected BALL aiPlayer;
@@ -168,6 +171,7 @@ abstract public class AiObjective
         nextChild.aiPlayerNum = this.aiPlayerNum;
         nextChild.aiPlayer = this.aiPlayer;
         nextChild.strategy = this.strategy;
+        nextChild.parent = this;
 
         if (child == null)
         {
@@ -207,6 +211,10 @@ abstract public class AiObjective
     {
         otherObjective.sibling = newObjective;
     }
+    protected AiObjective getParentOf(AiObjective otherObjective)
+    {
+        return otherObjective.parent;
+    } 
 
 }
 
@@ -297,6 +305,7 @@ public class ObtainObjective : AiObjective
 
     protected override void doComputeStrategy()
     {
+        abortIfLooping();
         objectToPickup = board.getObject(toPickup);
 
         // Check if the object is locked in a castle
@@ -324,6 +333,28 @@ public class ObtainObjective : AiObjective
                 addChild(new ObtainObjective(Board.OBJECT_MAGNET));
                 addChild(new GoToRoomObjective(objectToPickup.room));
                 addChild(new PickupObjective(toPickup));
+            }
+        }
+    }
+
+    /** 
+     * Look up the chain of parent objectives to see if we've gotten ourselves
+     * into an infinite loop.  (e.g. black key stuck in wall with magnet, bridge
+     * and bat all locked in black castle).  If we are, abort.
+     */
+    private void abortIfLooping()
+    {
+        Type obtainType = this.GetType();
+        ;
+        for (AiObjective nextParent = this.parent;  nextParent != null; nextParent = getParentOf(nextParent))
+        {
+            Type type = nextParent.GetType();
+            if (type.Equals(obtainType)) {
+                ObtainObjective nextObtain = (ObtainObjective)nextParent;
+                if (nextObtain.toPickup == this.toPickup)
+                {
+                    throw new Abort();
+                }
             }
         }
     }
@@ -646,6 +677,8 @@ public class RepositionKey : AiObjective
     private const int KEY_HEIGHT = 3;
     private int keyId;
     private OBJECT key;
+    private const int KEY_AT_Y = 0x30;
+
     public RepositionKey(int inKeyId)
     {
         keyId = inKeyId;
@@ -664,12 +697,13 @@ public class RepositionKey : AiObjective
                 (aiPlayer.linkedObjectX < -KEY_WIDTH) ||
                 (aiPlayer.linkedObjectX > BALL.DIAMETER/Adv.BALL_SCALE)) 
             {
+                this.addChild(new GoToObjective(aiPlayer.room, Portcullis.EXIT_X - 2 * aiPlayer.linkedObjectX, KEY_AT_Y - 2 * aiPlayer.linkedObjectY, keyId));
                 this.addChild(new DropObjective());
 
                 // Pick a point under the key and let the tactical algorithms get around the key
-                int bottomEdge = key.y * Adv.BALL_SCALE - KEY_HEIGHT * Adv.BALL_SCALE - BALL.RADIUS;
+                int bottomEdge = KEY_AT_Y - KEY_HEIGHT * Adv.BALL_SCALE - BALL.RADIUS;
                 bottomEdge -= (BALL.MOVEMENT - (aiPlayer.midY - bottomEdge) % BALL.MOVEMENT) % BALL.MOVEMENT;
-                this.addChild(new GoToObjective(aiPlayer.room, key.x * Adv.BALL_SCALE + KEY_WIDTH / 2, bottomEdge, CARRY_NO_OBJECT));
+                this.addChild(new GoToObjective(aiPlayer.room, Portcullis.EXIT_X, bottomEdge, CARRY_NO_OBJECT));
                 this.addChild(new PickupObjective(keyId));
             }
         }

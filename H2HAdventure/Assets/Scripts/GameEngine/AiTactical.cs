@@ -16,6 +16,17 @@ public class AiTactical
     private int nextStepX;
     private int nextStepY;
 
+    /** Whether to turn clockwise or counter-clockwise when going around
+     * an object. 
+     * Note that if you are turning clockwise you tend to go around in a
+     * conter-clockwise arc. */
+    enum Turn
+    {
+        CLOCKWISE,
+        NONE,
+        COUNTERCLOCKWISE
+    }
+
     private static int[][] directions = new int[][]{
             new int[]{ 0, BALL.MOVEMENT},
             new int[]{-BALL.MOVEMENT, BALL.MOVEMENT },
@@ -141,7 +152,7 @@ public class AiTactical
                 // are looking for some other object (and don't care if we pick up a different one
                 // along the way)
                 bool dontCare = (desiredObject == AiObjective.DONT_CARE_OBJECT) ||
-                    ((desiredObject >= 0) && (desiredObject != thisBall.linkedObject));
+                    ((desiredObject > Board.OBJECT_NONE) && (desiredObject != thisBall.linkedObject));
                 ignore = ignore || ((pkey >= Board.FIRST_CARRYABLE) && dontCare);
                 if (!ignore)
                 {
@@ -192,31 +203,193 @@ public class AiTactical
      */
     private void avoidObject(OBJECT objct, ref int nextVelX, ref int nextVelY)
     {
-        if (objct.getPKey() == Board.OBJECT_CHALISE)
+        int blockedTop = 0, blockedRight = 0, blockedBottom = 0, blockedLeft = 0;
+        computeBlockedArea(objct, ref blockedTop, ref blockedRight, ref blockedBottom, ref blockedLeft);
+        Turn toTurn = whichDirection(blockedTop, blockedRight, blockedBottom, blockedLeft);
+
+        if (toTurn != Turn.NONE)
         {
-            UnityEngine.Debug.Log("Avoiding chalice");
+
+            int startDirection = velocityToDirection(nextVelX, nextVelY);
+            int step = (toTurn == Turn.CLOCKWISE ? +1 : -1);
+            int nextDir = startDirection;
+            bool foundClearDirection = false;
+            for (int ctr = 1; !foundClearDirection && (ctr < directions.Length); ++ctr)
+            {
+                nextDir = MOD.mod(nextDir + step, directions.Length);
+                if (!quickCheckCollision(thisBall.x + directions[nextDir][0], thisBall.y + directions[nextDir][1], objct))
+                {
+                    nextVelX = directions[nextDir][0];
+                    nextVelY = directions[nextDir][1];
+                    foundClearDirection = true;
+                }
+            }
         }
-        // Simple algorithm.  Move around the object clockwise until we are passed it.
-        // TODO: Doesn't handle hitting a wall or hitting another object
-        // Find which direction we are currently supposed to go
+    }
+
+    /**
+     * Maps a x,y velocity to a 8-point direction
+     * Returns 0=up, 1=up&right, 2=right,... 7=up&left.  -1 means it didn't map.
+     */
+    private int velocityToDirection(int velX, int velY)
+    {
         int start = -1;
         for (int ctr = 0; (start == -1) && (ctr < directions.Length); ++ctr)
         {
-            if ((directions[ctr][0] == nextVelX) && (directions[ctr][1] == nextVelY)) {
+            if ((directions[ctr][0] == velX) && (directions[ctr][1] == velY))
+            {
                 start = ctr;
             }
         }
+        return start;
+    }
 
-        bool foundClearDirection = false;
-        for (int ctr = 1; !foundClearDirection && (ctr < directions.Length); ++ctr)
+    /**
+     * Compute how much an object actually blocks a ball.  For example, a ball cannot
+     * get within 4 pixels of an object because of its own width.  Also takes into 
+     * account ball moving in quantum steps and other blocking objects touching this objects.
+     */
+    private void computeBlockedArea(OBJECT objct, ref int top, ref int right, ref int bottom, ref int left)
+    {
+        top = objct.y * Adv.BALL_SCALE + BALL.RADIUS;
+        right = (objct.x + objct.Width) * Adv.BALL_SCALE + BALL.RADIUS;
+        bottom = (objct.y - objct.Height) * Adv.BALL_SCALE - BALL.RADIUS;
+        left = objct.x * Adv.BALL_SCALE - BALL.RADIUS;
+
+        // Now factor in that ball moves in 6 pixel steps
+        top += MOD.mod(thisBall.y - top, BALL.MOVEMENT);
+        right += MOD.mod(thisBall.x - right, BALL.MOVEMENT);
+        bottom -= MOD.mod(bottom - thisBall.y, BALL.MOVEMENT);
+        left -= MOD.mod(left - thisBall.x, BALL.MOVEMENT);
+    }
+
+    /**
+     * Compute how much of a plot is actually available to a ball.  For example, a ball cannot
+     * get within 4 pixels of a wall because of its own width.  Also takes into 
+     * account ball moving in quantum steps.
+     */
+    private void computeAvailablePlot(Plot plot, ref int top, ref int right, ref int bottom, ref int left)
+    {
+        top = plot.Top - BALL.RADIUS;
+        right = plot.Right - BALL.RADIUS + 1;
+        bottom = plot.Bottom + BALL.RADIUS - 1;
+        left = plot.Left - BALL.RADIUS;
+
+        // Now factor in that ball moves in 6 pixel steps
+        top -= MOD.mod(top - thisBall.y, BALL.MOVEMENT);
+        right -= MOD.mod(right - thisBall.x, BALL.MOVEMENT);
+        bottom += MOD.mod(thisBall.y - bottom, BALL.MOVEMENT);
+        left += MOD.mod(thisBall.x - left, BALL.MOVEMENT);
+    }
+
+    /**
+     * When the ball has hit an object which direction should the ball turn to go around the object
+     * @param upEdge, rightEdge, downEdge, leftEdge the x,y values of the blocked area (will be bigger
+     * than the x,y edges of the object and may be an area that is the union of multiple objects)
+     * @return clockwise or counterclockwise or none if neither direction will work
+     */
+    private Turn whichDirection(int upEdge, int rightEdge, int downEdge, int leftEdge)
+    {
+        int plotTop = 0, plotRight = 0, plotBottom = 0, plotLeft = 0;
+        computeAvailablePlot(currentPath.ThisPlot, ref plotTop, ref plotRight, ref plotBottom, ref plotLeft);
+
+        if (currentPath.nextNode != null)
         {
-            int check = (start + ctr) % directions.Length;
-            if (!quickCheckCollision(thisBall.x + directions[check][0], thisBall.y + directions[check][1], objct))
-            {
-                nextVelX = directions[check][0];
-                nextVelY = directions[check][1];
-                foundClearDirection = true;
-            }
+            // Everything is in terms of where you are going, so to make calculations
+            // easier, rotate everything until your destination is down.
+            rotate(currentPath.nextDirection, Plot.DOWN, ref upEdge, ref rightEdge, ref downEdge, ref leftEdge);
+            rotate(currentPath.nextDirection, Plot.DOWN, ref plotTop, ref plotRight, ref plotBottom, ref plotLeft);
+            //return whichDirectionToExit(upEdge, rightEdge, downEdge, leftEdge, plotTop, plotRight, plotBottom, plotLeft);
+            return Turn.CLOCKWISE;
+        }
+        else
+        {
+            return Turn.CLOCKWISE;
+        }
+    }
+
+    /**
+     * When the ball has hit an object which direction should the ball turn to go around the object.
+     * This is specifically called in the case when we are in the middle of a path and trying to reach the next step
+     * in the path
+     * @param upEdge, rightEdge, downEdge, leftEdge the x,y values of the blocked area (will be bigger
+     * than the x,y edges of the object and may be an area that is the union of multiple objects)
+     * @param plotTop, plotRight, plotDown, plotLeft the plot that we are currently in (rotated
+     * so that we are trying to reach the bottom of it)
+     * @return clockwise or counterclockwise or none if neither direction will work
+     */
+    private Turn whichDirectionToExit(int upEdge, int rightEdge, int downEdge, int leftEdge,
+            int plotTop, int plotRight, int plotBottom, int plotLeft,
+            int exitRight, int exitLeft)
+    {
+        bool cwOkay = true;
+        bool ccwOkay = true;
+
+        // First question, does the blocked area reach the bottom.  If it does,
+        // got a lot to check to see if either turn will work.
+        if (downEdge <= plotBottom)
+        {
+        }
+        return Turn.CLOCKWISE;
+    }
+
+    /** Translate the x,y coordinates of a box as if rotating it around the origin */
+    private void rotate(int fromDirection, int toDirection, ref int top, ref int right, ref int bottom, ref int left)
+    {
+        int angle = MOD.mod(toDirection - fromDirection, 4);
+        int tmp;
+        switch (angle)
+        {
+            case 0:
+                break;
+            case 1:
+                tmp = top;
+                top = -left;
+                left = bottom;
+                bottom = -right;
+                right = tmp;
+                break;
+            case 2:
+                tmp = top;
+                top = -bottom;
+                bottom = -tmp;
+                tmp = right;
+                right = -left;
+                left = -tmp;
+                break;
+            case 3:
+                tmp = top;
+                top = right;
+                right = -bottom;
+                bottom = left;
+                left = -top;
+                break;
+        }
+    }
+
+    /** Translate the x,y coordinates of a point as if rotating it around the origin */
+    private void rotate(int fromDirection, int toDirection, ref int x, ref int y)
+    {
+        int angle = MOD.mod(toDirection - fromDirection, 4);
+        int tmp;
+        switch (angle)
+        {
+            case 0:
+                break;
+            case 1:
+                tmp = x;
+                x = y;
+                y = -tmp;
+                break;
+            case 2:
+                x = -x;
+                y = -y;
+                break;
+            case 3:
+                tmp = x;
+                x = -y;
+                y = x;
+                break;
         }
     }
 

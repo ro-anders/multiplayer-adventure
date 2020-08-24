@@ -45,5 +45,12 @@ namespace GameEngine
         public const float VOLUME = 11.0f;
     }
 
+    public static class MOD
+    {
+        public static int mod(int x, int m)
+        {
+            return (x % m + m) % m;
+        }
+    }
 
 }
