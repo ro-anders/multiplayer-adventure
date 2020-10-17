@@ -89,6 +89,11 @@ namespace GameEngine
             return pkey;
         }
 
+        public override string ToString()
+        {
+            return label;
+        }
+
         /**
          * Sets up the object in the room it will start off in.
          */

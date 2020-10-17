@@ -64,12 +64,14 @@ namespace GameEngine
         /** x coordinate of the middle of the ball **/
         public int midX
         {
-            get { return x+RADIUS; }
+            get { return x + RADIUS; }
+            set { x = value - RADIUS; }
         }
         /** y coordinate of the middle of the ball **/
         public int midY
         {
             get { return y - RADIUS; }
+            set { y = value + RADIUS; }
         }
 
         public bool isGlowing()

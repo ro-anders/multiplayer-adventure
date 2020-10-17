@@ -358,6 +358,12 @@ public class ObtainObjective : AiObjective
             }
         }
     }
+
+    public override int getDesiredObject()
+    {
+        return toPickup;
+    }
+
 }
 
 

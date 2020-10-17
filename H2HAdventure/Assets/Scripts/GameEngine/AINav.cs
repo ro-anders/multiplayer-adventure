@@ -620,41 +620,60 @@ namespace GameEngine
             return isAdjacent;
         }
 
+        // If two plots are adjacent, this will return the endpoints of the line
+        // segment marking where they are adjacent - it will be just inside the
+        // other plot and adjacent to the this plot.
+        // If the plots are not adjacent or are adjacent in the direction other
+        // than the one specified, the return value is undefined.
+        // If the plots are adjacent across a room switch it will still work.
+        public void GetOverlapSegment(Plot otherPlot, int direction,
+            ref int point1x, ref int point1y, ref int point2x, ref int point2y)
+        {
+            // We know the two edges overlap so to find the segment of intersection we put the four
+            // endpoints in sorted order and make a segment between the middle two.
+            int[] endpoints = new int[4]{ this.Edge(direction + 3), this.Edge(direction + 1),
+                otherPlot.Edge(direction + 3), otherPlot.Edge(direction + 1)};
+            Array.Sort(endpoints); // endpoints are point in slot 1 & 2
+
+            switch (direction)
+            {
+                case UP:
+                    point1x = endpoints[1];
+                    point2x = endpoints[2];
+                    point1y = point2y = this.Top + 1;
+                    return;
+                case DOWN:
+                    point1x = endpoints[1];
+                    point2x = endpoints[2];
+                    point1y = point2y = this.Bottom - 1;
+                    return;
+                case LEFT:
+                    point1y = endpoints[1];
+                    point2y = endpoints[2];
+                    point1x = point2x = this.Left - 1;
+                    return;
+                case RIGHT:
+                default:
+                    point1y = endpoints[1];
+                    point2y = endpoints[2];
+                    point1x = point2x = this.Right + 1;
+                    return;
+            }
+
+        }
+
         // If two plots are adjacent, this will return the point just inside the
         // other plot and adjacent to the this plot.  The point will be the
         // midpoint of their intersection.
         // If the plots are not adjacent or are adjacent in the direction other
         // than the one specified, the return value is undefined.
         // If the plots are adjacent across a room switch it will still work.
-        public void GetOverlap(Plot otherPlot, int direction, ref int outX, ref int outY)
+        public void GetOverlapMidpoint(Plot otherPlot, int direction, ref int outX, ref int outY)
         {
-            // We know the two edges overlap so to find the segment of intersection we put the four
-            // endpoints in sorted order and make a segment between the middle two.
-            int[] endpoints = new int[4]{ this.Edge(direction + 3), this.Edge(direction + 1),
-                otherPlot.Edge(direction + 3), otherPlot.Edge(direction + 1)};
-            Array.Sort(endpoints);
-            int midpoint = (endpoints[1] + endpoints[2]) / 2;
-
-            switch(direction) {
-                case UP:
-                    outX = midpoint;
-                    outY = this.Top + 1;
-                    return;
-                case DOWN:
-                    outX = midpoint;
-                    outY = this.Bottom - 1;
-                    return;
-                case LEFT:
-                    outX = this.Left - 1;
-                    outY = midpoint;
-                    return;
-                case RIGHT:
-                default:
-                    outX = this.Right + 1;
-                    outY = midpoint;
-                    return;
-            }
-
+            int point1x = 0, point1y = 0, point2x = 0, point2y = 0;
+            GetOverlapSegment(otherPlot, direction, ref point1x, ref point1y, ref point2x, ref point2y);
+            outX = (point1x + point2x) / 2;
+            outY = (point1y + point2y) / 2;
         }
 
         public override string ToString()
