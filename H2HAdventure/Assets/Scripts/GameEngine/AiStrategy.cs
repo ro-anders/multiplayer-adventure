@@ -134,8 +134,7 @@ public class AiStrategy
     public bool isObjectReachable(OBJECT objct)
     {
         return nav.IsReachable(objct.room,
-            objct.x * Adv.BALL_SCALE, objct.y * Adv.BALL_SCALE,
-            objct.Width * Adv.BALL_SCALE, objct.Height * Adv.BALL_SCALE);
+            objct.bx, objct.by, objct.bwidth, objct.BHeight);
     }
 
     /**
@@ -168,10 +167,10 @@ public class AiStrategy
      */
     public bool closestReachableRectangle(OBJECT objct, ref int x, ref int y, ref int width, ref int height)
     {
-        int objx = objct.x * Adv.BALL_SCALE;
-        int objy = objct.y * Adv.BALL_SCALE;
-        int objw = objct.Width * Adv.BALL_SCALE;
-        int objh = objct.Height * Adv.BALL_SCALE;
+        int objx = objct.bx;
+        int objy = objct.by;
+        int objw = objct.bwidth;
+        int objh = objct.BHeight;
         Plot[] plots = nav.GetPlots(objct.room, objx, objy, objw, objh);
         if (plots.Length > 0)
         {

@@ -405,17 +405,17 @@ public class PickupObjective : AiObjective
         {
             // Bridge is tricky.  Aim for the corner for now.
             room = objectToPickup.room;
-            x = objectToPickup.x * Adv.BALL_SCALE;
-            y = objectToPickup.y * Adv.BALL_SCALE;
+            x = objectToPickup.bx;
+            y = objectToPickup.by;
         }
         else
         {
             // Aim for the center of reachable object
             room = objectToPickup.room;
-            int rx = objectToPickup.x * Adv.BALL_SCALE;
-            int ry = objectToPickup.y * Adv.BALL_SCALE;
-            int rw = objectToPickup.Width * Adv.BALL_SCALE;
-            int rh = objectToPickup.Height * Adv.BALL_SCALE;
+            int rx = objectToPickup.bx;
+            int ry = objectToPickup.by;
+            int rw = objectToPickup.bwidth;
+            int rh = objectToPickup.BHeight;
             bool found = strategy.closestReachableRectangle(objectToPickup, ref rx, ref ry, ref rw, ref rh);
             if (!found)
             {
@@ -503,15 +503,15 @@ public class GetObjectFromPlayer : AiObjective
                 {
                     // Bridge is tricky.  Aim for the corner for now.
                     room = objectToSteal.room;
-                    x = objectToSteal.x * Adv.BALL_SCALE;
-                    y = objectToSteal.y * Adv.BALL_SCALE;
+                    x = objectToSteal.bx;
+                    y = objectToSteal.by;
                 }
                 else
                 {
                     // Aim for the center
                     room = objectToSteal.room;
-                    x = Adv.BALL_SCALE * objectToSteal.x + objectToSteal.Width; // 2 * (x + width/2)
-                    y = Adv.BALL_SCALE * objectToSteal.y - objectToSteal.Height; // 2 * (y - hegiht/2)
+                    x = objectToSteal.bx + objectToSteal.width; // 2 * (x + width/2)
+                    y = objectToSteal.by - objectToSteal.Height; // 2 * (y - hegiht/2)
                 }
             }
         }

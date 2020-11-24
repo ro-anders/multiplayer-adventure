@@ -17,16 +17,21 @@ namespace GameEngine
 
         public readonly byte[][] gfxData;        // graphics data for each state
         public readonly byte[] states;         // array of indicies for each state
+        private int[] heights;                 // array of heights for each state
         public int state;                  // current state
         public int color;                  // color
         public int room;                   // room
         public int x;                      // x position
         public int y;                      // y position
-        public int size;                   // size (used for bridge and surround)
         public int displayed;             // flag indicating object was displayed (when more than maxDisplayableObjects for instance)
                                           // will be -1 if not displayed or the room number if displayed  
         public String label;                // a short, unique name for the object
         public RandomizedLocations randomPlacement; // How to randomly place this object in game 3
+
+        public readonly int size;                   // size (used for bridge and surround)
+        public readonly int width;
+        public readonly int bwidth;                 // width in ball scale
+
 
         protected bool objExists;             // Whether the object is active in this game.  Starts out false until init() called.
         protected Board board;               // The board on which this object has been placed.
@@ -43,6 +48,14 @@ namespace GameEngine
                       RandomizedLocations inRandomPlacement=RandomizedLocations.OPEN_OR_IN_CASTLE, int inSize = 0) {
             gfxData = inGfxData;
             states = inStates;
+            if ((inStates.Length == 0) && (inGfxData.Length == 1)) {
+                states = new byte[] { 0 };
+            }
+            heights = new int[states.Length];
+            for(int ctr=0; ctr<states.Length; ++ctr)
+            {
+                heights[ctr] = gfxData[states[ctr]].Length;
+            }
             state = inState;
             color = inColor;
             room = -1;
@@ -52,6 +65,8 @@ namespace GameEngine
             y = 0;
             randomPlacement = inRandomPlacement;
             size = inSize;
+            width = OBJECT_WIDTH * (size / 2 + 1);
+            bwidth = width * Adv.BALL_SCALE;
             objExists = false;
             privateToPlayer = -1;
             label = inLabel;
@@ -65,18 +80,53 @@ namespace GameEngine
         public bool exists() {return objExists;}
         public void setExists(bool inExists) { objExists = inExists; }
 
-        public int Width
-        {
-            get { return OBJECT_WIDTH * (size / 2 + 1); }
-        }
-
+        /**
+         * The height of the object
+         */
         public int Height
         {
-            get
-            {
-                int graphic = (states.Length > 0 ? states[state] : 0);
-                return gfxData[graphic].Length;
-            }
+            get { return heights[state]; }
+        }
+
+        /**
+         * The height of the object in ball scale
+         */
+        public int BHeight
+        {
+            get { return heights[state] * Adv.BALL_SCALE; }
+        }
+
+        /**
+         * How high is this object for purposes of avoiding it.  
+         * Usually this is the height but for the bat and a portcullis
+         * that move every turn, this is may be greater.
+         */
+        public virtual int MaxHeight
+        {
+            get {  return heights[state]; }
+        }
+
+        /**
+         * How high is this object for purposes of touching it.  
+         * Usually this is the height but for the bat and a portcullis
+         * that move every turn, this is may be smaller.
+         */
+        public virtual int MinHeight
+        {
+            get { return heights[state]; }
+        }
+
+        /** The x-coordinate in Ball scale */
+        public int bx
+        {
+            get { return x * Adv.BALL_SCALE; }
+            set { x = value / Adv.BALL_SCALE; }
+        }
+        /** The y-coordinate in Ball scale */
+        public int by
+        {
+            get { return y * Adv.BALL_SCALE + 1; }
+            set { y = value / Adv.BALL_SCALE; }
         }
 
         public void setBoard(Board newBoard, int newPKey)

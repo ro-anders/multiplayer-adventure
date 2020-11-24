@@ -330,8 +330,8 @@ namespace GameEngine
 
             // We don't convert the coordinates to ball scale, because everything
             // is in object scale.
-            if (!HitTestRects(object1.x, object1.y, object1.Width, object1.Height,
-                object2.x, object2.y, object2.Width, object2.Height))
+            if (!HitTestRects(object1.x, object1.y, object1.width, object1.Height,
+                object2.x, object2.y, object2.width, object2.Height))
                 return false;
 
             // Object extents overlap go pixel by pixel
@@ -407,8 +407,7 @@ namespace GameEngine
         // On the 2600 this is done in hardware by the Player/Missile collision registers
         public bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int height)
         {
-            int objectX = objct.x * 2;
-            int objectY = objct.y * 2;
+            int objectY = objct.by;
             int objectSize = (objct.size / 2) + 1;
 
             // Look up the index to the current state for this object
@@ -429,7 +428,7 @@ namespace GameEngine
                     {
                         // test this pixel for intersection
 
-                        int wrappedX = objectX + (bit * 2 * objectSize);
+                        int wrappedX = objct.bx + (bit * 2 * objectSize);
                         if (wrappedX >= Adv.ADVENTURE_SCREEN_WIDTH)
                             wrappedX -= Adv.ADVENTURE_SCREEN_WIDTH;
 

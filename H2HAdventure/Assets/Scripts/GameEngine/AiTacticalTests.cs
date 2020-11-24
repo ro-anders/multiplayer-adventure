@@ -52,7 +52,7 @@ namespace GameEngine
             int finalY = 80;
             obj = new GoToObjective(1, finalX, finalY, AiObjective.CARRY_NO_OBJECT);
 
-            // 1.0: Room is empty.  Ball has a straight line down-right to exit
+            // 1.0: Room is empty.  Ball has a straight line right to exit
             block.setExists(false);
             toTest.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
             if ((velX != 6) || (velY != 0))
@@ -61,7 +61,9 @@ namespace GameEngine
             }
 
             // 1.1: Block touches no walls and ball can go in any direction.  
-            // Block is L120,B80,R36,T96
+            // Block is L120,B82,R135,T97
+            ball.x = 110;
+            ball.y = 88;
             block.setExists(true);
             block.x = 60;
             block.y = 48;
@@ -72,7 +74,9 @@ namespace GameEngine
             }
 
             // 1.2. Block touches bottom of plot.  Ball is on corner and must go clockwise to get to cut corner and exit on right.
-            // Block is L120,B62,R136,T78
+            // Block is L120,B64,R135,T79
+            ball.x = 110;
+            ball.y = 84;
             block.x = 60;
             block.y = 39;
             toTest.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
@@ -82,19 +86,7 @@ namespace GameEngine
             }
 
             // 1.3. Block touches bottom of plot.  Ball is on left and must go clockwise to get to exit on right.
-            // Block is L120,B62,R136,T78
-            ball.x = 110;
-            ball.y = 78;
-            block.x = 60;
-            block.y = 39;
-            toTest.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
-            if ((velX != 0) || (velY != 6))
-            {
-                throw new System.Exception("Failed test 1.3 with vel (" + velX + "," + velY + ")");
-            }
-
-            // 1.3. Block touches bottom of plot.  Ball is on left and must go clockwise to get to exit on right.
-            // Block is L120,B62,R136,T78
+            // Block is L120,B64,R135,T79
             ball.x = 110;
             ball.y = 78;
             block.x = 60;
@@ -120,17 +112,31 @@ namespace GameEngine
             int finalY = 80;
             obj = new GoToObjective(1, finalX, finalY, AiObjective.CARRY_NO_OBJECT);
 
-            // 1.0: Only 8 pixels between block and bottom.  Can get around that
+            // 2.0: Only 8 pixels between block and bottom.  Can get around that
             // way because ball starts in the right place.
+            // Block is L120,B72,R135,T87
             block.setExists(true);
             block.x = 60;
-            block.y = 44;
+            block.y = 43;
             ball.x = 110;
             ball.y = 83;
             toTest.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
             if ((velX != 0) || (velY != -6))
             {
                 throw new System.Exception("Failed test 2.0 with vel (" + velX + "," + velY + ")");
+            }
+
+            // 2.1: Only 8 pixels between block and bottom.  Can't get around that
+            // way because ball starts in the wrong place.  With no other option, just plows forward.
+            block.setExists(true);
+            block.x = 60;
+            block.y = 43; 
+            ball.x = 110;
+            ball.y = 85;
+            toTest.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
+            if ((velX != 6) || (velY != -6))
+            {
+                throw new System.Exception("Failed test 2.1 with vel (" + velX + "," + velY + ")");
             }
         }
     }

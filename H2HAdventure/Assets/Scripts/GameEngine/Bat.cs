@@ -11,6 +11,8 @@ namespace GameEngine
         private static int MAX_FEDUP = 0xff;
         private static int BAT_SPEED = 3;
         private static int MIDHEIGHT = 4; // Approximate half way up bat
+        private const int BAT_MAX_HEIGHT = 11; // objectGfxData[1].Length
+        private const int BAT_MIN_HEIGHT = 7; // objectGfxData[0].Length
 
         private int batFedUpTimer = 0;
         private int flapTimer = 0;
@@ -24,7 +26,17 @@ namespace GameEngine
             linkedObjectY = 0;
             flapTimer = 0;
         }
-        
+
+        public override int MaxHeight
+        {
+            get { return BAT_MAX_HEIGHT; } 
+        }
+
+        public override int MinHeight
+        {
+            get { return BAT_MIN_HEIGHT; }
+        }
+
         public void moveOneTurn(Sync sync, BALL localBall)
         {
             if (++flapTimer >= 0x04)
@@ -41,10 +53,10 @@ namespace GameEngine
                 // Enlarge the bat extent by 7 pixels for the proximity checks below
                 // (doing the bat once is faster than doing each object and the results are the same)
                 const int BAT_RANGE = 7;
-                int batX = x * Adv.BALL_SCALE - BAT_RANGE;
-                int batY = y * Adv.BALL_SCALE + BAT_RANGE;
-                int batW = Width * Adv.BALL_SCALE + 2 * BAT_RANGE;
-                int batH = Height * Adv.BALL_SCALE + 2 * BAT_RANGE;
+                int batX = bx - BAT_RANGE;
+                int batY = by + BAT_RANGE;
+                int batW = bwidth + 2 * BAT_RANGE;
+                int batH = BHeight + 2 * BAT_RANGE;
 
                 // Go through the bat's object matrix
                 for (int matrixIndex = 0; matrixIndex < batMatrix.Length; ++matrixIndex)
@@ -94,8 +106,7 @@ namespace GameEngine
                         // rectangle intersection test is good enought here
 
                         if (Board.HitTestRects(batX, batY, batW, batH,
-                            seekObject.x * Adv.BALL_SCALE, seekObject.y * Adv.BALL_SCALE,
-                            seekObject.Width * Adv.BALL_SCALE, seekObject.Height * Adv.BALL_SCALE))
+                            seekObject.bx, seekObject.by, seekObject.bwidth, seekObject.BHeight))
                         {
                             // Hit something we want
                             pickupObject(seekObjKey, sync);

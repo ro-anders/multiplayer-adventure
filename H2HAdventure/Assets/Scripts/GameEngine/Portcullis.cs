@@ -18,7 +18,9 @@ namespace GameEngine
         public const int EXIT_Y = PORT_Y * Adv.BALL_SCALE - 10;
 
         public const int OPEN_STATE = 0;
+        public const int OPEN_HEIGHT = 4; // objectGfxPort[0].Length 
         public const int CLOSED_STATE = 12;
+        public const int CLOSED_HEIGHT = 16; // objectGfxPort[6].Length
 
         /** True if touching the gate will take you inside the castle.  False if gate is locked. */
         public bool allowsEntry;
@@ -58,6 +60,15 @@ namespace GameEngine
                 inInsideRoom.visibility = ROOM.RandomVisibility.IN_CASTLE;
             }
 
+        }
+
+        public override int MaxHeight
+        {
+            get { return (state == OPEN_STATE ? OPEN_HEIGHT : CLOSED_HEIGHT); }
+        }
+        public override int MinHeight
+        {
+            get { return (state == CLOSED_STATE ? CLOSED_HEIGHT : OPEN_HEIGHT); }
         }
 
         public virtual void setState(int newState, bool newAllowsEntry)

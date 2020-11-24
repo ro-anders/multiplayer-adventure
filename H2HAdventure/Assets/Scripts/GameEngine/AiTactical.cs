@@ -202,7 +202,7 @@ namespace GameEngine
             // TODO: This doesn't handle bridge correctly
             int objectHt = objct.Height;
             return Board.HitTestRects(ballx, bally, BALL.DIAMETER, BALL.DIAMETER,
-              objct.x * 2, objct.y * 2, Board.OBJECTWIDTH * 2, objectHt * 2);
+              objct.bx, objct.by, objct.bwidth, objct.BHeight);
         }
 
         /**
@@ -259,15 +259,15 @@ namespace GameEngine
          */
         private void computeBlockedArea(OBJECT objct, ref int top, ref int right, ref int bottom, ref int left)
         {
-            top = objct.y * Adv.BALL_SCALE + BALL.RADIUS;
-            right = (objct.x + objct.Width) * Adv.BALL_SCALE + BALL.RADIUS;
-            bottom = (objct.y - objct.Height) * Adv.BALL_SCALE - BALL.RADIUS;
-            left = objct.x * Adv.BALL_SCALE - BALL.RADIUS;
+            top = objct.by + BALL.DIAMETER;
+            right = objct.bx + objct.bwidth - 1;
+            bottom = objct.by - objct.BHeight + 1;
+            left = objct.bx - BALL.DIAMETER;
 
             // Now factor in that ball moves in 6 pixel steps
             top += MOD.mod(thisBall.y - top, BALL.MOVEMENT);
-            right += MOD.mod(thisBall.x - right, BALL.MOVEMENT);
-            bottom -= MOD.mod(bottom - thisBall.y, BALL.MOVEMENT);
+            right += MOD.mod(thisBall.x - right + 1, BALL.MOVEMENT);
+            bottom -= MOD.mod(bottom - 1 - thisBall.y, BALL.MOVEMENT);
             left -= MOD.mod(left - thisBall.x, BALL.MOVEMENT);
         }
 
@@ -278,16 +278,42 @@ namespace GameEngine
          */
         private void computeAvailablePlot(Plot plot, ref int top, ref int right, ref int bottom, ref int left)
         {
-            top = plot.Top - BALL.RADIUS;
-            right = plot.Right - BALL.RADIUS + 1;
-            bottom = plot.Bottom + BALL.RADIUS - 1;
-            left = plot.Left - BALL.RADIUS;
+            top = plot.Top;
+            right = plot.Right - BALL.DIAMETER + 1;
+            bottom = plot.Bottom + BALL.DIAMETER - 1;
+            left = plot.Left;
 
             // Now factor in that ball moves in 6 pixel steps
             top -= MOD.mod(top - thisBall.y, BALL.MOVEMENT);
             right -= MOD.mod(right - thisBall.x, BALL.MOVEMENT);
             bottom += MOD.mod(thisBall.y - bottom, BALL.MOVEMENT);
             left += MOD.mod(thisBall.x - left, BALL.MOVEMENT);
+        }
+
+        /**
+         * Compute how much of an exit is actually available to a ball.  For example, a ball cannot
+         * get within 4 pixels of a wall because of its own width.  Also takes into 
+         * account ball moving in quantum steps.
+         */
+        private void computeAvailableExit(ref int top, ref int right, ref int bottom, ref int left)
+        {
+            // An exit is either horizontal (top==bottom) or vertical (left==right)
+            if (top == bottom) // horizontal
+            {
+                right = right - BALL.DIAMETER + 1;
+
+                // Now factor in that ball moves in 6 pixel steps
+                right -= MOD.mod(right - thisBall.x, BALL.MOVEMENT);
+                left += MOD.mod(thisBall.x - left, BALL.MOVEMENT);
+            }
+            else // vertical
+            {
+                bottom = bottom + BALL.DIAMETER - 1;
+
+                // Now factor in that ball moves in 6 pixel steps
+                top -= MOD.mod(top - thisBall.y, BALL.MOVEMENT);
+                bottom += MOD.mod(thisBall.y - bottom, BALL.MOVEMENT);
+            }
         }
 
         /**
@@ -306,18 +332,23 @@ namespace GameEngine
                 int exit1x = 0, exit1y = 0, exit2x = 0, exit2y = 0;
                 currentPath.ThisPlot.GetOverlapSegment(currentPath.nextNode.ThisPlot, currentPath.nextDirection,
                     ref exit1x, ref exit1y, ref exit2x, ref exit2y);
-                // TODO: add extents
+                computeAvailableExit(ref exit2y, ref exit2x, ref exit1y, ref exit1x);
+
                 // Everything is in terms of where you are going, so to make calculations
                 // easier, rotate everything until your destination is down.
                 rotate(currentPath.nextDirection, Plot.DOWN, ref upEdge, ref rightEdge, ref downEdge, ref leftEdge);
                 rotate(currentPath.nextDirection, Plot.DOWN, ref plotTop, ref plotRight, ref plotBottom, ref plotLeft);
                 rotate(currentPath.nextDirection, Plot.DOWN, ref exit2y, ref exit2x, ref exit1y, ref exit1x);
+                int ballx = thisBall.midX;
+                int bally = thisBall.midY;
+                rotate(currentPath.nextDirection, Plot.DOWN, ref ballx, ref bally);
                 return whichDirectionToExit(upEdge, rightEdge, downEdge, leftEdge,
                                             plotTop, plotRight, plotBottom, plotLeft,
-                                            exit2x, exit1x);
+                                            exit2x, exit1x, ballx, bally);
             }
             else
             {
+                // TODOXXX: Handle when the blocking object is in the same room.
                 return Turn.COUNTERCLOCKWISE;
             }
         }
@@ -331,28 +362,38 @@ namespace GameEngine
          * @param plotTop, plotRight, plotDown, plotLeft the plot that we are currently in (rotated
          * so that we are trying to reach the bottom of it)
          * @param exitRight, exitLeft the x values of the exit from the plot on the bottom edge
+         * @param ballx, bally the coordinate of the ball
          * @return clockwise or counterclockwise or none if neither direction will work
          */
         private Turn whichDirectionToExit(int upEdge, int rightEdge, int downEdge, int leftEdge,
                 int plotTop, int plotRight, int plotBottom, int plotLeft,
-                int exitRight, int exitLeft)
+                int exitRight, int exitLeft, int ballx, int bally)
         {
             bool cwOkay = true;
             bool ccwOkay = true;
 
-            // First question, does the blocked area reach the bottom.  If it does,
+            // Does the blocked area touch a side?
+            cwOkay = cwOkay && (leftEdge > plotLeft);
+            ccwOkay = ccwOkay && (rightEdge < plotRight);
+
+            // Does the blocked area reach the bottom?  If it does,
             // got a lot to check to see if either turn will work.
             if (downEdge <= plotBottom)
             {
-                cwOkay = cwOkay && (leftEdge > exitRight);
-                ccwOkay = ccwOkay && (rightEdge < exitLeft);
+                cwOkay = cwOkay && (leftEdge > exitLeft);
+                ccwOkay = ccwOkay && (rightEdge < exitRight);
             }
+
+            // Does the blocked area touch the top?
             if (upEdge >= plotTop)
             {
-
+                int blockMiddle = (rightEdge + leftEdge) / 2;
+                cwOkay = cwOkay && (ballx <= blockMiddle);
+                ccwOkay = ccwOkay && (ballx >= blockMiddle);
             }
 
-            return Turn.COUNTERCLOCKWISE;
+            // If both are okay, pick clockwise.
+            return (cwOkay ? Turn.CLOCKWISE : (ccwOkay ? Turn.COUNTERCLOCKWISE : Turn.NONE));
         }
 
         /** Translate the x,y coordinates of a box as if rotating it around the origin */
