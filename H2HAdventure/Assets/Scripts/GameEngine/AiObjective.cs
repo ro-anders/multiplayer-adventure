@@ -68,11 +68,12 @@ abstract public class AiObjective
     /**
      * Following this objective, what are the next coordinates the
      * ball should go to.
+     * @return the area the ball needs to get to to complete this objective
      */
-    public virtual void getDestination(ref int room, ref int x, ref int y)
+    public virtual RRect getDestination()
     {
-        // Default is to do nothing.  Objectives that are composed of
-        // other objectives will often leave this unimplemented
+        // Default behavior is don't go anywhere
+        return RRect.NOWHERE;
     }
 
     /**
@@ -399,32 +400,24 @@ public class PickupObjective : AiObjective
         }
     }
 
-    public override void getDestination(ref int room, ref int x, ref int y)
+    public override RRect getDestination()
     {
         if (toPickup == Board.OBJECT_BRIDGE)
         {
             // Bridge is tricky.  Aim for the corner for now.
-            room = objectToPickup.room;
-            x = objectToPickup.bx;
-            y = objectToPickup.by;
+            return new RRect(objectToPickup.room, objectToPickup.bx, objectToPickup.by, 1, 1);
         }
         else
         {
             // Aim for the center of reachable object
-            room = objectToPickup.room;
-            int rx = objectToPickup.bx;
-            int ry = objectToPickup.by;
-            int rw = objectToPickup.bwidth;
-            int rh = objectToPickup.BHeight;
-            bool found = strategy.closestReachableRectangle(objectToPickup, ref rx, ref ry, ref rw, ref rh);
-            if (!found)
+            RRect found = strategy.closestReachableRectangle(objectToPickup);
+            if (!found.IsValid)
             {
                 // Something went wrong.  Shoudn't get that here
                 UnityEngine.Debug.LogError("Request to pick up object " + objectToPickup.label + " that is at not reachable place (" +
                     objectToPickup.x + "," + objectToPickup.y + ")@" + objectToPickup.room);
             }
-            x = rx + (rw / 2);
-            y = ry - (rh / 2);
+            return found;
         }
     }
 
@@ -476,14 +469,12 @@ public class GetObjectFromPlayer : AiObjective
         }
     }
 
-    public override void getDestination(ref int room, ref int x, ref int y)
+    public override RRect getDestination()
     {
         // If we're really close, go for the object, otherwise go for the ball
         if (aiPlayer.room != ballToStealFrom.room)
         {
-            room = ballToStealFrom.room;
-            x = ballToStealFrom.x;
-            y = ballToStealFrom.y;
+            return new RRect(ballToStealFrom.room, ballToStealFrom.x, ballToStealFrom.y, BALL.DIAMETER, BALL.DIAMETER);
         }
         else
         {
@@ -492,26 +483,21 @@ public class GetObjectFromPlayer : AiObjective
             int distance = (distanceX > distanceY ? distanceX : distanceY);
             if (distance > 2 * BALL.MOVEMENT)
             {
-                room = ballToStealFrom.room;
-                x = ballToStealFrom.x;
-                y = ballToStealFrom.y;
-
+                return new RRect(ballToStealFrom.room, ballToStealFrom.x, ballToStealFrom.y, BALL.DIAMETER, BALL.DIAMETER);
             }
             else
             {
                 if (toSteal == Board.OBJECT_BRIDGE)
                 {
                     // Bridge is tricky.  Aim for the corner for now.
-                    room = objectToSteal.room;
-                    x = objectToSteal.bx;
-                    y = objectToSteal.by;
+                    return new RRect(objectToSteal.room, objectToSteal.bx, objectToSteal.by, 1, 1);
                 }
                 else
                 {
                     // Aim for the center
-                    room = objectToSteal.room;
-                    x = objectToSteal.bx + objectToSteal.width; // 2 * (x + width/2)
-                    y = objectToSteal.by - objectToSteal.Height; // 2 * (y - hegiht/2)
+                    return new RRect(objectToSteal.room,
+                        objectToSteal.bx, objectToSteal.by,
+                        objectToSteal.bwidth, objectToSteal.BHeight);
                 }
             }
         }
@@ -549,11 +535,9 @@ public class GoToObjective : AiObjective
     protected override void doComputeStrategy()
     { }
 
-    public override void getDestination(ref int room, ref int x, ref int y)
+    public override RRect getDestination()
     {
-        room = gotoRoom;
-        x = gotoX;
-        y = gotoY;
+        return new RRect(gotoRoom, gotoX, gotoY, 1, 1);
     }
 
     protected override bool computeIsCompleted()
@@ -603,11 +587,9 @@ public class GoToRoomObjective : AiObjective
         bool found = strategy.closestPointInRoom(gotoRoom, ref gotoX, ref gotoY); 
     }
 
-    public override void getDestination(ref int room, ref int x, ref int y)
+    public override RRect getDestination()
     {
-        room = gotoRoom;
-        x = gotoX;
-        y = gotoY;
+        return new RRect(gotoRoom, gotoX, gotoY, 1, 1);
     }
 
     protected override bool computeIsCompleted()
@@ -652,11 +634,9 @@ public class UnlockCastle : AiObjective
         this.addChild(new RepositionKey(key));
     }
 
-    public override void getDestination(ref int room, ref int x, ref int y)
+    public override RRect getDestination()
     {
-        room = port.room;
-        x = Portcullis.EXIT_X - aiPlayer.linkedObjectX;
-        y = 0x3D;
+        return new RRect(port.room, Portcullis.EXIT_X - aiPlayer.linkedObjectX, 0x3D, 1, 1);
     }
 
     protected override bool computeIsCompleted()

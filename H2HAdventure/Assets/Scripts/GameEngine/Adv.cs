@@ -53,4 +53,64 @@ namespace GameEngine
         }
     }
 
+    /** Rectangle in a room.  Coordinates are ball-scale coordinates
+     * where height extends down from y and width extends right from x.
+     */
+    public readonly struct RRect
+    {
+        public static readonly RRect INVALID = new RRect(-1, -1, -1, -1, -1);
+        public static readonly RRect NOWHERE = new RRect(-1, -1, -1, 0, 0);
+
+        public RRect(int inRoom, int inX, int inY, int inWidth, int inHeight)
+        {
+            room = inRoom;
+            x = inX;
+            y = inY;
+            width = inWidth;
+            height = inHeight;
+        }
+        public readonly int room;
+        public readonly int x;
+        public readonly int y;
+        public readonly int width;
+        public readonly int height;
+        public int top
+        {
+            get { return y; }
+        }
+        public int right
+        {
+            get { return x + width - 1; }
+        }
+        public int bottom
+        {
+            get { return y - height + 1; }
+        }
+        public int left
+        {
+            get { return x; }
+        }
+        public int midX
+        {
+            get { return x + (width / 2); }
+        }
+        public int midY
+        {
+            get { return y - (height / 2); }
+        }
+        public bool equals(RRect other)
+        {
+            return (room == other.room) && (x == other.x) && (y == other.y) &&
+                (width == other.width) && (height == other.height);
+        }
+        public bool IsValid
+        {
+            get { return (width >= 0) && (height >= 0); }
+        }
+        public bool IsSomewhere
+        {
+            get { return (width >= 0) && (height >= 0) && (room >= 0); }
+        }
+    }
+
 }

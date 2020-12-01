@@ -24,9 +24,7 @@ namespace GameEngine
         private int recomputeStrategyAtFrame;
 
         /** The room & coordinates of where we want to get to */
-        private int desiredRoom = -1;
-        private int desiredX = -1;
-        private int desiredY = -1;
+        private RRect desiredLocation = RRect.NOWHERE;
         /** The path we intend on taking to get to the desired location */
         private AiPathNode desiredPath = null;
 
@@ -97,13 +95,10 @@ namespace GameEngine
         {
             checkStrategy(frameNumber);
 
-            int newDesiredRoom = thisBall.room;
-            int newDesiredX = thisBall.midX;
-            int newDesiredY = thisBall.midY;
-            currentObjective.getDestination(ref newDesiredRoom, ref newDesiredX, ref newDesiredY);
+            RRect newDesiredLocation = currentObjective.getDestination();
 
 
-            if (newDesiredRoom < 0)
+            if (!newDesiredLocation.IsSomewhere)
             {
                 // We have no goal.  Don't do anything.
                 return;
@@ -112,28 +107,27 @@ namespace GameEngine
 
             // We need to recompute the path if where we
             // are going has changed and is no longer at the end of the path.
-            if (((newDesiredRoom != desiredRoom) || (newDesiredX != desiredX) || (newDesiredY != desiredY)) &&
+            if (!newDesiredLocation.equals(desiredLocation)  &&
                 (desiredPath != null) &&
-                !desiredPath.leadsTo(newDesiredRoom, newDesiredX, newDesiredY)) {
+                !desiredPath.leadsTo(newDesiredLocation.room, newDesiredLocation.midX, newDesiredLocation.midY)) {
 
                 desiredPath = null;
             }
-            desiredRoom = newDesiredRoom;
-            desiredX = newDesiredX;
-            desiredY = newDesiredY;
+            desiredLocation = newDesiredLocation;
 
             if (desiredPath == null)
             {
                 // We don't even know where we are going.  Figure it out.
 
-                desiredPath = aiNav.ComputePath(thisBall.room, thisBall.midX, thisBall.midY, desiredRoom, desiredX, desiredY);
+                desiredPath = aiNav.ComputePath(thisBall.room, thisBall.midX, thisBall.midY,
+                    desiredLocation.room, desiredLocation.midX, desiredLocation.midY);
                 if (desiredPath == null)
                 {
                     // No way to get to where we want to go.  Give up
                     UnityEngine.Debug.Log("Couldn't compute path for AI player #" + thisPlayer + " for objective \"" + currentObjective +
-                        "\" to get to " + gameBoard.map.roomDefs[desiredRoom].label + "("+desiredX+","+desiredY+")");
+                        "\" to get to " + gameBoard.map.roomDefs[desiredLocation.room].label + "("+desiredLocation.midX+","+desiredLocation.midY+")");
                     // ABORT PATH
-                    desiredRoom = -1;
+                    desiredLocation = RRect.NOWHERE;
                     thisBall.velx = 0;
                     thisBall.vely = 0;
                     return;
@@ -145,7 +139,7 @@ namespace GameEngine
             {
                 // ABORT PATH
                 UnityEngine.Debug.LogError("Ball " + thisBall.playerNum + " has fallen off the AI path! Aborting.");
-                desiredRoom = -1;
+                desiredLocation = RRect.NOWHERE;
                 thisBall.velx = 0;
                 thisBall.vely = 0;
                 return;
@@ -153,7 +147,7 @@ namespace GameEngine
 
             int nextVelx = 0;
             int nextVely = 0;
-            bool canGetThere = aiTactical.computeDirectionOnPath(desiredPath, desiredX, desiredY,
+            bool canGetThere = aiTactical.computeDirectionOnPath(desiredPath, desiredLocation.midX, desiredLocation.midY,
                 currentObjective, ref nextVelx, ref nextVely);
             if (canGetThere)
             {
@@ -163,7 +157,7 @@ namespace GameEngine
             else
             {
                 UnityEngine.Debug.LogError("Ball cannot get where it needs to go.");
-                desiredRoom = -1;
+                desiredLocation = RRect.NOWHERE;
                 thisBall.velx = 0;
                 thisBall.vely = 0;
                 return;

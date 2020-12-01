@@ -317,7 +317,6 @@ namespace GameEngine
             }
         }
 
-
         // Collision check two objects
         // On the 2600 this is done in hardware by the Player/Missile collision registers
         public bool CollisionCheckObjectObject(OBJECT object1, OBJECT object2)

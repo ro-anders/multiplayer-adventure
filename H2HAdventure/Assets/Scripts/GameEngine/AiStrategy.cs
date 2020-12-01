@@ -160,12 +160,11 @@ public class AiStrategy
      * Compute the rectanlge that represents the area of the object that is
      * actually on the path and reachable.  If the object spans multiple 
      * plots, will return the area that is closest.
-     * If the object is embedded in a wall, will return false and leave reference
-     * parameters unchanged.
+     * If the object is embedded in a wall, will return an invalid rectangle.
      * If the object touches a path but is unreachable (i.e. behing a locked 
-     * castle) will still return true and compute a rectangle.
+     * castle) will still return a valid rectangle.
      */
-    public bool closestReachableRectangle(OBJECT objct, ref int x, ref int y, ref int width, ref int height)
+    public RRect closestReachableRectangle(OBJECT objct)
     {
         int objx = objct.bx;
         int objy = objct.by;
@@ -177,10 +176,18 @@ public class AiStrategy
             // TODO: Right now we don't compute closest.  We return the area
             // overlapping the first plot we find.
             Plot plot = plots[0];
+            int x = -1;
+            int y = -1;
+            int width = -1;
+            int height = -1;
             Board.intersect(objx, objy, objw, objh, plot.Left, plot.Top, plot.Right - plot.Left, plot.Top - plot.Bottom,
                 ref x, ref y, ref width, ref height);
+            return new RRect(objct.room, x, y, width, height);
         }
-        return (plots.Length > 0);
+        else
+        {
+            return RRect.INVALID;
+        }
 
 
     }
