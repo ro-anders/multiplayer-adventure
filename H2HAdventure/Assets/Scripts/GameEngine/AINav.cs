@@ -89,6 +89,9 @@ namespace GameEngine
             return plots.Length > 0;
         }
 
+        /**
+         * Find all plots that overlap this region
+         */
         public Plot[] GetPlots(int room, int x, int y, int width, int height)
         {
             int[] plotIndexes = FindPlots(room, x, y, width, height, false);

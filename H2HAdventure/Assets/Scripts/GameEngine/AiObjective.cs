@@ -495,9 +495,7 @@ public class GetObjectFromPlayer : AiObjective
                 else
                 {
                     // Aim for the center
-                    return new RRect(objectToSteal.room,
-                        objectToSteal.bx, objectToSteal.by,
-                        objectToSteal.bwidth, objectToSteal.BHeight);
+                    return strategy.closestReachableRectangle(objectToSteal);
                 }
             }
         }

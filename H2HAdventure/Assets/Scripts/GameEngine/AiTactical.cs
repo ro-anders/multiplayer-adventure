@@ -80,7 +80,8 @@ namespace GameEngine
                 nextStepY = finalY;
             }
 
-            bool canGetThere = computeDirection(nextStepX, nextStepY, currentObjective.getDesiredObject(), ref nextVelx, ref nextVely);
+            bool allowScrapingWalls = (currentPath.nextNode == null); // Don't worry about scraping walls once we're in the right plot
+            bool canGetThere = computeDirection(nextStepX, nextStepY, currentObjective.getDesiredObject(), allowScrapingWalls, ref nextVelx, ref nextVely);
 
             return canGetThere;
         }
@@ -90,12 +91,15 @@ namespace GameEngine
          * Usually this just makes a straight line towards it, but will choose alternate
          * directions to deal with dragons or impeding obstacles.
          */
-        private bool computeDirection(int nextStepX, int nextStepY, int desiredObject, ref int nextVelX, ref int nextVelY)
+        private bool computeDirection(int nextStepX, int nextStepY, int desiredObject, bool allowScrapingWalls, ref int nextVelX, ref int nextVelY)
         {
             nextVelX = (nextStepX > thisBall.midX ? BALL.MOVEMENT : (nextStepX == thisBall.midX ? 0 : -BALL.MOVEMENT));
             nextVelY = (nextStepY > thisBall.midY ? BALL.MOVEMENT : (nextStepY == thisBall.midY ? 0 : -BALL.MOVEMENT));
 
-            avoidScrapingWalls(ref nextVelX, ref nextVelY);
+            if (!allowScrapingWalls)
+            {
+                avoidScrapingWalls(ref nextVelX, ref nextVelY);
+            }
 
             avoidAllObjects(desiredObject, ref nextVelX, ref nextVelY);
 
