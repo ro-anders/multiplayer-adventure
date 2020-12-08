@@ -444,6 +444,7 @@ public class GetObjectFromPlayer : AiObjective
     private OBJECT objectToSteal;
     private int toStealFrom;
     private BALL ballToStealFrom;
+    private static System.Random genRandom = new System.Random(0);
 
     /**
      * The object the AI player needs to pickup
@@ -471,34 +472,44 @@ public class GetObjectFromPlayer : AiObjective
 
     public override RRect getDestination()
     {
+        // If we're not in the same room, just go for the ball
+        bool goForBall = (aiPlayer.room != ballToStealFrom.room);
+
         // If we're really close, go for the object, otherwise go for the ball
-        if (aiPlayer.room != ballToStealFrom.room)
-        {
-            return new RRect(ballToStealFrom.room, ballToStealFrom.x, ballToStealFrom.y, BALL.DIAMETER, BALL.DIAMETER);
-        }
-        else
+        if (!goForBall)
         {
             int distanceX = Math.Abs(aiPlayer.midX - ballToStealFrom.midX);
             int distanceY = Math.Abs(aiPlayer.midY - ballToStealFrom.midY);
             int distance = (distanceX > distanceY ? distanceX : distanceY);
-            if (distance > 2 * BALL.MOVEMENT)
+            goForBall = (distance > 2 * BALL.MOVEMENT);
+        }
+
+        // With two computers stealing from each other, you have to insert a
+        // a little randomness.  When we're this close, occassionally, pause
+        // for a turn
+        if (!goForBall)
+        {
+            if (genRandom.NextDouble() < 0.05)
             {
-                return new RRect(ballToStealFrom.room, ballToStealFrom.x, ballToStealFrom.y, BALL.DIAMETER, BALL.DIAMETER);
+                return new RRect(aiPlayer.room, aiPlayer.x, aiPlayer.y, BALL.DIAMETER, BALL.DIAMETER);
+            }
+        }
+
+        if (!goForBall)
+        {
+            if (toSteal == Board.OBJECT_BRIDGE)
+            {
+                // Bridge is tricky.  Aim for the corner for now.
+                return new RRect(objectToSteal.room, objectToSteal.bx, objectToSteal.by, 1, 1);
             }
             else
             {
-                if (toSteal == Board.OBJECT_BRIDGE)
-                {
-                    // Bridge is tricky.  Aim for the corner for now.
-                    return new RRect(objectToSteal.room, objectToSteal.bx, objectToSteal.by, 1, 1);
-                }
-                else
-                {
-                    // Aim for the center
-                    return strategy.closestReachableRectangle(objectToSteal);
-                }
+                // Aim for the center
+                return strategy.closestReachableRectangle(objectToSteal);
             }
         }
+
+        return new RRect(ballToStealFrom.room, ballToStealFrom.x, ballToStealFrom.y, BALL.DIAMETER, BALL.DIAMETER);
     }
 
     protected override bool computeIsCompleted()
