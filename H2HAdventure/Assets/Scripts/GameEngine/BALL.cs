@@ -73,6 +73,14 @@ namespace GameEngine
             get { return y - RADIUS; }
             set { y = value + RADIUS; }
         }
+        public int linkedObjectBX
+        {
+            get { return linkedObjectX * Adv.BALL_SCALE; }
+        }
+        public int linkedObjectBY
+        {
+            get { return linkedObjectY * Adv.BALL_SCALE; }
+        }
 
         public bool isGlowing()
         {

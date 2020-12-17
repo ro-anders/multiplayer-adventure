@@ -688,11 +688,18 @@ public class RepositionKey : AiObjective
         else
         {
             key = board.getObject(keyId);
-            if ((aiPlayer.linkedObjectY < 0)  ||
-                (aiPlayer.linkedObjectX < -KEY_WIDTH) ||
-                (aiPlayer.linkedObjectX > BALL.DIAMETER/Adv.BALL_SCALE)) 
+            // The key may already be in a good enough position.  Check.
+            if ((aiPlayer.linkedObjectBY < 0)  ||
+                (aiPlayer.linkedObjectBX < -key.bwidth) ||
+                (aiPlayer.linkedObjectBX > BALL.DIAMETER)) 
             {
-                this.addChild(new GoToObjective(aiPlayer.room, Portcullis.EXIT_X - 2 * aiPlayer.linkedObjectX, KEY_AT_Y - 2 * aiPlayer.linkedObjectY, keyId));
+                // Key is not in a good position.  Drop it and get under it.
+                int desiredX = Adv.ADVENTURE_SCREEN_WIDTH/2 - key.bwidth/2 + aiPlayer.linkedObjectBX;
+                int desiredY = KEY_AT_Y - aiPlayer.linkedObjectBY;
+                // Make sure ball fits in walls
+                desiredY = (desiredY > 0x3F ? 0x3F : desiredY);
+                desiredY = (desiredY - BALL.DIAMETER < 0x20 ? 0x20 + BALL.DIAMETER : desiredY);
+                this.addChild(new GoToObjective(aiPlayer.room, desiredX + BALL.RADIUS, desiredY - BALL.RADIUS, keyId));
                 this.addChild(new DropObjective());
 
                 // Pick a point under the key and let the tactical algorithms get around the key
