@@ -490,13 +490,13 @@ public class GetObjectFromPlayer : AiObjective
         }
 
         // With two computers stealing from each other, you have to insert a
-        // a little randomness.  When we're this close, occassionally, pause
-        // for a turn
+        // a little randomness.  When we're this close, occassionally, head
+        // for the player instead of the ball
         if (!goForBall)
         {
             if (genRandom.NextDouble() < 0.05)
             {
-                return new RRect(aiPlayer.room, aiPlayer.x, aiPlayer.y, BALL.DIAMETER, BALL.DIAMETER);
+                goForBall = true;
             }
         }
 
