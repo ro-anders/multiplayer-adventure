@@ -53,6 +53,15 @@ namespace GameEngine
         }
     }
 
+    /**
+     * A useful class for tailoring how classes log things during
+     * intense debugging
+     * */
+    public static class DEBUG
+    {
+        public static int TRACE_PLAYER = 0; // Set when you want verbose trace logging of a single player
+    }
+
     /** Rectangle in a room.  Coordinates are ball-scale coordinates
      * where height extends down from y and width extends right from x.
      */
@@ -110,6 +119,10 @@ namespace GameEngine
         public bool IsSomewhere
         {
             get { return (width >= 0) && (height >= 0) && (room >= 0); }
+        }
+        public override string ToString()
+        {
+            return room + "(" + (width==1?x.ToString():left+"-"+right) + "," + (height==1?y.ToString():bottom + "-" + top) + ")";
         }
     }
 

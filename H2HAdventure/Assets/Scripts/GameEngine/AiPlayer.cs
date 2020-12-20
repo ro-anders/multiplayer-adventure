@@ -66,10 +66,6 @@ namespace GameEngine
                 {
                     // Check to see if we've accomplished anything
                     newObjective = winGameObjective.getNextObjective();
-                    if (newObjective != currentObjective)
-                    {
-                        UnityEngine.Debug.Log("New player " + thisBall.playerNum + " objective = " + newObjective);
-                    }
                 } catch (AiObjective.Abort)
                 {
                     // Things have changed.  Just recompute the whole strategy
@@ -100,7 +96,15 @@ namespace GameEngine
 
             if (!newDesiredLocation.IsSomewhere)
             {
+                thisBall.velx = 0;
+                thisBall.vely = 0;
+
                 // We have no goal.  Don't do anything.
+                if (DEBUG.TRACE_PLAYER == thisPlayer)
+                {
+                    UnityEngine.Debug.Log("Player " + thisPlayer + " @" + thisBall.room + "(" + thisBall.x + "," + thisBall.y + ")" +
+                        " trying to " + currentObjective + " doing nothing");
+                }
                 return;
 
             }
@@ -161,6 +165,11 @@ namespace GameEngine
                 thisBall.velx = 0;
                 thisBall.vely = 0;
                 return;
+            }
+            if (DEBUG.TRACE_PLAYER == thisPlayer)
+            {
+                UnityEngine.Debug.Log("Player " + thisPlayer + " @" + thisBall.room + "(" + thisBall.x + "," + thisBall.y + ")" +
+                    " trying to " + currentObjective + " going (" + nextVelx + "," + nextVely + ") to get to " + desiredLocation);
             }
         }
 

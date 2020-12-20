@@ -127,12 +127,17 @@ abstract public class AiObjective
      * Compute a set of objectives to complete this objective
      */
     protected void computeStrategy()
-    {;
+    {
         if (computed)
         {
             // Something went wrong
             throw new Exception("Asking to recompute an already computed strategy");
         }
+        if ((DEBUG.TRACE_PLAYER < 0) || (DEBUG.TRACE_PLAYER == aiPlayerNum))
+        {
+            UnityEngine.Debug.Log("New player " + aiPlayerNum + " objective = " + this);
+        }
+
         doComputeStrategy();
         computed = true;
     }
@@ -694,7 +699,7 @@ public class RepositionKey : AiObjective
                 (aiPlayer.linkedObjectBX > BALL.DIAMETER)) 
             {
                 // Key is not in a good position.  Drop it and get under it.
-                int desiredX = Adv.ADVENTURE_SCREEN_WIDTH/2 - key.bwidth/2 + aiPlayer.linkedObjectBX;
+                int desiredX = Adv.ADVENTURE_SCREEN_WIDTH/2 - key.bwidth/2 - aiPlayer.linkedObjectBX;
                 int desiredY = KEY_AT_Y - aiPlayer.linkedObjectBY;
                 // Make sure ball fits in walls
                 desiredY = (desiredY > 0x3F ? 0x3F : desiredY);
@@ -778,7 +783,7 @@ public class LockCastleAndHideKeyObjective : AiObjective
 
     protected override bool computeIsCompleted()
     {
-        return !otherGate.allowsEntry && (aiPlayer.linkedObject != otherKeyId);
+        return !otherGate.allowsEntry /* TBD --- && (aiPlayer.linkedObject != otherKeyId)*/;
     }
 
     protected override void doComputeStrategy()

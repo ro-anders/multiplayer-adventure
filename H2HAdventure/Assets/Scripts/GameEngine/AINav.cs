@@ -150,10 +150,11 @@ namespace GameEngine
                     }
                     else
                     {
-                        //UnityEngine.Debug.LogError(currentRoom + "(" + currentX + "," +
-                        //    currentY + ")" + " has fallen off the AI path!\nNot in " +
-                        //    desiredPath.ThisPlot +
-                        //    (desiredPath.nextNode == null ? "" : " or " + desiredPath.nextNode.ThisPlot));
+                        UnityEngine.Debug.LogError( "Player has fallen off the AI path!\n" +
+                            currentRoom + "(" + currentX + "," +
+                            currentY + ") not in " +
+                            desiredPath.ThisPlot +
+                            (desiredPath.nextNode == null ? "" : " or " + desiredPath.nextNode.ThisPlot));
                         checkedPath = null;
                     }
                 }
