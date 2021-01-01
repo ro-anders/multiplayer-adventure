@@ -699,18 +699,27 @@ public class RepositionKey : AiObjective
                 (aiPlayer.linkedObjectBX > BALL.DIAMETER)) 
             {
                 // Key is not in a good position.  Drop it and get under it.
-                int desiredX = Adv.ADVENTURE_SCREEN_WIDTH/2 - key.bwidth/2 - aiPlayer.linkedObjectBX;
-                int desiredY = KEY_AT_Y - aiPlayer.linkedObjectBY;
+                int xToDropAt = Adv.ADVENTURE_SCREEN_WIDTH/2 - key.bwidth/2 - aiPlayer.linkedObjectBX;
+                int yToDropAt = KEY_AT_Y - aiPlayer.linkedObjectBY;
+                aiPlayer.adjustDestination(ref xToDropAt, ref yToDropAt);
                 // Make sure ball fits in walls
-                desiredY = (desiredY > 0x3F ? 0x3F : desiredY);
-                desiredY = (desiredY - BALL.DIAMETER < 0x20 ? 0x20 + BALL.DIAMETER : desiredY);
-                this.addChild(new GoToObjective(aiPlayer.room, desiredX + BALL.RADIUS, desiredY - BALL.RADIUS, keyId));
+                if (yToDropAt > 0x3F)
+                {
+                    yToDropAt = 0x3F;
+                    aiPlayer.adjustDestination(ref xToDropAt, ref yToDropAt, BALL.Adjust.BELOW);
+                } else if (yToDropAt - BALL.DIAMETER < 0x20)
+                {
+                    yToDropAt = 0x20 + BALL.DIAMETER;
+                    aiPlayer.adjustDestination(ref xToDropAt, ref yToDropAt, BALL.Adjust.ABOVE);
+                }
+                this.addChild(new GoToObjective(aiPlayer.room, xToDropAt + BALL.RADIUS, yToDropAt - BALL.RADIUS, keyId));
                 this.addChild(new DropObjective());
 
                 // Pick a point under the key and let the tactical algorithms get around the key
-                int bottomEdge = KEY_AT_Y - KEY_HEIGHT * Adv.BALL_SCALE - BALL.RADIUS;
-                bottomEdge -= (BALL.MOVEMENT - (aiPlayer.midY - bottomEdge) % BALL.MOVEMENT) % BALL.MOVEMENT;
-                this.addChild(new GoToObjective(aiPlayer.room, Portcullis.EXIT_X, bottomEdge, CARRY_NO_OBJECT));
+                int yToPickupAt = yToDropAt + aiPlayer.linkedObjectBY - key.BHeight;
+                int xToPickupAt = Portcullis.EXIT_X;
+                aiPlayer.adjustDestination(ref xToPickupAt, ref yToPickupAt, BALL.Adjust.BELOW);
+                this.addChild(new GoToObjective(aiPlayer.room, xToPickupAt + BALL.RADIUS, yToPickupAt-BALL.RADIUS, CARRY_NO_OBJECT));
                 this.addChild(new PickupObjective(keyId));
             }
         }

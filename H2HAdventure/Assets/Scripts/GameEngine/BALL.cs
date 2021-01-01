@@ -115,6 +115,42 @@ namespace GameEngine
             return dist;
         }
 
+        public enum Adjust
+        {
+            CLOSEST, // Find the closest reachable point the desired point
+            BELOW, // Find the closest reachable point no higher than the desired point
+            ABOVE // Find the closest reachable point no lower than the desired point
+        }
+        /**
+         * Because a ball moves in 6 pixel increments, some destinations
+         * it can't exactly reach.  This looks at the balls current position
+         * and determines the closest possible position to the desired destination.
+         * @param destX the x-coordinate of the desired destination.  This method will
+         * modify this value to be a reachable pixel value.
+         * @param destY the y-coordinate of the desired destination.  This method will
+         * modify this value to be a reachable pixel value.
+         * @param guidance - if the desired destination is not reachable, this 
+         * parameter gives guidance on which reachable destination should be 
+         * chosen.  Default is CLOSEST.
+         */
+        public void adjustDestination(ref int destX, ref int destY, Adjust guidance = Adjust.CLOSEST)
+        {
+            const int HALF_MOVEMENT = MOVEMENT / 2;
+            int xAdjustment = MOD.mod(destX - this.x, MOVEMENT);
+            destX -= xAdjustment;
+            if (xAdjustment > HALF_MOVEMENT)
+            {
+                destX += MOVEMENT;
+            }
+
+            int yAdjustment = MOD.mod(destY - this.y, MOVEMENT);
+            destY -= yAdjustment;
+            if (((yAdjustment > HALF_MOVEMENT) || (guidance == Adjust.ABOVE)) &&
+                (guidance != Adjust.BELOW))
+            {
+                destX += MOVEMENT;
+            }
+        }
 
 
 
