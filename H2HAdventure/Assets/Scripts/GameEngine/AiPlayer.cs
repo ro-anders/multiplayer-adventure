@@ -6,6 +6,7 @@ namespace GameEngine
     public class AiPlayer
     {
         private const int FRAMES_BETWEEN_STRATEGY_RECOMPUTE = 5 * 60; // Every 5 seconds
+        private const int FRAMES_TO_REACT_TO_INVALIDATION = 30;  // Half a second
         private Board gameBoard;
         private AiNav aiNav;
         private AiTactical aiTactical;
@@ -75,10 +76,20 @@ namespace GameEngine
                     UnityEngine.Debug.Log("New objective = " + newObjective);
                 }
             }
-            if ((newObjective != null) && (newObjective != currentObjective))
+            if (newObjective != currentObjective)
             {
                 currentObjective = newObjective;
                 desiredPath = null;
+            }
+
+            // Check to make sure that whatever action we're doing is still valid
+            if (!currentObjective.isStillValid())
+            {
+                int reactFrame = frameNumber + FRAMES_TO_REACT_TO_INVALIDATION;
+                if (recomputeStrategyAtFrame > reactFrame)
+                {
+                    recomputeStrategyAtFrame = reactFrame;
+                }
             }
         }
 

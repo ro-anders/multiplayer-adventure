@@ -86,6 +86,15 @@ abstract public class AiObjective
     }
 
     /**
+     * Does this objective still make sense, e.g. if the bat picks 
+     * up an object, the PickupObjective is no longer valid.
+     */
+    public virtual bool isStillValid()
+    {
+        return true;
+    }
+
+    /**
      * Following this objective, what object should we be carrying or
      * trying to pickup.
      * May be a key to an object or may be CARRY_NO_OBJECT or DONT_DESIRE_OBJECT
@@ -552,6 +561,17 @@ public class GoToObjective : AiObjective
     public override RRect getDestination()
     {
         return new RRect(gotoRoom, gotoX, gotoY, 1, 1);
+    }
+
+    /**
+     * Still valid as long as you are carrying the object you are supposed to
+     * be carrying
+     */
+    public override bool isStillValid()
+    {
+        // TODO: Handle castle being shut or target otherwise becoming
+        // inaccessible.
+        return (carrying == DONT_CARE_OBJECT) || (aiPlayer.linkedObject == carrying);
     }
 
     protected override bool computeIsCompleted()

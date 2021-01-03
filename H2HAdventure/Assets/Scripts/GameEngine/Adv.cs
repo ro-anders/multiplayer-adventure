@@ -59,7 +59,7 @@ namespace GameEngine
      * */
     public static class DEBUG
     {
-        public static int TRACE_PLAYER = 0; // Set when you want verbose trace logging of a single player
+        public static int TRACE_PLAYER = -1; // Set when you want verbose trace logging of a single player
     }
 
     /** Rectangle in a room.  Coordinates are ball-scale coordinates
