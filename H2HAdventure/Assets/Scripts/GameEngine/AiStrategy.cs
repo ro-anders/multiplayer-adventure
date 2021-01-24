@@ -138,25 +138,6 @@ public class AiStrategy
     }
 
     /**
-     * Returns the point in the room that is the quickest to get to.
-     * Will place the point slightly within the room.
-     */
-    public bool closestPointInRoom(int toRoom, ref int x, ref int y)
-    {
-        Plot closestPlot = nav.closestPlotInRoom(thisBall.room, thisBall.x, thisBall.y, toRoom);
-        bool found = false;
-        if (closestPlot != null)
-        {
-            // TODO: Right now just picking a point in the middle of the plot
-            x = (closestPlot.Left + closestPlot.Right) / 2;
-            y = (closestPlot.Top + closestPlot.Bottom) / 2;
-            found = true;
-        }
-        return found;
-    }
-
-
-    /**
      * Compute the rectanlge that represents the area of the object that is
      * actually on the path and reachable.  If the object spans multiple 
      * plots, will return the area that is closest.

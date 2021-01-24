@@ -212,7 +212,7 @@ namespace GameEngine
             gameBoard.addObject(Board.OBJECT_CHALISE, new OBJECT("chalise", objectGfxChallise, new byte[0], 0, COLOR.FLASH));
             gameBoard.addObject(Board.OBJECT_EASTEREGG, new OBJECT("easteregg", objectGfxEasterEgg, new byte[0], 0, COLOR.FLASH,
                                                              OBJECT.RandomizedLocations.OPEN_OR_IN_CASTLE, 0x03));
-            gameBoard.addObject(Board.OBJECT_MAGNET, new OBJECT("magnet", objectGfxMagnet, new byte[0], 0, COLOR.BLACK));
+            gameBoard.addObject(Board.OBJECT_MAGNET, new Magnet());
 
             // Setup the players
             bool useAltIcons = (gameMode == Adv.GAME_MODE_ROLE_PLAY);
@@ -1954,37 +1954,12 @@ namespace GameEngine
 
         void Magnet()
         {
-            OBJECT magnet = gameBoard[Board.OBJECT_MAGNET];
-
-            for (int i = 0; i < magnetMatrix.Length; ++i)
+            Magnet magnet = (Magnet)gameBoard[Board.OBJECT_MAGNET];
+            OBJECT attracted = magnet.getAtractedObject();
+            if (attracted != null)
             {
-                // Look for items in the magnet matrix that are in the same room as the magnet
-                OBJECT objct = gameBoard[magnetMatrix[i]];
-                if ((objct.room == magnet.room) && (objct.exists()))
-                {
-                    bool held = false;
-                    for (int playerCtr = 0; playerCtr < numPlayers && !held; ++playerCtr)
-                    {
-                        held = gameBoard.getPlayer(playerCtr).linkedObject == magnetMatrix[i];
-                    }
-                    if (!held)
-                    {
-                        // horizontal axis
-                        if (objct.x < magnet.x)
-                            objct.x++;
-                        else if (objct.x > magnet.x)
-                            objct.x--;
-
-                        // vertical axis - offset by the height of the magnet so items stick to the "bottom"
-                        if (objct.y < (magnet.y - magnet.gfxData[0].Length))
-                            objct.y++;
-                        else if (objct.y > (magnet.y - magnet.gfxData[0].Length))
-                            objct.y--;
-                    }
-
-                    // Only attract the first item found in the matrix
-                    break;
-                }
+                attracted.x += Math.Sign(magnet.x - attracted.x);
+                attracted.y += Math.Sign((magnet.y - magnet.Height) - attracted.y);
             }
         }
 
@@ -2723,19 +2698,6 @@ namespace GameEngine
         } };
 
 
-        // Object #11 : State FF : Graphic                                                                                   
-        private static byte[][] objectGfxMagnet =
-        { new byte[] {
-            0x3C,                  //   XXXX                                                                    
-            0x7E,                  //  XXXXXX                                                                   
-            0xE7,                  // XXX  XXX                                                                  
-            0xC3,                  // XX    XX                                                                  
-            0xC3,                  // XX    XX                                                                  
-            0xC3,                  // XX    XX                                                                  
-            0xC3,                  // XX    XX                                                                  
-            0xC3                   // XX    XX                                                                  
-        } };
-
         // Indexed array of all objects and their properties
         //
         // Object locations (room and coordinate) for game 01
@@ -2752,13 +2714,16 @@ namespace GameEngine
             {Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_LEFT, 0x4F, 0x1E, 0x00, 0x00, 0x00}, // Yellow Dragon
             {Board.OBJECT_GREENDRAGON, Map.SOUTHEAST_ROOM, 0x4F, 0x1E, 0x00, 0x00, 0x00}, // Green Dragon
             {Board.OBJECT_SWORD, Map.GOLD_FOYER, 0x1F, 0x1E, 0x00, 0x00, 0x00}, // Sword
-            //TODOX: Temporarily removing bridge {Board.OBJECT_BRIDGE, Map.BLUE_MAZE_5, 0x29, 0x35, 0x00, 0x00, 0x00}, // Bridge
-            {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
-            {Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Copper Key
+            //TODOXXX: Temporarily removing bridge {Board.OBJECT_BRIDGE, Map.BLUE_MAZE_5, 0x29, 0x35, 0x00, 0x00, 0x00}, // Bridge
+            //TODOXXX: {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
+            {Board.OBJECT_YELLOWKEY, Map.MAIN_HALL_CENTER, 0x1F, 0x0B, 0x00, 0x00, 0x00}, // Yellow Key
+            //TODOXXX: {Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Copper Key
+            {Board.OBJECT_COPPERKEY, Map.MAIN_HALL_CENTER, 0x10, 0x0B, 0x00, 0x00, 0x00}, // Yellow Key
             {Board.OBJECT_JADEKEY, Map.JADE_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Jade Key
             {Board.OBJECT_BLACKKEY, Map.SOUTHEAST_ROOM, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Black Key
             {Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x2F, 0x1E, 0x00, 0x00, 0x00}, // Challise
-            {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x7F, 0x1E, 0x00, 0x00, 0x00} // Magnet
+            //TODOXXX: {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x7F, 0x1E, 0x00, 0x00, 0x00} // Magnet
+            {Board.OBJECT_MAGNET, Map.COPPER_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00} // Magnet
         };
 
 
@@ -2810,7 +2775,7 @@ namespace GameEngine
             {Board.OBJECT_MAGNET, Map.SOUTHWEST_ROOM, 0x7F, 0x1E, 0x00, 0x00, 0x00}, // Magnet
         };
 
-        // Object locations (room and coordinate) for game 01
+        // Object locations (room and coordinate) for gauntlet
         //        - object, room, x, y, state, movement(x/y)
         private readonly int[,] gameGauntletObjects =
         {
@@ -2821,20 +2786,6 @@ namespace GameEngine
             {Board.OBJECT_REDDRAGON, Map.BLUE_MAZE_1, 0x4F, 0x1E, 0x00, 0x00, 0x00}, // Red Dragon
             {Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_CENTER, 0x4F, 0x1E, 0x00, 0x00, 0x00}, // Yellow Dragon
             {Board.OBJECT_GREENDRAGON, Map.MAIN_HALL_LEFT, 0x4F, 0x1E, 0x00, 0x00, 0x00} // Green Dragon
-        };
-
-
-        // Magnet Object Matrix
-        private int[] magnetMatrix =
-        {
-               Board.OBJECT_YELLOWKEY,
-               Board.OBJECT_JADEKEY,
-               Board.OBJECT_COPPERKEY,
-               Board.OBJECT_WHITEKEY,
-               Board.OBJECT_BLACKKEY,
-               Board.OBJECT_SWORD,
-               Board.OBJECT_BRIDGE,
-               Board.OBJECT_CHALISE
         };
 
         // Green Dragon's Object Matrix                                                                                      

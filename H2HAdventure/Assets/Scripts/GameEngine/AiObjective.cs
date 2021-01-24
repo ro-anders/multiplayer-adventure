@@ -29,6 +29,7 @@ abstract public class AiObjective
     protected int aiPlayerNum;
     protected BALL aiPlayer;
     protected AiStrategy strategy;
+    protected AiNav nav;
 
     /** Whether this objective has been successfully completed */
     protected bool completed = false;
@@ -186,6 +187,7 @@ abstract public class AiObjective
         nextChild.aiPlayerNum = this.aiPlayerNum;
         nextChild.aiPlayer = this.aiPlayer;
         nextChild.strategy = this.strategy;
+        nextChild.nav = this.nav;
         nextChild.parent = this;
 
         if (child == null)
@@ -240,12 +242,13 @@ abstract public class AiObjective
 
 public class WinGameObjective: AiObjective
 {
-    public WinGameObjective(Board inBoard, int inAiPlayerNum, AiStrategy inAiStrategy)
+    public WinGameObjective(Board inBoard, int inAiPlayerNum, AiStrategy inAiStrategy, AiNav inAiNav)
     {
         base.board = inBoard;
         base.aiPlayerNum = inAiPlayerNum;
         base.aiPlayer = board.getPlayer(inAiPlayerNum);
         base.strategy = inAiStrategy;
+        base.nav = inAiNav;
     }
 
     public override string ToString() 
@@ -268,14 +271,14 @@ public class WinGameObjective: AiObjective
                 // Once the first player is blocked, we want to recompute whether
                 // we need to block the second player or if we can try to win
                 // TODO: Do we want to do this through recursion or some other way
-                this.addChild(new WinGameObjective(board, aiPlayerNum, strategy));
+                this.addChild(new WinGameObjective(board, aiPlayerNum, strategy, nav));
             }
             else
             {
                 Portcullis homeGate = this.aiPlayer.homeGate;
                 this.addChild(new UnlockCastle(homeGate.getPKey()));
                 this.addChild(new ObtainObjective(Board.OBJECT_CHALISE));
-                this.addChild(new GoToObjective(homeGate.insideRoom, 160, 120, Board.OBJECT_CHALISE));
+                this.addChild(new BringObjectToRoomObjective(homeGate.insideRoom, Board.OBJECT_CHALISE));
             }
         }
     }
@@ -345,9 +348,7 @@ public class ObtainObjective : AiObjective
             {
                 // Need to get the object out of the wall
                 // Only options supported right now is magnet
-                addChild(new ObtainObjective(Board.OBJECT_MAGNET));
-                addChild(new GoToRoomObjective(objectToPickup.room));
-                addChild(new PickupObjective(toPickup));
+                addChild(new GetObjectWithMagnet(toPickup));
             }
         }
     }
@@ -542,16 +543,18 @@ public class GetObjectFromPlayer : AiObjective
 
 public class GoToObjective : AiObjective
 {
-    private int gotoRoom;
-    private int gotoX;
-    private int gotoY;
+    private RRect target;
     private int carrying;
 
     public GoToObjective(int inRoom, int inX, int inY, int inCarrying = DONT_CARE_OBJECT)
     {
-        gotoRoom = inRoom;
-        gotoX = inX;
-        gotoY = inY;
+        target = new RRect(inRoom, inX, inY, 1, 1);
+        carrying = inCarrying;
+    }
+
+    public GoToObjective(RRect inTarget, int inCarrying = DONT_CARE_OBJECT)
+    {
+        target = inTarget;
         carrying = inCarrying;
     }
 
@@ -560,7 +563,7 @@ public class GoToObjective : AiObjective
 
     public override RRect getDestination()
     {
-        return new RRect(gotoRoom, gotoX, gotoY, 1, 1);
+        return target;
     }
 
     /**
@@ -576,16 +579,39 @@ public class GoToObjective : AiObjective
 
     protected override bool computeIsCompleted()
     {
-        return (aiPlayer.room == gotoRoom) &&
-            (((Math.Abs(aiPlayer.midX - gotoX) <= (BALL.MOVEMENT / 2)) &&
-              (Math.Abs(aiPlayer.midY - gotoY) < BALL.MOVEMENT)) ||
-            ((Math.Abs(aiPlayer.midY - gotoY) <= (BALL.MOVEMENT / 2)) &&
-              (Math.Abs(aiPlayer.midX - gotoX) < BALL.MOVEMENT)));
+        if (aiPlayer.room == target.room) {
+            int xBuffer = (BALL.DIAMETER + BALL.MOVEMENT - target.width + 1) / 2;
+            if (xBuffer < 0)
+            {
+                xBuffer = 0;
+            } else if (Math.Abs(aiPlayer.midY - target.midY) <= BALL.MOVEMENT / 2)
+            {
+                xBuffer += 2; // 2 to increase the buffer from 3 (BALL.MOVEMENT/2) to 5 (BALL.MOVEMENT-1)
+            }
+            bool xcheck = (aiPlayer.x >= target.left - xBuffer) &&
+                (aiPlayer.x + BALL.DIAMETER <= target.right + xBuffer);
+
+            int yBuffer = (BALL.DIAMETER + BALL.MOVEMENT - target.height + 1) / 2;
+            if (yBuffer < 0)
+            {
+                yBuffer = 0;
+            }
+            else if (Math.Abs(aiPlayer.midX - target.midX) <= BALL.MOVEMENT / 2)
+            {
+                yBuffer += 2; // 2 to increase the buffer from 3 (BALL.MOVEMENT/2) to 5 (BALL.MOVEMENT-1)
+            }
+            bool ycheck = (aiPlayer.y - BALL.DIAMETER >= target.bottom - yBuffer) &&
+                (aiPlayer.y <= target.top + yBuffer);
+            return xcheck && ycheck;
+        } else
+        {
+            return false;
+        }
     }
 
     public override string ToString()
     {
-        return "go to (" + gotoX + "," + gotoY + ") in room " + board.map.roomDefs[gotoRoom].label;
+        return "go to " + target.ToStringWithRoom(board.map.roomDefs[target.room].label);
     }
 
     public override int getDesiredObject()
@@ -606,8 +632,7 @@ public class GoToRoomObjective : AiObjective
 {
     private int gotoRoom;
     private int carrying;
-    private int gotoX;
-    private int gotoY;
+    private RRect targetPlot;
 
     public GoToRoomObjective(int inRoom, int inCarrying = DONT_CARE_OBJECT)
     {
@@ -618,12 +643,14 @@ public class GoToRoomObjective : AiObjective
     protected override void doComputeStrategy()
     {
         // Figure out what point in the room is closest.
-        bool found = strategy.closestPointInRoom(gotoRoom, ref gotoX, ref gotoY); 
+        AiPathNode path = nav.ComputePathToClosestExit(aiPlayer.room, aiPlayer.midX, aiPlayer.midY, gotoRoom);
+        targetPlot = path.End.ThisPlot.Rect;
+        addChild(new GoToObjective(targetPlot, carrying));
     }
 
     public override RRect getDestination()
     {
-        return new RRect(gotoRoom, gotoX, gotoY, 1, 1);
+        return targetPlot;
     }
 
     protected override bool computeIsCompleted()
@@ -642,6 +669,79 @@ public class GoToRoomObjective : AiObjective
     }
 }
 
+//-------------------------------------------------------------------------
+
+
+/**
+ * Finds the shortest route to the room
+ */
+public class BringObjectToRoomObjective : AiObjective
+{
+    private int gotoRoom;
+    private int toBring;
+    private OBJECT objectToBring;
+
+    public BringObjectToRoomObjective(int inRoom, int inToBring)
+    {
+        gotoRoom = inRoom;
+        toBring = inToBring;
+    }
+
+    protected override bool computeIsCompleted()
+    {
+        return (aiPlayer.room == gotoRoom) &&
+            (objectToBring.room == gotoRoom);
+    }
+
+    /**
+     * No longer valid if you are no longer holding the object
+     */
+    public override bool isStillValid()
+    {
+        return (aiPlayer.linkedObject == toBring);
+    }
+
+    protected override void doComputeStrategy()
+    {
+        objectToBring = board.getObject(toBring);
+        // Compute the area of the room where, if the ball were in that area
+        // then the object would be all the way in the room.
+        RRect ballTargetSpace = RRect.fromTRBL(gotoRoom,
+            Board.TOP_EDGE_FOR_BALL - aiPlayer.linkedObjectBY,
+            Board.RIGHT_EDGE_FOR_OBJECTS - aiPlayer.linkedObjectBX - objectToBring.bwidth,
+            Board.BOTTOM_EDGE_FOR_BALL + objectToBring.BHeight - aiPlayer.linkedObjectBY,
+            Board.LEFT_EDGE_FOR_BALL - aiPlayer.linkedObjectBX);
+        // but keep it in the room
+        ballTargetSpace = RRect.fromTRBL(ballTargetSpace.room,
+            Math.Min(ballTargetSpace.top, Board.TOP_EDGE_FOR_BALL),
+            Math.Min(ballTargetSpace.right, Board.RIGHT_EDGE_FOR_BALL),
+            Math.Max(ballTargetSpace.bottom, Board.BOTTOM_EDGE_FOR_BALL),
+            Math.Max(ballTargetSpace.left, Board.LEFT_EDGE_FOR_BALL));
+
+        // Compute an area slightly smaller, that if a plot is touching this
+        // area then the ball can find a place in this plot that is in
+        // the target area.
+        RRect plotTargetSpace = RRect.fromTRBL(gotoRoom,
+            ballTargetSpace.top - BALL.DIAMETER - BALL.MOVEMENT,
+            ballTargetSpace.right - BALL.MOVEMENT,
+            ballTargetSpace.bottom + BALL.MOVEMENT,
+            ballTargetSpace.left + BALL.DIAMETER + BALL.MOVEMENT);
+        AiPathNode closestPlot = nav.ComputePathToArea(aiPlayer.room, aiPlayer.midX, aiPlayer.midY, plotTargetSpace);
+        RRect target = closestPlot.End.ThisPlot.Rect.intersect(ballTargetSpace);
+        addChild(new GoToObjective(target));
+    }
+
+    public override string ToString()
+    {
+        return "bring " + board.getObject(toBring).label + " to room " + board.map.roomDefs[gotoRoom].label;
+    }
+
+    public override int getDesiredObject()
+    {
+        return toBring;
+    }
+
+}
 
 
 //-------------------------------------------------------------------------
@@ -831,4 +931,121 @@ public class LockCastleAndHideKeyObjective : AiObjective
     }
 
 
+}
+
+//-------------------------------------------------------------------------
+
+/**
+ * Use the magnet to get an object out of a wall
+ */
+public class GetObjectWithMagnet : AiObjective
+{
+    private int toPickup;
+    private OBJECT objectToPickup;
+
+    public GetObjectWithMagnet(int inToPickup)
+    {
+        toPickup = inToPickup;
+    }
+
+    public override string ToString()
+    {
+        return "use magnet to obtain  " + board.getObject(toPickup).label;
+    }
+
+    protected override bool computeIsCompleted()
+    {
+        return (aiPlayer.linkedObject == toPickup);
+    }
+
+    protected override void doComputeStrategy()
+    {
+        objectToPickup = board.getObject(toPickup);
+        addChild(new ObtainObjective(Board.OBJECT_MAGNET));
+        addChild(new BringObjectToRoomObjective(objectToPickup.room, Board.OBJECT_MAGNET));
+        addChild(new DropObjective());
+        addChild(new WaitForMagnetObjective(toPickup));
+        addChild(new PickupObjective(toPickup));
+    }
+
+    public override int getDesiredObject()
+    {
+        return toPickup;
+    }
+
+}
+
+//-------------------------------------------------------------------------
+
+/**
+ * Wait for an object to pulled by the magnet
+ */
+public class WaitForMagnetObjective : AiObjective
+{
+    private int toPickup;
+    private OBJECT objectToPickup;
+    private Magnet magnet;
+
+    public WaitForMagnetObjective(int inToPickup)
+    {
+        toPickup = inToPickup;
+    }
+
+    public override string ToString()
+    {
+        return "wait for magnet to pull  " + board.getObject(toPickup).label;
+    }
+
+    protected override bool computeIsCompleted()
+    {
+        // We're done either if the object has reached the magnet or collided
+        // with us
+        bool reachedMagnet = ((objectToPickup.bx == magnet.bx) &&
+            (objectToPickup.by == magnet.by - magnet.BHeight));
+        return (aiPlayer.linkedObject == toPickup) || reachedMagnet;
+            
+    }
+
+    /**
+     * Still valid if the object is in the same room as the magnet and
+     * no one is holding the object.
+     */
+    public virtual bool isStillValid()
+    {
+        bool held = false;
+        for(int ctr=0; !held && ctr<board.getNumPlayers(); ++ctr)
+        {
+            held = (ctr != aiPlayerNum) &&
+                (board.getPlayer(ctr).linkedObject == toPickup);
+        }
+        return (!held && (magnet.room == objectToPickup.room));
+    }
+
+
+    protected override void doComputeStrategy()
+    {
+        objectToPickup = board.getObject(toPickup);
+        magnet = (Magnet)board.getObject(Board.OBJECT_MAGNET);
+
+        //// If there is another object in the room that is more attracted
+        //// to the magnet, we need to remove that from the room
+        
+        //OBJECT attractedObject = magnet.getAtractedObject();
+        //if ((attractedObject != null) && (attractedObject.getPKey() != toPickup)) {
+        //    int attracted = attractedObject.getPKey();
+        //    addChild(new WaitForMagnetObjective(attracted));
+        //    addChild(new PickupObjective(attracted));
+        //    /* TBD
+        //    addChild(new HideFromMagnet(attracted));
+        //    RRect magnetPlot = strategy.closestReachableRectangle(magnet);
+        //    addChild(new GoToObjective();
+        //    */
+        //}
+
+    }
+
+    public override int getDesiredObject()
+    {
+        return toPickup;
+    }
 }

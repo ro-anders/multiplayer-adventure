@@ -67,8 +67,19 @@ namespace GameEngine
      */
     public readonly struct RRect
     {
+        // Used to represent an area that can't exist (like when asking for
+        // the intersection of two disjoint rectangles or for closest rectangle
+        // in a room when that room isn't reachable)
         public static readonly RRect INVALID = new RRect(-1, -1, -1, -1, -1);
+
+        // Used, kind of like null, as a convention when an RRect is a target
+        // we check for NOWHERE to see if we even want to go somewhere.
         public static readonly RRect NOWHERE = new RRect(-1, -1, -1, 0, 0);
+
+        public static RRect fromTRBL(int room, int top, int right, int bottom, int left)
+        {
+            return new RRect(room, left, top, right - left + 1, top - bottom + 1);
+        }
 
         public RRect(int inRoom, int inX, int inY, int inWidth, int inHeight)
         {
@@ -120,9 +131,50 @@ namespace GameEngine
         {
             get { return (width >= 0) && (height >= 0) && (room >= 0); }
         }
+
+        public bool touches(RRect other)
+        {
+            if (other.room != this.room)
+            {
+                return false;
+            }
+            else
+            {
+                return
+                    (other.left <= this.right) &&
+                    (other.right >= this.left) &&
+                    (other.top >= this.bottom) &&
+                    (other.bottom <= this.top);
+            }
+        }
+
+        public RRect intersect(RRect other)
+        {
+            if (!touches(other))
+            {
+                return RRect.INVALID;
+            }
+
+            return RRect.fromTRBL(this.room,
+                Math.Min(other.top, this.top),
+                Math.Min(other.right, this.right),
+                Math.Max(other.bottom, this.bottom),
+                Math.Max(other.left, this.left));
+        }
+
         public override string ToString()
         {
-            return room + "(" + (width==1?x.ToString():left+"-"+right) + "," + (height==1?y.ToString():bottom + "-" + top) + ")";
+            return room + dimensionsToString();
+        }
+        // If someone else is willing to give us the name of the room, we can
+        // create a more user friendly string representation
+        public string ToStringWithRoom(string room)
+        {
+            return dimensionsToString() + " in " + room;
+        }
+        private string dimensionsToString()
+        {
+            return "(" + (width == 1 ? x.ToString() : left + "-" + right) + "," + (height == 1 ? y.ToString() : bottom + "-" + top) + ")";
         }
     }
 

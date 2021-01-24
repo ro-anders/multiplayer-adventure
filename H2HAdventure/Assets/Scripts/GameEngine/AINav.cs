@@ -29,6 +29,11 @@ namespace GameEngine
             alreadyVisited = new bool[aiPlots.Length];
         }
 
+        /**
+         * Compute a path from one point to another.
+         * @return a path from the from a plot containing the from point to
+         * a plot containing the to point.  Or null if no such path exists.
+         */
         public AiPathNode ComputePath(int fromRoom, int fromX, int fromY, int toRoom, int toX, int toY)
         {
             int fromPlot = FindPlot(fromRoom, fromX, fromY);
@@ -78,6 +83,68 @@ namespace GameEngine
             }
             return found;
         }
+
+        /**
+         * Look at all plots in a certain area, compute which one is closest and return a path
+         * to that plot.
+         * @param startRoom the room of the starting point (not the room with the desired region)
+         * @param startX the starting x position
+         * @param startY the starting y position
+         * @param desiredArea the area of a room that the plot needs to touch
+         */
+        public AiPathNode ComputePathToArea(int startRoom, int startX, int startY, RRect desiredArea)
+        {
+            AiPathNode shortestPath = null;
+            AiMapNode[] plots = aiPlotsByRoom[desiredArea.room];
+            foreach (AiMapNode nextPlot in plots)
+            {
+                Plot plot = nextPlot.thisPlot;
+                bool touches = (plot.Touches(desiredArea));
+                if (touches)
+                {
+                    AiPathNode path = ComputePath(startRoom, startX, startY, plot.Room, plot.MidX, plot.MidY);
+                    if ((path != null) &&
+                        ((shortestPath == null) || (path.distance < shortestPath.distance)))
+                    {
+                        shortestPath = path;
+                    }
+                }
+            }
+            return shortestPath;
+        }
+
+        /**
+         * Look at all exit plots in a room and determine which one
+         * is closest to a starting point
+         * @param startRoom the room of the starting point (not the room 
+         * where we are looking for exits)
+         * @param startX the starting x position
+         * @param startY the starting y position
+         * @param roomWithExits the room you are looking for an exit in
+         * @returns the path to that closest exit plot
+         */
+        public AiPathNode ComputePathToClosestExit(int startRoom, int startX, int fromy, int roomWithExits)
+        {
+            AiPathNode shortestPath = null;
+            AiMapNode[] plots = aiPlotsByRoom[roomWithExits];
+            foreach (AiMapNode nextPlot in plots)
+            {
+                Plot plot = nextPlot.thisPlot;
+                bool onEdge = (plot.OnEdge(Plot.UP) || plot.OnEdge(Plot.RIGHT) ||
+                    (plot.OnEdge(Plot.DOWN) || plot.OnEdge(Plot.LEFT)));
+                if (onEdge)
+                {
+                    AiPathNode path = ComputePath(startRoom, startX, fromy, roomWithExits, plot.MidX, plot.MidY);
+                    if ((path != null) &&
+                        ((shortestPath == null) || (path.distance < shortestPath.distance)))
+                    {
+                        shortestPath = path;
+                    }
+                }
+            }
+            return shortestPath;
+        }
+
 
         /**
          * Returns true if an object is in or overlapping a path.
@@ -162,13 +229,11 @@ namespace GameEngine
             return checkedPath;
         }
 
-        public Plot closestPlotInRoom(int fromRoom, int fromX, int fromY, int toRoom)
-        {
-            AiMapNode[] plots = aiPlotsByRoom[toRoom];
-            // TODO: Right now returns just the first plot it finds.
-            return plots[0].thisPlot;
-        }
-
+        /**
+         * This computes all the plots that are on the game board (it doesn't
+         * actually connect them) and sticks them in the aiPlots and aiPlotsByRoom
+         * data structures.
+         */
         private void ComputeAllPlots()
         {
             // Right now this is hardcoded and just for a couple of rooms
@@ -500,11 +565,11 @@ namespace GameEngine
     }
 
     /*
-     * A plot is simply a rectangle on the map with a unique id.
+     * A plot is an open rectangle on the map with a unique id.
      * It knows its room and xy boundaries and can compare itself
      * with other plots.
      */
-        public class Plot
+    public class Plot
     {
         public const int NO_DIRECTION = -1;
         public const int UP = 0;
@@ -557,12 +622,36 @@ namespace GameEngine
         {
             get { return edges[RIGHT]; }
         }
+        public int MidX
+        {
+            get { return (edges[LEFT] + edges[RIGHT]) / 2; }
+        }
+        public int MidY
+        {
+            get { return (edges[UP] + edges[DOWN]) / 2; }
+        }
+        public int Height
+        {
+            get { return edges[UP] - edges[DOWN]; }
+        }
+        public int Width
+        {
+            get { return edges[RIGHT] - edges[LEFT]; }
+        }
+        public RRect Rect
+        {
+            get { return new RRect(room, edges[LEFT], edges[UP], Width, Height); }
+        }
 
         public int Edge(int direction)
         {
             return edges[direction % 4];
         }
 
+        /**
+         * Whether this plot touches the edge of the room
+         * (consequently leading to another room).
+         */
         public bool OnEdge(int direction)
         {
             direction = direction % 4;
@@ -585,6 +674,11 @@ namespace GameEngine
         {
             return !((x > edges[RIGHT]) || (x + width -1 < edges[LEFT]) ||
                 (y < edges[DOWN]) || (y - height + 1 > edges[UP])); 
+        }
+        public bool Touches(RRect rect)
+        {
+            return !((rect.left > edges[RIGHT]) || (rect.right < edges[LEFT]) ||
+                (rect.top < edges[DOWN]) || (rect.bottom > edges[UP]));
         }
 
         /**
@@ -698,6 +792,11 @@ namespace GameEngine
         }
     }
 
+    /**
+     * A node in the network of plots that make up the whole adventure map.
+     * A node represents a single plot and knows what other plots
+     * neighbor it.
+     */
     public class AiMapNode
     {
         public Plot thisPlot;
@@ -728,21 +827,40 @@ namespace GameEngine
         }
     }
 
+    /**
+     * A path represents the plots you have to get through to get from
+     * one place to another on the board.  A path is represented as a linked
+     * list of path nodes, so a path node can be just an individial node or
+     * a whole path.
+     * A path node refers to a plot (actuall the map node for that plot )
+     * the direction to go to get to get to the next plot and a pointer
+     * to the next path node in the path which will represent the next plot.
+     */
     public class AiPathNode
     {
-        public AiMapNode thisNode;
-        public int nextDirection;
-        public AiPathNode nextNode;
+        public readonly AiMapNode thisNode;
+        public readonly int nextDirection;
+        public readonly AiPathNode nextNode;
+        public readonly int distance; // Rough guess at the distance of this path
         public AiPathNode(AiMapNode inPlot, int inDirection, AiPathNode inPath)
         {
             thisNode = inPlot;
             nextDirection = inDirection;
             nextNode = inPath;
+            int height = thisNode.thisPlot.Height;
+            int width = thisNode.thisPlot.Width;
+            distance = (nextNode != null ? nextNode.distance : 0) +
+                (height > width ? height : width);
         }
 
         public Plot ThisPlot
         {
             get { return thisNode.thisPlot; }
+        }
+
+        public AiPathNode End
+        {
+            get { return nextNode == null ? this : nextNode.End; }
         }
 
         public bool leadsTo(int room, int x, int y)
