@@ -546,12 +546,32 @@ public class GoToObjective : AiObjective
     private RRect target;
     private int carrying;
 
+    /**
+     * Go to these coordinates.
+     * @param inRoom the desired room
+     * @param inX the desired X
+     * @param inY the desired Y
+     * @param inCarrying the object you want to carry or CARRY_NO_OBJECT if you
+     * specifically don't want to pick up an object or DONT_CARE_OBJECT if you
+     * don't care if you pick up an object or not
+     */
     public GoToObjective(int inRoom, int inX, int inY, int inCarrying = DONT_CARE_OBJECT)
     {
         target = new RRect(inRoom, inX, inY, 1, 1);
         carrying = inCarrying;
     }
 
+    /**
+     * Go to somewhere within this area.  If the area is big enough, will put
+     * the ball entirely within the area.  If it is not big enough, will be
+     * as much in the area as possible.  If the area is a point or smaller than
+     * the ball, will attempt to get the balls midpoint as close to the center
+     * of the area as possible.
+     * @param inTarget desired area
+     * @param inCarrying the object you want to carry or CARRY_NO_OBJECT if you
+     * specifically don't want to pick up an object or DONT_CARE_OBJECT if you
+     * don't care if you pick up an object or not
+     */
     public GoToObjective(RRect inTarget, int inCarrying = DONT_CARE_OBJECT)
     {
         target = inTarget;
@@ -627,6 +647,10 @@ public class GoToObjective : AiObjective
 
 /**
  * Finds the shortest route to the room
+ * @param inRoom the desired room
+ * @param inCarrying the object you want to carry or CARRY_NO_OBJECT if you
+ * specifically don't want to pick up an object or DONT_CARE_OBJECT if you
+ * don't care if you pick up an object or not
  */
 public class GoToRoomObjective : AiObjective
 {
@@ -833,7 +857,7 @@ public class RepositionKey : AiObjective
                     aiPlayer.adjustDestination(ref xToDropAt, ref yToDropAt, BALL.Adjust.ABOVE);
                 }
                 this.addChild(new GoToObjective(aiPlayer.room, xToDropAt + BALL.RADIUS, yToDropAt - BALL.RADIUS, keyId));
-                this.addChild(new DropObjective());
+                this.addChild(new DropObjective(keyId));
 
                 // Pick a point under the key and let the tactical algorithms get around the key
                 int yToPickupAt = yToDropAt + aiPlayer.linkedObjectBY - key.BHeight;
@@ -867,14 +891,27 @@ public class RepositionKey : AiObjective
  */
 public class DropObjective : AiObjective
 {
+    int toDrop;
+
+    /**
+     * Drop the desired object.  If you happen to 
+     * not be carrying that object, then this 
+     * immediately succeeds.
+     * @param inToDrop the object to drop
+     */
+    public DropObjective(int inToDrop)
+    {
+        toDrop = inToDrop;
+    }
+
     public override string ToString()
     {
-        return "drop held object";
+        return "drop " + board.getObject(toDrop).label;
     }
 
     protected override bool computeIsCompleted()
     {
-        return aiPlayer.linkedObject == Board.OBJECT_NONE;
+        return aiPlayer.linkedObject != toDrop;
     }
 
     protected override void doComputeStrategy()
@@ -884,7 +921,7 @@ public class DropObjective : AiObjective
 
     public override bool shouldDropHeldObject()
     {
-        return true;
+        return (aiPlayer.linkedObject == toDrop);
     }
 
 }
@@ -963,7 +1000,7 @@ public class GetObjectWithMagnet : AiObjective
         objectToPickup = board.getObject(toPickup);
         addChild(new ObtainObjective(Board.OBJECT_MAGNET));
         addChild(new BringObjectToRoomObjective(objectToPickup.room, Board.OBJECT_MAGNET));
-        addChild(new DropObjective());
+        addChild(new DropObjective(Board.OBJECT_MAGNET));
         addChild(new WaitForMagnetObjective(toPickup));
         addChild(new PickupObjective(toPickup));
     }
@@ -1010,7 +1047,7 @@ public class WaitForMagnetObjective : AiObjective
      * Still valid if the object is in the same room as the magnet and
      * no one is holding the object.
      */
-    public virtual bool isStillValid()
+    public override bool isStillValid()
     {
         bool held = false;
         for(int ctr=0; !held && ctr<board.getNumPlayers(); ++ctr)
@@ -1027,21 +1064,59 @@ public class WaitForMagnetObjective : AiObjective
         objectToPickup = board.getObject(toPickup);
         magnet = (Magnet)board.getObject(Board.OBJECT_MAGNET);
 
-        //// If there is another object in the room that is more attracted
-        //// to the magnet, we need to remove that from the room
-        
-        //OBJECT attractedObject = magnet.getAtractedObject();
-        //if ((attractedObject != null) && (attractedObject.getPKey() != toPickup)) {
-        //    int attracted = attractedObject.getPKey();
-        //    addChild(new WaitForMagnetObjective(attracted));
-        //    addChild(new PickupObjective(attracted));
-        //    /* TBD
-        //    addChild(new HideFromMagnet(attracted));
-        //    RRect magnetPlot = strategy.closestReachableRectangle(magnet);
-        //    addChild(new GoToObjective();
-        //    */
-        //}
+        // If there is another object in the room that is more attracted
+        // to the magnet, we need to remove that from the room
 
+        OBJECT attractedObject = magnet.getAtractedObject();
+        if ((attractedObject != null) && (attractedObject.getPKey() != toPickup))
+        {
+            int attracted = attractedObject.getPKey();
+            addChild(new WaitForMagnetObjective(attracted));
+            addChild(new PickupObjective(attracted));
+            AiPathNode hidePath = plotToHideFromMagnet();
+            RRect plotToStash = hidePath.End.ThisPlot.Rect;
+            addChild(new GoToObjective(plotToStash));
+            // Make sure the object is all the way in the room
+            addChild(new BringObjectToRoomObjective(plotToStash.room, attracted));
+            addChild(new DropObjective(attracted));
+            // Go back to the magnet room
+            addChild(new GoToObjective(hidePath.ThisPlot.Rect, CARRY_NO_OBJECT));
+            // We need to make this recursive in case there are other objects
+            // that the magnet attracts more than the desired one.
+            addChild(new WaitForMagnetObjective(toPickup));
+        }
+
+    }
+
+    /**
+     * Compute the closest plot not in the room with the magnet.
+     * We actually want to return 2 plots, the closest plot not
+     * in the room, and the exit plot in the room that you go through to
+     * get to the closest plot not in the room.  We return it as a two step 
+     * path
+     * @returns two step path with the start being the exit plot and the end 
+     * being the closest plot not in the room 
+     */
+    private AiPathNode plotToHideFromMagnet()
+    {
+        // Find the path to the closest exit
+        AiPathNode path = nav.ComputePathToClosestExit(aiPlayer.room, aiPlayer.midX, aiPlayer.midY, magnet.room);
+        // Find the plot on the other side of that closest exit
+        AiMapNode exit = path.End.thisNode;
+        int foundDirection = Plot.NO_DIRECTION;
+        for (int dir = Plot.FIRST_DIRECTION;
+            (dir <= Plot.LAST_DIRECTION) && (foundDirection == Plot.NO_DIRECTION);
+            ++dir)
+        {
+            if ((exit.neighbors[dir] != null) &&
+                (exit.neighbors[dir].thisPlot.Room != exit.thisPlot.Room))
+            {
+                foundDirection = dir;
+            }
+        }
+        AiPathNode end = new AiPathNode(exit.neighbors[foundDirection]);
+        AiPathNode twoStepPath = end.Prepend(exit, foundDirection);
+        return twoStepPath;
     }
 
     public override int getDesiredObject()

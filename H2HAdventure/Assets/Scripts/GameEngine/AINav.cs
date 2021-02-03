@@ -52,7 +52,7 @@ namespace GameEngine
             }
             else if (fromPlot == toPlot)
             {
-                return new AiPathNode(aiPlots[toPlot], Plot.NO_DIRECTION, null);
+                return new AiPathNode(aiPlots[toPlot]);
             }
             //UnityEngine.Debug.Log("Computing path from " + aiPlots[fromPlot].thisPlot + 
             //    " to " + aiPlots[toPlot].thisPlot);
@@ -68,7 +68,7 @@ namespace GameEngine
             // Although we have a data structure for 
             List<AiPathNode> q = new List<AiPathNode>();
             // We start from the desired point and work our way back
-            q.Add(new AiPathNode(aiPlots[toPlot], Plot.NO_DIRECTION, null));
+            q.Add(new AiPathNode(aiPlots[toPlot]));
             alreadyVisited[toPlot] = true;
             AiPathNode found = null;
             while ((found == null) && (q.Count > 0))
@@ -121,7 +121,7 @@ namespace GameEngine
          * @param startX the starting x position
          * @param startY the starting y position
          * @param roomWithExits the room you are looking for an exit in
-         * @returns the path to that closest exit plot
+         * @returns the path to that closest exit plot or null if not reachable
          */
         public AiPathNode ComputePathToClosestExit(int startRoom, int startX, int fromy, int roomWithExits)
         {
@@ -378,7 +378,7 @@ namespace GameEngine
                 AiMapNode neighbor = nextStep.thisNode.neighbors[ctr];
                 if ((neighbor != null) && !alreadyVisited[neighbor.thisPlot.Key])
                 {
-                    AiPathNode nextNextStep = new AiPathNode(neighbor, (ctr + 2) % 4, nextStep);
+                    AiPathNode nextNextStep = nextStep.Prepend(neighbor, (ctr + 2) % 4);
                     if (neighbor.thisPlot.Key == goalPlot)
                     {
                         return nextNextStep;
@@ -842,7 +842,30 @@ namespace GameEngine
         public readonly int nextDirection;
         public readonly AiPathNode nextNode;
         public readonly int distance; // Rough guess at the distance of this path
-        public AiPathNode(AiMapNode inPlot, int inDirection, AiPathNode inPath)
+
+        /**
+         * Construct a one hop path.
+         * @param inPlot the plot that is the start and end of the path
+         */
+        public AiPathNode(AiMapNode inPlot)
+        {
+            thisNode = inPlot;
+            nextDirection = Plot.NO_DIRECTION;
+            nextNode = null;
+            int height = thisNode.thisPlot.Height;
+            int width = thisNode.thisPlot.Width;
+            distance = (height > width ? height : width);
+        }
+
+        /**
+         * Construct a new path by adding on to the front of an existing path.
+         * @param inPlot the plot to start the path
+         * @param inDirection the direction to go from the starting plot or 
+         *   Plot.NO_DIRECTION if this path is a one hop path
+         * @param inPath the rest of the path or null if this path is a one
+         *   hop path
+         */
+        private AiPathNode(AiMapNode inPlot, int inDirection, AiPathNode inPath)
         {
             thisNode = inPlot;
             nextDirection = inDirection;
@@ -853,27 +876,60 @@ namespace GameEngine
                 (height > width ? height : width);
         }
 
+        /**
+         * Construct a new path by adding on to the front of an existing path.
+         * @param newStart the plot to start the path
+         * @param firstDirection the direction to go from the starting plot
+         */
+        public AiPathNode Prepend(AiMapNode newStart, int firstDirection)
+        {
+            return new AiPathNode(newStart, firstDirection, this);
+        }
+
+        /**
+         * Construct a new path by adding on to the end of an existing path.
+         * @param newEnd the plot to end the path
+         * @param lastDirection the direction to get from the second-to-last
+         *   to the last step in the path.
+         */
+        public AiPathNode Append(int lastDirection, AiMapNode newEnd)
+        {
+            if (nextNode == null)
+            {
+                AiPathNode end = new AiPathNode(newEnd);
+                return new AiPathNode(thisNode, lastDirection, end);
+            } else
+            {
+                AiPathNode rest = nextNode.Append(lastDirection, newEnd);
+                return new AiPathNode(thisNode, nextDirection, rest);
+            }
+        }
+
+        /**
+         * The map node for this point in the path
+         */
         public Plot ThisPlot
         {
             get { return thisNode.thisPlot; }
         }
 
+        /**
+         * The last node in the path
+         */
         public AiPathNode End
         {
             get { return nextNode == null ? this : nextNode.End; }
         }
 
+        /**
+         * Whether this path leads to a coordinate.
+         * Looks only at whether the plot at the end of the path
+         * contains the coordinate.  Does not look at any
+         * intermedite plots in the path.
+         */
         public bool leadsTo(int room, int x, int y)
         {
-            if (nextNode == null)
-            {
-                // Final node.  See if the coordinates are in this plot.
-                return thisNode.thisPlot.RoughlyContains(room, x, y);
-            }
-            else
-            {
-                return nextNode.leadsTo(room, x, y);
-            }
+            return End.thisNode.thisPlot.RoughlyContains(room, x, y);
         }
 
         public override string ToString()

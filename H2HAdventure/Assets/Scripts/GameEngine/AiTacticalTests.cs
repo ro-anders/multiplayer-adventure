@@ -43,8 +43,8 @@ namespace GameEngine
             // Ball is on left at bottom and exit is on right at bottom.
             // Plot is L96,B64,R191,T127.  Exit is 64-95 on right edge.
             // Ball is L110, T84
-            AiPathNode endOfPath = new AiPathNode(new AiMapNode(new Plot(2, 1, 24, 2, 30, 2)), Plot.NO_DIRECTION, null);
-            path = new AiPathNode(new AiMapNode(new Plot(1, 1, 12, 2, 23, 3)), Plot.RIGHT, endOfPath);
+            AiPathNode endOfPath = new AiPathNode(new AiMapNode(new Plot(2, 1, 24, 2, 30, 2)));
+            path = endOfPath.Prepend(new AiMapNode(new Plot(1, 1, 12, 2, 23, 3)), Plot.RIGHT);
             ball.x = 110;
             ball.y = 84;
             int velX = 0, velY = 0;
@@ -105,8 +105,8 @@ namespace GameEngine
         {
             // Ball is on left and exit is on right 
             // Plot is L96,B64,R191,T95.  Exit is 64-95 on right edge.
-            AiPathNode endOfPath = new AiPathNode(new AiMapNode(new Plot(2, 1, 24, 2, 30, 2)), Plot.NO_DIRECTION, null);
-            path = new AiPathNode(new AiMapNode(new Plot(1, 1, 12, 2, 23, 2)), Plot.RIGHT, endOfPath);
+            AiPathNode endOfPath = new AiPathNode(new AiMapNode(new Plot(2, 1, 24, 2, 30, 2)));
+            path = endOfPath.Prepend(new AiMapNode(new Plot(1, 1, 12, 2, 23, 2)), Plot.RIGHT);
             int velX = 0, velY = 0;
             int finalX = 208;
             int finalY = 80;
