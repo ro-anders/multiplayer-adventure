@@ -5,7 +5,7 @@ namespace GameEngine
 {
     public class AiPlayer
     {
-        private const int FRAMES_BETWEEN_STRATEGY_RECOMPUTE = 5 * 60; // Every 5 seconds
+        private const int FRAMES_BETWEEN_STRATEGY_RECOMPUTE = 10 * 60; // Every 10 seconds
         private const int FRAMES_TO_REACT_TO_INVALIDATION = 30;  // Half a second
         private Board gameBoard;
         private AiNav aiNav;

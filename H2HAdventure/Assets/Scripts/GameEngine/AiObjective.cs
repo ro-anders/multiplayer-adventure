@@ -635,6 +635,7 @@ public class GoToObjective : AiObjective
 {
     private RRect target;
     private int carrying;
+    private Portcullis behindPortcullis = null; // If the target room is behind a Portcullis
 
     /**
      * Go to these coordinates.
@@ -669,7 +670,9 @@ public class GoToObjective : AiObjective
     }
 
     protected override void doComputeStrategy()
-    { }
+    {
+        behindPortcullis = GoToObjective.isBehindPortcullis(board, aiPlayer, target.room);
+    }
 
     public override RRect getDestination()
     {
@@ -678,13 +681,13 @@ public class GoToObjective : AiObjective
 
     /**
      * Still valid as long as you are carrying the object you are supposed to
-     * be carrying
+     * be carrying and you can still get to where you're supposed to go.
      */
     public override bool isStillValid()
     {
-        // TODO: Handle castle being shut or target otherwise becoming
-        // inaccessible.
-        return (carrying == DONT_CARE_OBJECT) || (aiPlayer.linkedObject == carrying);
+        bool stillHaveObject =  (carrying == DONT_CARE_OBJECT) || (aiPlayer.linkedObject == carrying);
+        bool blocked = (behindPortcullis != null) && (aiPlayer.room == behindPortcullis.room) && !behindPortcullis.allowsEntry;
+        return stillHaveObject && !blocked;
     }
 
     protected override bool computeIsCompleted()
@@ -728,8 +731,33 @@ public class GoToObjective : AiObjective
     {
         return carrying;
     }
-}
 
+    /**
+     * Return if a desired room is behind a portcullis.
+     * If you are also behind the same portcullis then this returns that it is not
+     * behind a portcullis.
+     * @param board the board
+     * @param ball the player
+     * @param targetRoom the rooom of interest
+     * @returns the portcullis that stands between the ball and the room or null
+     * if none does
+     */
+    public static Portcullis isBehindPortcullis(Board board, BALL ball, int targetRoom)
+    {
+        Portcullis targetPort = null;
+        Portcullis myPort = null;
+        // Figure out if the desired room is behind a locked gate
+        int FIRST_PORT = Board.OBJECT_YELLOW_PORT;
+        int LAST_PORT = Board.OBJECT_CRYSTAL_PORT;
+        for (int portNum = FIRST_PORT; portNum <= LAST_PORT; ++portNum)
+        {
+            Portcullis port = (Portcullis)board.getObject(portNum);
+            targetPort = ((targetPort == null) && port.containsRoom(targetRoom) ? port : targetPort);
+            myPort = ((myPort == null) && port.containsRoom(ball.room) ? port : myPort);
+        }
+        return (targetPort == myPort ? null : targetPort);
+    }
+}
 
 
 //-------------------------------------------------------------------------
@@ -747,6 +775,7 @@ public class GoToRoomObjective : AiObjective
     private int gotoRoom;
     private int carrying;
     private RRect targetPlot;
+    private Portcullis behindPortcullis = null; // If the target room is behind a Portcullis
 
     public GoToRoomObjective(int inRoom, int inCarrying = DONT_CARE_OBJECT)
     {
@@ -754,8 +783,21 @@ public class GoToRoomObjective : AiObjective
         carrying = inCarrying;
     }
 
+    /**
+     * Still valid as long as you are carrying the object you are supposed to
+     * be carrying and you can still get to where you're supposed to go.
+     */
+    public override bool isStillValid()
+    {
+        bool stillHaveObject = (carrying == DONT_CARE_OBJECT) || (aiPlayer.linkedObject == carrying);
+        bool blocked = (behindPortcullis != null) && (aiPlayer.room == behindPortcullis.room) && !behindPortcullis.allowsEntry;
+        return stillHaveObject && !blocked;
+    }
+
     protected override void doComputeStrategy()
     {
+        behindPortcullis = GoToObjective.isBehindPortcullis(board, aiPlayer, gotoRoom);
+
         // Figure out what point in the room is closest.
         AiPathNode path = nav.ComputePathToClosestExit(aiPlayer.room, aiPlayer.midX, aiPlayer.midY, gotoRoom);
         targetPlot = path.End.ThisPlot.Rect;
@@ -794,6 +836,7 @@ public class BringObjectToRoomObjective : AiObjective
     private int gotoRoom;
     private int toBring;
     private OBJECT objectToBring;
+    private Portcullis behindPortcullis = null; // If the target room is behind a Portcullis
 
     public BringObjectToRoomObjective(int inRoom, int inToBring)
     {
@@ -812,16 +855,21 @@ public class BringObjectToRoomObjective : AiObjective
     }
 
     /**
-     * No longer valid if you are no longer holding the object
+     * No longer valid if you are no longer holding the object or if the room
+     * you are going to has been made unreachable and you can see it is unreachable.
      */
     public override bool isStillValid()
     {
-        return (aiPlayer.linkedObject == toBring);
+        bool blocked = (behindPortcullis != null) && (aiPlayer.room == behindPortcullis.room) && !behindPortcullis.allowsEntry;
+        return (aiPlayer.linkedObject == toBring) && !blocked;
     }
 
     protected override void doComputeStrategy()
     {
+        behindPortcullis = GoToObjective.isBehindPortcullis(board, aiPlayer, gotoRoom);
+
         objectToBring = board.getObject(toBring);
+
         // Compute the area of the room where, if the ball were in that area
         // then the object would be all the way in the room.
         RRect ballTargetSpace = RRect.fromTRBL(gotoRoom,
