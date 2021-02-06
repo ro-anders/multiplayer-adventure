@@ -17,6 +17,8 @@ namespace GameEngine
 
         public AiTacticalTests()
         {
+            UnityEngine.Debug.Log("RUNNING AI TACTICAL TESTS!!!!!!!!!!");
+            UnityEngine.Debug.Log("You probably want to disable these before release");
             Map map = new Map(2, Map.MAP_LAYOUT_SMALL, false, false);
             Board board = new Board(map, null);
             OBJECT key = new OBJECT("gold key", blockGfx, new byte[0], 0, COLOR.YELLOW, OBJECT.RandomizedLocations.OUT_IN_OPEN);

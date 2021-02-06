@@ -199,6 +199,20 @@ abstract public class AiObjective
         }
     }
 
+    /**
+     * If this is a sub-objective of the current objective, remove it.
+     */
+    protected void removeChild(AiObjective childToRemove)
+    {
+        if (child == childToRemove)
+        {
+            child = child.sibling;
+        } else
+        {
+            child.removeSibling(childToRemove);
+        }
+    }
+
     protected abstract bool computeIsCompleted();
 
     /**
@@ -211,9 +225,25 @@ abstract public class AiObjective
         if (sibling == null)
         {
             sibling = nextObjective;
-        } else
+        }
+        else
         {
             sibling.addSibling(nextObjective);
+        }
+    }
+
+    /**
+     * If this objective is a sub-objective of the parent objective, remove it.
+     */
+    protected void removeSibling(AiObjective objectiveToRemove)
+    {
+        if (sibling == objectiveToRemove)
+        {
+            sibling = sibling.sibling;
+        }
+        else if (sibling != null)
+        {
+            sibling.removeSibling(objectiveToRemove);
         }
     }
 
@@ -240,9 +270,9 @@ abstract public class AiObjective
 
 //-------------------------------------------------------------------------
 
-public class WinGameObjective: AiObjective
+public class PlayGameObjective: AiObjective
 {
-    public WinGameObjective(Board inBoard, int inAiPlayerNum, AiStrategy inAiStrategy, AiNav inAiNav)
+    public PlayGameObjective(Board inBoard, int inAiPlayerNum, AiStrategy inAiStrategy, AiNav inAiNav)
     {
         base.board = inBoard;
         base.aiPlayerNum = inAiPlayerNum;
@@ -258,6 +288,9 @@ public class WinGameObjective: AiObjective
 
     protected override void doComputeStrategy()
     {
+        // Unlike all the other objectives, this objective has to make sure
+        // things are possible.
+
         if (strategy.eatenByDragon())
         {
             markShouldReset();
@@ -267,18 +300,50 @@ public class WinGameObjective: AiObjective
             int playerToBlock = strategy.shouldBlockPlayer();
             if (playerToBlock >= 0)
             {
-                this.addChild(new LockCastleAndHideKeyObjective(playerToBlock));
-                // Once the first player is blocked, we want to recompute whether
-                // we need to block the second player or if we can try to win
-                // TODO: Do we want to do this through recursion or some other way
-                this.addChild(new WinGameObjective(board, aiPlayerNum, strategy, nav));
+                AiObjective objective = new LockCastleAndHideKeyObjective(playerToBlock);
+                this.addChild(objective);
+                // Make sure this objective is achievable
+                try
+                {
+                    objective.getNextObjective();
+                    // Recursively add this objective so we check again if we should block the other player.
+                    this.addChild(new PlayGameObjective(board, aiPlayerNum, strategy, nav));
+                }
+                catch (Abort)
+                {
+                    // If we can't block the player, then don't.
+                    this.removeChild(objective);
+                }
             }
-            else
+
+            AiObjective retrieveChalice = new WinGameWithChaliceObjective();
+            this.addChild(retrieveChalice);
+            // Check to see if we can actually win (might be permanently blocked)
+            try
             {
-                Portcullis homeGate = this.aiPlayer.homeGate;
-                this.addChild(new UnlockCastle(homeGate.getPKey()));
-                this.addChild(new ObtainObjective(Board.OBJECT_CHALISE));
-                this.addChild(new BringObjectToRoomObjective(homeGate.insideRoom, Board.OBJECT_CHALISE));
+                retrieveChalice.getNextObjective();
+            } catch (Abort)
+            {
+                this.removeChild(retrieveChalice);
+
+                // Nothing to do but block other players
+                for(int ctr=0; ctr<board.getNumPlayers(); ++ctr)
+                {
+                    if (ctr != aiPlayer.playerNum)
+                    {
+                        AiObjective objective = new LockCastleAndHideKeyObjective(ctr);
+                        this.addChild(objective);
+                        try
+                        {
+                            objective.getNextObjective();
+                        }
+                        catch(Abort)
+                        {
+                            // If we can't block the player just forget about it
+                            this.removeChild(objective);
+                        }
+                    }
+                }
             }
         }
     }
@@ -292,6 +357,31 @@ public class WinGameObjective: AiObjective
 
 }
 
+//-------------------------------------------------------------------------
+
+public class WinGameWithChaliceObjective : AiObjective
+{
+    public override string ToString()
+    {
+        return "retrieve chalice";
+    }
+
+    protected override void doComputeStrategy()
+    {
+        Portcullis homeGate = this.aiPlayer.homeGate;
+        this.addChild(new UnlockCastle(homeGate.getPKey()));
+        this.addChild(new ObtainObjective(Board.OBJECT_CHALISE));
+        this.addChild(new BringObjectToRoomObjective(homeGate.insideRoom, Board.OBJECT_CHALISE));
+    }
+
+    protected override bool computeIsCompleted()
+    {
+        // This is never completed, or by the time it is we don't
+        // ever call this anymore
+        return false;
+    }
+
+}
 //-------------------------------------------------------------------------
 
 /**
@@ -714,7 +804,11 @@ public class BringObjectToRoomObjective : AiObjective
     protected override bool computeIsCompleted()
     {
         return (aiPlayer.room == gotoRoom) &&
-            (objectToBring.room == gotoRoom);
+            (objectToBring.room == gotoRoom) &&
+            (objectToBring.x >= Board.LEFT_EDGE_FOR_OBJECTS) &&
+            (objectToBring.y <= Board.TOP_EDGE_FOR_OBJECTS) &&
+            (objectToBring.x + objectToBring.width <= Board.RIGHT_EDGE_FOR_OBJECTS) &&
+            (objectToBring.y - objectToBring.Height >= Board.BOTTOM_EDGE_FOR_OBJECTS);
     }
 
     /**
@@ -939,6 +1033,10 @@ public class LockCastleAndHideKeyObjective : AiObjective
 
     public LockCastleAndHideKeyObjective(int inOtherPlayerNum)
     {
+        if (inOtherPlayerNum < 0)
+        {
+            throw new IndexOutOfRangeException();
+        }
         otherPlayerNum = inOtherPlayerNum;
     }
 

@@ -2715,15 +2715,12 @@ namespace GameEngine
             {Board.OBJECT_GREENDRAGON, Map.SOUTHEAST_ROOM, 0x4F, 0x1E, 0x00, 0x00, 0x00}, // Green Dragon
             {Board.OBJECT_SWORD, Map.GOLD_FOYER, 0x1F, 0x1E, 0x00, 0x00, 0x00}, // Sword
             //TODOXXX: Temporarily removing bridge {Board.OBJECT_BRIDGE, Map.BLUE_MAZE_5, 0x29, 0x35, 0x00, 0x00, 0x00}, // Bridge
-            //TODOXXX: {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
-            {Board.OBJECT_YELLOWKEY, Map.MAIN_HALL_CENTER, 0x1F, 0x0B, 0x00, 0x00, 0x00}, // Yellow Key
-            //TODOXXX: {Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Copper Key
-            {Board.OBJECT_COPPERKEY, Map.MAIN_HALL_CENTER, 0x10, 0x0B, 0x00, 0x00, 0x00}, // Yellow Key
+            {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
+            {Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Copper Key
             {Board.OBJECT_JADEKEY, Map.JADE_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Jade Key
             {Board.OBJECT_BLACKKEY, Map.SOUTHEAST_ROOM, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Black Key
             {Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x2F, 0x1E, 0x00, 0x00, 0x00}, // Challise
-            //TODOXXX: {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x7F, 0x1E, 0x00, 0x00, 0x00} // Magnet
-            {Board.OBJECT_MAGNET, Map.COPPER_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00} // Magnet
+            {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x7F, 0x1E, 0x00, 0x00, 0x00} // Magnet
         };
 
 
