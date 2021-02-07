@@ -685,7 +685,10 @@ public class GoToObjective : AiObjective
      */
     public override bool isStillValid()
     {
-        bool stillHaveObject =  (carrying == DONT_CARE_OBJECT) || (aiPlayer.linkedObject == carrying);
+        bool stillHaveObject =
+            (carrying == DONT_CARE_OBJECT) ||
+            ((carrying == CARRY_NO_OBJECT) && (aiPlayer.linkedObject == Board.OBJECT_NONE)) ||
+            (aiPlayer.linkedObject == carrying);
         bool blocked = (behindPortcullis != null) && (aiPlayer.room == behindPortcullis.room) && !behindPortcullis.allowsEntry;
         return stillHaveObject && !blocked;
     }
@@ -789,7 +792,10 @@ public class GoToRoomObjective : AiObjective
      */
     public override bool isStillValid()
     {
-        bool stillHaveObject = (carrying == DONT_CARE_OBJECT) || (aiPlayer.linkedObject == carrying);
+        bool stillHaveObject =
+            (carrying == DONT_CARE_OBJECT) ||
+            ((carrying == CARRY_NO_OBJECT) && (aiPlayer.linkedObject == Board.OBJECT_NONE)) ||
+            (aiPlayer.linkedObject == carrying);
         bool blocked = (behindPortcullis != null) && (aiPlayer.room == behindPortcullis.room) && !behindPortcullis.allowsEntry;
         return stillHaveObject && !blocked;
     }
