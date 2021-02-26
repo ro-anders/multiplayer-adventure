@@ -695,12 +695,14 @@ public class GoToObjective : AiObjective
 
     protected override bool computeIsCompleted()
     {
-        if (aiPlayer.room == target.room) {
+        if (aiPlayer.room == target.room)
+        {
             int xBuffer = (BALL.DIAMETER + BALL.MOVEMENT - target.width + 1) / 2;
             if (xBuffer < 0)
             {
                 xBuffer = 0;
-            } else if (Math.Abs(aiPlayer.midY - target.midY) <= BALL.MOVEMENT / 2)
+            }
+            else if (Math.Abs(aiPlayer.midY - target.midY) <= BALL.MOVEMENT / 2)
             {
                 xBuffer += 2; // 2 to increase the buffer from 3 (BALL.MOVEMENT/2) to 5 (BALL.MOVEMENT-1)
             }
@@ -719,7 +721,8 @@ public class GoToObjective : AiObjective
             bool ycheck = (aiPlayer.y - BALL.DIAMETER >= target.bottom - yBuffer) &&
                 (aiPlayer.y <= target.top + yBuffer);
             return xcheck && ycheck;
-        } else
+        }
+        else
         {
             return false;
         }
@@ -727,7 +730,16 @@ public class GoToObjective : AiObjective
 
     public override string ToString()
     {
-        return "go to " + target.ToStringWithRoom(board.map.roomDefs[target.room].label);
+        string str = "go to " + target.ToStringWithRoom(board.map.roomDefs[target.room].label);
+        if (carrying == CARRY_NO_OBJECT)
+        {
+            str += " carrying nothing";
+        }
+        if (carrying != DONT_CARE_OBJECT)
+        {
+            str += " with " + carrying;
+        }
+        return str;
     }
 
     public override int getDesiredObject()
@@ -759,6 +771,80 @@ public class GoToObjective : AiObjective
             myPort = ((myPort == null) && port.containsRoom(ball.room) ? port : myPort);
         }
         return (targetPort == myPort ? null : targetPort);
+    }
+}
+
+
+//-------------------------------------------------------------------------
+
+/**
+ * Go to these exact coordinates.  Only to be used when you've 
+ * calculated that these coordinates can be reached given the balls
+ * current coordinates and 6 pixel step.
+ * Which means only to be used when the destination is in the same room
+ * as the ball
+ */
+public class GoExactlyToObjective : AiObjective
+{
+    private RRect target;
+    private int carrying;
+
+    /**
+     * Go to these coordinates.
+     * @param inRoom the desired room
+     * @param inX the desired X of the ball (meaning the left coordinate)
+     * @param inY the desired Y of the ball (meaning the top coordinate)
+     * @param inCarrying the object you want to carry or CARRY_NO_OBJECT if you
+     * specifically don't want to pick up an object or DONT_CARE_OBJECT if you
+     * don't care if you pick up an object or not
+     */
+    public GoExactlyToObjective(int inRoom, int inLeftX, int inTopY, int inCarrying = DONT_CARE_OBJECT)
+    {
+        target = new RRect(inRoom, inLeftX, inTopY, BALL.DIAMETER, BALL.DIAMETER);
+        carrying = inCarrying;
+    }
+
+    protected override void doComputeStrategy()
+    {
+        // Objective is target
+    }
+
+    public override RRect getDestination()
+    {
+        return target ;
+    }
+
+    /**
+     * Still valid as long as you are carrying the object you are supposed to
+     * be carrying and you can still get to where you're supposed to go.
+     */
+    public override bool isStillValid()
+    {
+        return target.room == aiPlayer.room;
+    }
+
+    protected override bool computeIsCompleted()
+    {
+        return (aiPlayer.x == target.left) && (aiPlayer.y == target.top);
+    }
+
+    public override string ToString()
+    {
+        string str = "go to exact spot " + target.ToStringWithRoom(board.map.roomDefs[target.room].label);
+        if (carrying == CARRY_NO_OBJECT)
+        {
+            str += " carrying nothing";
+        }
+        if (carrying != DONT_CARE_OBJECT)
+        {
+            str += " with " + carrying;
+        }
+        return str;
+    }
+
+    public override int getDesiredObject()
+    {
+        return carrying;
     }
 }
 
@@ -969,11 +1055,19 @@ public class RepositionKey : AiObjective
     private const int KEY_HEIGHT = 3;
     private int keyId;
     private OBJECT key;
-    private const int KEY_AT_Y = 0x30;
+    private const int CASTLE_FOOT = 0x40; // The Y coordinate of the bottom of the castle
 
     public RepositionKey(int inKeyId)
     {
         keyId = inKeyId;
+    }
+
+    public override bool isStillValid()
+    {
+        // Still valid if we are holding the key or the
+        // key is still in the room with us
+        return ((aiPlayer.linkedObject == keyId) ||
+            (aiPlayer.room == key.room)); 
     }
 
     protected override void doComputeStrategy()
@@ -991,27 +1085,18 @@ public class RepositionKey : AiObjective
                 (aiPlayer.linkedObjectBX > BALL.DIAMETER)) 
             {
                 // Key is not in a good position.  Drop it and get under it.
-                int xToDropAt = Adv.ADVENTURE_SCREEN_WIDTH/2 - key.bwidth/2 - aiPlayer.linkedObjectBX;
-                int yToDropAt = KEY_AT_Y - aiPlayer.linkedObjectBY;
-                aiPlayer.adjustDestination(ref xToDropAt, ref yToDropAt);
-                // Make sure ball fits in walls
-                if (yToDropAt > 0x3F)
-                {
-                    yToDropAt = 0x3F;
-                    aiPlayer.adjustDestination(ref xToDropAt, ref yToDropAt, BALL.Adjust.BELOW);
-                } else if (yToDropAt - BALL.DIAMETER < 0x20)
-                {
-                    yToDropAt = 0x20 + BALL.DIAMETER;
-                    aiPlayer.adjustDestination(ref xToDropAt, ref yToDropAt, BALL.Adjust.ABOVE);
-                }
-                this.addChild(new GoToObjective(aiPlayer.room, xToDropAt + BALL.RADIUS, yToDropAt - BALL.RADIUS, keyId));
+                // 
+                int xLeftToDropAt = Adv.ADVENTURE_SCREEN_WIDTH/2 - key.bwidth/2 - aiPlayer.linkedObjectBX;
+                int yTopToDropAt = CASTLE_FOOT - 1;
+                aiPlayer.adjustDestination(ref xLeftToDropAt, ref yTopToDropAt, BALL.Adjust.BELOW);
+                this.addChild(new GoExactlyToObjective(aiPlayer.room, xLeftToDropAt, yTopToDropAt, keyId));
                 this.addChild(new DropObjective(keyId));
 
                 // Pick a point under the key and let the tactical algorithms get around the key
-                int yToPickupAt = yToDropAt + aiPlayer.linkedObjectBY - key.BHeight;
-                int xToPickupAt = Portcullis.EXIT_X;
-                aiPlayer.adjustDestination(ref xToPickupAt, ref yToPickupAt, BALL.Adjust.BELOW);
-                this.addChild(new GoToObjective(aiPlayer.room, xToPickupAt + BALL.RADIUS, yToPickupAt-BALL.RADIUS, CARRY_NO_OBJECT));
+                int yTopToPickupAt = yTopToDropAt + aiPlayer.linkedObjectBY - key.BHeight;
+                int xLeftToPickupAt = Portcullis.EXIT_X;
+                aiPlayer.adjustDestination(ref xLeftToPickupAt, ref yTopToPickupAt, BALL.Adjust.BELOW);
+                this.addChild(new GoExactlyToObjective(aiPlayer.room, xLeftToPickupAt, yTopToPickupAt, CARRY_NO_OBJECT));
                 this.addChild(new PickupObjective(keyId));
             }
         }

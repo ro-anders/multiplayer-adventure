@@ -57,6 +57,7 @@ namespace GameEngine
             // Compute a new strategy every few seconds
             if ((currentObjective == null) || (frameNumber >= recomputeStrategyAtFrame))
             {
+                UnityEngine.Debug.Log(thisBall + " recomputing whole strategy");
                 winGameObjective = new PlayGameObjective(gameBoard, thisPlayer, aiStrategy, aiNav);
                 newObjective = winGameObjective.getNextObjective();
                 recomputeStrategyAtFrame = frameNumber + FRAMES_BETWEEN_STRATEGY_RECOMPUTE;
