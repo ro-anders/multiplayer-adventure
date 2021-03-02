@@ -97,6 +97,22 @@ namespace GameEngine
         }
 
         /**
+         * The rectangle this object covers (in object coordinates)
+         */
+        public RRect Rect
+        {
+            get { return new RRect(room, x, y, width, Height); }
+        }
+
+        /**
+         * The rectangle this object covers (in ball coordinates)
+         */
+        public RRect BRect
+        {
+            get { return new RRect(room, bx, by, bwidth, BHeight); }
+        }
+
+        /**
          * How high is this object for purposes of avoiding it.  
          * Usually this is the height but for the bat and a portcullis
          * that move every turn, this is may be greater.

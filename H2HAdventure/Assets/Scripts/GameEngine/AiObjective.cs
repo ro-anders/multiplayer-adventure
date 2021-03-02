@@ -1033,7 +1033,9 @@ public class UnlockCastle : AiObjective
 
     protected override bool computeIsCompleted()
     {
-        return port.allowsEntry;
+        // Need to make sure not only that the castle is locked but that the
+        // key isn't overlapping the gate or else the gate could shut again.
+        return port.allowsEntry && !port.BRect.overlaps(port.key.BRect);
     }
 
     public override string ToString()

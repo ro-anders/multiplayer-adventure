@@ -132,7 +132,11 @@ namespace GameEngine
             get { return (width >= 0) && (height >= 0) && (room >= 0); }
         }
 
-        public bool touches(RRect other)
+        /**
+         * Returns true if this rectangles is in the same room 
+         * and overlap the passed in rectangle.
+         */
+        public bool overlaps(RRect other)
         {
             if (other.room != this.room)
             {
@@ -148,9 +152,13 @@ namespace GameEngine
             }
         }
 
+        /**
+         * Returns the rectangle that is formed by the overlap of this
+         * rectangle with another or INVALID if the rectangles don't overlap.
+         */
         public RRect intersect(RRect other)
         {
-            if (!touches(other))
+            if (!overlaps(other))
             {
                 return RRect.INVALID;
             }
