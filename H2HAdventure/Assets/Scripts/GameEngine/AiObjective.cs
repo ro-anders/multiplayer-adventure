@@ -575,32 +575,46 @@ public class GetObjectFromPlayer : AiObjective
         }
     }
 
+    /**
+     * Still valid unless you see that the object is not held by the player.
+     */
+    public override bool isStillValid()
+    {
+        bool stillValid = true;
+        if ((aiPlayer.room == objectToSteal.room) || (aiPlayer.room == ballToStealFrom.room))
+        {
+            stillValid = (ballToStealFrom.linkedObject == toSteal);
+        }
+        return stillValid;
+    }
+
     public override RRect getDestination()
     {
-        // If we're not in the same room, just go for the ball
-        bool goForBall = (aiPlayer.room != ballToStealFrom.room);
+        // If we're really close to the object, go for the object
+        bool goForObject = ((aiPlayer.room == objectToSteal.room) &&
+                (distToObject() <= 1.5 * BALL.MOVEMENT));
 
-        // If we're really close, go for the object, otherwise go for the ball
-        if (!goForBall)
+        // If we're really close to the other ball, go for the object
+        if ((!goForObject) && (aiPlayer.room == ballToStealFrom.room)) 
         {
-            int distanceX = Math.Abs(aiPlayer.midX - ballToStealFrom.midX);
-            int distanceY = Math.Abs(aiPlayer.midY - ballToStealFrom.midY);
+            int distanceX = Math.Abs(aiPlayer.midX - ballToStealFrom.midX) - BALL.DIAMETER;
+            int distanceY = Math.Abs(aiPlayer.midY - ballToStealFrom.midY) - BALL.DIAMETER;
             int distance = (distanceX > distanceY ? distanceX : distanceY);
-            goForBall = (distance > 2 * BALL.MOVEMENT);
+            goForObject = (distance <= 1.5 * BALL.MOVEMENT);
         }
 
         // With two computers stealing from each other, you have to insert a
         // a little randomness.  When we're this close, occassionally, head
         // for the player instead of the ball
-        if (!goForBall)
+        if (goForObject)
         {
             if (genRandom.NextDouble() < 0.05)
             {
-                goForBall = true;
+                goForObject = false;
             }
         }
 
-        if (!goForBall)
+        if (goForObject)
         {
             if (toSteal == Board.OBJECT_BRIDGE)
             {
@@ -613,8 +627,10 @@ public class GetObjectFromPlayer : AiObjective
                 return strategy.closestReachableRectangle(objectToSteal);
             }
         }
-
-        return new RRect(ballToStealFrom.room, ballToStealFrom.x, ballToStealFrom.y, BALL.DIAMETER, BALL.DIAMETER);
+        else
+        {
+            return new RRect(ballToStealFrom.room, ballToStealFrom.x, ballToStealFrom.y, BALL.DIAMETER, BALL.DIAMETER);
+        }
     }
 
     protected override bool computeIsCompleted()
@@ -625,6 +641,19 @@ public class GetObjectFromPlayer : AiObjective
     public override int getDesiredObject()
     {
         return toSteal;
+    }
+
+    /**
+     * Distance to the object - only valid if in the same room as the object
+     */
+    private int distToObject()
+    {
+        int objMidBX = objectToSteal.bx + objectToSteal.bwidth / 2;
+        int xdist = Math.Abs(objMidBX - aiPlayer.midX) - (objectToSteal.bwidth / 2) - (BALL.RADIUS);
+        int objMidBY = objectToSteal.by - objectToSteal.BHeight / 2;
+        int ydist = Math.Abs(objMidBY - aiPlayer.midY) - (objectToSteal.BHeight / 2) - (BALL.RADIUS);
+        int dist = (xdist > ydist ? xdist : ydist);
+        return dist;
     }
 }
 
