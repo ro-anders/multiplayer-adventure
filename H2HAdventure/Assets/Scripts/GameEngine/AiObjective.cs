@@ -603,17 +603,6 @@ public class GetObjectFromPlayer : AiObjective
             goForObject = (distance <= 1.5 * BALL.MOVEMENT);
         }
 
-        // With two computers stealing from each other, you have to insert a
-        // a little randomness.  When we're this close, occassionally, head
-        // for the player instead of the ball
-        if (goForObject)
-        {
-            if (genRandom.NextDouble() < 0.05)
-            {
-                goForObject = false;
-            }
-        }
-
         if (goForObject)
         {
             if (toSteal == Board.OBJECT_BRIDGE)
@@ -624,7 +613,27 @@ public class GetObjectFromPlayer : AiObjective
             else
             {
                 // Aim for the center
-                return strategy.closestReachableRectangle(objectToSteal);
+                RRect target =  strategy.closestReachableRectangle(objectToSteal);
+
+                // In the case where two computers are trying to steal from each
+                // other we need to randomly break an impasse
+                if ((!target.IsValid) && ballToStealFrom.isAi)
+                {
+                    AiObjective othersObjective = ballToStealFrom.ai.CurrentObjective;
+                    if (othersObjective is GetObjectFromPlayer)
+                    {
+                        GetObjectFromPlayer othersStealObjective = (GetObjectFromPlayer)othersObjective;
+                        if (othersStealObjective.toStealFrom == aiPlayer.playerNum)
+                        {
+                            // We're stealing from them and they're stealing from us.
+                            // Add random movements.
+                            int randomX = (genRandom.Next(3) - 1) * BALL.MOVEMENT;
+                            int randomY = (genRandom.Next(3) - 1) * BALL.MOVEMENT;
+                            target = new RRect(aiPlayer.room, aiPlayer.x + randomX, aiPlayer.y + randomY, BALL.DIAMETER, BALL.DIAMETER);
+                        }
+                    }
+                }
+                return target;
             }
         }
         else

@@ -216,13 +216,13 @@ namespace GameEngine
 
             // Setup the players
             bool useAltIcons = (gameMode == Adv.GAME_MODE_ROLE_PLAY);
-            gameBoard.addPlayer(new BALL(0, ports[0], useAltIcons, useAi[0]), thisPlayer == 0);
+            gameBoard.addPlayer(new BALL(0, ports[0], useAltIcons), thisPlayer == 0);
             Portcullis p2Home = (isCooperative ? ports[0] : ports[4]);
-            gameBoard.addPlayer(new BALL(1, p2Home, useAltIcons, useAi[1]), thisPlayer == 1);
+            gameBoard.addPlayer(new BALL(1, p2Home, useAltIcons), thisPlayer == 1);
             if (numPlayers > 2)
             {
                 Portcullis p3Home = (isCooperative ? ports[0] : ports[5]);
-                gameBoard.addPlayer(new BALL(2, p3Home, useAltIcons, useAi[2]), thisPlayer == 2);
+                gameBoard.addPlayer(new BALL(2, p3Home, useAltIcons), thisPlayer == 2);
             }
             thisBall = gameBoard.getPlayer(thisPlayer);
             bool willUseAi = useAi[0] || useAi[1] || useAi[2];

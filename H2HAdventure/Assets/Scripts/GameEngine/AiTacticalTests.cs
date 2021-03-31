@@ -29,7 +29,7 @@ namespace GameEngine
             board.addObject(Board.OBJECT_MAGNET, block);
             block.room = 1;
 
-            ball = new BALL(0, ballsPortcullis, false, true);
+            ball = new BALL(0, ballsPortcullis, false);
             ball.room = 1;
             toTest = new AiTactical(ball, board);
         }
