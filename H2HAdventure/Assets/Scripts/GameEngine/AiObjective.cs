@@ -1024,7 +1024,7 @@ public class BringObjectToRoomObjective : AiObjective
             ballTargetSpace.left + BALL.DIAMETER + BALL.MOVEMENT);
         AiPathNode closestPlot = nav.ComputePathToArea(aiPlayer.room, aiPlayer.midX, aiPlayer.midY, plotTargetSpace);
         RRect target = closestPlot.End.ThisPlot.Rect.intersect(ballTargetSpace);
-        addChild(new GoToObjective(target));
+        addChild(new GoToObjective(target, toBring));
     }
 
     public override string ToString()
