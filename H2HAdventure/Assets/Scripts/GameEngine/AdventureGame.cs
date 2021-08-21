@@ -61,6 +61,7 @@ namespace GameEngine
         private bool joystickDisabled = false; // Only used when scripting and testing ai
         private bool switchReset;
         private bool useMazeGuides;
+        private PlayerRecorder playerRecorder;
 
         private int turnsSinceTimeCheck;
         private readonly int[] missedChecks = { 0, 0, 0 };
@@ -118,6 +119,7 @@ namespace GameEngine
             useMazeGuides = inUseMazeGuides;
             timeToStartGame = 60 * 3;
             frameNumber = 0;
+            playerRecorder = new PlayerRecorder(PlayerRecorder.GLOBAL_PLAYER_RECORDER_MODE);
 
             // The map for game 3 is the same as 2.
             gameMapLayout = (gameMode == Adv.GAME_MODE_GAUNTLET ? Map.MAP_LAYOUT_SMALL :
@@ -585,7 +587,14 @@ namespace GameEngine
 
             // read the console switches every frame
             bool reset = false;
-            view.Platform_ReadConsoleSwitches(ref reset);
+            if (playerRecorder.Mode == PlayerRecorder.Modes.PLAYBACK)
+            {
+                playerRecorder.playSwitches(frameNumber, ref reset);
+            } else
+            {
+                view.Platform_ReadConsoleSwitches(ref reset);
+                playerRecorder.recordSwitches(frameNumber, reset);
+            }
 
             // If joystick is disabled and we hit the reset switch we don't treat it as a reset but as
             // a enable the joystick.  The next time you hit the reset switch it will work as a reset.
@@ -644,7 +653,15 @@ namespace GameEngine
                     else
                     {
                         // Read joystick
-                        view.Platform_ReadJoystick(ref joyLeft, ref joyUp, ref joyRight, ref joyDown, ref joyFire);
+                        if (playerRecorder.Mode == PlayerRecorder.Modes.PLAYBACK)
+                        {
+                            playerRecorder.playJoystick(frameNumber, ref joyLeft, ref joyUp, ref joyRight, ref joyDown, ref joyFire);
+                        } else
+                        {
+                            view.Platform_ReadJoystick(ref joyLeft, ref joyUp, ref joyRight, ref joyDown, ref joyFire);
+                            playerRecorder.recordJoystick(frameNumber, joyLeft, joyUp, joyRight, joyDown, joyFire);
+                        }
+
 
                         if (EasterEgg.shouldStartGauntlet(frameNumber))
                         {
@@ -1088,6 +1105,7 @@ namespace GameEngine
 
             // Go to won state
             gameState = GAMESTATE_WIN;
+            playerRecorder.close();
             winFlashTimer = 0xff;
             winningRoom = winRoom;
             view.Platform_GameChange(GAME_CHANGES.GAME_ENDED);
