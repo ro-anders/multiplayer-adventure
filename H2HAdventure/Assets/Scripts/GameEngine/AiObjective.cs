@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using GameEngine;
-using UnityEngine;
 
 abstract public class AiObjective
 {
@@ -476,12 +475,26 @@ public class ObtainObjective : AiObjective
 //-------------------------------------------------------------------------
 
 /**
- * Go and pick up an object.
+ * Go and pick up an object.  This is dumb objective that assumes the 
+ * object is reachable and not moving.
  */
 public class PickupObjective : AiObjective
 {
+    /** The index of the object we are picking up */
     private int toPickup;
+
+    /** The object we are picking up */
     private OBJECT objectToPickup;
+
+    /** The position of the object to pickup when this objective
+     * was started.  Except for small magnetic shifts, movement
+     * causes the objective to be aborted. */
+    private RRect initialPosition;
+
+    /**
+     * The rectangle we are trying to get to to pickup the object.
+     */
+    private RRect destination;
 
     /**
      * The object the AI player needs to pickup
@@ -503,9 +516,62 @@ public class PickupObjective : AiObjective
         {
             throw new Abort();
         }
+        // Compute the closest reachable rectangle and then assume the
+        // object isn't going to leave that rectangle (if it does then
+        // it's been picked up or otherwise requires recalculating).
+        initialPosition = objectToPickup.Rect;
+        destination = computeDestination();
     }
 
+    /**
+     * Still valid if the object hasn't been picked up and hasn't moved, though only check
+     * if we can see the object.
+     */
+    public override bool isStillValid()
+    {
+        bool stillValid = true;
+        // We only check if we can see the object or see where the object should be
+        if ((aiPlayer.room == objectToPickup.room) || (aiPlayer.room == initialPosition.room))
+        {
+            // To speed up computation, we assume that if the object was picked up by another player
+            // that the position of the object will have changed slightly, and no change
+            // indicates no one picked it up
+            if (!initialPosition.equals(objectToPickup.Rect))
+            {
+                // See if the object is still touching the same plot.
+                Plot destinationPlot = nav.GetPlots(destination)[0]; // There should be exactly one
+                RRect intersection = destinationPlot.Rect.intersect(objectToPickup.Rect);
+                if (intersection.IsValid)
+                {
+                    destination = intersection;
+                } else
+                {
+                    stillValid = false;
+                }
+
+                // Make sure it is still touching the 
+                // Check to make sure no players are carrying the object
+                int numPlayers = board.getNumPlayers();
+                for (int ctr = 0; ctr < numPlayers && stillValid; ++ctr)
+                {
+                    stillValid = (board.getPlayer(ctr).linkedObject != toPickup);
+                }
+            }
+        }
+        return stillValid;
+    }
+
+    /**
+     * Return the part of the target object that overlaps the nearest reachable
+     * plot.
+     */
     public override RRect getDestination()
+    {
+        return destination;
+    }
+
+
+    private RRect computeDestination()
     {
         if (toPickup == Board.OBJECT_BRIDGE)
         {

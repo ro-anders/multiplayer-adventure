@@ -145,7 +145,7 @@ namespace GameEngine
 
 
         /**
-         * Returns true if an object is in or overlapping a path.
+         * Returns true if an object is in or overlapping a reachable area.
          * Returns false if the object is totally embedded in the wall.
          */
         public bool IsReachable(int room, int x, int y, int width, int height)
@@ -161,11 +161,19 @@ namespace GameEngine
         {
             int[] plotIndexes = FindPlots(room, x, y, width, height, false);
             Plot[] plots = new Plot[plotIndexes.Length];
-            for(int ctr=0; ctr<plotIndexes.Length; ++ctr)
+            for (int ctr = 0; ctr < plotIndexes.Length; ++ctr)
             {
                 plots[ctr] = aiPlots[plotIndexes[ctr]].thisPlot;
             }
             return plots;
+        }
+
+        /**
+         * Find all plots that overlap this rectangle
+         */
+        public Plot[] GetPlots(RRect rect)
+        {
+            return GetPlots(rect.room, rect.x, rect.y, rect.width, rect.height);
         }
 
         /**
@@ -644,6 +652,11 @@ namespace GameEngine
         public int Edge(int direction)
         {
             return edges[direction % 4];
+        }
+
+        public bool equals(Plot other)
+        {
+            return this.key == other.key;
         }
 
         /**
