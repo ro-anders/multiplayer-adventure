@@ -8,7 +8,7 @@ namespace GameEngine
         // When drawing on the display, each map block is an 8x32 block
         public const int WALL_WIDTH = 8;
         public const int WALL_HEIGHT = 32;
-        public const int MAX_WALL_X = (Adv.ADVENTURE_SCREEN_WIDTH / 2) / WALL_WIDTH; /* 2 because the screen is mirrored */
+        public const int MAX_WALL_X = Adv.ADVENTURE_SCREEN_WIDTH / WALL_WIDTH;
         public const int MAX_WALL_Y = Adv.ADVENTURE_TOTAL_SCREEN_HEIGHT / WALL_HEIGHT;
 
 
@@ -178,7 +178,7 @@ namespace GameEngine
             if (isCooperative)
             {
                 // Remove the copper castle
-                roomDefs[MAIN_HALL_RIGHT].graphicsData = roomGfxLeftOfName;
+                roomDefs[MAIN_HALL_RIGHT].setGraphicsData(roomGfxLeftOfName);
                 roomDefs[MAIN_HALL_RIGHT].roomUp = BLUE_MAZE_3;
                 roomDefs[COPPER_CASTLE].visibility = ROOM.RandomVisibility.HIDDEN;
                 roomDefs[COPPER_FOYER].visibility = ROOM.RandomVisibility.HIDDEN;
@@ -188,7 +188,7 @@ namespace GameEngine
             if ((numPlayers > 2) && !isCooperative)
             {
                 roomDefs[BLUE_MAZE_2].roomUp = JADE_CASTLE;
-                roomDefs[BLUE_MAZE_2].graphicsData = roomGfxBlueMaze2B;
+                roomDefs[BLUE_MAZE_2].setGraphicsData(roomGfxBlueMaze2B);
                 roomDefs[JADE_CASTLE].visibility = ROOM.RandomVisibility.OPEN;
                 roomDefs[JADE_FOYER].visibility = ROOM.RandomVisibility.IN_CASTLE;
             }
@@ -202,7 +202,7 @@ namespace GameEngine
                 // Make the right side of the main hall a dead end.
                 roomDefs[MAIN_HALL_RIGHT].roomUp = BLUE_MAZE_3;
                 roomDefs[MAIN_HALL_RIGHT].roomDown = BLACK_CASTLE;
-                roomDefs[MAIN_HALL_RIGHT].graphicsData = roomGfxStraightHall;
+                roomDefs[MAIN_HALL_RIGHT].setGraphicsData(roomGfxStraightHall);
             }
             else
             {
@@ -217,7 +217,7 @@ namespace GameEngine
                 // (or the Black Castle's innermost room if its cooperative)
                 if (!isCooperative)
                 {
-                    roomDefs[MAIN_HALL_RIGHT].graphicsData = roomGfxLeftOfName;
+                    roomDefs[MAIN_HALL_RIGHT].setGraphicsData(roomGfxLeftOfName);
                     roomDefs[MAIN_HALL_RIGHT].roomUp = BLUE_MAZE_3;
                     roomDefs[COPPER_CASTLE].roomDown = SOUTH_HALL_RIGHT;
                     roomDefs[COPPER_CASTLE].roomUp = SOUTHEAST_ROOM;
@@ -369,7 +369,7 @@ namespace GameEngine
         // Close exit to crystal castle to keep everyone there until the race starts
         public void easterEggLayout1()
         {
-            roomDefs[CRYSTAL_FOYER].graphicsData = roomGfxClosedRoom;
+            roomDefs[CRYSTAL_FOYER].setGraphicsData(roomGfxClosedRoom);
         }
 
         // Setup map for Easter Egg gauntlet.
@@ -377,26 +377,26 @@ namespace GameEngine
         {
             // Block off Jade Castle
             roomDefs[BLUE_MAZE_2].roomUp = MAIN_HALL_RIGHT;
-            roomDefs[BLUE_MAZE_2].graphicsData = roomGfxBlueMaze2;
+            roomDefs[BLUE_MAZE_2].setGraphicsData(roomGfxBlueMaze2);
 
             // Block off white catacombs
             roomDefs[MAIN_HALL_RIGHT].roomUp = BLUE_MAZE_3;
             roomDefs[MAIN_HALL_RIGHT].roomDown = BLACK_CASTLE;
-            roomDefs[MAIN_HALL_RIGHT].graphicsData = roomGfxStraightHall;
+            roomDefs[MAIN_HALL_RIGHT].setGraphicsData(roomGfxStraightHall);
             roomDefs[MAIN_HALL_LEFT].roomDown = BLACK_CASTLE;
             roomDefs[BLACK_CASTLE].roomLeft = BLUE_MAZE_4;
             roomDefs[BLACK_CASTLE].roomRight = BLUE_MAZE_1;
 
             // Block off black catacombs
-            roomDefs[BLACK_FOYER].graphicsData = roomGfxNumberRoom;
+            roomDefs[BLACK_FOYER].setGraphicsData(roomGfxNumberRoom);
             roomDefs[BLACK_FOYER].roomUp = MAIN_HALL_LEFT;
             roomDefs[BLACK_FOYER].roomRight = BLUE_MAZE_4;
             roomDefs[BLACK_FOYER].roomDown = BLACK_FOYER;
             roomDefs[BLACK_FOYER].roomLeft = BLUE_MAZE_1;
 
             // Open up exit of crystal castle
-            roomDefs[CRYSTAL_FOYER].graphicsData = roomGfxNumberRoom;
-            roomDefs[CRYSTAL_CASTLE].graphicsData = roomGfxCastle;
+            roomDefs[CRYSTAL_FOYER].setGraphicsData(roomGfxNumberRoom);
+            roomDefs[CRYSTAL_CASTLE].setGraphicsData(roomGfxCastle);
 
             // Remove the MAIN_HALL_RIGHT wall
             roomDefs[MAIN_HALL_RIGHT].flags = ROOM.FLAG_MIRROR;
@@ -614,6 +614,17 @@ namespace GameEngine
             0x30,0x00,0x00,      // XX                                    RR
             0xF0,0xFF,0x0F       // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
         };                       // 0123456789012345678901234567890123456789
+
+        public static readonly string[] roomgfxCastle = // This one is public!
+        { // 0123456789012345678901234567890123456789
+            "XXXXXXXXXXX X X X      R R R RRRRRRRRRRR",
+            "XX        XXXXXXX      RRRRRRR        RR",
+            "XX        XXXXXXXXXXRRRRRRRRRR        RR",
+            "XX          XXXXXXXXRRRRRRRR          RR",
+            "XX          XXXXXX    RRRRRR          RR",
+            "XX                                    RR",
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR"
+        };// 0123456789012345678901234567890123456789
 
         // Castle
         private static readonly byte[] roomGfxCastle2 =

@@ -20,6 +20,7 @@ namespace GameEngine
 
         public int index;                  // index into the map
         public byte[] graphicsData;   // pointer to room graphics data
+        public bool[,] walls;             // 2D array of the walls in the room
         public byte flags;                 // room flags - see below
         public int color;                  // foreground color
         public int roomUp;                 // index of room UP
@@ -42,6 +43,7 @@ namespace GameEngine
             roomLeft = inRoomLeft;
             label = inLabel;
             visibility = inVis;
+            walls = decodeGraphicsData(graphicsData);
         }
 
         public int roomNext(int direction)
@@ -66,6 +68,12 @@ namespace GameEngine
             index = inIndex;
         }
 
+        public void setGraphicsData(byte[] newGraphicsData)
+        {
+            graphicsData = newGraphicsData;
+            walls = decodeGraphicsData(newGraphicsData);
+        }
+
         bool isNextTo(ROOM otherRoom)
         {
             int index2 = otherRoom.index;
@@ -86,42 +94,68 @@ namespace GameEngine
         {
             // Convert corners of rectangle down to wall coordinates
             const int MIRROR_EDGE = 2 * GRAPHICS_LENGTH - 1;
-            bool mirror = (flags & FLAG_MIRROR) > 0;
             int top = y / Map.WALL_HEIGHT;
-            int bottom = (y - height) / Map.WALL_HEIGHT;
+            int bottom = (y - height + 1) / Map.WALL_HEIGHT;
             bottom = (bottom < 0 ? 0 : bottom);
             int left = x / Map.WALL_WIDTH;
-            int right = (x + width) / Map.WALL_WIDTH;
+            int right = (x + width - 1) / Map.WALL_WIDTH;
             right = (right > MIRROR_EDGE ? MIRROR_EDGE : right);
 
+            bool hitWall = false;
+            for (int yctr = bottom; !hitWall && (yctr <= top); ++yctr)
+            {
+                for (int xctr = left; !hitWall && (xctr <= right); ++xctr)
+                {
+                    hitWall = walls[xctr, yctr];
+                }
+            }
+
+            return hitWall;
+        }
+
+        /** 
+         * Translate the array of Atari Graphics bit masks to a 2D boolean map of the room.
+         * @param graphicsData the graphics bitmasks
+         * @return a 40x7 array of booleans. If return[12][3] is true then there is a wall
+         * at the fourth row from the bottom and 13th column from the left.
+         */
+        private bool[,] decodeGraphicsData(byte[] graphicsData)
+        {
+            const int MIRROR_EDGE = 2 * GRAPHICS_LENGTH - 1;
             byte[] shiftreg = {
                         0x10,0x20,0x40,0x80,
                         0x80,0x40,0x20,0x10,0x8,0x4,0x2,0x1,
                         0x1,0x2,0x4,0x8,0x10,0x20,0x40,0x80
                     };
+            bool mirror = (flags & FLAG_MIRROR) > 0;
 
-            bool hitWall = false;
-            for (int yctr = bottom; !hitWall && (yctr <= top); ++yctr)
+            bool[,] decoded = new bool[40, 7];
+            for (int x = 0; x<40; ++x)
             {
-                int ypos = 6 - yctr;
-                byte pf0 = graphicsData[(ypos * 3) + 0];
-                byte pf1 = graphicsData[(ypos * 3) + 1];
-                byte pf2 = graphicsData[(ypos * 3) + 2];
-                for (int xctr = left; !hitWall && (xctr <= right); ++xctr)
+                for (int y = 0; y<7; ++y)
                 {
-                    byte bit = 0;
-                    int xpos = (xctr < GRAPHICS_LENGTH ? xctr : (mirror ?  MIRROR_EDGE - xctr : xctr - GRAPHICS_LENGTH));
+                    int ypos = 6 - y;
+                    byte bit;
+                    int xpos = (x < GRAPHICS_LENGTH ? x : (mirror ? MIRROR_EDGE - x : x - GRAPHICS_LENGTH));
                     if (xpos < 4)
+                    {
+                        byte pf0 = graphicsData[(ypos * 3) + 0];
                         bit = (byte)(pf0 & shiftreg[xpos]);
+                    }
                     else if (xpos < 12)
+                    {
+                        byte pf1 = graphicsData[(ypos * 3) + 1];
                         bit = (byte)(pf1 & shiftreg[xpos]);
+                    }
                     else
+                    {
+                        byte pf2 = graphicsData[(ypos * 3) + 2];
                         bit = (byte)(pf2 & shiftreg[xpos]);
-                    hitWall = (bit > 0);
+                    }
+                    decoded[x, y] = (bit > 0);
                 }
-
             }
-            return hitWall;
+            return decoded;
         }
     }
 }

@@ -285,59 +285,19 @@ namespace GameEngine
                     DrawObject(surrounds[ctr]);
                 }
             }
-            // get the playfield mirror flag
-            bool mirror = (currentRoom.flags & ROOM.FLAG_MIRROR) > 0;
-
-            //
-            // Extract the playfield register bits and paint the playfield
-            // The playfied register is 20 bits wide encoded across 3 bytes
-            // as follows:
-            //    PF0   |  PF1   |  PF2
-            //  xxxx4567|76543210|01234567
-            // Each set bit indicates playfield color - else background color -
-            // the size of each block is 8 x 32, and the drawing is shifted
-            // upwards by 16 pixels
-            //
-
-            // mask values for playfield bits
-            byte[] shiftreg = {
-                0x10,0x20,0x40,0x80,
-                0x80,0x40,0x20,0x10,0x8,0x4,0x2,0x1,
-                0x1,0x2,0x4,0x8,0x10,0x20,0x40,0x80
-            };
 
             // each cell is 8 x 32
             const int cell_width = Map.WALL_WIDTH;
             const int cell_height = Map.WALL_HEIGHT;
 
-
             // draw the playfield
-            for (int cy = 0; cy <= 6; cy++)
+            for (int wy = 0; wy < Map.MAX_WALL_Y; ++wy)
             {
-                byte pf0 = roomData[(cy * 3) + 0];
-                byte pf1 = roomData[(cy * 3) + 1];
-                byte pf2 = roomData[(cy * 3) + 2];
-
-                int ypos = 6 - cy;
-
-                for (int cx = 0; cx < 20; cx++)
+                for (int wx = 0; wx < Map.MAX_WALL_X; ++wx)
                 {
-                    int bit = 0;
-
-                    if (cx < 4)
-                        bit = pf0 & shiftreg[cx];
-                    else if (cx < 12)
-                        bit = pf1 & shiftreg[cx];
-                    else
-                        bit = pf2 & shiftreg[cx];
-
-                    if (bit != 0)
+                    if (currentRoom.walls[wx, wy])
                     {
-                        view.Platform_PaintPixel(color.r, color.g, color.b, cx * cell_width, ypos * cell_height, cell_width, cell_height);
-                        if (mirror)
-                            view.Platform_PaintPixel(color.r, color.g, color.b, ((40 - (cx + 1)) * cell_width), ypos * cell_height, cell_width, cell_height);
-                        else
-                            view.Platform_PaintPixel(color.r, color.g, color.b, (cx + 20) * cell_width, ypos * cell_height, cell_width, cell_height);
+                        view.Platform_PaintPixel(color.r, color.g, color.b, wx * cell_width, wy * cell_height, cell_width, cell_height);
                     }
                 }
             }
@@ -2162,19 +2122,9 @@ namespace GameEngine
 
             // get the playfield data
             ROOM currentRoom = roomDefs[room];
-            byte[] roomData = currentRoom.graphicsData;
 
             // get the playfield mirror flag
             bool mirror = (currentRoom.flags & ROOM.FLAG_MIRROR) > 0;
-
-            // mask values for playfield bits
-            byte[] shiftreg =
-            {
-        0x10,0x20,0x40,0x80,
-        0x80,0x40,0x20,0x10,0x8,0x4,0x2,0x1,
-        0x1,0x2,0x4,0x8,0x10,0x20,0x40,0x80
-    };
-
 
             if (((currentRoom.flags & ROOM.FLAG_LEFTTHINWALL) > 0) &&
                 (x < Map.LEFT_THIN_WALL + Map.THIN_WALL_WIDTH ) &&
@@ -2191,62 +2141,7 @@ namespace GameEngine
                     hitWall = true;
             }
 
-            // Check each bit of the playfield data to see if they intersect the ball
-            for (int cy = 0; (cy < Map.MAX_WALL_Y) & !hitWall; cy++)
-            {
-                byte pf0 = roomData[(cy * 3) + 0];
-                byte pf1 = roomData[(cy * 3) + 1];
-                byte pf2 = roomData[(cy * 3) + 2];
-
-                // y is not only counting down when we need it to count up,
-                // but is referring to the bottom left corner of its square
-                // when we need it to refer to the top left corner.
-                int ypos = (Map.MAX_WALL_Y - cy) * Map.WALL_HEIGHT - 1;
-
-                for (int cx = 0; cx < Map.MAX_WALL_X; cx++)
-                {
-                    byte bit = 0;
-
-                    if (cx < 4)
-                        bit = (byte)(pf0 & shiftreg[cx]);
-                    else if (cx < 12)
-                        bit = (byte)(pf1 & shiftreg[cx]);
-                    else
-                        bit = (byte)(pf2 & shiftreg[cx]);
-
-                    int xpos = cx * Map.WALL_WIDTH;
-                    if (bit != 0)
-                    {
-                        if (Board.HitTestRects(x, y, BALL.DIAMETER, BALL.DIAMETER,
-                            xpos, ypos, Map.WALL_WIDTH, Map.WALL_HEIGHT))
-                        {
-                            hitWall = true;
-                            break;
-                        }
-
-                        if (mirror)
-                        {
-                            if (Board.HitTestRects(x, y, BALL.DIAMETER, BALL.DIAMETER,
-                                Adv.ADVENTURE_SCREEN_WIDTH - xpos - Map.WALL_WIDTH, ypos, Map.WALL_WIDTH, Map.WALL_HEIGHT))
-                            {
-                                hitWall = true;
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            if (Board.HitTestRects(x, y, BALL.DIAMETER, BALL.DIAMETER,
-                                xpos + Adv.ADVENTURE_SCREEN_WIDTH / 2, ypos, Map.WALL_WIDTH, Map.WALL_HEIGHT))
-                            {
-                                hitWall = true;
-                                break;
-                            }
-                        }
-
-                    }
-
-                }
-            }
+            hitWall = hitWall || currentRoom.hitsWall(x, y, BALL.DIAMETER, BALL.DIAMETER);
 
             return hitWall;
         }
