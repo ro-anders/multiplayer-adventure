@@ -129,10 +129,10 @@ namespace GameEngine
                     };
             bool mirror = (flags & FLAG_MIRROR) > 0;
 
-            bool[,] decoded = new bool[40, 7];
-            for (int x = 0; x<40; ++x)
+            bool[,] decoded = new bool[Map.MAX_WALL_X, Map.MAX_WALL_Y];
+            for (int x = 0; x<Map.MAX_WALL_X; ++x)
             {
-                for (int y = 0; y<7; ++y)
+                for (int y = 0; y<Map.MAX_WALL_Y; ++y)
                 {
                     int ypos = 6 - y;
                     byte bit;
