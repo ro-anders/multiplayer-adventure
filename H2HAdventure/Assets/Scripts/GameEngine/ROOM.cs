@@ -19,7 +19,6 @@ namespace GameEngine
         };
 
         public int index;                  // index into the map
-        public byte[] graphicsData;   // pointer to room graphics data
         public bool[,] walls;             // 2D array of the walls in the room
         public byte flags;                 // room flags - see below
         public int color;                  // foreground color
@@ -34,7 +33,6 @@ namespace GameEngine
         public ROOM(byte[] inGraphicsData, byte inFlags, int inColor,
                     int inRoomUp, int inRoomRight, int inRoomDown, int inRoomLeft, String inLabel, RandomVisibility inVis = RandomVisibility.OPEN)
         {
-            graphicsData = inGraphicsData;
             flags = inFlags;
             color = (int)inColor;
             roomUp = inRoomUp;
@@ -43,7 +41,21 @@ namespace GameEngine
             roomLeft = inRoomLeft;
             label = inLabel;
             visibility = inVis;
-            walls = decodeGraphicsData(graphicsData);
+            walls = decodeGraphicsData(inGraphicsData);
+        }
+
+        public ROOM(string[] inWalls, byte[] inGraphicsData, byte inFlags, int inColor,
+                    int inRoomUp, int inRoomRight, int inRoomDown, int inRoomLeft, String inLabel, RandomVisibility inVis = RandomVisibility.OPEN)
+        {
+            flags = inFlags;
+            color = (int)inColor;
+            roomUp = inRoomUp;
+            roomRight = inRoomRight;
+            roomDown = inRoomDown;
+            roomLeft = inRoomLeft;
+            label = inLabel;
+            visibility = inVis;
+            walls = readWalls(inWalls, inGraphicsData);
         }
 
         public int roomNext(int direction)
@@ -70,7 +82,6 @@ namespace GameEngine
 
         public void setGraphicsData(byte[] newGraphicsData)
         {
-            graphicsData = newGraphicsData;
             walls = decodeGraphicsData(newGraphicsData);
         }
 
@@ -111,6 +122,46 @@ namespace GameEngine
             }
 
             return hitWall;
+        }
+
+        /** 
+         * Translate an ascii map of a room to a boolean map.
+         * @param asciimap a 40x7 array of characters where spaces are no walls
+         * @return a 40x7 array of booleans. If return[12][3] is true then there is a wall
+         * at the fourth row from the bottom and 13th column from the left.
+         */
+        private bool[,] readWalls(string[] asciimap, byte[] graphicsData)
+        {
+            bool[,] oldway = decodeGraphicsData(graphicsData);
+            bool[,] boolmap = new bool[Map.MAX_WALL_X, Map.MAX_WALL_Y];
+
+            string oldmap = "old map:\n";
+            string newmap = "new map:\n";
+            for (int y = Map.MAX_WALL_Y-1; y >= 0; --y)
+            {
+                for (int x = 0; x < Map.MAX_WALL_X; ++x)
+                {
+                    oldmap += (oldway[x, y] ? '■' : '□');
+                    newmap += (asciimap[Map.MAX_WALL_Y - y - 1][x] != ' ' ? '■' : '□');
+                }
+                oldmap += "\n";
+                newmap += "\n";
+            }
+            for (int y = 0; y < Map.MAX_WALL_Y; ++y)
+            {
+                for (int x = 0; x < Map.MAX_WALL_X; ++x)
+                {
+                    boolmap[x, y] = (asciimap[Map.MAX_WALL_Y-y-1][x] != ' ');
+                    if (boolmap[x,y] != oldway[x,y])
+                    {
+                        UnityEngine.Debug.Log(oldmap);
+                        UnityEngine.Debug.Log(newmap);
+                        throw new Exception("Wall constructs at (" + x + "," + y + ") in " + label + " don't match.");
+                    }
+                }
+            }
+
+            return boolmap;
         }
 
         /** 

@@ -130,7 +130,7 @@ namespace GameEngine
                                            0x0E, 0x0F, 0x0D, 0x0F, "White Castle"));
             addRoom(BLACK_CASTLE, new ROOM(roomGfxCastle, ROOM.FLAG_MIRROR, COLOR.BLACK,                           // 0x10
                                            0x01, 0x1C, 0x04, 0x1C, "Black Castle"));
-            addRoom(GOLD_CASTLE, new ROOM(roomGfxCastle, ROOM.FLAG_MIRROR, COLOR.YELLOW,                           // 0x11
+            addRoom(GOLD_CASTLE, new ROOM(roomWallsCastle, roomGfxCastle, ROOM.FLAG_MIRROR, COLOR.YELLOW,                           // 0x11
                                           0x06, 0x03, 0x02, 0x01, "Gold Castle"));
             addRoom(GOLD_FOYER, new ROOM(roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.YELLOW,                        // 0x12
                                          GOLD_FOYER, GOLD_FOYER, GOLD_FOYER, GOLD_FOYER, "Gold Foyer"));
@@ -615,7 +615,7 @@ namespace GameEngine
             0xF0,0xFF,0x0F       // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
         };                       // 0123456789012345678901234567890123456789
 
-        public static readonly string[] roomgfxCastle = // This one is public!
+        public static readonly string[] roomWallsCastle = // This one is public!
         { // 0123456789012345678901234567890123456789
             "XXXXXXXXXXX X X X      R R R RRRRRRRRRRR",
             "XX        XXXXXXX      RRRRRRR        RR",

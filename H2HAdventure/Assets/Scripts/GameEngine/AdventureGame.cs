@@ -268,7 +268,6 @@ namespace GameEngine
             int displayedRoom = (displayWinningRoom ? winningRoom : thisPlayerRoom);
 
             ROOM currentRoom = roomDefs[displayedRoom];
-            byte[] roomData = currentRoom.graphicsData;
 
             // get the playfield color
             COLOR color = ((gameState == GAMESTATE_WIN) && (winFlashTimer > 0)) ? GetFlashColor() : COLOR.table(currentRoom.color);
