@@ -126,9 +126,9 @@ namespace GameEngine
                                               0x0F, 0x0B, 0x0E, 0x0C, "South Hall Left"));                         // 0x0E
             addRoom(SOUTHWEST_ROOM, new ROOM(roomGfxTopEntryRoom, ROOM.FLAG_MIRROR, COLOR.CYAN,
                                              0x0D, 0x10, 0x0F, 0x10, "Southwest Room"));
-            addRoom(WHITE_CASTLE, new ROOM(roomGfxCastle, ROOM.FLAG_MIRROR, COLOR.WHITE,                           // 0x0F
+            addRoom(WHITE_CASTLE, new ROOM(roomWallsCastle, roomGfxCastle, ROOM.FLAG_MIRROR, COLOR.WHITE,                           // 0x0F
                                            0x0E, 0x0F, 0x0D, 0x0F, "White Castle"));
-            addRoom(BLACK_CASTLE, new ROOM(roomGfxCastle, ROOM.FLAG_MIRROR, COLOR.BLACK,                           // 0x10
+            addRoom(BLACK_CASTLE, new ROOM(roomWallsCastle, roomGfxCastle, ROOM.FLAG_MIRROR, COLOR.BLACK,                           // 0x10
                                            0x01, 0x1C, 0x04, 0x1C, "Black Castle"));
             addRoom(GOLD_CASTLE, new ROOM(roomWallsCastle, roomGfxCastle, ROOM.FLAG_MIRROR, COLOR.YELLOW,                           // 0x11
                                           0x06, 0x03, 0x02, 0x01, "Gold Castle"));
@@ -158,11 +158,11 @@ namespace GameEngine
                                              MAIN_HALL_RIGHT, MAIN_HALL_LEFT, BLACK_CASTLE, MAIN_HALL_RIGHT, "Southeast Room"));
             addRoom(ROBINETT_ROOM, new ROOM(roomGfxBelowYellowCastle, ROOM.FLAG_MIRROR, COLOR.PURPLE,              // 0x1E
                                             CRYSTAL_CASTLE, MAIN_HALL_LEFT, CRYSTAL_CASTLE, MAIN_HALL_RIGHT, "Robinett Room", ROOM.RandomVisibility.HIDDEN));
-            addRoom(JADE_CASTLE, new ROOM(roomGfxCastle3, ROOM.FLAG_MIRROR, COLOR.JADE,                            // 0x1F
+            addRoom(JADE_CASTLE, new ROOM(roomWallsCastle3, roomGfxCastle3, ROOM.FLAG_MIRROR, COLOR.JADE,                            // 0x1F
                                           SOUTHEAST_ROOM, BLUE_MAZE_3, BLUE_MAZE_2, BLUE_MAZE_5, "Jade Castle", ROOM.RandomVisibility.HIDDEN));
             addRoom(JADE_FOYER, new ROOM(roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.JADE,                          // 0x20
                                          JADE_FOYER, JADE_FOYER, JADE_FOYER, JADE_FOYER, "Jade Foyer", ROOM.RandomVisibility.HIDDEN));
-            addRoom(COPPER_CASTLE, new ROOM(roomGfxCastle2, ROOM.FLAG_MIRROR, COLOR.COPPER,                        // 0x21
+            addRoom(COPPER_CASTLE, new ROOM(roomWallsCastle2, roomGfxCastle2, ROOM.FLAG_MIRROR, COLOR.COPPER,                        // 0x21
                                             BLUE_MAZE_3, MAIN_HALL_LEFT, MAIN_HALL_RIGHT, GOLD_CASTLE, "Copper Castle"));
             addRoom(COPPER_FOYER, new ROOM(roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.COPPER,                      // 0x22
                                            COPPER_FOYER, COPPER_FOYER, COPPER_FOYER, COPPER_FOYER, "Copper Foyer"));
@@ -637,6 +637,16 @@ namespace GameEngine
             0x30,0x00,0x00,      // XX                                    RR
             0xF0,0xFF,0x0F       // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
         };
+        private static readonly string[] roomWallsCastle2 =
+        {
+            "XXXXXXXXXXX X X X      R R R RRRRRRRRRRR",
+            "XX        XXXXXXX      RRRRRRR        RR",
+            "XX        XXXX  XXXXRRRR  RRRR        RR",
+            "XX          XXXXXXXXRRRRRRRR          RR",
+            "XX          XXXXXX    RRRRRR          RR",
+            "XX                                    RR",
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR"
+        };
 
         // Castle
         private static readonly byte[] roomGfxCastle3 =
@@ -649,6 +659,16 @@ namespace GameEngine
             0x30,0x00,0x00,      // XX                                    RR
             0xF0,0xFF,0x0F       // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
         };
+        private static readonly string[] roomWallsCastle3 =
+        {
+            "XXXXXXXXXXX X X X      R R R RRRRRRRRRRR",
+            "XX        XXXXXXX      RRRRRRR        RR",
+            "XX        XXX X XXXXRRRR R RRR        RR",
+            "XX          XXXXXXXXRRRRRRRR          RR",
+            "XX          XXXXXX    RRRRRR          RR",
+            "XX                                    RR",
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR"
+        };
 
         // Walled off Castle
         private static readonly byte[] roomGfxCastle4 =
@@ -660,6 +680,16 @@ namespace GameEngine
             0x30,0x00,0x3F,      // XX          XXXXXX    RRRRRR          RR
             0x30,0x00,0x00,      // XX                                    RR
             0xF0,0xFF,0xFF       // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
+        };
+        private static readonly string[] roomWallsCastle4 =
+        {
+            "XXXXXXXXXXX X X X      R R R RRRRRRRRRRR",
+            "XX        XXXXXXX      RRRRRRR        RR",
+            "XX        XXXXXXXXXXRRRRRRRRRR        RR",
+            "XX          XXXXXXXXRRRRRRRR          RR",
+            "XX          XXXXXX    RRRRRR          RR",
+            "XX                                    RR",
+            "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR"
         };
 
         // Red Maze #1
