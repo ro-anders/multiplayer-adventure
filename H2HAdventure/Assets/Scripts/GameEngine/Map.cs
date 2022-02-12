@@ -96,35 +96,35 @@ namespace GameEngine
         void defaultRooms()
         {
 
-            addRoom(NUMBER_ROOM, new ROOM(roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.PURPLE,                       // 0x00
+            addRoom(NUMBER_ROOM, new ROOM(roomWallsNumberRoom, roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.PURPLE,                       // 0x00
                                                 NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM, NUMBER_ROOM, "Number Room", ROOM.RandomVisibility.HIDDEN));
-            addRoom(MAIN_HALL_LEFT, new ROOM(roomGfxBelowYellowCastle, ROOM.FLAG_MIRROR | ROOM.FLAG_LEFTTHINWALL, COLOR.OLIVEGREEN, // 0x01
+            addRoom(MAIN_HALL_LEFT, new ROOM(roomWallsBelowYellowCastle, roomGfxBelowYellowCastle, ROOM.FLAG_MIRROR | ROOM.FLAG_LEFTTHINWALL, COLOR.OLIVEGREEN, // 0x01
                                              BLUE_MAZE_1, MAIN_HALL_CENTER, BLACK_CASTLE, MAIN_HALL_RIGHT, "Main Hall Left"));
-            addRoom(MAIN_HALL_CENTER, new ROOM(roomGfxBelowYellowCastle, ROOM.FLAG_MIRROR, COLOR.LIMEGREEN,        // 0x02
+            addRoom(MAIN_HALL_CENTER, new ROOM(roomWallsBelowYellowCastle, roomGfxBelowYellowCastle, ROOM.FLAG_MIRROR, COLOR.LIMEGREEN,        // 0x02
                                                GOLD_CASTLE, MAIN_HALL_RIGHT, BLUE_MAZE_2, MAIN_HALL_LEFT, "Main Hall Center"));
-            addRoom(MAIN_HALL_RIGHT, new ROOM(roomGfxSideCorridor, ROOM.FLAG_MIRROR | ROOM.FLAG_RIGHTTHINWALL, COLOR.TAN,          // 0x03
+            addRoom(MAIN_HALL_RIGHT, new ROOM(roomWallsSideCorridor, roomGfxSideCorridor, ROOM.FLAG_MIRROR | ROOM.FLAG_RIGHTTHINWALL, COLOR.TAN,          // 0x03
                                             COPPER_CASTLE, MAIN_HALL_LEFT, SOUTHEAST_ROOM, MAIN_HALL_CENTER, "Main Hall Right"));
-            addRoom(BLUE_MAZE_5, new ROOM(roomGfxBlueMazeTop, ROOM.FLAG_MIRROR, COLOR.BLUE,                        // 0x04
+            addRoom(BLUE_MAZE_5, new ROOM(roomWallsBlueMazeTop, roomGfxBlueMazeTop, ROOM.FLAG_MIRROR, COLOR.BLUE,                        // 0x04
                                           0x10, 0x05, 0x07, 0x06, "Blue Maze 5"));
-            addRoom(BLUE_MAZE_2, new ROOM(roomGfxBlueMaze2, ROOM.FLAG_MIRROR, COLOR.BLUE,                          // 0x05
+            addRoom(BLUE_MAZE_2, new ROOM(roomWallsBlueMaze2, roomGfxBlueMaze2, ROOM.FLAG_MIRROR, COLOR.BLUE,                          // 0x05
                                           0x1D, 0x06, 0x08, 0x04, "Blue Maze 2"));
-            addRoom(BLUE_MAZE_3, new ROOM(roomGfxBlueMazeBottom, ROOM.FLAG_MIRROR, COLOR.BLUE,                     // 0x06
+            addRoom(BLUE_MAZE_3, new ROOM(roomWallsBlueMazeBottom, roomGfxBlueMazeBottom, ROOM.FLAG_MIRROR, COLOR.BLUE,                     // 0x06
                                           0x07, 0x04, 0x03, 0x05, "Blue Maze 3"));
-            addRoom(BLUE_MAZE_4, new ROOM(roomGfxBlueMazeCenter, ROOM.FLAG_MIRROR, COLOR.BLUE,                     // 0x07
+            addRoom(BLUE_MAZE_4, new ROOM(roomWallsBlueMazeCenter, roomGfxBlueMazeCenter, ROOM.FLAG_MIRROR, COLOR.BLUE,                     // 0x07
                                           0x04, 0x08, 0x06, 0x08, "Blue Maze 4"));
-            addRoom(BLUE_MAZE_1, new ROOM(roomGfxBlueMazeEntry, ROOM.FLAG_MIRROR, COLOR.BLUE,                      // 0x08
+            addRoom(BLUE_MAZE_1, new ROOM(roomWallsBlueMazeEntry, roomGfxBlueMazeEntry, ROOM.FLAG_MIRROR, COLOR.BLUE,                      // 0x08
                                           0x05, 0x07, 0x01, 0x07, "Blue Maze 1"));
-            addRoom(WHITE_MAZE_2, new ROOM(roomGfxMazeMiddle, ROOM.FLAG_MIRROR, COLOR.LTGRAY,                      // 0x09
+            addRoom(WHITE_MAZE_2, new ROOM(roomWallsMazeMiddle, roomGfxMazeMiddle, ROOM.FLAG_MIRROR, COLOR.LTGRAY,                      // 0x09
                                            WHITE_MAZE_1, WHITE_MAZE_1, WHITE_MAZE_3, WHITE_MAZE_1, "White Maze 2"));
-            addRoom(WHITE_MAZE_1, new ROOM(roomGfxMazeEntry, ROOM.FLAG_MIRROR, COLOR.LTGRAY,                       // 0x0A
+            addRoom(WHITE_MAZE_1, new ROOM(roomWallsMazeEntry, roomGfxMazeEntry, ROOM.FLAG_MIRROR, COLOR.LTGRAY,                       // 0x0A
                                            MAIN_HALL_RIGHT, WHITE_MAZE_2, WHITE_MAZE_2, WHITE_MAZE_2, "White Maze 1"));
-            addRoom(WHITE_MAZE_3, new ROOM(roomGfxMazeSide, ROOM.FLAG_MIRROR, COLOR.LTGRAY,                        // 0x0B
+            addRoom(WHITE_MAZE_3, new ROOM(roomWallsMazeSide, roomGfxMazeSide, ROOM.FLAG_MIRROR, COLOR.LTGRAY,                        // 0x0B
                                            WHITE_MAZE_2, SOUTH_HALL_RIGHT, BLACK_INNERMOST_ROOM, SOUTH_HALL_LEFT, "White Maze 3"));
-            addRoom(SOUTH_HALL_RIGHT, new ROOM(roomGfxSideCorridor, ROOM.FLAG_MIRROR | ROOM.FLAG_RIGHTTHINWALL, COLOR.LTCYAN,       // 0x0C
+            addRoom(SOUTH_HALL_RIGHT, new ROOM(roomWallsSideCorridor, roomGfxSideCorridor, ROOM.FLAG_MIRROR | ROOM.FLAG_RIGHTTHINWALL, COLOR.LTCYAN,       // 0x0C
                                                BLACK_INNERMOST_ROOM, SOUTH_HALL_LEFT, SOUTHEAST_ROOM, WHITE_MAZE_3, "South Hall Right"));
-            addRoom(SOUTH_HALL_LEFT, new ROOM(roomGfxSideCorridor, ROOM.FLAG_MIRROR | ROOM.FLAG_LEFTTHINWALL, COLOR.DKGREEN,        // 0x0D
+            addRoom(SOUTH_HALL_LEFT, new ROOM(roomWallsSideCorridor, roomGfxSideCorridor, ROOM.FLAG_MIRROR | ROOM.FLAG_LEFTTHINWALL, COLOR.DKGREEN,        // 0x0D
                                               0x0F, 0x0B, 0x0E, 0x0C, "South Hall Left"));                         // 0x0E
-            addRoom(SOUTHWEST_ROOM, new ROOM(roomGfxTopEntryRoom, ROOM.FLAG_MIRROR, COLOR.CYAN,
+            addRoom(SOUTHWEST_ROOM, new ROOM(roomWallsTopEntryRoom, roomGfxTopEntryRoom, ROOM.FLAG_MIRROR, COLOR.CYAN,
                                              0x0D, 0x10, 0x0F, 0x10, "Southwest Room"));
             addRoom(WHITE_CASTLE, new ROOM(roomWallsCastle, roomGfxCastle, ROOM.FLAG_MIRROR, COLOR.WHITE,                           // 0x0F
                                            0x0E, 0x0F, 0x0D, 0x0F, "White Castle"));
@@ -132,43 +132,43 @@ namespace GameEngine
                                            0x01, 0x1C, 0x04, 0x1C, "Black Castle"));
             addRoom(GOLD_CASTLE, new ROOM(roomWallsCastle, roomGfxCastle, ROOM.FLAG_MIRROR, COLOR.YELLOW,                           // 0x11
                                           0x06, 0x03, 0x02, 0x01, "Gold Castle"));
-            addRoom(GOLD_FOYER, new ROOM(roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.YELLOW,                        // 0x12
+            addRoom(GOLD_FOYER, new ROOM(roomWallsNumberRoom, roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.YELLOW,                        // 0x12
                                          GOLD_FOYER, GOLD_FOYER, GOLD_FOYER, GOLD_FOYER, "Gold Foyer"));
-            addRoom(BLACK_MAZE_1, new ROOM(roomGfxBlackMaze1, ROOM.FLAG_MIRROR, COLOR.LTGRAY,                      // 0x13
+            addRoom(BLACK_MAZE_1, new ROOM(roomWallsBlackMaze1, roomGfxBlackMaze1, ROOM.FLAG_MIRROR, COLOR.LTGRAY,                      // 0x13
                                            0x15, 0x14, 0x15, 0x16, "Black Maze 1"));
-            addRoom(BLACK_MAZE_2, new ROOM(roomGfxBlackMaze2, ROOM.FLAG_NONE, COLOR.LTGRAY,                    // 0x14
+            addRoom(BLACK_MAZE_2, new ROOM(roomWallsBlackMaze2, roomGfxBlackMaze2, ROOM.FLAG_NONE, COLOR.LTGRAY,                    // 0x14
                                            0x16, 0x15, 0x16, 0x13, "Black Maze 2"));
-            addRoom(BLACK_MAZE_3, new ROOM(roomGfxBlackMaze3, ROOM.FLAG_NONE, COLOR.LTGRAY,                    // 0x15
+            addRoom(BLACK_MAZE_3, new ROOM(roomWallsBlackMaze3, roomGfxBlackMaze3, ROOM.FLAG_NONE, COLOR.LTGRAY,                    // 0x15
                                            0x13, 0x16, 0x13, 0x14, "Black Maze 3"));
-            addRoom(BLACK_MAZE_ENTRY, new ROOM(roomGfxBlackMazeEntry, ROOM.FLAG_MIRROR, COLOR.LTGRAY,              // 0x16
+            addRoom(BLACK_MAZE_ENTRY, new ROOM(roomWallsBlackMazeEntry, roomGfxBlackMazeEntry, ROOM.FLAG_MIRROR, COLOR.LTGRAY,              // 0x16
                                                0x14, 0x13, 0x1B, 0x15, "Black Maze Entry"));
-            addRoom(RED_MAZE_3, new ROOM(roomGfxRedMaze1, ROOM.FLAG_MIRROR, COLOR.RED,                             // 0x17
+            addRoom(RED_MAZE_3, new ROOM(roomWallsRedMaze1, roomGfxRedMaze1, ROOM.FLAG_MIRROR, COLOR.RED,                             // 0x17
                                          0x19, 0x18, 0x19, 0x18, "Red Maze 3"));
-            addRoom(RED_MAZE_2, new ROOM(roomGfxRedMazeTop, ROOM.FLAG_MIRROR, COLOR.RED,                           // 0x18
+            addRoom(RED_MAZE_2, new ROOM(roomWallsRedMazeTop, roomGfxRedMazeTop, ROOM.FLAG_MIRROR, COLOR.RED,                           // 0x18
                                          0x1A, 0x17, 0x1A, 0x17, "Red Maze 2"));
-            addRoom(RED_MAZE_4, new ROOM(roomGfxRedMazeBottom, ROOM.FLAG_MIRROR, COLOR.RED,                        // 0x19
+            addRoom(RED_MAZE_4, new ROOM(roomWallsRedMazeBottom, roomGfxRedMazeBottom, ROOM.FLAG_MIRROR, COLOR.RED,                        // 0x19
                                          0x17, 0x1A, 0x17, 0x1A, "Red Maze4 "));
-            addRoom(RED_MAZE_1, new ROOM(roomGfxWhiteCastleEntry, ROOM.FLAG_MIRROR, COLOR.RED,                     // 0x1A
+            addRoom(RED_MAZE_1, new ROOM(roomWallsWhiteCastleEntry, roomGfxWhiteCastleEntry, ROOM.FLAG_MIRROR, COLOR.RED,                     // 0x1A
                                          0x18, 0x19, 0x18, 0x19, "Red Maze 1"));
-            addRoom(BLACK_FOYER, new ROOM(roomGfxTwoExitRoom, ROOM.FLAG_MIRROR, COLOR.RED,                         // 0x1B
+            addRoom(BLACK_FOYER, new ROOM(roomWallsTwoExitRoom, roomGfxTwoExitRoom, ROOM.FLAG_MIRROR, COLOR.RED,                         // 0x1B
                                 BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, "Black Foyer"));
-            addRoom(BLACK_INNERMOST_ROOM, new ROOM(roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.PURPLE,              // 0x1C
+            addRoom(BLACK_INNERMOST_ROOM, new ROOM(roomWallsNumberRoom, roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.PURPLE,              // 0x1C
                                     SOUTHEAST_ROOM, BLUE_MAZE_4, BLACK_FOYER, BLUE_MAZE_1, "Black Innermost Room"));
-            addRoom(SOUTHEAST_ROOM, new ROOM(roomGfxTopEntryRoom, ROOM.FLAG_MIRROR, COLOR.RED,                     // 0x1D
+            addRoom(SOUTHEAST_ROOM, new ROOM(roomWallsTopEntryRoom, roomGfxTopEntryRoom, ROOM.FLAG_MIRROR, COLOR.RED,                     // 0x1D
                                              MAIN_HALL_RIGHT, MAIN_HALL_LEFT, BLACK_CASTLE, MAIN_HALL_RIGHT, "Southeast Room"));
-            addRoom(ROBINETT_ROOM, new ROOM(roomGfxBelowYellowCastle, ROOM.FLAG_MIRROR, COLOR.PURPLE,              // 0x1E
+            addRoom(ROBINETT_ROOM, new ROOM(roomWallsBelowYellowCastle, roomGfxBelowYellowCastle, ROOM.FLAG_MIRROR, COLOR.PURPLE,              // 0x1E
                                             CRYSTAL_CASTLE, MAIN_HALL_LEFT, CRYSTAL_CASTLE, MAIN_HALL_RIGHT, "Robinett Room", ROOM.RandomVisibility.HIDDEN));
             addRoom(JADE_CASTLE, new ROOM(roomWallsCastle3, roomGfxCastle3, ROOM.FLAG_MIRROR, COLOR.JADE,                            // 0x1F
                                           SOUTHEAST_ROOM, BLUE_MAZE_3, BLUE_MAZE_2, BLUE_MAZE_5, "Jade Castle", ROOM.RandomVisibility.HIDDEN));
-            addRoom(JADE_FOYER, new ROOM(roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.JADE,                          // 0x20
+            addRoom(JADE_FOYER, new ROOM(roomWallsNumberRoom, roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.JADE,                          // 0x20
                                          JADE_FOYER, JADE_FOYER, JADE_FOYER, JADE_FOYER, "Jade Foyer", ROOM.RandomVisibility.HIDDEN));
             addRoom(COPPER_CASTLE, new ROOM(roomWallsCastle2, roomGfxCastle2, ROOM.FLAG_MIRROR, COLOR.COPPER,                        // 0x21
                                             BLUE_MAZE_3, MAIN_HALL_LEFT, MAIN_HALL_RIGHT, GOLD_CASTLE, "Copper Castle"));
-            addRoom(COPPER_FOYER, new ROOM(roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.COPPER,                      // 0x22
+            addRoom(COPPER_FOYER, new ROOM(roomWallsNumberRoom, roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.COPPER,                      // 0x22
                                            COPPER_FOYER, COPPER_FOYER, COPPER_FOYER, COPPER_FOYER, "Copper Foyer"));
-            addRoom(CRYSTAL_CASTLE, new ROOM(roomGfxCastle4, ROOM.FLAG_MIRROR, COLOR.CRYSTAL,                        // 0x23
+            addRoom(CRYSTAL_CASTLE, new ROOM(roomWallsCastle4, roomGfxCastle4, ROOM.FLAG_MIRROR, COLOR.CRYSTAL,                        // 0x23
                                              ROBINETT_ROOM, CRYSTAL_CASTLE, ROBINETT_ROOM, CRYSTAL_CASTLE, "Crystal Castle", ROOM.RandomVisibility.HIDDEN));
-            addRoom(CRYSTAL_FOYER, new ROOM(roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.DARK_CRYSTAL4,                      // 0x24
+            addRoom(CRYSTAL_FOYER, new ROOM(roomWallsNumberRoom, roomGfxNumberRoom, ROOM.FLAG_MIRROR, COLOR.DARK_CRYSTAL4,                      // 0x24
                                             CRYSTAL_FOYER, CRYSTAL_FOYER, CRYSTAL_FOYER, CRYSTAL_FOYER, "Crystal Foyer", ROOM.RandomVisibility.HIDDEN));
         }
 
@@ -407,62 +407,112 @@ namespace GameEngine
         //-- ROOM SHAPES ------------------------------------------------------
         // Left of Name Room
         private static readonly byte[] roomGfxLeftOfName = {
-            0xF0,0xFF,0xFF,     // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRRRRRR
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0xF0,0xFF,0x0F      // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRRRRRR
+            0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0xF0,0xFF,0x0F           // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
         };
+        private static readonly string[] roomWallsLeftOfName =
+        {
+            "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR",
+            "                                        ",
+            "                                        ",
+            "                                        ",
+            "                                        ",
+            "                                        ",
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR",
+        };
+
 
         // Straight Hall
         private static readonly byte[] roomGfxStraightHall =
         {
-            0xF0,0xFF,0xFF,     // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRRRRRR
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0xF0,0xFF,0xFF      // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRRRRRR
+            0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0xF0,0xFF,0xFF           // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
+        };
+        private static readonly string[] roomWallsStraightHall =
+        {
+            "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR",
+            "                                        ",
+            "                                        ",
+            "                                        ",
+            "                                        ",
+            "                                        ",
+            "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR"
         };
 
         // Below Yellow Castle
         private static readonly byte[] roomGfxBelowYellowCastle =
-        {                       // 0123456789012345678901234567890123456789
-            0xF0,0xFF,0x0F,     // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0xF0,0xFF,0xFF      // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
-        };                      // 0123456789012345678901234567890123456789
-
+        {
+            0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0xF0,0xFF,0xFF           // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
+        };
+        private static readonly string[] roomWallsBelowYellowCastle =
+        {
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR",
+            "                                        ",
+            "                                        ",
+            "                                        ",
+            "                                        ",
+            "                                        ",
+            "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR"
+        };
 
         // Side Corridor
         private static readonly byte[] roomGfxSideCorridor =
         {
-            0xF0,0xFF,0x0F,     // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0x00,0x00,0x00,
-            0xF0,0xFF,0x0F      // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+            0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0x00,0x00,0x00,          //                                         
+            0xF0,0xFF,0x0F           // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+        };
+        private static readonly string[] roomWallsSideCorridor =
+        {
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR",
+            "                                        ",
+            "                                        ",
+            "                                        ",
+            "                                        ",
+            "                                        ",
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR"
         };
 
         // Closed Room Definition
         private static readonly byte[] roomGfxClosedRoom =
         {
-            0xF0,0xFF,0xFF,     // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
-            0x30,0x00,0x00,     // XX                                    RR
-            0x30,0x00,0x00,     // XX                                    RR
-            0x30,0x00,0x00,     // XX                                    RR
-            0x30,0x00,0x00,     // XX                                    RR
-            0x30,0x00,0x00,     // XX                                    RR
-            0xF0,0xFF,0xFF      // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
+            0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
+            0x30,0x00,0x00,          // XX                                    RR
+            0x30,0x00,0x00,          // XX                                    RR
+            0x30,0x00,0x00,          // XX                                    RR
+            0x30,0x00,0x00,          // XX                                    RR
+            0x30,0x00,0x00,          // XX                                    RR
+            0xF0,0xFF,0xFF           // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
+        };
+        private static readonly string[] roomWallsClosedRoom =
+        {
+            "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR"
         };
 
 
@@ -470,137 +520,246 @@ namespace GameEngine
         // Number Room Definition
         private static readonly byte[] roomGfxNumberRoom =
         {
-            0xF0,0xFF,0xFF,     // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
-            0x30,0x00,0x00,     // XX                                    RR
-            0x30,0x00,0x00,     // XX                                    RR
-            0x30,0x00,0x00,     // XX                                    RR
-            0x30,0x00,0x00,     // XX                                    RR
-            0x30,0x00,0x00,     // XX                                    RR
-            0xF0,0xFF,0x0F      // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+            0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
+            0x30,0x00,0x00,          // XX                                    RR
+            0x30,0x00,0x00,          // XX                                    RR
+            0x30,0x00,0x00,          // XX                                    RR
+            0x30,0x00,0x00,          // XX                                    RR
+            0x30,0x00,0x00,          // XX                                    RR
+            0xF0,0xFF,0x0F           // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+        };
+        private static readonly string[] roomWallsNumberRoom =
+        {
+            "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR"
         };
 
         // `
         private static readonly byte[] roomGfxTwoExitRoom =
         {
-            0xF0,0xFF,0x0F,     // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
-            0x30,0x00,0x00,     // XX                                    RR
-            0x30,0x00,0x00,     // XX                                    RR
-            0x30,0x00,0x00,     // XX                                    RR
-            0x30,0x00,0x00,     // XX                                    RR
-            0x30,0x00,0x00,     // XX                                    RR
-            0xF0,0xFF,0x0F      // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+            0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+            0x30,0x00,0x00,          // XX                                    RR
+            0x30,0x00,0x00,          // XX                                    RR
+            0x30,0x00,0x00,          // XX                                    RR
+            0x30,0x00,0x00,          // XX                                    RR
+            0x30,0x00,0x00,          // XX                                    RR
+            0xF0,0xFF,0x0F           // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+        };
+        private static readonly string[] roomWallsTwoExitRoom =
+        {
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR"
         };
 
         // Blue Maze 5 - Top of Blue Maze
         private static readonly byte[] roomGfxBlueMazeTop =
-        {                       // 0123456789012345678901234567890123456789
-            0xF0,0xFF,0x0F,     // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
-            0x00,0x0C,0x0C,     //         XX    XX        RR    RR
-            0xF0,0x0C,0x3C,     // XXXX    XX    XXXX    RRRR    RR    RRRR
-            0xF0,0x0C,0x00,     // XXXX    XX                    RR    RRRR
-            0xF0,0xFF,0x3F,     // XXXXXXXXXXXXXXXXXX    RRRRRRRRRRRRRRRRRR
-            0x00,0x30,0x30,     //       XX        XX    RR        RR
-            0xF0,0x33,0x3F      // XXXX  XX  XXXXXXXX    RRRRRRRR  RR  RRRR
-                                // 0123456789012345678901234567890123456789
+        {
+            0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+            0x00,0x0C,0x0C,          //         XX    XX        RR    RR        
+            0xF0,0x0C,0x3C,          // XXXX    XX    XXXX    RRRR    RR    RRRR
+            0xF0,0x0C,0x00,          // XXXX    XX                    RR    RRRR
+            0xF0,0xFF,0x3F,          // XXXXXXXXXXXXXXXXXX    RRRRRRRRRRRRRRRRRR
+            0x00,0x30,0x30,          //       XX        XX    RR        RR      
+            0xF0,0x33,0x3F           // XXXX  XX  XXXXXXXX    RRRRRRRR  RR  RRRR
+        };
+        private static readonly string[] roomWallsBlueMazeTop =
+        {
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR",
+            "        XX    XX        RR    RR        ",
+            "XXXX    XX    XXXX    RRRR    RR    RRRR",
+            "XXXX    XX                    RR    RRRR",
+            "XXXXXXXXXXXXXXXXXX    RRRRRRRRRRRRRRRRRR",
+            "      XX        XX    RR        RR      ",
+            "XXXX  XX  XXXXXXXX    RRRRRRRR  RR  RRRR"
         };
 
 
         // Blue Maze #2
         private static readonly byte[] roomGfxBlueMaze2 =
-        {                            // 0123456789012345678901234567890123456789
-            0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXX--------RRRRRRRRRRRRRRRR
-            0x00,0x00,0x00,          //
+        {
+            0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
+            0x00,0x00,0x00,          //                                         
             0xF0,0xFC,0xFF,          // XXXXXXXXXX  XXXXXXXXRRRRRRRR  RRRRRRRRRR
             0xF0,0x00,0xC0,          // XXXX              XXRR              RRRR
             0xF0,0x3F,0xCF,          // XXXX  XXXXXXXXXX  XXRR  RRRRRRRRRR  RRRR
-            0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR
+            0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR      
             0xF0,0xF3,0xCC           // XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR
-        };                           // 0123456789012345678901234567890123456789
+        };
+        private static readonly string[] roomWallsBlueMaze2 =
+        {
+            "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR",
+            "                                        ",
+            "XXXXXXXXXX  XXXXXXXXRRRRRRRR  RRRRRRRRRR",
+            "XXXX              XXRR              RRRR",
+            "XXXX  XXXXXXXXXX  XXRR  RRRRRRRRRR  RRRR",
+            "      XX      XX  XXRR  RR      RR      ",
+            "XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR"
+        };
 
 
         // Blue Maze #2 with entrance to Jade Castle (only used with 3 players)
         private static readonly byte[] roomGfxBlueMaze2B =
-        {                            // 0123456789012345678901234567890123456789
+        { 
             0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
-            0x00,0x00,0x00,          //
+            0x00,0x00,0x00,          //                                         
             0xF0,0xFC,0xFF,          // XXXXXXXXXX  XXXXXXXXRRRRRRRR  RRRRRRRRRR
             0xF0,0x00,0xC0,          // XXXX              XXRR              RRRR
             0xF0,0x3F,0xCF,          // XXXX  XXXXXXXXXX  XXRR  RRRRRRRRRR  RRRR
-            0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR
+            0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR      
             0xF0,0xF3,0xCC           // XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR
-        };                           // 0123456789012345678901234567890123456789
+        };
+        private static readonly string[] roomWallsBlueMaze2B =
+        { 
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR",
+            "                                        ",
+            "XXXXXXXXXX  XXXXXXXXRRRRRRRR  RRRRRRRRRR",
+            "XXXX              XXRR              RRRR",
+            "XXXX  XXXXXXXXXX  XXRR  RRRRRRRRRR  RRRR",
+            "      XX      XX  XXRR  RR      RR      ",
+            "XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR"
+        };
 
         // Blue Maze 3 - Bottom of Blue Maze
         private static readonly byte[] roomGfxBlueMazeBottom =
-        {                        // 0123456789012345678901234567890123456789
-            0xF0,0xF3,0x0C,      // XXXXXXXX  XX  XX        RR  RR  RRRRRRRR
-            0x00,0x30,0x0C,      //       XX      XX        RR      RR
-            0xF0,0x3F,0x0F,      // XXXX  XXXXXXXXXX        RRRRRRRRRR  RRRR
-            0xF0,0x00,0x00,      // XXXX                                RRRR
-            0xF0,0xF0,0x00,      // XXXXXXXX                        RRRRRRRR
-            0x00,0x30,0x00,      //       XX                        RR
-            0xF0,0xFF,0xFF       // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
-        };                       // 0123456789012345678901234567890123456789
+        {
+            0xF0,0xF3,0x0C,          // XXXXXXXX  XX  XX        RR  RR  RRRRRRRR
+            0x00,0x30,0x0C,          //       XX      XX        RR      RR      
+            0xF0,0x3F,0x0F,          // XXXX  XXXXXXXXXX        RRRRRRRRRR  RRRR
+            0xF0,0x00,0x00,          // XXXX                                RRRR
+            0xF0,0xF0,0x00,          // XXXXXXXX                        RRRRRRRR
+            0x00,0x30,0x00,          //       XX                        RR      
+            0xF0,0xFF,0xFF           // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
+        };
+        private static readonly string[] roomWallsBlueMazeBottom =
+        {
+            "XXXXXXXX  XX  XX        RR  RR  RRRRRRRR",
+            "      XX      XX        RR      RR      ",
+            "XXXX  XXXXXXXXXX        RRRRRRRRRR  RRRR",
+            "XXXX                                RRRR",
+            "XXXXXXXX                        RRRRRRRR",
+            "      XX                        RR      ",
+            "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR"
+        };
 
 
         // Blue Maze 4 - Center of Blue Maze
         private static readonly byte[] roomGfxBlueMazeCenter =
-        {                            // 0123456789012345678901234567890123456789
+        {
             0xF0,0x33,0x3F,          // XXXX  XX  XXXXXXXX    RRRRRRRR  RR  RRRR
-            0x00,0x30,0x3C,          //       XX      XXXX    RRRR      RR
+            0x00,0x30,0x3C,          //       XX      XXXX    RRRR      RR      
             0xF0,0xFF,0x3C,          // XXXXXXXXXXXX  XXXX    RRRR  RRRRRRRRRRRR
-            0x00,0x03,0x3C,          //           XX  XXXX    RRRR  RR
+            0x00,0x03,0x3C,          //           XX  XXXX    RRRR  RR          
             0xF0,0x33,0x3C,          // XXXX  XX  XX  XXXX    RRRR  RR  RR  RRRR
-            0x00,0x33,0x0C,          //       XX  XX  XX        RR  RR  RR
+            0x00,0x33,0x0C,          //       XX  XX  XX        RR  RR  RR      
             0xF0,0xF3,0x0C           // XXXXXXXX  XX  XX        RR  RR  RRRRRRRR
-        };                           // 0123456789012345678901234567890123456789
+        };
+        private static readonly string[] roomWallsBlueMazeCenter =
+        {
+            "XXXX  XX  XXXXXXXX    RRRRRRRR  RR  RRRR",
+            "      XX      XXXX    RRRR      RR      ",
+            "XXXXXXXXXXXX  XXXX    RRRR  RRRRRRRRRRRR",
+            "          XX  XXXX    RRRR  RR          ",
+            "XXXX  XX  XX  XXXX    RRRR  RR  RR  RRRR",
+            "      XX  XX  XX        RR  RR  RR      ",
+            "XXXXXXXX  XX  XX        RR  RR  RRRRRRRR"
+        };
 
         // Blue Maze 1 - Blue Maze Entry
         private static readonly byte[] roomGfxBlueMazeEntry =
-        {                            // 0123456789012345678901234567890123456789
+        {
             0xF0,0xF3,0xCC,          // XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR
-            0x00,0x33,0x0C,          //       XX  XX  XX        RR  RR  RR
+            0x00,0x33,0x0C,          //       XX  XX  XX        RR  RR  RR      
             0xF0,0x33,0xFC,          // XXXX  XX  XX  XXXXXXRRRRRR  RR  RR  RRRR
-            0x00,0x33,0x00,          //       XX  XX                RR  RR
+            0x00,0x33,0x00,          //       XX  XX                RR  RR      
             0xF0,0xF3,0xFF,          // XXXXXXXX  XXXXXXXXXXRRRRRRRRRR  RRRRRRRR
-            0x00,0x00,0x00,          //
+            0x00,0x00,0x00,          //                                         
             0xF0,0xFF,0x0F           // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
-        };                           // 0123456789012345678901234567890123456789
+        };
+        private static readonly string[] roomWallsBlueMazeEntry =
+        {
+            "XXXXXXXX  XX  XX  XXRR  RR  RR  RRRRRRRR",
+            "      XX  XX  XX        RR  RR  RR      ",
+            "XXXX  XX  XX  XXXXXXRRRRRR  RR  RR  RRRR",
+            "      XX  XX                RR  RR      ",
+            "XXXXXXXX  XXXXXXXXXXRRRRRRRRRR  RRRRRRRR",
+            "                                        ",
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR"
+        };
 
         // Maze Middle
         private static readonly byte[] roomGfxMazeMiddle =
         {
             0xF0,0xFF,0xCC,          // XXXXXXXXXXXX  XX  XXRR  RR  RRRRRRRRRRRR
-            0x00,0x00,0xCC,          //               XX  XXRR  RR
+            0x00,0x00,0xCC,          //               XX  XXRR  RR              
             0xF0,0x03,0xCF,          // XXXX      XXXXXX  XXRR  RRRRRR      RRRR
-            0x00,0x03,0x00,          //           XX                RR
+            0x00,0x03,0x00,          //           XX                RR          
             0xF0,0xF3,0xFC,          // XXXXXXXX  XX  XXXXXXRRRRRR  RR  RRRRRRRR
-            0x00,0x33,0x0C,          //       XX  XX  XX        RR  RR  RR
+            0x00,0x33,0x0C,          //       XX  XX  XX        RR  RR  RR      
             0xF0,0x33,0xCC           // XXXX  XX  XX  XX  XXRR  RR  RR  RR  RRRR
         };                           // 0123456789012345678901234567890123456789
+        private static readonly string[] roomWallsMazeMiddle =
+        {
+            "XXXXXXXXXXXX  XX  XXRR  RR  RRRRRRRRRRRR",
+            "              XX  XXRR  RR              ",
+            "XXXX      XXXXXX  XXRR  RRRRRR      RRRR",
+            "          XX                RR          ",
+            "XXXXXXXX  XX  XXXXXXRRRRRR  RR  RRRRRRRR",
+            "      XX  XX  XX        RR  RR  RR      ",
+            "XXXX  XX  XX  XX  XXRR  RR  RR  RR  RRRR"
+        };
 
         // Maze Side
         private static readonly byte[] roomGfxMazeSide =
         {
             0xF0,0x33,0xCC,          // XXXX  XX  XX  XX  XXRR  RR  RR  RR  RRRR
-            0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR
-            0x00,0x3F,0xCF,          //       XXXXXXXXXX  XXRR  RRRRRRRRRR
-            0x00,0x00,0xC0,          //                   XXRR
-            0x00,0x3F,0xC3,          //       XXXXXXXX    XXRR    RRRRRRRR
-            0x00,0x30,0xC0,          //       XX          XXRR          RR
+            0x00,0x30,0xCC,          //       XX      XX  XXRR  RR      RR      
+            0x00,0x3F,0xCF,          //       XXXXXXXXXX  XXRR  RRRRRRRRRR      
+            0x00,0x00,0xC0,          //                   XXRR                  
+            0x00,0x3F,0xC3,          //       XXXXXXXX    XXRR    RRRRRRRR      
+            0x00,0x30,0xC0,          //       XX          XXRR          RR      
             0xF0,0xFF,0xFF           // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
+        };
+        private static readonly string[] roomWallsMazeSide =
+        {
+            "XXXX  XX  XX  XX  XXRR  RR  RR  RR  RRRR",
+            "      XX      XX  XXRR  RR      RR      ",
+            "      XXXXXXXXXX  XXRR  RRRRRRRRRR      ",
+            "                  XXRR                  ",
+            "      XXXXXXXX    XXRR    RRRRRRRR      ",
+            "      XX          XXRR          RR      ",
+            "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR"
         };
 
         // Maze Entry
         private static readonly byte[] roomGfxMazeEntry =
         {
             0xF0,0xFF,0x0F,      // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
-            0x00,0x30,0x00,      //       XX                        RR
-            0xF0,0x30,0xFF,      // XXXX  XX    XXXXXXXXRRRRRRRRR   RR  RRRR
-            0x00,0x30,0xC0,      //       XX          XXRR          RR
+            0x00,0x30,0x00,      //       XX                        RR      
+            0xF0,0x30,0xFF,      // XXXX  XX    XXXXXXXXRRRRRRRR    RR  RRRR
+            0x00,0x30,0xC0,      //       XX          XXRR          RR      
             0xF0,0xF3,0xC0,      // XXXXXXXX  XX      XXRR      RR  RRRRRRRR
-            0x00,0x03,0xC0,      //           XX      XXRR      RR
+            0x00,0x03,0xC0,      //           XX      XXRR      RR          
             0xF0,0xFF,0xCC       // XXXXXXXXXXXX  XX  XXRR  RR  RRRRRRRRRRRR
+        };
+        private static readonly string[] roomWallsMazeEntry =
+        {
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR",
+            "      XX                        RR      ",
+            "XXXX  XX    XXXXXXXXRRRRRRRR    RR  RRRR",
+            "      XX          XXRR          RR      ",
+            "XXXXXXXX  XX      XXRR      RR  RRRRRRRR",
+            "          XX      XXRR      RR          ",
+            "XXXXXXXXXXXX  XX  XXRR  RR  RRRRRRRRRRRR"
         };
 
         // Castle
@@ -696,12 +855,22 @@ namespace GameEngine
         private static readonly byte[] roomGfxRedMaze1 =
         {
             0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
-            0x00,0x00,0x00,          //
+            0x00,0x00,0x00,          //                                         
             0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
-            0x00,0x00,0x0C,          //               XX        RR
+            0x00,0x00,0x0C,          //               XX        RR              
             0xF0,0xFF,0x0C,          // XXXXXXXXXXXX  XX        RR  RRRRRRRRRRRR
             0xF0,0x03,0xCC,          // XXXX      XX  XX  XXRR  RR  RR      RRRR
             0xF0,0x33,0xCF           // XXXX  XX  XXXXXX  XXRR  RRRRRR  RR  RRRR
+        };
+        private static readonly string[] roomWallsRedMaze1 =
+        {
+            "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR",
+            "                                        ",
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR",
+            "              XX        RR              ",
+            "XXXXXXXXXXXX  XX        RR  RRRRRRRRRRRR",
+            "XXXX      XX  XX  XXRR  RR  RR      RRRR",
+            "XXXX  XX  XXXXXX  XXRR  RRRRRR  RR  RRRR"
         };
 
         // Bottom of Red Maze
@@ -710,22 +879,42 @@ namespace GameEngine
             0xF0,0x33,0xCF,          // XXXX  XX  XXXXXX  XXRR  RRRRRR  RR  RRRR
             0xF0,0x30,0x00,          // XXXX  XX                        RR  RRRR
             0xF0,0x33,0xFF,          // XXXX  XX  XXXXXXXXXXRRRRRRRRRR  RR  RRRR
-            0x00,0x33,0x00,          //       XX  XX                RR  RR  
+            0x00,0x33,0x00,          //       XX  XX                RR  RR      
             0xF0,0xFF,0x00,          // XXXXXXXXXXXX                RRRRRRRRRRRR
-            0x00,0x00,0x00,          //
+            0x00,0x00,0x00,          //                                         
             0xF0,0xFF,0x0F           // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+        };
+        private static readonly string[] roomWallsRedMazeBottom =
+        {
+            "XXXX  XX  XXXXXX  XXRR  RRRRRR  RR  RRRR",
+            "XXXX  XX                        RR  RRRR",
+            "XXXX  XX  XXXXXXXXXXRRRRRRRRRR  RR  RRRR",
+            "      XX  XX                RR  RR      ",
+            "XXXXXXXXXXXX                RRRRRRRRRRRR",
+            "                                        ",
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR"
         };
 
         // Top of Red Maze
         private static readonly byte[] roomGfxRedMazeTop =
         {
             0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
-            0x00,0x00,0xC0,          //                   XXRR
+            0x00,0x00,0xC0,          //                   XXRR                  
             0xF0,0xFF,0xCF,          // XXXXXXXXXXXXXXXX  XXRR  RRRRRRRRRRRRRRRR
-            0x00,0x00,0xCC,          //               XX  XXRR  RR
+            0x00,0x00,0xCC,          //               XX  XXRR  RR              
             0xF0,0x33,0xFF,          // XXXX  XX  XXXXXXXXXXRRRRRRRRRR  RR  RRRR
             0xF0,0x33,0x00,          // XXXX  XX  XX                RR  RR  RRRR
             0xF0,0x3F,0x0C           // XXXX  XXXXXX  XX        RR  RRRRRR  RRRR
+        };
+        private static readonly string[] roomWallsRedMazeTop =
+        {
+            "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR",
+            "                  XXRR                  ",
+            "XXXXXXXXXXXXXXXX  XXRR  RRRRRRRRRRRRRRRR",
+            "              XX  XXRR  RR              ",
+            "XXXX  XX  XXXXXXXXXXRRRRRRRRRR  RR  RRRR",
+            "XXXX  XX  XX                RR  RR  RRRR",
+            "XXXX  XXXXXX  XX        RR  RRRRRR  RRRR"
         };
 
 
@@ -735,10 +924,20 @@ namespace GameEngine
             0xF0,0x3F,0x0C,          // XXXX  XXXXXX  XX        RR  RRRRRR  RRRR
             0xF0,0x00,0x0C,          // XXXX          XX        RR          RRRR
             0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
-            0x00,0x30,0x00,          //       XX                        RR
+            0x00,0x30,0x00,          //       XX                        RR      
             0xF0,0x30,0x00,          // XXXX  XX                        RR  RRRR
-            0x00,0x30,0x00,          //       XX                        RR
+            0x00,0x30,0x00,          //       XX                        RR      
             0xF0,0xFF,0x0F           // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+        };
+        private static readonly string[] roomWallsWhiteCastleEntry =
+        {
+            "XXXX  XXXXXX  XX        RR  RRRRRR  RRRR",
+            "XXXX          XX        RR          RRRR",
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR",
+            "      XX                        RR      ",
+            "XXXX  XX                        RR  RRRR",
+            "      XX                        RR      ",
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR"
         };
 
         // Top Entry Room
@@ -752,29 +951,59 @@ namespace GameEngine
             0x30,0x00,0x00,          // XX                                    RR
             0xF0,0xFF,0xFF           // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR
         };
+        private static readonly string[] roomWallsTopEntryRoom =
+        {
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XX                                    RR",
+            "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR"
+        };
 
         // Black Maze #1
         private static readonly byte[] roomGfxBlackMaze1 =
         {
             0xF0,0xF0,0xFF,          // XXXXXXXX    XXXXXXXXRRRRRRRR    RRRRRRRR
-            0x00,0x00,0x03,          //             XX            RR
+            0x00,0x00,0x03,          //             XX            RR            
             0xF0,0xFF,0x03,          // XXXXXXXXXXXXXX            RRRRRRRRRRRRRR
-            0x00,0x00,0x00,          //
+            0x00,0x00,0x00,          //                                         
             0x30,0x3F,0xFF,          // XX    XXXXXXXXXXXXXXRRRRRRRRRRRRRR    RR
-            0x00,0x30,0x00,          //       XX                        RR
+            0x00,0x30,0x00,          //       XX                        RR      
             0xF0,0xF0,0xFF           // XXXXXXXX    XXXXXXXXRRRRRRRR    RRRRRRRR
+        };
+        private static readonly string[] roomWallsBlackMaze1 =
+        {
+            "XXXXXXXX    XXXXXXXXRRRRRRRR    RRRRRRRR",
+            "            XX            RR            ",
+            "XXXXXXXXXXXXXX            RRRRRRRRRRRRRR",
+            "                                        ",
+            "XX    XXXXXXXXXXXXXXRRRRRRRRRRRRRR    RR",
+            "      XX                        RR      ",
+            "XXXXXXXX    XXXXXXXXRRRRRRRR    RRRRRRRR"
         };
 
         // Black Maze #3
         private static readonly byte[] roomGfxBlackMaze3 =
         {
             0xF0,0xF0,0xFF,          // XXXXXXXX    XXXXXXXXRRRRRRRR    RRRRRRRR
-            0x30,0x00,0x00,          // XX                  MM
+            0x30,0x00,0x00,          // XX                  MM                  
             0x30,0x3F,0xFF,          // XX    XXXXXXXXXXXXXXMM    MMMMMMMMMMMMMM
-            0x00,0x30,0x00,          //       XX                  MM
+            0x00,0x30,0x00,          //       XX                  MM            
             0xF0,0xF0,0xFF,          // XXXXXXXX    XXXXXXXXMMMMMMMM    MMMMMMMM
-            0x30,0x00,0x03,          // XX          XX      MM          MM
+            0x30,0x00,0x03,          // XX          XX      MM          MM      
             0xF0,0xF0,0xFF           // XXXXXXXX    XXXXXXXXMMMMMMMM    MMMMMMMM
+        };
+        private static readonly string[] roomWallsBlackMaze3 =
+        {
+            "XXXXXXXX    XXXXXXXXRRRRRRRR    RRRRRRRR",
+            "XX                  MM                  ",
+            "XX    XXXXXXXXXXXXXXMM    MMMMMMMMMMMMMM",
+            "      XX                  MM            ",
+            "XXXXXXXX    XXXXXXXXMMMMMMMM    MMMMMMMM",
+            "XX          XX      MM          MM      ",
+            "XXXXXXXX    XXXXXXXXMMMMMMMM    MMMMMMMM"
         };
 
         // Black Maze #2
@@ -783,22 +1012,42 @@ namespace GameEngine
             0xF0,0xFF,0xFF,          // XXXXXXXXXXXXXXXXXXXXMMMMMMMMMMMMMMMMMMMM
             0x00,0x00,0xC0,          //                   XX                  MM
             0xF0,0xFF,0xCF,          // XXXXXXXXXXXXXXXX  XXMMMMMMMMMMMMMMMM  MM
-            0x00,0x00,0x0C,          //               XX                  MM
+            0x00,0x00,0x0C,          //               XX                  MM    
             0xF0,0x0F,0xFF,          // XXXX    XXXXXXXXXXXXMMMM    MMMMMMMMMMMM
             0x00,0x0F,0xC0,          //         XXXX      XX        MMMM      MM
             0x30,0xCF,0xCC           // XX  XX  XXXX  XX  XXMM  MM  MMMM  MM  MM
+        };
+        private static readonly string[] roomWallsBlackMaze2 =
+        {
+            "XXXXXXXXXXXXXXXXXXXXMMMMMMMMMMMMMMMMMMMM",
+            "                  XX                  MM",
+            "XXXXXXXXXXXXXXXX  XXMMMMMMMMMMMMMMMM  MM",
+            "              XX                  MM    ",
+            "XXXX    XXXXXXXXXXXXMMMM    MMMMMMMMMMMM",
+            "        XXXX      XX        MMMM      MM",
+            "XX  XX  XXXX  XX  XXMM  MM  MMMM  MM  MM"
         };
 
         // Black Maze Entry
         private static readonly byte[] roomGfxBlackMazeEntry =
         {
             0x30,0xCF,0xCC,          // XX  XX  XXXX  XX  XXMM  MM  MMMM  MM  MM
-            0x00,0xC0,0xCC,          //     XX        XX  XXRR  RR        RR
+            0x00,0xC0,0xCC,          //     XX        XX  XXRR  RR        RR    
             0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
-            0x00,0x00,0x00,          //
+            0x00,0x00,0x00,          //                                         
             0xF0,0xFF,0x0F,          // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
-            0x00,0x00,0x00,          //
+            0x00,0x00,0x00,          //                                         
             0xF0,0xFF,0x0F           // XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR
+        };
+        private static readonly string[] roomWallsBlackMazeEntry =
+        {
+            "XX  XX  XXXX  XX  XXMM  MM  MMMM  MM  MM",
+            "    XX        XX  XXRR  RR        RR    ",
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR",
+            "                                        ",
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR",
+            "                                        ",
+            "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR"
         };
 
     }
