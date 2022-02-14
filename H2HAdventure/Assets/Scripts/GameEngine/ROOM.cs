@@ -80,10 +80,77 @@ namespace GameEngine
             index = inIndex;
         }
 
-        public void setGraphicsData(byte[] newGraphicsData)
+        /**
+         * Create an opening in the topmost row of walls to allow the ball
+         * to go up to another room.
+         * @param newGraphicsData TEMPORARY.  Used for logic checking.  This
+         *   is what the new room's graphic data should look like on the top
+         *   is opened.
+         */
+        public void openTop(byte[] newGraphicsData)
         {
-            walls = decodeGraphicsData(newGraphicsData);
+            this.changeOpening(true, false, newGraphicsData);
         }
+
+        /**
+         * Create an opening in the bottom row of walls to allow the ball
+         * to go down to another room.
+         * @param newGraphicsData TEMPORARY.  Used for logic checking.  This
+         *   is what the new room's graphic data should look like on the top
+         *   is opened.
+         */
+        public void openBottom(byte[] newGraphicsData)
+        {
+            this.changeOpening(false, false, newGraphicsData);
+        }
+
+        /**
+         * Replace an opening in the topmost row of walls with a solid wall.
+         * @param newGraphicsData TEMPORARY.  Used for logic checking.  This
+         *   is what the new room's graphic data should look like on the top
+         *   is opened.
+         */
+        public void closeTop(byte[] newGraphicsData)
+        {
+            this.changeOpening(true, true, newGraphicsData);
+        }
+
+        /**
+         * Replace an opening in the bottom row of walls with a solid wall.
+         * @param newGraphicsData TEMPORARY.  Used for logic checking.  This
+         *   is what the new room's graphic data should look like on the top
+         *   is opened.
+         */
+        public void closeBottom(byte[] newGraphicsData)
+        {
+            this.changeOpening(false, true, newGraphicsData);
+        }
+
+        /**
+         * Many times we want to change the walls of the room such that we 
+         * open or close the entrance to the above or below room.  This 
+         * function does that.
+         * @param topOrBottom true means change the opening on the top
+         *   of the screen, false means bottom
+         * @param closeOrOpen 
+         */
+        private void changeOpening(bool topOrBottom, bool closeOrOpen, byte[] newlayout)
+        {
+            int OPENING_WIDTH = 8;
+            int OPENING_START = (Map.MAX_WALL_X - OPENING_WIDTH) / 2;
+            int y = (topOrBottom ? Map.MAX_WALL_Y - 1 : 0);
+            for(int x = OPENING_START; x < OPENING_START + OPENING_WIDTH; ++x)
+            {
+                this.walls[x, y] = closeOrOpen;
+            }
+
+            // Now verify we have the correct layout
+            if (newlayout != null)
+            {
+                verifyWalls(this.walls, newlayout);
+            }
+        }
+
 
         bool isNextTo(ROOM otherRoom)
         {
@@ -132,36 +199,55 @@ namespace GameEngine
          */
         private bool[,] readWalls(string[] asciimap, byte[] graphicsData)
         {
-            bool[,] oldway = decodeGraphicsData(graphicsData);
             bool[,] boolmap = new bool[Map.MAX_WALL_X, Map.MAX_WALL_Y];
 
-            string oldmap = "old map:\n";
-            string newmap = "new map:\n";
-            for (int y = Map.MAX_WALL_Y-1; y >= 0; --y)
-            {
-                for (int x = 0; x < Map.MAX_WALL_X; ++x)
-                {
-                    oldmap += (oldway[x, y] ? '■' : '□');
-                    newmap += (asciimap[Map.MAX_WALL_Y - y - 1][x] != ' ' ? '■' : '□');
-                }
-                oldmap += "\n";
-                newmap += "\n";
-            }
             for (int y = 0; y < Map.MAX_WALL_Y; ++y)
             {
                 for (int x = 0; x < Map.MAX_WALL_X; ++x)
                 {
                     boolmap[x, y] = (asciimap[Map.MAX_WALL_Y-y-1][x] != ' ');
-                    if (boolmap[x,y] != oldway[x,y])
+                }
+            }
+            verifyWalls(boolmap, graphicsData);
+
+            return boolmap;
+        }
+
+        /** 
+         * Verify that a new map structure and an old map structure are the same. 
+         * Throws an exception if they do not match.
+         * @param newmap a 40x7 array of booleans where true is wall and false is space
+         * @param oldway the old structure for the walls in a room
+         * 
+         */
+        private void verifyWalls(bool[,] newmap, byte[] oldway)
+        {
+            bool[,] oldmap = decodeGraphicsData(oldway);
+
+            string oldMapAsString = "old map:\n";
+            string newMapAsString = "new map:\n";
+            for (int y = Map.MAX_WALL_Y - 1; y >= 0; --y)
+            {
+                for (int x = 0; x < Map.MAX_WALL_X; ++x)
+                {
+                    oldMapAsString += (oldmap[x, y] ? '■' : '□');
+                    newMapAsString += (newmap[x, y] ? '■' : '□');
+                }
+                oldMapAsString += "\n";
+                newMapAsString += "\n";
+            }
+            for (int y = 0; y < Map.MAX_WALL_Y; ++y)
+            {
+                for (int x = 0; x < Map.MAX_WALL_X; ++x)
+                {
+                    if (newmap[x, y] != oldmap[x, y])
                     {
-                        UnityEngine.Debug.Log(oldmap);
-                        UnityEngine.Debug.Log(newmap);
+                        UnityEngine.Debug.Log(oldMapAsString);
+                        UnityEngine.Debug.Log(newMapAsString);
                         throw new Exception("Wall constructs at (" + x + "," + y + ") in " + label + " don't match.");
                     }
                 }
             }
-
-            return boolmap;
         }
 
         /** 
