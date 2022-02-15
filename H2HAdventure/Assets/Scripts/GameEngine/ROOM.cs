@@ -29,8 +29,7 @@ namespace GameEngine
         public String label;                // a short, unique name for the object
         public RandomVisibility visibility; // attribute indicating whether objects can be randomly placed in this room.
 
-
-        public ROOM(byte[] inGraphicsData, byte inFlags, int inColor,
+        public ROOM(string[] inWalls, byte inFlags, int inColor,
                     int inRoomUp, int inRoomRight, int inRoomDown, int inRoomLeft, String inLabel, RandomVisibility inVis = RandomVisibility.OPEN)
         {
             flags = inFlags;
@@ -41,21 +40,7 @@ namespace GameEngine
             roomLeft = inRoomLeft;
             label = inLabel;
             visibility = inVis;
-            walls = decodeGraphicsData(inGraphicsData);
-        }
-
-        public ROOM(string[] inWalls, byte[] inGraphicsData, byte inFlags, int inColor,
-                    int inRoomUp, int inRoomRight, int inRoomDown, int inRoomLeft, String inLabel, RandomVisibility inVis = RandomVisibility.OPEN)
-        {
-            flags = inFlags;
-            color = (int)inColor;
-            roomUp = inRoomUp;
-            roomRight = inRoomRight;
-            roomDown = inRoomDown;
-            roomLeft = inRoomLeft;
-            label = inLabel;
-            visibility = inVis;
-            walls = readWalls(inWalls, inGraphicsData);
+            walls = readWalls(inWalls);
         }
 
         public int roomNext(int direction)
@@ -83,47 +68,35 @@ namespace GameEngine
         /**
          * Create an opening in the topmost row of walls to allow the ball
          * to go up to another room.
-         * @param newGraphicsData TEMPORARY.  Used for logic checking.  This
-         *   is what the new room's graphic data should look like on the top
-         *   is opened.
          */
-        public void openTop(byte[] newGraphicsData)
+        public void openTop()
         {
-            this.changeOpening(true, false, newGraphicsData);
+            this.changeOpening(true, false);
         }
 
         /**
          * Create an opening in the bottom row of walls to allow the ball
          * to go down to another room.
-         * @param newGraphicsData TEMPORARY.  Used for logic checking.  This
-         *   is what the new room's graphic data should look like on the top
-         *   is opened.
          */
-        public void openBottom(byte[] newGraphicsData)
+        public void openBottom()
         {
-            this.changeOpening(false, false, newGraphicsData);
+            this.changeOpening(false, false);
         }
 
         /**
          * Replace an opening in the topmost row of walls with a solid wall.
-         * @param newGraphicsData TEMPORARY.  Used for logic checking.  This
-         *   is what the new room's graphic data should look like on the top
-         *   is opened.
          */
-        public void closeTop(byte[] newGraphicsData)
+        public void closeTop()
         {
-            this.changeOpening(true, true, newGraphicsData);
+            this.changeOpening(true, true);
         }
 
         /**
          * Replace an opening in the bottom row of walls with a solid wall.
-         * @param newGraphicsData TEMPORARY.  Used for logic checking.  This
-         *   is what the new room's graphic data should look like on the top
-         *   is opened.
          */
-        public void closeBottom(byte[] newGraphicsData)
+        public void closeBottom()
         {
-            this.changeOpening(false, true, newGraphicsData);
+            this.changeOpening(false, true);
         }
 
         /**
@@ -132,9 +105,10 @@ namespace GameEngine
          * function does that.
          * @param topOrBottom true means change the opening on the top
          *   of the screen, false means bottom
-         * @param closeOrOpen 
+         * @param closeOrOpen true means put walls there, false means
+         *   put blank space there
          */
-        private void changeOpening(bool topOrBottom, bool closeOrOpen, byte[] newlayout)
+        private void changeOpening(bool topOrBottom, bool closeOrOpen)
         {
             int OPENING_WIDTH = 8;
             int OPENING_START = (Map.MAX_WALL_X - OPENING_WIDTH) / 2;
@@ -142,12 +116,6 @@ namespace GameEngine
             for(int x = OPENING_START; x < OPENING_START + OPENING_WIDTH; ++x)
             {
                 this.walls[x, y] = closeOrOpen;
-            }
-
-            // Now verify we have the correct layout
-            if (newlayout != null)
-            {
-                verifyWalls(this.walls, newlayout);
             }
         }
 
@@ -197,7 +165,7 @@ namespace GameEngine
          * @return a 40x7 array of booleans. If return[12][3] is true then there is a wall
          * at the fourth row from the bottom and 13th column from the left.
          */
-        private bool[,] readWalls(string[] asciimap, byte[] graphicsData)
+        private bool[,] readWalls(string[] asciimap)
         {
             bool[,] boolmap = new bool[Map.MAX_WALL_X, Map.MAX_WALL_Y];
 
@@ -208,46 +176,7 @@ namespace GameEngine
                     boolmap[x, y] = (asciimap[Map.MAX_WALL_Y-y-1][x] != ' ');
                 }
             }
-            verifyWalls(boolmap, graphicsData);
-
             return boolmap;
-        }
-
-        /** 
-         * Verify that a new map structure and an old map structure are the same. 
-         * Throws an exception if they do not match.
-         * @param newmap a 40x7 array of booleans where true is wall and false is space
-         * @param oldway the old structure for the walls in a room
-         * 
-         */
-        private void verifyWalls(bool[,] newmap, byte[] oldway)
-        {
-            bool[,] oldmap = decodeGraphicsData(oldway);
-
-            string oldMapAsString = "old map:\n";
-            string newMapAsString = "new map:\n";
-            for (int y = Map.MAX_WALL_Y - 1; y >= 0; --y)
-            {
-                for (int x = 0; x < Map.MAX_WALL_X; ++x)
-                {
-                    oldMapAsString += (oldmap[x, y] ? '■' : '□');
-                    newMapAsString += (newmap[x, y] ? '■' : '□');
-                }
-                oldMapAsString += "\n";
-                newMapAsString += "\n";
-            }
-            for (int y = 0; y < Map.MAX_WALL_Y; ++y)
-            {
-                for (int x = 0; x < Map.MAX_WALL_X; ++x)
-                {
-                    if (newmap[x, y] != oldmap[x, y])
-                    {
-                        UnityEngine.Debug.Log(oldMapAsString);
-                        UnityEngine.Debug.Log(newMapAsString);
-                        throw new Exception("Wall constructs at (" + x + "," + y + ") in " + label + " don't match.");
-                    }
-                }
-            }
         }
 
         /** 
