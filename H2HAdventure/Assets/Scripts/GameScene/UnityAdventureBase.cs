@@ -51,7 +51,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
     public Text messageText;
     public GameObject popupPanel;
 
-    protected bool gameRenderable; // This is true from the moment the game 
+    protected bool gameRenderable; // This is true from the moment the 
     // game engine starts showing the opening number room to when the user leaves
     // the screen, returning to game setup
     protected bool gameRunning; // This is true from the moment the players can
