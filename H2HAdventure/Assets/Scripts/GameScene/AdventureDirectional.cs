@@ -13,8 +13,7 @@ public class AdventureDirectional : MonoBehaviour
     private int minDragDistance = 0;
 
 
-#if UNITY_STANDALONE || UNITY_WEBPLAYER
-#else
+#if UNITY_ANDROID || UNITY_IOS
     private bool isDragging = false;
     private int dragId;
     private float dragStartX;
@@ -32,22 +31,21 @@ public class AdventureDirectional : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-#if UNITY_STANDALONE || UNITY_WEBPLAYER
+#if UNITY_ANDROID || UNITY_IOS
+        Vector3 size = GetComponent<Renderer>().bounds.size;
+        minDragDistance = (int)(size.x / 4);
+#else
         if (joystickImage != null)
         {
             joystickImage.gameObject.SetActive(false);
         }
-#else
-        Vector3 size = GetComponent<Renderer>().bounds.size;
-        minDragDistance = (int)(size.x / 4);
 #endif
     }
 
     // Update is called once per frame
     void Update()
     {
-#if UNITY_STANDALONE || UNITY_WEBPLAYER
-#else
+#if UNITY_ANDROID || UNITY_IOS
         float centerx = Screen.width/2.0f;
         float tan22 = 0.414f;
         joyLeft = joyRight = joyUp = joyDown = false;
@@ -135,26 +133,26 @@ public class AdventureDirectional : MonoBehaviour
 
     public void getDirection(ref bool outLeft, ref bool outUp, ref bool outRight, ref bool outDown)
     {
-#if UNITY_STANDALONE || UNITY_WEBPLAYER
-        outLeft = Input.GetKey(KeyCode.LeftArrow);
-        outUp = Input.GetKey(KeyCode.UpArrow);
-        outRight = Input.GetKey(KeyCode.RightArrow);
-        outDown = Input.GetKey(KeyCode.DownArrow);
-#else
+#if UNITY_ANDROID || UNITY_IOS
         outLeft = joyLeft;
         outRight = joyRight;
         outUp = joyUp;
         outDown = joyDown;
+#else
+        outLeft = Input.GetKey(KeyCode.LeftArrow);
+        outUp = Input.GetKey(KeyCode.UpArrow);
+        outRight = Input.GetKey(KeyCode.RightArrow);
+        outDown = Input.GetKey(KeyCode.DownArrow);
 #endif
     }
 
     public bool getDropButton() {
-#if UNITY_STANDALONE || UNITY_WEBPLAYER
-        return Input.GetKey(KeyCode.Space);
-#else
+#if UNITY_ANDROID || UNITY_IOS
         bool returnVal = hasDropBeenPressed;
         hasDropBeenPressed = false;
         return returnVal;
+#else
+        return Input.GetKey(KeyCode.Space);
 #endif
     }
 

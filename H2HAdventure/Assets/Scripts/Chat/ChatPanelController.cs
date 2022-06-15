@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
-using Dissonance;
+//using Dissonance;
 
 public class ChatPanelController : MonoBehaviour
 {
@@ -15,10 +15,10 @@ public class ChatPanelController : MonoBehaviour
     private string voiceLabelOff = VOICE_LABEL_OFF;
     public GameObject chatPrefab;
     public bool narrow;
-    private GameObject dissonanceSetup;
-    private DissonanceComms voiceController;
-    private VoiceBroadcastTrigger voiceBroadcast;
-    private VoiceReceiptTrigger voiceReceipt;
+    //private GameObject dissonanceSetup;
+    //private DissonanceComms voiceController;
+    //private VoiceBroadcastTrigger voiceBroadcast;
+    //private VoiceReceiptTrigger voiceReceipt;
     private Text voiceLabel;
     private TalkButton talkButton;
     private Button lockButton;
@@ -45,10 +45,10 @@ public class ChatPanelController : MonoBehaviour
     void Start()
     {
         voiceLabelOff = (narrow ? VOICE_LABEL_OFF_NARROW : VOICE_LABEL_OFF);
-        dissonanceSetup = transform.Find("Dissonance").gameObject;
-        voiceController = dissonanceSetup.GetComponent<DissonanceComms>();
-        voiceBroadcast = dissonanceSetup.GetComponent<VoiceBroadcastTrigger>();
-        voiceReceipt = dissonanceSetup.GetComponent<VoiceReceiptTrigger>();
+        //dissonanceSetup = transform.Find("Dissonance").gameObject;
+        //voiceController = dissonanceSetup.GetComponent<DissonanceComms>();
+        //voiceBroadcast = dissonanceSetup.GetComponent<VoiceBroadcastTrigger>();
+        //voiceReceipt = dissonanceSetup.GetComponent<VoiceReceiptTrigger>();
         GameObject voiceLabelGameObject = transform.Find("Voice Text").gameObject;
         voiceLabel = voiceLabelGameObject.GetComponent<Text>();
         GameObject talkButtonGameObject = transform.Find("Talk Button").gameObject;
@@ -84,7 +84,7 @@ public class ChatPanelController : MonoBehaviour
     {
         voiceChatEnabled = true;
         voiceChatSilenced = false;
-        dissonanceSetup.SetActive(true);
+        //dissonanceSetup.SetActive(true);
         voiceLabel.text = VOICE_LABEL_ON;
         talkButton.gameObject.SetActive(voiceChatEnabled);
         lockButton.gameObject.SetActive(voiceChatEnabled);
@@ -100,8 +100,8 @@ public class ChatPanelController : MonoBehaviour
             {
                 talkButton.Reset();
             }
-            voiceController.IsMuted = voiceChatSilenced;
-            voiceController.IsDeafened = voiceChatSilenced;
+            //voiceController.IsMuted = voiceChatSilenced;
+            //voiceController.IsDeafened = voiceChatSilenced;
             voiceLabel.text = (voiceChatSilenced ? voiceLabelOff : VOICE_LABEL_ON);
             talkButton.gameObject.SetActive(!voiceChatSilenced);
             lockButton.gameObject.SetActive(!voiceChatSilenced);
@@ -146,12 +146,12 @@ public class ChatPanelController : MonoBehaviour
 
     public void OnTalkPressed()
     {
-        voiceBroadcast.Mode = CommActivationMode.VoiceActivation;
+        //voiceBroadcast.Mode = CommActivationMode.VoiceActivation;
     }
 
     public void OnTalkReleased()
     {
-        voiceBroadcast.Mode = CommActivationMode.None;
+        //voiceBroadcast.Mode = CommActivationMode.None;
     }
 
     public void OnSilencePressed()
