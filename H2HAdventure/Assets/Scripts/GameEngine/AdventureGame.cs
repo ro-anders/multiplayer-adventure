@@ -356,17 +356,12 @@ namespace GameEngine
             //
             ClearDrawnObjects();
             MarkDrawnObjects(displayedRoom);
-            // We also compute what objects in the AI's room are displayed
-            // even if we don't print them to the screen
-            for(int ctr=0; ctr<numPlayers; ++ctr)
+            for (int ctr=0; ctr<numPlayers; ++ctr)
             {
-                if (aiPlayers[ctr] != null)
+                BALL nextBall = gameBoard.getPlayer(ctr);
+                if (nextBall.displayedRoom != displayedRoom)
                 {
-                    BALL aiBall = gameBoard.getPlayer(ctr);
-                    if (aiBall.displayedRoom != displayedRoom)
-                    {
-                        MarkDrawnObjects(aiBall.displayedRoom);
-                    }
+                    MarkDrawnObjects(nextBall.displayedRoom);
                 }
             }
             DrawObjectsAndThinWalls(displayedRoom);
