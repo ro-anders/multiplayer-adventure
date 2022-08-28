@@ -18,7 +18,8 @@ namespace GameEngine
 
         /** What mode the system is in.  Currently just hard coded and changed
          * in the code when running tests. */
-        public const Modes GLOBAL_PLAYER_RECORDER_MODE = Modes.NEITHER;
+        public const Modes GLOBAL_PLAYER_RECORDER_MODE = Modes.RECORD;
+        public const int PLAYBACK_PLAYER_VIEW = -1;
 
         /** The recording file. */
         private const string RECORDING_FILE = "recorder.txt";
@@ -189,6 +190,7 @@ namespace GameEngine
         private void saveChange(int currentFrame)
         {
             writer.WriteLine(currentFrame + " " + flags);
+            writer.FlushAsync();
         }
 
         /** 

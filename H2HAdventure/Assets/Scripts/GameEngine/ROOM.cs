@@ -19,7 +19,7 @@ namespace GameEngine
         };
 
         public int index;                  // index into the map
-        public bool[,] walls;             // 2D array of the walls in the room
+        public bool[,] walls;             // 2D array of the walls in the room.  Dimensions are MAX_WALL_X x MAX_WALL_Y
         public byte flags;                 // room flags - see below
         public int color;                  // foreground color
         public int roomUp;                 // index of room UP
@@ -41,6 +41,10 @@ namespace GameEngine
             label = inLabel;
             visibility = inVis;
             walls = readWalls(inWalls);
+        }
+
+        public bool Mirrored {
+            get { return (flags & FLAG_MIRROR) > 0; }
         }
 
         public int roomNext(int direction)
@@ -193,7 +197,7 @@ namespace GameEngine
                         0x80,0x40,0x20,0x10,0x8,0x4,0x2,0x1,
                         0x1,0x2,0x4,0x8,0x10,0x20,0x40,0x80
                     };
-            bool mirror = (flags & FLAG_MIRROR) > 0;
+            bool mirror = Mirrored;
 
             bool[,] decoded = new bool[Map.MAX_WALL_X, Map.MAX_WALL_Y];
             for (int x = 0; x<Map.MAX_WALL_X; ++x)

@@ -545,7 +545,7 @@ namespace GameEngine
 
         // Maze Entry
         private static readonly string[] roomWallsMazeEntry =
-        {
+        { // 0123456789012345678901234567890123456789
             "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR",
             "      XX                        RR      ",
             "XXXX  XX    XXXXXXXXRRRRRRRR    RR  RRRR",
@@ -679,7 +679,7 @@ namespace GameEngine
         // Black Maze #3
         private static readonly string[] roomWallsBlackMaze3 =
         {
-            "XXXXXXXX    XXXXXXXXRRRRRRRR    RRRRRRRR",
+            "XXXXXXXX    XXXXXXXXMMMMMMMM    MMMMMMMM",
             "XX                  MM                  ",
             "XX    XXXXXXXXXXXXXXMM    MMMMMMMMMMMMMM",
             "      XX                  MM            ",
@@ -703,7 +703,7 @@ namespace GameEngine
         // Black Maze Entry
         private static readonly string[] roomWallsBlackMazeEntry =
         {
-            "XX  XX  XXXX  XX  XXMM  MM  MMMM  MM  MM",
+            "XX  XX  XXXX  XX  XXRR  RR  RRRR  RR  RR",
             "    XX        XX  XXRR  RR        RR    ",
             "XXXXXXXXXXXXXXXX        RRRRRRRRRRRRRRRR",
             "                                        ",

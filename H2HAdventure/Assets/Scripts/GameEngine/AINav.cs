@@ -57,7 +57,7 @@ namespace GameEngine
 
 
             // Reset the already visited array
-            for (int ctr=0; ctr<alreadyVisited.Length; ++ctr)
+            for (int ctr = 0; ctr < alreadyVisited.Length; ++ctr)
             {
                 alreadyVisited[ctr] = false;
             }
@@ -74,7 +74,7 @@ namespace GameEngine
                 found = ComputeNextStep(fromPlot, q, alreadyVisited);
             }
 
-            if (found==null)
+            if (found == null)
             {
                 UnityEngine.Debug.Log("Could not find path from " + aiPlots[fromPlot] + " to " +
                     aiPlots[toPlot]);
@@ -223,7 +223,7 @@ namespace GameEngine
                     }
                     else
                     {
-                        UnityEngine.Debug.LogError( "Player has fallen off the AI path!\n" +
+                        UnityEngine.Debug.LogError("Player has fallen off the AI path!\n" +
                             currentRoom + "(" + currentX + "," +
                             currentY + ") not in " +
                             desiredPath.ThisPlot +
@@ -250,26 +250,80 @@ namespace GameEngine
                 aiPlotsByRoom[ctr] = new AiMapNode[0];
             }
             List<AiMapNode> allPlotsList = new List<AiMapNode>();
+            ComputePlotsInRoom(Map.NUMBER_ROOM, plotsRoomWithBottom, allPlotsList);
             ComputePlotsInRoom(Map.MAIN_HALL_LEFT, plotsLeftHallWithTop, allPlotsList);
             ComputePlotsInRoom(Map.MAIN_HALL_CENTER, plotsHallWithTop, allPlotsList);
             ComputePlotsInRoom(Map.MAIN_HALL_RIGHT, plotsRightHallWithBoth, allPlotsList);
-            ComputePlotsInRoom(Map.GOLD_CASTLE, plotsCastle, allPlotsList);
-            ComputePlotsInRoom(Map.GOLD_FOYER, plotsRoomWithBottom, allPlotsList);
-            ComputePlotsInRoom(Map.SOUTHEAST_ROOM, plotsRoomWithTop, allPlotsList);
-            ComputePlotsInRoom(Map.COPPER_CASTLE, plotsCastle, allPlotsList);
-            ComputePlotsInRoom(Map.COPPER_FOYER, plotsRoomWithBottom, allPlotsList);
-            ComputePlotsInRoom(Map.JADE_CASTLE, plotsCastle, allPlotsList);
-            ComputePlotsInRoom(Map.JADE_FOYER, plotsRoomWithBottom, allPlotsList);
             ComputePlotsInRoom(Map.BLUE_MAZE_5, plotsBlueMazeTop, allPlotsList);
             ComputePlotsInRoom(Map.BLUE_MAZE_2, plotsBlueMaze2, allPlotsList);
             ComputePlotsInRoom(Map.BLUE_MAZE_3, plotsBlueMazeBottom, allPlotsList);
             ComputePlotsInRoom(Map.BLUE_MAZE_4, plotsBlueMazeCenter, allPlotsList);
             ComputePlotsInRoom(Map.BLUE_MAZE_1, plotsBlueMazeEntry, allPlotsList);
+            ComputePlotsInRoom(Map.WHITE_MAZE_2, plotsWhiteMazeMiddle, allPlotsList);
+            ComputePlotsInRoom(Map.WHITE_MAZE_1, plotsWhiteMazeEntry, allPlotsList);
+            ComputePlotsInRoom(Map.WHITE_MAZE_3, plotsWhiteMazeSide, allPlotsList);
+            ComputePlotsInRoom(Map.SOUTH_HALL_RIGHT, plotsRightHallWithBoth, allPlotsList);
+            ComputePlotsInRoom(Map.SOUTH_HALL_LEFT, plotsLeftHallWithBoth, allPlotsList);
+            ComputePlotsInRoom(Map.SOUTHWEST_ROOM, plotsRoomWithTop, allPlotsList);
+            ComputePlotsInRoom(Map.WHITE_CASTLE, plotsCastle, allPlotsList);
             ComputePlotsInRoom(Map.BLACK_CASTLE, plotsCastle, allPlotsList);
+            ComputePlotsInRoom(Map.GOLD_CASTLE, plotsCastle, allPlotsList);
+            ComputePlotsInRoom(Map.GOLD_FOYER, plotsRoomWithBottom, allPlotsList);
+            ComputePlotsInRoom(Map.BLACK_MAZE_1, plotsBlackMaze1, allPlotsList);
+            ComputePlotsInRoom(Map.BLACK_MAZE_2, plotsBlackMaze2, allPlotsList);
+            ComputePlotsInRoom(Map.BLACK_MAZE_3, plotsBlackMaze3, allPlotsList);
+            ComputePlotsInRoom(Map.BLACK_MAZE_ENTRY, plotsBlackMazeEntry, allPlotsList);
+            ComputePlotsInRoom(Map.RED_MAZE_3, plotsRedMaze1, allPlotsList);
+            ComputePlotsInRoom(Map.RED_MAZE_2, plotsRedMazeTop, allPlotsList);
+            ComputePlotsInRoom(Map.RED_MAZE_4, plotsRedMazeBottom, allPlotsList);
+            ComputePlotsInRoom(Map.RED_MAZE_1, plotsRedMazeEntry, allPlotsList);
             ComputePlotsInRoom(Map.BLACK_FOYER, plotsRoomWithBoth, allPlotsList);
             ComputePlotsInRoom(Map.BLACK_INNERMOST_ROOM, plotsRoomWithBottom, allPlotsList);
+            ComputePlotsInRoom(Map.SOUTHEAST_ROOM, plotsRoomWithTop, allPlotsList);
+            ComputePlotsInRoom(Map.ROBINETT_ROOM, plotsHallWithTop, allPlotsList);
+            ComputePlotsInRoom(Map.JADE_CASTLE, plotsCastle, allPlotsList);
+            ComputePlotsInRoom(Map.JADE_FOYER, plotsRoomWithBottom, allPlotsList);
+            ComputePlotsInRoom(Map.CRYSTAL_CASTLE, plotsCastle, allPlotsList);
+            ComputePlotsInRoom(Map.CRYSTAL_FOYER, plotsRoomWithBottom, allPlotsList);
+            ComputePlotsInRoom(Map.COPPER_CASTLE, plotsCastle, allPlotsList);
+            ComputePlotsInRoom(Map.COPPER_FOYER, plotsRoomWithBottom, allPlotsList);
 
             aiPlots = allPlotsList.ToArray();
+        }
+
+        /**
+         * This creates a multi-line string showing a room and all it's plots
+         * @param roomNum the number of the room
+         * @returns a cool ascii art of the room and its plots
+         */
+        private string getDebugRoomPlotsString(int roomNum)
+        {
+            // DEBUG
+            ROOM room = map.getRoom(roomNum);
+            string debugStr = "Room #" + room.index + ": " + room.label + "\n";
+            for (int y = 6; y >= 0; --y)
+            {
+                for (int x = 0; x < 40; ++x)
+                {
+                    int plot = FindPlot(roomNum, x * Plot.WALL_X_SCALE, y * Plot.WALL_Y_SCALE);
+                    if (plot < 0)
+                    {
+                        debugStr = debugStr + (room.walls[x, y] ? "█" : "?");
+                    }
+                    else if (room.walls[x, y])
+                    {
+                        debugStr = debugStr + "?";
+                    }
+                    else
+                    {
+                        char c = (char)((int)'a' + aiPlots[plot].thisPlot.PlaceInRoom);
+                        debugStr = debugStr + c;
+                    }
+                }
+                debugStr = debugStr + "\n";
+            }
+
+            return debugStr;
         }
 
         private void ComputePlotsInRoom(int room, byte[][] plotData, List<AiMapNode> allPlotsList)
@@ -280,7 +334,7 @@ namespace GameEngine
             {
                 byte[] plotValues = plotData[plotCtr];
                 Plot newPlot = new Plot(allPlotsList.Count, room,
-                    plotValues[1], plotValues[0], plotValues[3], plotValues[2]);
+                    plotCtr, plotValues[1], plotValues[0], plotValues[3], plotValues[2]);
                 roomPlots[plotCtr] = new AiMapNode(newPlot);
                 allPlotsList.Add(roomPlots[plotCtr]);
             }
@@ -344,7 +398,7 @@ namespace GameEngine
         {
             int found = -1;
             AiMapNode[] plots = aiPlotsByRoom[room];
-            for (int ctr=0; (found < 0) && (ctr < plots.Length); ++ctr)
+            for (int ctr = 0; (found < 0) && (ctr < plots.Length); ++ctr)
             {
                 if (plots[ctr].thisPlot.Contains(x, y))
                 {
@@ -379,7 +433,7 @@ namespace GameEngine
         {
             AiPathNode nextStep = q[0];
             q.RemoveAt(0);
-            for(int ctr=0; ctr< 4; ++ctr)
+            for (int ctr = 0; ctr < 4; ++ctr)
             {
                 AiMapNode neighbor = nextStep.thisNode.neighbors[ctr];
                 if ((neighbor != null) && !alreadyVisited[neighbor.thisPlot.Key])
@@ -415,6 +469,13 @@ namespace GameEngine
 
         private static readonly byte[][] plotsLeftHallWithTop =
         {
+            new byte[] {1,3,5,39},
+            new byte[] {6,16,6,23}
+        };
+
+        private static readonly byte[][] plotsLeftHallWithBoth =
+        {
+            new byte[] {0,16,0,23},
             new byte[] {1,3,5,39},
             new byte[] {6,16,6,23}
         };
@@ -568,6 +629,238 @@ namespace GameEngine
             new byte[] {6,22,6,23},
         };
 
+        private static readonly byte[][] plotsWhiteMazeEntry =
+        {
+            new byte[] {0,12,0,13},
+            new byte[] {0,16,3,17},
+            new byte[] {0,22,3,23},
+            new byte[] {0,26,0,27},
+            new byte[] {1,0,1,9},
+            new byte[] {1,12,3,15},
+            new byte[] {1,24,3,27},
+            new byte[] {1,30,1,39},
+            new byte[] {2,8,2,9},
+            new byte[] {2,30,2,31},
+            new byte[] {3,0,3,5},
+            new byte[] {3,8,4,11},
+            new byte[] {3,28,4,31},
+            new byte[] {3,34,3,39},
+            new byte[] {4,4,4,5},
+            new byte[] {4,34,4,35},
+            new byte[] {5,0,5,5},
+            new byte[] {5,8,5,15},
+            new byte[] {5,16,6,23},
+            new byte[] {5,24,5,31},
+            new byte[] {5,34,5,39}
+        };
+
+        private static readonly byte[][] plotsWhiteMazeMiddle =
+        {
+            new byte[] {0,4,0,5},
+            new byte[] {0,8,2,9},
+            new byte[] {0,12,2,13},
+            new byte[] {0,16,1,17},
+            new byte[] {0,22,0,23},
+            new byte[] {0,26,2,27},
+            new byte[] {0,30,2,31},
+            new byte[] {0,34,0,35},
+            new byte[] {1,0,1,5},
+            new byte[] {1,18,1,23},
+            new byte[] {1,34,1,39},
+            new byte[] {3,0,3,9},
+            new byte[] {3,12,3,17},
+            new byte[] {3,18,3,27},
+            new byte[] {3,30,3,39},
+            new byte[] {4,4,4,9},
+            new byte[] {4,16,6,17},
+            new byte[] {4,22,6,23},
+            new byte[] {4,30,4,35},
+            new byte[] {5,0,5,13},
+            new byte[] {5,26,5,39},
+            new byte[] {6,12,6,13},
+            new byte[] {6,26,6,27}
+        };
+
+        private static readonly byte[][] plotsWhiteMazeSide =
+        {
+            new byte[] {1,0,5,5},
+            new byte[] {1,8,1,17},
+            new byte[] {1,22,1,31},
+            new byte[] {1,34,5,39},
+            new byte[] {2,14,2,17},
+            new byte[] {2,22,2,25},
+            new byte[] {3,6,3,17},
+            new byte[] {3,22,3,33},
+            new byte[] {4,16,6,17},
+            new byte[] {4,22,6,23},
+            new byte[] {5,8,6,9},
+            new byte[] {5,10,5,11},
+            new byte[] {5,12,6,13},
+            new byte[] {5,26,6,27},
+            new byte[] {5,28,5,29},
+            new byte[] {5,30,6,31},
+            new byte[] {6,4,6,5},
+            new byte[] {6,34,6,35}
+        };
+
+        private static readonly byte[][] plotsRedMaze1 =
+        {
+            new byte[] {0,4,0,5},
+            new byte[] {0,8,0,9},
+            new byte[] {0,16,1,17},
+            new byte[] {0,22,1,23},
+            new byte[] {0,30,0,31},
+            new byte[] {0,34,0,35},
+            new byte[] {1,4,1,9},
+            new byte[] {1,12,2,13},
+            new byte[] {1,26,2,27},
+            new byte[] {1,30,1,35},
+            new byte[] {2,16,4,19},
+            new byte[] {2,20,4,23},
+            new byte[] {3,0,3,13},
+            new byte[] {3,26,3,39},
+            new byte[] {5,0,5,19},
+            new byte[] {5,20,5,39}
+        };
+
+        private static readonly byte[][] plotsRedMazeBottom =
+        {
+            new byte[] {0,16,0,23},
+            new byte[] {1,0,1,39},
+            new byte[] {2,12,3,27},
+            new byte[] {3,0,3,5},
+            new byte[] {3,8,6,9},
+            new byte[] {3,30,6,31},
+            new byte[] {3,34,3,39},
+            new byte[] {4,4,6,5},
+            new byte[] {4,34,6,35},
+            new byte[] {5,10,5,19},
+            new byte[] {5,20,5,29},
+            new byte[] {6,16,6,17},
+            new byte[] {6,22,6,23}
+        };
+
+        private static readonly byte[][] plotsRedMazeTop =
+        {
+            new byte[] {0,4,2,5},
+            new byte[] {0,12,1,13},
+            new byte[] {0,16,0,23},
+            new byte[] {0,26,1,27},
+            new byte[] {0,34,2,35},
+            new byte[] {1,8,2,9},
+            new byte[] {1,14,1,25},
+            new byte[] {1,30,2,31},
+            new byte[] {3,0,3,13},
+            new byte[] {3,16,4,17},
+            new byte[] {3,22,4,23},
+            new byte[] {3,26,3,39},
+            new byte[] {5,0,5,17},
+            new byte[] {5,22,5,39}
+        };
+
+        private static readonly byte[][] plotsRedMazeEntry =
+        {
+            new byte[] {0,16,0,23},
+            new byte[] {1,0,1,5},
+            new byte[] {1,8,3,31},
+            new byte[] {1,34,1,39},
+            new byte[] {2,4,2,5},
+            new byte[] {2,34,2,35},
+            new byte[] {3,0,3,5},
+            new byte[] {3,34,3,39},
+            new byte[] {4,16,6,23},
+            new byte[] {5,4,5,13},
+            new byte[] {5,26,5,35},
+            new byte[] {6,4,6,5},
+            new byte[] {6,12,6,13},
+            new byte[] {6,26,6,27},
+            new byte[] {6,34,6,35}
+        };
+
+        private static readonly byte[][] plotsBlackMaze1 =
+        {
+            new byte[] {0,8,1,11},
+            new byte[] {0,28,1,31},
+            new byte[] {1,0,1,5},
+            new byte[] {1,12,1,27},
+            new byte[] {1,34,1,39},
+            new byte[] {2,2,2,5},
+            new byte[] {2,34,2,37},
+            new byte[] {3,0,3,13},
+            new byte[] {3,14,5,25},
+            new byte[] {3,26,3,39},
+            new byte[] {5,0,5,11},
+            new byte[] {5,28,5,39},
+            new byte[] {6,8,6,11},
+            new byte[] {6,28,6,31}
+        };
+
+        private static readonly byte[][] plotsBlackMaze3 =
+        {
+            new byte[] {0,8,3,11},
+            new byte[] {0,28,3,31},
+            new byte[] {1,2,1,7},
+            new byte[] {1,14,1,19},
+            new byte[] {1,22,1,27},
+            new byte[] {1,34,1,39},
+            new byte[] {3,0,3,1},
+            new byte[] {3,2,5,5},
+            new byte[] {3,12,3,21},
+            new byte[] {3,22,5,25},
+            new byte[] {3,32,3,39},
+            new byte[] {5,6,5,19},
+            new byte[] {5,26,5,39},
+            new byte[] {6,8,6,11},
+            new byte[] {6,28,6,31}
+        };
+
+       private static readonly byte[][] plotsBlackMaze2 =
+       {
+            new byte[] {0,2,0,3},
+            new byte[] {0,6,0,7},
+            new byte[] {0,12,0,13},
+            new byte[] {0,16,1,17},
+            new byte[] {0,22,0,23},
+            new byte[] {0,26,0,27},
+            new byte[] {0,32,0,33},
+            new byte[] {0,36,1,37},
+            new byte[] {1,0,1,3},
+            new byte[] {1,4,2,7},
+            new byte[] {1,12,1,15},
+            new byte[] {1,20,1,23},
+            new byte[] {1,24,2,27},
+            new byte[] {1,32,1,35},
+            new byte[] {3,0,3,13},
+            new byte[] {3,16,3,33},
+            new byte[] {3,36,3,39},
+            new byte[] {4,16,4,17},
+            new byte[] {4,36,4,37},
+            new byte[] {5,0,5,17},
+            new byte[] {5,20,5,37}
+        };
+
+        private static readonly byte[][] plotsBlackMazeEntry =
+        {
+            new byte[] {0,16,3,23},
+            new byte[] {1,0,1,15},
+            new byte[] {1,24,1,39},
+            new byte[] {3,0,3,15},
+            new byte[] {3,24,3,39},
+            new byte[] {4,18,4,23}, // Put this before {4,16,6,17}.  Makes a discontinuance work.
+            new byte[] {4,16,6,17},
+            new byte[] {5,0,5,3},
+            new byte[] {5,6,5,13},
+            new byte[] {5,22,6,23},
+            new byte[] {5,26,5,33},
+            new byte[] {5,36,5,39},
+            new byte[] {6,2,6,3},
+            new byte[] {6,6,6,7},
+            new byte[] {6,12,6,13},
+            new byte[] {6,26,6,27},
+            new byte[] {6,32,6,33},
+            new byte[] {6,36,6,37}
+        };
+
     }
 
     /*
@@ -588,9 +881,9 @@ namespace GameEngine
         // When computing overlap, how far beyond the edge of the plot to shoot for
         private const int OVERLAP_EXTENT = BALL.MOVEMENT;
 
-        public const int inputXScale = 8;
-        public const int inputYScale = 32;
-        public static readonly int[] roomEdges = { 7 * inputYScale - 1, 40 * inputXScale - 1, 0, 0 };
+        public const int WALL_X_SCALE = 8;
+        public const int WALL_Y_SCALE = 32;
+        public static readonly int[] roomEdges = { 7 * WALL_Y_SCALE - 1, 40 * WALL_X_SCALE - 1, 0, 0 };
 
         private readonly int key;
         public int Key
@@ -602,14 +895,29 @@ namespace GameEngine
         {
             get { return room; }
         }
+        private readonly int placeInRoom;
+        public int PlaceInRoom
+        {
+            get { return placeInRoom; }
+        }
         private readonly int[] edges;
 
-        public Plot(int inKey, int inRoom, int inLeft, int inBottom, int inRight, int inTop)
+        /**
+         * Create a plot
+         * inKey - the unique key of the plot
+         * inRoom - the room that the plot is in
+         * inLeft - the left edge of the plot USING WALL SCALE (so 0-39).  Will be converted to standard coordinates.
+         * inBottom - the bottom edge of the plot USING WALL SCALED (so 0-6).  Will be converted to standard coordinates.
+         * inRight - the right edge of the plot USING WALL SCALE (so 0-39).  Will be converted to standard coordinates.
+         * inTop - the top edge of the plot USING WALL SCALE (so 0-6).  Will be converted to standard coordinates.
+         */
+        public Plot(int inKey, int inRoom, int inPlaceInRoom, int inLeft, int inBottom, int inRight, int inTop)
         {
             key = inKey;
             room = inRoom;
-            edges = new int[] { (inTop+1) * inputYScale - 1 , (inRight+1) * inputXScale - 1,
-                                 inBottom * inputYScale, inLeft * inputXScale };
+            placeInRoom = inPlaceInRoom;
+            edges = new int[] { (inTop+1) * WALL_Y_SCALE - 1 , (inRight+1) * WALL_X_SCALE - 1,
+                                 inBottom * WALL_Y_SCALE, inLeft * WALL_X_SCALE };
         }
 
         public int Top
@@ -643,6 +951,22 @@ namespace GameEngine
         public int Width
         {
             get { return edges[RIGHT] - edges[LEFT]; }
+        }
+        public int TopWallScale
+        {
+            get { return (edges[UP]+1) / WALL_Y_SCALE - 1; }
+        }
+        public int BottomWallScale
+        {
+            get { return edges[DOWN] / WALL_Y_SCALE; }
+        }
+        public int LeftWallScale
+        {
+            get { return edges[LEFT] / WALL_X_SCALE; }
+        }
+        public int RightWallScale
+        {
+            get { return (edges[RIGHT]+1) / WALL_X_SCALE - 1; }
         }
         public RRect Rect
         {

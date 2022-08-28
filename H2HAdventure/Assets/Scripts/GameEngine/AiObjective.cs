@@ -996,6 +996,13 @@ public class GoToRoomObjective : AiObjective
 
         // Figure out what point in the room is closest.
         AiPathNode path = nav.ComputePathToClosestExit(aiPlayer.room, aiPlayer.midX, aiPlayer.midY, gotoRoom);
+        if (path == null)
+        {
+            // No way to get out of room
+            UnityEngine.Debug.Log("Couldn't compute path for AI player #" + aiPlayerNum + " for objective \"" + this +
+                "\" to get to room " + board.map.roomDefs[gotoRoom].label);
+            throw new Abort();
+        }
         targetPlot = path.End.ThisPlot.Rect;
         addChild(new GoToObjective(targetPlot, carrying));
     }
@@ -1089,6 +1096,14 @@ public class BringObjectToRoomObjective : AiObjective
             ballTargetSpace.bottom + BALL.MOVEMENT,
             ballTargetSpace.left + BALL.DIAMETER + BALL.MOVEMENT);
         AiPathNode closestPlot = nav.ComputePathToArea(aiPlayer.room, aiPlayer.midX, aiPlayer.midY, plotTargetSpace);
+        if (closestPlot == null)
+        {
+            // No way to get there.  Give up.
+            UnityEngine.Debug.Log("Couldn't compute path for AI player #" + aiPlayerNum + " for objective \"" + this +
+                "\" to get to room " + board.map.roomDefs[gotoRoom].label);
+            throw new Abort();
+
+        }
         RRect target = closestPlot.End.ThisPlot.Rect.intersect(ballTargetSpace);
         addChild(new GoToObjective(target, toBring));
     }

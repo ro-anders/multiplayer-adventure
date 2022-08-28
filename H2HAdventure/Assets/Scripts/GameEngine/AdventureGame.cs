@@ -264,6 +264,12 @@ namespace GameEngine
 
         public void PrintDisplay(int thisPlayerRoom)
         {
+            // If we are playing back and episode, we may track a different player
+            if ((PlayerRecorder.GLOBAL_PLAYER_RECORDER_MODE == PlayerRecorder.Modes.PLAYBACK) &&
+                (PlayerRecorder.PLAYBACK_PLAYER_VIEW >= 0))
+            {
+                thisPlayerRoom = gameBoard.getPlayer(PlayerRecorder.PLAYBACK_PLAYER_VIEW).room;
+            }
             // get the playfield data
             int displayedRoom = (displayWinningRoom ? winningRoom : thisPlayerRoom);
 
