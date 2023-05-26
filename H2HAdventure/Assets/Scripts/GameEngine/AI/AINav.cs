@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GameEngine
+namespace GameEngine.Ai
 {
 
     /**
@@ -24,6 +24,7 @@ namespace GameEngine
             map = inMap;
             ComputeAllPlots();
             ConnectAllPlots();
+            ComputeZones();
             alreadyVisited = new bool[aiPlots.Length];
         }
 
@@ -32,14 +33,14 @@ namespace GameEngine
          * @return a path from the from a plot containing the from point to
          * a plot containing the to point.  Or null if no such path exists.
          */
-        public AiPathNode ComputePath(int fromRoom, int fromX, int fromY, int toRoom, int toX, int toY)
+        public AiPathNode ComputePath(int fromRoom, int fromBX, int fromBY, int toRoom, int toBX, int toBY)
         {
-            int fromPlot = FindPlot(fromRoom, fromX, fromY);
+            int fromPlot = FindPlot(fromRoom, fromBX, fromBY);
             if (fromPlot < 0)
             {
                 UnityEngine.Debug.LogError("Couldn't find starting plot");
             }
-            int toPlot = FindPlot(toRoom, toX, toY);
+            int toPlot = FindPlot(toRoom, toBX, toBY);
             if (toPlot < 0)
             {
                 UnityEngine.Debug.LogError("Couldn't find ending plot");
@@ -100,7 +101,7 @@ namespace GameEngine
                 bool touches = (plot.Touches(desiredArea));
                 if (touches)
                 {
-                    AiPathNode path = ComputePath(startRoom, startX, startY, plot.Room, plot.MidX, plot.MidY);
+                    AiPathNode path = ComputePath(startRoom, startX, startY, plot.Room, plot.MidBX, plot.MidBY);
                     if ((path != null) &&
                         ((shortestPath == null) || (path.distance < shortestPath.distance)))
                     {
@@ -132,7 +133,7 @@ namespace GameEngine
                     (plot.OnEdge(Plot.DOWN) || plot.OnEdge(Plot.LEFT)));
                 if (onEdge)
                 {
-                    AiPathNode path = ComputePath(startRoom, startX, fromy, roomWithExits, plot.MidX, plot.MidY);
+                    AiPathNode path = ComputePath(startRoom, startX, fromy, roomWithExits, plot.MidBX, plot.MidBY);
                     if ((path != null) &&
                         ((shortestPath == null) || (path.distance < shortestPath.distance)))
                     {
@@ -148,18 +149,18 @@ namespace GameEngine
          * Returns true if an object is in or overlapping a reachable area.
          * Returns false if the object is totally embedded in the wall.
          */
-        public bool IsReachable(int room, int x, int y, int width, int height)
+        public bool IsEmbeddedInWall(int room, int x, int y, int width, int height)
         {
             int[] plots = FindPlots(room, x, y, width, height, true);
-            return plots.Length > 0;
+            return plots.Length == 0;
         }
 
         /**
          * Find all plots that overlap this region
          */
-        public Plot[] GetPlots(int room, int x, int y, int width, int height)
+        public Plot[] GetPlots(int room, int bx, int by, int bwidth, int bheight)
         {
-            int[] plotIndexes = FindPlots(room, x, y, width, height, false);
+            int[] plotIndexes = FindPlots(room, bx, by, bwidth, bheight, false);
             Plot[] plots = new Plot[plotIndexes.Length];
             for (int ctr = 0; ctr < plotIndexes.Length; ++ctr)
             {
@@ -169,11 +170,50 @@ namespace GameEngine
         }
 
         /**
+         * Return what zone a rectangle is in or NO_ZONE if rectangle
+         * touches no navigable plots.
+         * @param brect an area to check (in standard/ball coordinates)
+         * @param preferredZone if area spans multiple zones and 
+         *   preferredZone is one of those zones, return preferredZone.
+         *   Otherwise returns the zone that comes first in the enumeration.
+         */
+        public NavZone WhichZone(
+            RRect brect,
+            NavZone preferredZone = NavZone.NO_ZONE)
+        {
+            // If the rectangle is in a room that is all one zone, this is easy
+            ROOM room = map.getRoom(brect.room);
+            if (room.zone != NavZone.NO_ZONE)
+            {
+                return room.zone;
+            }
+
+            // Need to figure out what plots it touches
+            NavZone found = NavZone.NO_ZONE;
+            int[] plotIndexes = FindPlots(brect.room,
+                brect.x, brect.y, brect.width, brect.height, false);
+            foreach (int plotIndex in plotIndexes)
+            {
+                NavZone plotZone = aiPlots[plotIndex].thisPlot.Zone;
+                if ((preferredZone != NavZone.NO_ZONE) &&
+                    (plotZone == preferredZone))
+                {
+                    return preferredZone;
+                }
+                if ((found == NavZone.NO_ZONE) || (plotZone < found))
+                {
+                    found = plotZone;
+                }
+            }
+            return found;
+        }
+
+        /**
          * Find all plots that overlap this rectangle
          */
-        public Plot[] GetPlots(RRect rect)
+        public Plot[] GetPlots(RRect brect)
         {
-            return GetPlots(rect.room, rect.x, rect.y, rect.width, rect.height);
+            return GetPlots(brect.room, brect.x, brect.y, brect.width, brect.height);
         }
 
         /**
@@ -242,7 +282,7 @@ namespace GameEngine
          */
         private void ComputeAllPlots()
         {
-            // Right now this is hardcoded and just for a couple of rooms
+            // Easiest to just hardcode
 
             aiPlotsByRoom = new AiMapNode[Map.NUM_ROOMS][];
             for (int ctr = 0; ctr < Map.NUM_ROOMS; ++ctr)
@@ -272,6 +312,7 @@ namespace GameEngine
             ComputePlotsInRoom(Map.BLACK_MAZE_1, plotsBlackMaze1, allPlotsList);
             ComputePlotsInRoom(Map.BLACK_MAZE_2, plotsBlackMaze2, allPlotsList);
             ComputePlotsInRoom(Map.BLACK_MAZE_3, plotsBlackMaze3, allPlotsList);
+
             ComputePlotsInRoom(Map.BLACK_MAZE_ENTRY, plotsBlackMazeEntry, allPlotsList);
             ComputePlotsInRoom(Map.RED_MAZE_3, plotsRedMaze1, allPlotsList);
             ComputePlotsInRoom(Map.RED_MAZE_2, plotsRedMazeTop, allPlotsList);
@@ -283,11 +324,10 @@ namespace GameEngine
             ComputePlotsInRoom(Map.ROBINETT_ROOM, plotsHallWithTop, allPlotsList);
             ComputePlotsInRoom(Map.JADE_CASTLE, plotsCastle, allPlotsList);
             ComputePlotsInRoom(Map.JADE_FOYER, plotsRoomWithBottom, allPlotsList);
-            ComputePlotsInRoom(Map.CRYSTAL_CASTLE, plotsCastle, allPlotsList);
+            ComputePlotsInRoom(Map.CRYSTAL_CASTLE, plotsCrystalCastle, allPlotsList);
             ComputePlotsInRoom(Map.CRYSTAL_FOYER, plotsRoomWithBottom, allPlotsList);
             ComputePlotsInRoom(Map.COPPER_CASTLE, plotsCastle, allPlotsList);
             ComputePlotsInRoom(Map.COPPER_FOYER, plotsRoomWithBottom, allPlotsList);
-
             aiPlots = allPlotsList.ToArray();
         }
 
@@ -301,16 +341,16 @@ namespace GameEngine
             // DEBUG
             ROOM room = map.getRoom(roomNum);
             string debugStr = "Room #" + room.index + ": " + room.label + "\n";
-            for (int y = 6; y >= 0; --y)
+            for (int wy = 6; wy >= 0; --wy)
             {
-                for (int x = 0; x < 40; ++x)
+                for (int wx = 0; wx < 40; ++wx)
                 {
-                    int plot = FindPlot(roomNum, x * Plot.WALL_X_SCALE, y * Plot.WALL_Y_SCALE);
+                    int plot = FindPlot(roomNum, wx * Plot.WALL_BX_SCALE, wy * Plot.WALL_BY_SCALE);
                     if (plot < 0)
                     {
-                        debugStr = debugStr + (room.walls[x, y] ? "█" : "?");
+                        debugStr = debugStr + (room.walls[wx, wy] ? "█" : "?");
                     }
-                    else if (room.walls[x, y])
+                    else if (room.walls[wx, wy])
                     {
                         debugStr = debugStr + "?";
                     }
@@ -375,32 +415,143 @@ namespace GameEngine
         }
 
         /**
+         * Determine the zones of the map.
+         */
+        private void ComputeZones()
+        {
+            // Easiest to just hardcode.
+            setZoneToAllConnectedPlots(aiPlotsByRoom[Map.GOLD_FOYER][0], NavZone.GOLD_CASTLE);
+            setZoneToAllConnectedPlots(aiPlotsByRoom[Map.BLACK_FOYER][0], NavZone.BLACK_CASTLE);
+            setZoneToAllConnectedPlots(aiPlotsByRoom[Map.RED_MAZE_1][0], NavZone.WHITE_CASTLE_1);
+            setZoneToAllConnectedPlots(aiPlotsByRoom[Map.CRYSTAL_FOYER][0], NavZone.CRYSTAL_CASTLE);
+            setZoneToAllConnectedPlots(aiPlotsByRoom[Map.COPPER_FOYER][0], NavZone.COPPER_CASTLE);
+            setZoneToAllConnectedPlots(aiPlotsByRoom[Map.JADE_FOYER][0], NavZone.JADE_CASTLE);
+            setZoneToAllConnectedPlots(aiPlotsByRoom[Map.RED_MAZE_4][0], NavZone.WHITE_CASTLE_2);
+            setZoneToAllConnectedPlots(aiPlotsByRoom[Map.BLACK_MAZE_3][0], NavZone.DOT_LOCATION);
+            setZoneToAllConnectedPlots(aiPlotsByRoom[Map.ROBINETT_ROOM][0], NavZone.ROBINETT_ROOM);
+            setZoneToAllConnectedPlots(aiPlotsByRoom[Map.CRYSTAL_CASTLE][0], NavZone.CRYSTAL_GROUNDS);
+            setZoneToAllConnectedPlots(aiPlotsByRoom[Map.GOLD_CASTLE][0], NavZone.MAIN);
+
+            setZonesOnRooms();
+        }
+
+        /**
+         * Figure out all plots that are reachable from this plot and put them
+         * in the passed in zone.
+         *  @param plotInZone the AiMapNode for a plot in a specific zone
+         *  @param zone the zone the plot should be in
+         */
+        private void setZoneToAllConnectedPlots(AiMapNode plotInZone, NavZone zone)
+        {
+            // Create a set of plots in the zone and a second set
+            // of plots on the edge (plots whose neighbors haven't
+            // been added to the zone yet.
+            // Then keep processing plots on the edge until there
+            // are no more edge plots to process.
+            HashSet<AiMapNode> allConnectedPlots = new HashSet<AiMapNode>();
+            HashSet<AiMapNode> toProcess = new HashSet<AiMapNode>();
+            toProcess.Add(plotInZone);
+            while (toProcess.Count > 0)
+            {
+                // Process the next edge plot.  Set it's zone, add it to the
+                // zone set and add all its neighbors that haven't been seen
+                // yet to the edge set.
+                HashSet<AiMapNode>.Enumerator enumerator = toProcess.GetEnumerator();
+                enumerator.MoveNext();
+                AiMapNode nextNode = enumerator.Current;
+                toProcess.Remove(nextNode);
+                nextNode.thisPlot.Zone = zone;
+                bool isNew = allConnectedPlots.Add(nextNode);
+                if (isNew)
+                {
+                    for(int ctr=Plot.FIRST_DIRECTION; ctr <= Plot.LAST_DIRECTION; ++ctr)
+                    {
+                        AiMapNode neighbor = nextNode.neighbors[ctr];
+                        // Note, two plots are in the same zone if there is a TWO WAY
+                        // connection between them.  This means the Robinett Room and the
+                        // Main Hall are not connected.
+                        if ((neighbor != null) && (neighbor.neighbors[Plot.OppositeDirection(ctr)] == nextNode))
+                        {
+                            toProcess.Add(nextNode.neighbors[ctr]);
+                        }
+                    }   
+                }
+            }
+        }
+
+        /**
+         * Computes which rooms are in which zones.
+         */
+        private void setZonesOnRooms()
+        {
+            for (int roomCtr=0; roomCtr < Map.getNumRooms(); ++roomCtr)
+            {
+                AiMapNode[] aiPlots = this.aiPlotsByRoom[roomCtr];
+                if (aiPlots.Length > 0)
+                {
+                    NavZone firstZone = aiPlots[0].thisPlot.Zone;
+                    bool allSameZone = true;
+                    for ( int plotCtr=0; allSameZone && plotCtr<aiPlots.Length; ++plotCtr)
+                    {
+                        allSameZone = aiPlots[plotCtr].thisPlot.Zone == firstZone;
+                    }
+
+                    ROOM nextRoom = map.getRoom(roomCtr);
+                    nextRoom.zone = (allSameZone ? firstZone : NavZone.NO_ZONE);
+                }
+            }
+        }
+
+        /**
          * A castle has just been unlocked.  Tell the AI that you can 
          * now get from the outside of the castle to the inside.
          */
-        public void ConnectPortcullisPlots(int outsideRoom, int insideRoom, bool open)
+        public void ConnectPortcullisPlots(Portcullis gate, bool open)
         {
             // Outside plot defined with {3,19,3,20},
-            // Inside plot define with {0,16, 0,23}
-            int outsidePlotindex = FindPlot(outsideRoom, 160, 112);
+            // Inside plot define with {0,16,0,23}
+            int outsidePlotindex = FindPlot(gate.room, 160, 112);
             // Just happen to know exactly which plots need to be connected
-            AiMapNode outsidePlot = aiPlotsByRoom[outsideRoom][5];
-            AiMapNode insidePlot = aiPlotsByRoom[insideRoom][0];
+            AiMapNode outsidePlot = aiPlots[outsidePlotindex];
+            AiMapNode insidePlot = aiPlotsByRoom[gate.insideRoom][0];
             outsidePlot.SetNeighbor(Plot.UP, (open ? insidePlot : null));
             insidePlot.SetNeighbor(Plot.DOWN, (open ? outsidePlot : null));
+
+            // We also change the zone of all the plots inside the castle
+            // (except for those that are their own zones)
+            int[] insideRooms = gate.AllInsideRooms;
+            NavZone from = (open ? gate.InsideZone : outsidePlot.thisPlot.Zone);
+            NavZone to = (open ? outsidePlot.thisPlot.Zone : gate.InsideZone);
+            foreach(int nextRoomCtr in insideRooms)
+            {
+                ROOM nextRoom = map.getRoom(nextRoomCtr);
+                if (nextRoom.zone == from)
+                {
+                    nextRoom.zone = to;
+                }
+                foreach(AiMapNode nextNode in aiPlotsByRoom[nextRoomCtr])
+                {
+                    if (nextNode.thisPlot.Zone == from)
+                    {
+                        nextNode.thisPlot.Zone = to;
+                    }
+                }
+            }
+
+
         }
 
         /**
          * Find the plot in the room that contains that (x,y)
          * @return the index into the aiPlotsByRoom[room] array of the desired node
          */
-        private int FindPlot(int room, int x, int y)
+        private int FindPlot(int room, int bx, int by)
         {
             int found = -1;
             AiMapNode[] plots = aiPlotsByRoom[room];
             for (int ctr = 0; (found < 0) && (ctr < plots.Length); ++ctr)
             {
-                if (plots[ctr].thisPlot.Contains(x, y))
+                if (plots[ctr].thisPlot.Contains(bx, by))
                 {
                     found = plots[ctr].thisPlot.Key;
                 }
@@ -438,7 +589,7 @@ namespace GameEngine
                 AiMapNode neighbor = nextStep.thisNode.neighbors[ctr];
                 if ((neighbor != null) && !alreadyVisited[neighbor.thisPlot.Key])
                 {
-                    AiPathNode nextNextStep = nextStep.Prepend(neighbor, (ctr + 2) % 4);
+                    AiPathNode nextNextStep = nextStep.Prepend(neighbor, Plot.OppositeDirection(ctr));
                     if (neighbor.thisPlot.Key == goalPlot)
                     {
                         return nextNextStep;
@@ -457,6 +608,18 @@ namespace GameEngine
         private static readonly byte[][] plotsCastle =
         {
             new byte[] {0,16, 0,23},
+            new byte[] {1,2,3,11},
+            new byte[] {1,12,1,27},
+            new byte[] {1,28,1,37},
+            new byte[] {2,18,2,21},
+            new byte[] {3,19,3,20},
+            new byte[] {4,2,5,9},
+            new byte[] {4,30,5,37},
+            new byte[] {5,17,6,22},
+        };
+
+        private static readonly byte[][] plotsCrystalCastle =
+        {
             new byte[] {1,2,3,11},
             new byte[] {1,12,1,27},
             new byte[] {1,28,1,37},
@@ -687,10 +850,16 @@ namespace GameEngine
             new byte[] {1,8,1,17},
             new byte[] {1,22,1,31},
             new byte[] {1,34,5,39},
-            new byte[] {2,14,2,17},
-            new byte[] {2,22,2,25},
-            new byte[] {3,6,3,17},
-            new byte[] {3,22,3,33},
+
+        //    new byte[] {2,14,2,17},
+        //    new byte[] {2,22,2,25},
+        //    new byte[] {3,6,3,17},
+        //    new byte[] {3,22,3,33},
+            new byte[] {2,14,3,17},
+            new byte[] {2,22,3,25},
+            new byte[] {3,6,3,13},
+            new byte[] {3,26,3,33},
+
             new byte[] {4,16,6,17},
             new byte[] {4,22,6,23},
             new byte[] {5,8,6,9},
@@ -705,16 +874,16 @@ namespace GameEngine
 
         private static readonly byte[][] plotsRedMaze1 =
         {
-            new byte[] {0,4,0,5},
+            new byte[] {0,4,1,5},
             new byte[] {0,8,0,9},
             new byte[] {0,16,1,17},
             new byte[] {0,22,1,23},
             new byte[] {0,30,0,31},
-            new byte[] {0,34,0,35},
-            new byte[] {1,4,1,9},
+            new byte[] {0,34,1,35},
+            new byte[] {1,6,1,9},
             new byte[] {1,12,2,13},
             new byte[] {1,26,2,27},
-            new byte[] {1,30,1,35},
+            new byte[] {1,30,1,33},
             new byte[] {2,16,4,19},
             new byte[] {2,20,4,23},
             new byte[] {3,0,3,13},
@@ -760,7 +929,7 @@ namespace GameEngine
 
         private static readonly byte[][] plotsRedMazeEntry =
         {
-            new byte[] {0,16,0,23},
+            new byte[] {0,16,0,23}, // First entry should be plot that portcullis leads to. 
             new byte[] {1,0,1,5},
             new byte[] {1,8,3,31},
             new byte[] {1,34,1,39},
@@ -769,12 +938,12 @@ namespace GameEngine
             new byte[] {3,0,3,5},
             new byte[] {3,34,3,39},
             new byte[] {4,16,6,23},
-            new byte[] {5,4,5,13},
-            new byte[] {5,26,5,35},
-            new byte[] {6,4,6,5},
-            new byte[] {6,12,6,13},
-            new byte[] {6,26,6,27},
-            new byte[] {6,34,6,35}
+            new byte[] {5,4,6,5},
+            new byte[] {5,6,5,11},
+            new byte[] {5,12,6,13},
+            new byte[] {5,26,6,27},
+            new byte[] {5,28,5,33},
+            new byte[] {5,34,6,35}
         };
 
         private static readonly byte[][] plotsBlackMaze1 =
@@ -797,10 +966,10 @@ namespace GameEngine
 
         private static readonly byte[][] plotsBlackMaze3 =
         {
+            new byte[] {1,14,1,19}, // This is the plot with the dot.  Put it first.  We reference it later.
             new byte[] {0,8,3,11},
             new byte[] {0,28,3,31},
             new byte[] {1,2,1,7},
-            new byte[] {1,14,1,19},
             new byte[] {1,22,1,27},
             new byte[] {1,34,1,39},
             new byte[] {3,0,3,1},
@@ -863,6 +1032,23 @@ namespace GameEngine
 
     }
 
+    public enum NavZone
+    {
+        NO_ZONE = -1,
+        MAIN,
+        GOLD_CASTLE,
+        COPPER_CASTLE,
+        JADE_CASTLE,
+        BLACK_CASTLE,
+        WHITE_CASTLE_1,
+        WHITE_CASTLE_2,
+        DOT_LOCATION,
+        ROBINETT_ROOM,
+        CRYSTAL_GROUNDS,
+        CRYSTAL_CASTLE,
+        NOT_PART_OF_GAME
+    }
+
     /*
      * A plot is an open rectangle on the map with a unique id.
      * It knows its room and xy boundaries and can compare itself
@@ -878,12 +1064,17 @@ namespace GameEngine
         public const int FIRST_DIRECTION = 0;
         public const int LAST_DIRECTION = 3;
 
+        public static int OppositeDirection(int direction)
+        {
+            return (direction + 2) % 4; 
+        }
+
         // When computing overlap, how far beyond the edge of the plot to shoot for
         private const int OVERLAP_EXTENT = BALL.MOVEMENT;
 
-        public const int WALL_X_SCALE = 8;
-        public const int WALL_Y_SCALE = 32;
-        public static readonly int[] roomEdges = { 7 * WALL_Y_SCALE - 1, 40 * WALL_X_SCALE - 1, 0, 0 };
+        public const int WALL_BX_SCALE = 8;
+        public const int WALL_BY_SCALE = 32;
+        public static readonly int[] roomEdges = { 7 * WALL_BY_SCALE - 1, 40 * WALL_BX_SCALE - 1, 0, 0 };
 
         private readonly int key;
         public int Key
@@ -900,87 +1091,123 @@ namespace GameEngine
         {
             get { return placeInRoom; }
         }
-        private readonly int[] edges;
+        private readonly int[] edgesb;
+
+        private NavZone zone;
+        public NavZone Zone
+        {
+            get { return zone; }
+            set { zone = value; }
+        }
 
         /**
          * Create a plot
          * inKey - the unique key of the plot
          * inRoom - the room that the plot is in
-         * inLeft - the left edge of the plot USING WALL SCALE (so 0-39).  Will be converted to standard coordinates.
-         * inBottom - the bottom edge of the plot USING WALL SCALED (so 0-6).  Will be converted to standard coordinates.
-         * inRight - the right edge of the plot USING WALL SCALE (so 0-39).  Will be converted to standard coordinates.
-         * inTop - the top edge of the plot USING WALL SCALE (so 0-6).  Will be converted to standard coordinates.
+         * inPlaceInRoom - the index of this plot in the room's list of plots
+         * inLeft - the left edge of the plot USING WALL SCALE (so 0-39).  Will be converted to ball coordinates.
+         * inBottom - the bottom edge of the plot USING WALL SCALED (so 0-6).  Will be converted to ball coordinates.
+         * inRight - the right edge of the plot USING WALL SCALE (so 0-39).  Will be converted to ball coordinates.
+         * inTop - the top edge of the plot USING WALL SCALE (so 0-6).  Will be converted to ball coordinates.
          */
-        public Plot(int inKey, int inRoom, int inPlaceInRoom, int inLeft, int inBottom, int inRight, int inTop)
+        public Plot(int inKey, int inRoom, int inPlaceInRoom,
+            int inWLeft, int inWBottom, int inWRight, int inWTop,
+            NavZone inZone = NavZone.NOT_PART_OF_GAME)
         {
             key = inKey;
             room = inRoom;
+            zone = inZone;
             placeInRoom = inPlaceInRoom;
-            edges = new int[] { (inTop+1) * WALL_Y_SCALE - 1 , (inRight+1) * WALL_X_SCALE - 1,
-                                 inBottom * WALL_Y_SCALE, inLeft * WALL_X_SCALE };
+            edgesb = new int[] { (inWTop+1) * WALL_BY_SCALE - 1 , (inWRight+1) * WALL_BX_SCALE - 1,
+                                 inWBottom * WALL_BY_SCALE, inWLeft * WALL_BX_SCALE };
         }
 
-        public int Top
+        public int BTop
         {
-            get { return edges[UP]; }
+            get { return edgesb[UP]; }
         }
-        public int Bottom
+        public int BBottom
         {
-            get { return edges[DOWN]; }
+            get { return edgesb[DOWN]; }
         }
-        public int Left
+        public int BLeft
         {
-            get { return edges[LEFT]; }
+            get { return edgesb[LEFT]; }
         }
-        public int Right
+        public int BRight
         {
-            get { return edges[RIGHT]; }
+            get { return edgesb[RIGHT]; }
         }
-        public int MidX
+        public int MidBX
         {
-            get { return (edges[LEFT] + edges[RIGHT]) / 2; }
+            get { return (edgesb[LEFT] + edgesb[RIGHT]) / 2; }
         }
-        public int MidY
+        public int MidBY
         {
-            get { return (edges[UP] + edges[DOWN]) / 2; }
+            get { return (edgesb[UP] + edgesb[DOWN]) / 2; }
         }
-        public int Height
+        public int BHeight
         {
-            get { return edges[UP] - edges[DOWN]; }
+            get { return edgesb[UP] - edgesb[DOWN]; }
         }
-        public int Width
+        public int BWidth
         {
-            get { return edges[RIGHT] - edges[LEFT]; }
+            get { return edgesb[RIGHT] - edgesb[LEFT]; }
         }
-        public int TopWallScale
+        public int WTop
         {
-            get { return (edges[UP]+1) / WALL_Y_SCALE - 1; }
+            get { return (edgesb[UP]+1) / WALL_BY_SCALE - 1; }
         }
-        public int BottomWallScale
+        public int WBottom
         {
-            get { return edges[DOWN] / WALL_Y_SCALE; }
+            get { return edgesb[DOWN] / WALL_BY_SCALE; }
         }
-        public int LeftWallScale
+        public int WLeft
         {
-            get { return edges[LEFT] / WALL_X_SCALE; }
+            get { return edgesb[LEFT] / WALL_BX_SCALE; }
         }
-        public int RightWallScale
+        public int WRight
         {
-            get { return (edges[RIGHT]+1) / WALL_X_SCALE - 1; }
+            get { return (edgesb[RIGHT]+1) / WALL_BX_SCALE - 1; }
         }
-        public RRect Rect
+        public RRect BRect
         {
-            get { return new RRect(room, edges[LEFT], edges[UP], Width, Height); }
+            get { return new RRect(room, edgesb[LEFT], edgesb[UP], BWidth, BHeight); }
         }
 
         public int Edge(int direction)
         {
-            return edges[direction % 4];
+            return edgesb[direction % 4];
         }
 
+        /**
+         * Two plots are considered equal if they share the same key
+         */
         public bool equals(Plot other)
         {
             return this.key == other.key;
+        }
+        public override bool Equals(Object obj)
+        {
+            //Check for null and compare run-time types.
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                Plot p = (Plot)obj;
+                return this.equals(p);
+            }
+        }
+
+        /**
+         * Implement a hash that returns the same value for equal plots.
+         * Simply return the key.
+         */
+        public override int GetHashCode()
+        {
+            return key;
         }
 
         /**
@@ -990,40 +1217,44 @@ namespace GameEngine
         public bool OnEdge(int direction)
         {
             direction = direction % 4;
-            return edges[direction] == roomEdges[direction];
+            return edgesb[direction] == roomEdges[direction];
         }
 
-        public bool Contains(int x, int y)
+        public bool Contains(int bx, int by)
         {
-            return ((x >= edges[LEFT]) && (x <= edges[RIGHT]) &&
-                    (y >= edges[DOWN]) && (y <= edges[UP]));
+            return ((bx >= edgesb[LEFT]) && (bx <= edgesb[RIGHT]) &&
+                    (by >= edgesb[DOWN]) && (by <= edgesb[UP]));
         }
-        public bool Contains(int inRoom, int x, int y)
+        public bool Contains(int inRoom, int bx, int by)
         {
             return ((inRoom == room) && 
-                    (x >= edges[LEFT]) && (x <= edges[RIGHT]) &&
-                    (y >= edges[DOWN]) && (y <= edges[UP]));
+                    (bx >= edgesb[LEFT]) && (bx <= edgesb[RIGHT]) &&
+                    (by >= edgesb[DOWN]) && (by <= edgesb[UP]));
+        }
+        public bool Contains(RRect bRect)
+        {
+            return this.BRect.contains(bRect);
         }
 
-        public bool Touches(int x, int y, int width, int height)
+        public bool Touches(int bx, int by, int bwidth, int bheight)
         {
-            return !((x > edges[RIGHT]) || (x + width -1 < edges[LEFT]) ||
-                (y < edges[DOWN]) || (y - height + 1 > edges[UP])); 
+            return !((bx > edgesb[RIGHT]) || (bx + bwidth -1 < edgesb[LEFT]) ||
+                (by < edgesb[DOWN]) || (by - bheight + 1 > edgesb[UP])); 
         }
-        public bool Touches(RRect rect)
+        public bool Touches(RRect brect)
         {
-            return !((rect.left > edges[RIGHT]) || (rect.right < edges[LEFT]) ||
-                (rect.top < edges[DOWN]) || (rect.bottom > edges[UP]));
+            return !((brect.left > edgesb[RIGHT]) || (brect.right < edgesb[LEFT]) ||
+                (brect.top < edgesb[DOWN]) || (brect.bottom > edgesb[UP]));
         }
 
         /**
          * Returns true if the plot contains the coordinates or they are very close
          */
-        public bool RoughlyContains(int inRoom, int x, int y)
+        public bool RoughlyContains(int inRoom, int bx, int by)
         {
             return ((inRoom == room) &&
-                    (x >= edges[LEFT]-OVERLAP_EXTENT) && (x <= edges[RIGHT] + OVERLAP_EXTENT) &&
-                    (y >= edges[DOWN] - OVERLAP_EXTENT) && (y <= edges[UP] + OVERLAP_EXTENT));
+                    (bx >= edgesb[LEFT]-OVERLAP_EXTENT) && (bx <= edgesb[RIGHT] + OVERLAP_EXTENT) &&
+                    (by >= edgesb[DOWN] - OVERLAP_EXTENT) && (by <= edgesb[UP] + OVERLAP_EXTENT));
         }
 
         public bool AdjacentTo(Plot otherPlot, int direction)
@@ -1060,7 +1291,7 @@ namespace GameEngine
         // than the one specified, the return value is undefined.
         // If the plots are adjacent across a room switch it will still work.
         public void GetOverlapSegment(Plot otherPlot, int direction,
-            ref int point1x, ref int point1y, ref int point2x, ref int point2y)
+            ref int point1bx, ref int point1by, ref int point2bx, ref int point2by)
         {
             // We know the two edges overlap so to find the segment of intersection we put the four
             // endpoints in sorted order and make a segment between the middle two.
@@ -1071,25 +1302,25 @@ namespace GameEngine
             switch (direction)
             {
                 case UP:
-                    point1x = endpoints[1];
-                    point2x = endpoints[2];
-                    point1y = point2y = this.Top + 1;
+                    point1bx = endpoints[1];
+                    point2bx = endpoints[2];
+                    point1by = point2by = this.BTop + 1;
                     return;
                 case DOWN:
-                    point1x = endpoints[1];
-                    point2x = endpoints[2];
-                    point1y = point2y = this.Bottom - 1;
+                    point1bx = endpoints[1];
+                    point2bx = endpoints[2];
+                    point1by = point2by = this.BBottom - 1;
                     return;
                 case LEFT:
-                    point1y = endpoints[1];
-                    point2y = endpoints[2];
-                    point1x = point2x = this.Left - 1;
+                    point1by = endpoints[1];
+                    point2by = endpoints[2];
+                    point1bx = point2bx = this.BLeft - 1;
                     return;
                 case RIGHT:
                 default:
-                    point1y = endpoints[1];
-                    point2y = endpoints[2];
-                    point1x = point2x = this.Right + 1;
+                    point1by = endpoints[1];
+                    point2by = endpoints[2];
+                    point1bx = point2bx = this.BRight + 1;
                     return;
             }
 
@@ -1101,17 +1332,17 @@ namespace GameEngine
         // If the plots are not adjacent or are adjacent in the direction other
         // than the one specified, the return value is undefined.
         // If the plots are adjacent across a room switch it will still work.
-        public void GetOverlapMidpoint(Plot otherPlot, int direction, ref int outX, ref int outY)
+        public void GetOverlapMidpoint(Plot otherPlot, int direction, ref int outBX, ref int outBY)
         {
             int point1x = 0, point1y = 0, point2x = 0, point2y = 0;
             GetOverlapSegment(otherPlot, direction, ref point1x, ref point1y, ref point2x, ref point2y);
-            outX = (point1x + point2x) / 2;
-            outY = (point1y + point2y) / 2;
+            outBX = (point1x + point2x) / 2;
+            outBY = (point1y + point2y) / 2;
         }
 
         public override string ToString()
         {
-            return "[" + key + "=" + room + "-" + Left + "," + Bottom + "-" + Right + "," + Top + "]";
+            return "[" + key + "=" + room + "-" + BLeft + "," + BBottom + "-" + BRight + "," + BTop + "]";
         }
 
         public static string DirToString(int dir)
@@ -1134,7 +1365,7 @@ namespace GameEngine
      */
     public class AiMapNode
     {
-        public Plot thisPlot;
+        public readonly Plot thisPlot;
         public AiMapNode[] neighbors = { null, null, null, null };
 
         public AiMapNode(Plot inPlot)
@@ -1159,6 +1390,32 @@ namespace GameEngine
             }
             str += ")";
             return str;
+        }
+
+        /**
+         * Two map nodes are considered equal if the refer to the same plot
+         */
+        public override bool Equals(Object obj)
+        {
+            //Check for null and compare run-time types.
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                AiMapNode n = (AiMapNode)obj;
+                return this.thisPlot.equals(n.thisPlot);
+            }
+        }
+
+        /**
+         * Implement a hash that returns the same value for equal map nodes.
+         * Simply return the key.
+         */
+        public override int GetHashCode()
+        {
+            return thisPlot.GetHashCode();
         }
     }
 
@@ -1187,8 +1444,8 @@ namespace GameEngine
             thisNode = inPlot;
             nextDirection = Plot.NO_DIRECTION;
             nextNode = null;
-            int height = thisNode.thisPlot.Height;
-            int width = thisNode.thisPlot.Width;
+            int height = thisNode.thisPlot.BHeight;
+            int width = thisNode.thisPlot.BWidth;
             distance = (height > width ? height : width);
         }
 
@@ -1205,8 +1462,8 @@ namespace GameEngine
             thisNode = inPlot;
             nextDirection = inDirection;
             nextNode = inPath;
-            int height = thisNode.thisPlot.Height;
-            int width = thisNode.thisPlot.Width;
+            int height = thisNode.thisPlot.BHeight;
+            int width = thisNode.thisPlot.BWidth;
             distance = (nextNode != null ? nextNode.distance : 0) +
                 (height > width ? height : width);
         }

@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace GameEngine
+namespace GameEngine.Ai
 {
     public class AiTactical
     {
@@ -280,10 +280,10 @@ namespace GameEngine
          */
         private void computeAvailablePlot(Plot plot, ref int top, ref int right, ref int bottom, ref int left)
         {
-            top = plot.Top;
-            right = plot.Right - BALL.DIAMETER + 1;
-            bottom = plot.Bottom + BALL.DIAMETER - 1;
-            left = plot.Left;
+            top = plot.BTop;
+            right = plot.BRight - BALL.DIAMETER + 1;
+            bottom = plot.BBottom + BALL.DIAMETER - 1;
+            left = plot.BLeft;
 
             // Now factor in that ball moves in 6 pixel steps
             top -= MOD.mod(top - thisBall.y, BALL.MOVEMENT);

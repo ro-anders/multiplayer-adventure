@@ -30,8 +30,8 @@ public class Rectangle
 
 abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
 {
-    private const int DRAW_AREA_WIDTH = Adv.ADVENTURE_SCREEN_WIDTH;
-    private const int DRAW_AREA_HEIGHT = Adv.ADVENTURE_SCREEN_HEIGHT;
+    private const int DRAW_AREA_WIDTH = Adv.ADVENTURE_SCREEN_BWIDTH;
+    private const int DRAW_AREA_HEIGHT = Adv.ADVENTURE_SCREEN_BHEIGHT;
     private const int POPUP_DURATION = 8;
 
     // We hold a big buffer of rectangles as compactly as possible, so we
@@ -140,7 +140,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
         }
         int at = numRects * RECTSIZE;
         // Range checking and overscan adjustment
-        y = y - Adv.ADVENTURE_OVERSCAN;
+        y = y - Adv.ADVENTURE_OVERSCAN_BHEIGHT;
         if ((x > DRAW_AREA_WIDTH) || (x + width < 0) ||
             (y > DRAW_AREA_HEIGHT) || (y + height < 0))
         {

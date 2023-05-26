@@ -3,10 +3,10 @@ namespace GameEngine
 {
     public class Adv
     {
-        public const int ADVENTURE_SCREEN_WIDTH = 320;
-        public const int ADVENTURE_SCREEN_HEIGHT = 192;
-        public const int ADVENTURE_OVERSCAN = 16;
-        public const int ADVENTURE_TOTAL_SCREEN_HEIGHT = (ADVENTURE_SCREEN_HEIGHT + ADVENTURE_OVERSCAN + ADVENTURE_OVERSCAN);
+        public const int ADVENTURE_SCREEN_BWIDTH = 320; // In ball scale
+        public const int ADVENTURE_SCREEN_BHEIGHT = 192; // In ball scale
+        public const int ADVENTURE_OVERSCAN_BHEIGHT = 16;
+        public const int ADVENTURE_TOTAL_SCREEN_HEIGHT = (ADVENTURE_SCREEN_BHEIGHT + ADVENTURE_OVERSCAN_BHEIGHT + ADVENTURE_OVERSCAN_BHEIGHT);
         public const double ADVENTURE_FRAME_PERIOD = 0.017;
         public const int ADVENTURE_MAX_NAME_LENGTH = 40;
 
@@ -47,6 +47,13 @@ namespace GameEngine
 
     public static class MOD
     {
+        /** 
+         * x modulo m, though different from "x % m" because
+         * C# does not do modulo of negative numbers correctly.
+         * This function will return:
+         *   mod(6, 5) = 1
+         *   mod(-2, 5) = 3 
+         */
         public static int mod(int x, int m)
         {
             return (x % m + m) % m;
@@ -59,7 +66,7 @@ namespace GameEngine
      * */
     public static class DEBUG
     {
-        public static int TRACE_PLAYER = -1; // Set when you want verbose trace logging of a single player
+        public static int TRACE_PLAYER = 0; // Set when you want verbose trace logging of a single player
     }
 
     /** Rectangle in a room.  Coordinates are ball-scale coordinates
@@ -67,13 +74,13 @@ namespace GameEngine
      */
     public readonly struct RRect
     {
-        // Used to represent an area that can't exist (like when asking for
-        // the intersection of two disjoint rectangles or for closest rectangle
-        // in a room when that room isn't reachable)
+        /** Used to represent an area that can't exist (like when asking for
+         * the intersection of two disjoint rectangles or for closest rectangle
+         * in a room when that room isn't reachable */
         public static readonly RRect INVALID = new RRect(-1, -1, -1, -1, -1);
 
-        // Used, kind of like null, as a convention when an RRect is a target
-        // we check for NOWHERE to see if we even want to go somewhere.
+        /** Used, kind of like null, as a convention when an RRect is a target
+         * we check for NOWHERE to see if we even want to go somewhere. */
         public static readonly RRect NOWHERE = new RRect(-1, -1, -1, 0, 0);
 
         public static RRect fromTRBL(int room, int top, int right, int bottom, int left)
@@ -149,6 +156,26 @@ namespace GameEngine
                     (other.right >= this.left) &&
                     (other.top >= this.bottom) &&
                     (other.bottom <= this.top);
+            }
+        }
+
+        /**
+         * Returns true if this rectangles is in the same room 
+         * and completely encompasss the passed in rectangle.
+         */
+        public bool contains(RRect other)
+        {
+            if (other.room != this.room)
+            {
+                return false;
+            }
+            else
+            {
+                return
+                    (other.left >= this.left) &&
+                    (other.right <= this.right) &&
+                    (other.top <= this.top) &&
+                    (other.bottom >= this.bottom);
             }
         }
 

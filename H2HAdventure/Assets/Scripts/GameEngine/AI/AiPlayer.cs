@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace GameEngine
+namespace GameEngine.Ai
 {
     public class AiPlayer
     {
@@ -61,11 +61,19 @@ namespace GameEngine
         {
             AiObjective newObjective = null;
             // Compute a new strategy every few seconds
+            if ((DEBUG.TRACE_PLAYER == thisPlayer) && (winGameObjective != null))
+            {
+                UnityEngine.Debug.Log("Player " + thisPlayer + " objective = " + winGameObjective.toFullString());
+            }
             if ((currentObjective == null) || (frameNumber >= recomputeStrategyAtFrame))
             {
                 UnityEngine.Debug.Log(thisBall + " recomputing whole strategy");
-                winGameObjective = new PlayGameObjective(gameBoard, thisPlayer, aiStrategy, aiNav);
+                winGameObjective = new PlayGame(gameBoard, thisPlayer, aiStrategy, aiNav);
                 newObjective = winGameObjective.getNextObjective();
+                if ((DEBUG.TRACE_PLAYER < 0) || (DEBUG.TRACE_PLAYER == thisPlayer))
+                {
+                    UnityEngine.Debug.Log("Player " + thisPlayer + " objective = " + winGameObjective.toFullString());
+                }
                 recomputeStrategyAtFrame = frameNumber + FRAMES_BETWEEN_STRATEGY_RECOMPUTE;
             }
             else
@@ -77,7 +85,7 @@ namespace GameEngine
                 } catch (AiObjective.Abort)
                 {
                     // Things have changed.  Just recompute the whole strategy
-                    winGameObjective = new PlayGameObjective(gameBoard, thisPlayer, aiStrategy, aiNav);
+                    winGameObjective = new PlayGame(gameBoard, thisPlayer, aiStrategy, aiNav);
                     newObjective = winGameObjective.getNextObjective();
                     recomputeStrategyAtFrame = frameNumber + FRAMES_BETWEEN_STRATEGY_RECOMPUTE;
                     UnityEngine.Debug.Log("New objective = " + newObjective);
@@ -101,7 +109,7 @@ namespace GameEngine
         }
 
         /**
-         * Called once per 3 clicks, this determines determines which
+         * Called once per 3 clicks, this determines which
          * direction the AI player should be going and sets the ball's velocity
          * accordingly
          */
@@ -109,7 +117,7 @@ namespace GameEngine
         {
             checkStrategy(frameNumber);
 
-            RRect newDesiredLocation = currentObjective.getDestination();
+            RRect newDesiredLocation = currentObjective.getBDestination();
 
 
             if (!newDesiredLocation.IsSomewhere)
@@ -184,11 +192,11 @@ namespace GameEngine
                 thisBall.vely = 0;
                 return;
             }
-            if (DEBUG.TRACE_PLAYER == thisPlayer)
-            {
-                UnityEngine.Debug.Log("Player " + thisPlayer + " @" + thisBall.room + "(" + thisBall.x + "," + thisBall.y + ")" +
-                    " trying to " + currentObjective + " going (" + nextVelx + "," + nextVely + ") to get to " + desiredLocation);
-            }
+            //if (DEBUG.TRACE_PLAYER == thisPlayer)
+            //{
+            //    UnityEngine.Debug.Log("Player " + thisPlayer + " @" + thisBall.room + "(" + thisBall.x + "," + thisBall.y + ")" +
+            //        " trying to " + currentObjective + " going (" + nextVelx + "," + nextVely + ") to get to " + desiredLocation);
+            //}
         }
 
         /**

@@ -6,13 +6,13 @@ namespace GameEngine
     {
 
         /** The x-coordinate of where the portcullis is placed. */
-        public const int PORT_X = Adv.ADVENTURE_SCREEN_WIDTH / 2 / Adv.BALL_SCALE - Board.OBJECTWIDTH / 2;
+        public const int PORT_X = Adv.ADVENTURE_SCREEN_BWIDTH / 2 / Adv.BALL_SCALE - Board.OBJECTWIDTH / 2;
 
         /** The y-coordinate of where the portcullis is placed. */
         public const int PORT_Y = (3 * Map.WALL_HEIGHT - 1) / Adv.BALL_SCALE;
 
         /** The x-coord you come out at when you leave a castle. */
-        public const int EXIT_X = Adv.ADVENTURE_SCREEN_WIDTH / 2 - BALL.RADIUS;
+        public const int EXIT_X = Adv.ADVENTURE_SCREEN_BWIDTH / 2 - BALL.RADIUS;
 
         /** The y-coord you come out at when you leave a castle. (2 pixels below bottom of open gate) */
         public const int EXIT_Y = PORT_Y * Adv.BALL_SCALE - 10;
@@ -28,6 +28,13 @@ namespace GameEngine
         /** Room that the gate takes you to */
         public int insideRoom;
 
+        /** When the gate is closed, inside rooms are in a different AI navigation zone. */
+        private Ai.NavZone insideZone;
+        public Ai.NavZone InsideZone
+        {
+            get { return insideZone; }
+        }
+
         /** The key that unlocks this gate */
         public OBJECT key;
 
@@ -35,6 +42,10 @@ namespace GameEngine
          * the inside room will be included in the list.
          */
         private List<int> allInsideRooms = new List<int>();
+        public int[] AllInsideRooms
+        {
+            get { return allInsideRooms.ToArray(); }
+        }
 
         /**
          * label - unique name only used for logging and debugging
@@ -42,11 +53,14 @@ namespace GameEngine
          * insideRoom - index of the room the portal leads to
          * key - the key that opens this gate.
          */
-        public Portcullis(String inLabel, int inOutsideRoom, ROOM inInsideRoom, OBJECT inKey) :
+        public Portcullis(String inLabel,
+            int inOutsideRoom, ROOM inInsideRoom, Ai.NavZone inInsideZone,
+            OBJECT inKey) :
             base(inLabel, objectGfxPort, portStates, 0x0C, COLOR.BLACK, OBJECT.RandomizedLocations.FIXED_LOCATION)
         {
             allowsEntry = false;
             insideRoom = inInsideRoom.index;
+            insideZone = inInsideZone;
             key = inKey;
 
             // Portcullis's unlike other objects, we know the location of before the game level is selected.
@@ -236,6 +250,14 @@ namespace GameEngine
         public bool containsRoom(int room)
         {
             return allInsideRooms.Contains(room);
+        }
+
+        /** 
+         * Returns all the rooms behind the Portcullis
+         */
+        public int[] getInsideRooms()
+        {
+            return allInsideRooms.ToArray();
         }
 
         // Object #1 States 940FF (Graphic)

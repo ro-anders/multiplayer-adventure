@@ -8,7 +8,7 @@ namespace GameEngine
         // When drawing on the display, each map block is an 8x32 block
         public const int WALL_WIDTH = 8;
         public const int WALL_HEIGHT = 32;
-        public const int MAX_WALL_X = Adv.ADVENTURE_SCREEN_WIDTH / WALL_WIDTH;
+        public const int MAX_WALL_X = Adv.ADVENTURE_SCREEN_BWIDTH / WALL_WIDTH;
         public const int MAX_WALL_Y = Adv.ADVENTURE_TOTAL_SCREEN_HEIGHT / WALL_HEIGHT;
 
 
@@ -45,10 +45,10 @@ namespace GameEngine
         public const int BLACK_MAZE_3 = 0x15;
         public const int BLACK_MAZE_ENTRY = 0x16;
         // The following Red Maze values are a group and shouldn't be broken up
-        public const int RED_MAZE_3 = 0x17;
-        public const int RED_MAZE_2 = 0x18;
-        public const int RED_MAZE_4 = 0x19;
-        public const int RED_MAZE_1 = 0x1A;
+        public const int RED_MAZE_3 = 0x17; // Room above hidden room in white castle maze
+        public const int RED_MAZE_2 = 0x18; // Room above entry room in the white castle maze
+        public const int RED_MAZE_4 = 0x19; // Hidden room in white castle maze
+        public const int RED_MAZE_1 = 0x1A; // First room as you enter the white castle maze
         public const int BLACK_FOYER = 0x1B;
         public const int BLACK_INNERMOST_ROOM = 0x1C;
         public const int SOUTHEAST_ROOM = 0x1D; // Two down from copper castle (moves with castle in different levels)
@@ -142,13 +142,13 @@ namespace GameEngine
                                            0x13, 0x16, 0x13, 0x14, "Black Maze 3"));
             addRoom(BLACK_MAZE_ENTRY, new ROOM(roomWallsBlackMazeEntry, ROOM.FLAG_MIRROR, COLOR.LTGRAY,              // 0x16
                                                0x14, 0x13, 0x1B, 0x15, "Black Maze Entry"));
-            addRoom(RED_MAZE_3, new ROOM(roomWallsRedMaze1, ROOM.FLAG_MIRROR, COLOR.RED,                             // 0x17
+            addRoom(RED_MAZE_3, new ROOM(roomWallsRedMaze3, ROOM.FLAG_MIRROR, COLOR.RED,                             // 0x17
                                          0x19, 0x18, 0x19, 0x18, "Red Maze 3"));
-            addRoom(RED_MAZE_2, new ROOM(roomWallsRedMazeTop, ROOM.FLAG_MIRROR, COLOR.RED,                           // 0x18
+            addRoom(RED_MAZE_2, new ROOM(roomWallsRedMaze2, ROOM.FLAG_MIRROR, COLOR.RED,                           // 0x18
                                          0x1A, 0x17, 0x1A, 0x17, "Red Maze 2"));
-            addRoom(RED_MAZE_4, new ROOM(roomWallsRedMazeBottom, ROOM.FLAG_MIRROR, COLOR.RED,                        // 0x19
+            addRoom(RED_MAZE_4, new ROOM(roomWallsRedMaze4, ROOM.FLAG_MIRROR, COLOR.RED,                        // 0x19
                                          0x17, 0x1A, 0x17, 0x1A, "Red Maze4 "));
-            addRoom(RED_MAZE_1, new ROOM(roomWallsWhiteCastleEntry, ROOM.FLAG_MIRROR, COLOR.RED,                     // 0x1A
+            addRoom(RED_MAZE_1, new ROOM(roomRedMaze1, ROOM.FLAG_MIRROR, COLOR.RED,                     // 0x1A
                                          0x18, 0x19, 0x18, 0x19, "Red Maze 1"));
             addRoom(BLACK_FOYER, new ROOM(roomWallsTwoExitRoom, ROOM.FLAG_MIRROR, COLOR.RED,                         // 0x1B
                                 BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, BLACK_INNERMOST_ROOM, "Black Foyer"));
@@ -604,7 +604,7 @@ namespace GameEngine
         };
 
         // Red Maze #1
-        private static readonly string[] roomWallsRedMaze1 =
+        private static readonly string[] roomWallsRedMaze3 =
         {
             "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR",
             "                                        ",
@@ -616,7 +616,7 @@ namespace GameEngine
         };
 
         // Bottom of Red Maze
-        private static readonly string[] roomWallsRedMazeBottom =
+        private static readonly string[] roomWallsRedMaze4 =
         {
             "XXXX  XX  XXXXXX  XXRR  RRRRRR  RR  RRRR",
             "XXXX  XX                        RR  RRRR",
@@ -628,7 +628,7 @@ namespace GameEngine
         };
 
         // Top of Red Maze
-        private static readonly string[] roomWallsRedMazeTop =
+        private static readonly string[] roomWallsRedMaze2 =
         {
             "XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRR",
             "                  XXRR                  ",
@@ -641,7 +641,7 @@ namespace GameEngine
 
 
         // White Castle Entry
-        private static readonly string[] roomWallsWhiteCastleEntry =
+        private static readonly string[] roomRedMaze1 =
         {
             "XXXX  XXXXXX  XX        RR  RRRRRR  RRRR",
             "XXXX          XX        RR          RRRR",

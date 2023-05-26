@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace GameEngine
+﻿
+namespace GameEngine.Ai
 {
 
     public class AiTacticalTests
@@ -23,7 +20,7 @@ namespace GameEngine
             Board board = new Board(map, null);
             OBJECT key = new OBJECT("gold key", blockGfx, new byte[0], 0, COLOR.YELLOW, OBJECT.RandomizedLocations.OUT_IN_OPEN);
             board.addObject(Board.OBJECT_YELLOWKEY, key);
-            Portcullis ballsPortcullis = new Portcullis("gold gate", Map.GOLD_CASTLE, map.getRoom(Map.GOLD_FOYER), key);
+            Portcullis ballsPortcullis = new Portcullis("gold gate", Map.GOLD_CASTLE, map.getRoom(Map.GOLD_FOYER), NavZone.GOLD_CASTLE, key);
             board.addObject(Board.OBJECT_YELLOW_PORT, ballsPortcullis);
             block = new OBJECT("magnet", blockGfx, new byte[0], 0, COLOR.BLACK); // Magnet is 16 pixels wide x 16 pixels high
             board.addObject(Board.OBJECT_MAGNET, block);

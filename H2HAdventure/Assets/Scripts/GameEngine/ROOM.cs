@@ -1,4 +1,6 @@
 ﻿using System;
+using GameEngine.Ai;
+
 namespace GameEngine
 {
     public class ROOM
@@ -28,6 +30,7 @@ namespace GameEngine
         public int roomLeft;               // index of room LEFT
         public String label;                // a short, unique name for the object
         public RandomVisibility visibility; // attribute indicating whether objects can be randomly placed in this room.
+        public NavZone zone;                // The zone this room is in, or NO_ZONE if the room contains multiple zones (e.g. maze in white castle)
 
         public ROOM(string[] inWalls, byte inFlags, int inColor,
                     int inRoomUp, int inRoomRight, int inRoomDown, int inRoomLeft, String inLabel, RandomVisibility inVis = RandomVisibility.OPEN)
@@ -41,6 +44,7 @@ namespace GameEngine
             label = inLabel;
             visibility = inVis;
             walls = readWalls(inWalls);
+            zone = NavZone.NOT_PART_OF_GAME;
         }
 
         public bool Mirrored {

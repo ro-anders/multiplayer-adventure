@@ -7,9 +7,9 @@ namespace GameEngine
 
 
         // The position you appear when you enter at the edge of the screen.
-        public const int TOP_EDGE_FOR_BALL = Adv.ADVENTURE_OVERSCAN + Adv.ADVENTURE_SCREEN_HEIGHT - 1;
-        public const int BOTTOM_EDGE_FOR_BALL = Adv.ADVENTURE_OVERSCAN + BALL.DIAMETER - 1;
-        public const int RIGHT_EDGE_FOR_BALL = Adv.ADVENTURE_SCREEN_WIDTH - BALL.DIAMETER;
+        public const int TOP_EDGE_FOR_BALL = Adv.ADVENTURE_OVERSCAN_BHEIGHT + Adv.ADVENTURE_SCREEN_BHEIGHT - 1;
+        public const int BOTTOM_EDGE_FOR_BALL = Adv.ADVENTURE_OVERSCAN_BHEIGHT + BALL.DIAMETER - 1;
+        public const int RIGHT_EDGE_FOR_BALL = Adv.ADVENTURE_SCREEN_BWIDTH - BALL.DIAMETER;
         public const int LEFT_EDGE_FOR_BALL = 2; // Why is the ball never allowed to be up against the left edge? -RCA
 
         // The limit as to how close an object can get to the edge
@@ -18,7 +18,7 @@ namespace GameEngine
         public const int RIGHT_EDGE_FOR_OBJECTS = RIGHT_EDGE_FOR_BALL / Adv.BALL_SCALE;
         public const int LEFT_EDGE_FOR_OBJECTS = LEFT_EDGE_FOR_BALL / Adv.BALL_SCALE;
 
-        public const int STARTING_X = Adv.ADVENTURE_SCREEN_WIDTH/2 - BALL.RADIUS;
+        public const int STARTING_X = Adv.ADVENTURE_SCREEN_BWIDTH/2 - BALL.RADIUS;
         public const int STARTING_Y = 2 * Map.WALL_HEIGHT - 3; // 3 pixels below gate
 
 
@@ -377,12 +377,12 @@ namespace GameEngine
                                 if ((rowByte2 & (1 << (7 - bit2))) > 0)
                                 {
                                     int wrappedX1 = objectX1 + (bit1 * 2 * objectSize1);
-                                    if (wrappedX1 >= Adv.ADVENTURE_SCREEN_WIDTH)
-                                        wrappedX1 -= Adv.ADVENTURE_SCREEN_WIDTH;
+                                    if (wrappedX1 >= Adv.ADVENTURE_SCREEN_BWIDTH)
+                                        wrappedX1 -= Adv.ADVENTURE_SCREEN_BWIDTH;
 
                                     int wrappedX2 = objectX2 + (bit2 * 2 * objectSize2);
-                                    if (wrappedX2 >= Adv.ADVENTURE_SCREEN_WIDTH)
-                                        wrappedX2 -= Adv.ADVENTURE_SCREEN_WIDTH;
+                                    if (wrappedX2 >= Adv.ADVENTURE_SCREEN_BWIDTH)
+                                        wrappedX2 -= Adv.ADVENTURE_SCREEN_BWIDTH;
 
                                     if (HitTestRects(wrappedX1, objectY1, 2 * objectSize1, 2, wrappedX2, objectY2, 2 * objectSize2, 2))
                                         // The objects are touching
@@ -428,8 +428,8 @@ namespace GameEngine
                         // test this pixel for intersection
 
                         int wrappedX = objct.bx + (bit * 2 * objectSize);
-                        if (wrappedX >= Adv.ADVENTURE_SCREEN_WIDTH)
-                            wrappedX -= Adv.ADVENTURE_SCREEN_WIDTH;
+                        if (wrappedX >= Adv.ADVENTURE_SCREEN_BWIDTH)
+                            wrappedX -= Adv.ADVENTURE_SCREEN_BWIDTH;
 
                         if (HitTestRects(x, y, width, height, wrappedX, objectY, 2 * objectSize, 2))
                         {

@@ -9,8 +9,8 @@ public class RenderTextureDrawer : MonoBehaviour
     public RenderTexture renderTexture; // renderTextuer that you will be rendering stuff on
     public RawImage placeToDraw; // renderer in which you will apply changed texture
     Texture2D texture;
-    const int DRAW_AREA_WIDTH = Adv.ADVENTURE_SCREEN_WIDTH;
-    const int DRAW_AREA_HEIGHT = Adv.ADVENTURE_SCREEN_HEIGHT;
+    const int DRAW_AREA_WIDTH = Adv.ADVENTURE_SCREEN_BWIDTH;
+    const int DRAW_AREA_HEIGHT = Adv.ADVENTURE_SCREEN_BHEIGHT;
     float[,] red = new float[DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT];
     float[,] green = new float[DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT];
     float[,] blue = new float[DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT];

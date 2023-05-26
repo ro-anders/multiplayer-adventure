@@ -24,7 +24,7 @@ namespace GameEngine
         * fully open once all keys have touched it.
         */
         public CrystalPortcullis(ROOM foyer, OBJECT[] inKeys) :
-            base("crystal gate", Map.CRYSTAL_CASTLE, foyer, null) {
+            base("crystal gate", Map.CRYSTAL_CASTLE, foyer, Ai.NavZone.CRYSTAL_CASTLE, null) {
             keys = inKeys;
             keysNeeded = TOTAL_KEYS_NEEDED;
             color = COLOR.CRYSTAL;

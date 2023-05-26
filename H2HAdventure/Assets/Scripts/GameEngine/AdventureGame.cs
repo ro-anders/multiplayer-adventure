@@ -22,9 +22,9 @@ namespace GameEngine
 
     public class AdventureGame
     {
-        private const int ADVENTURE_SCREEN_WIDTH = Adv.ADVENTURE_SCREEN_WIDTH;
-        private const int ADVENTURE_SCREEN_HEIGHT = Adv.ADVENTURE_SCREEN_HEIGHT;
-        private const int ADVENTURE_OVERSCAN = Adv.ADVENTURE_OVERSCAN;
+        private const int ADVENTURE_SCREEN_WIDTH = Adv.ADVENTURE_SCREEN_BWIDTH;
+        private const int ADVENTURE_SCREEN_HEIGHT = Adv.ADVENTURE_SCREEN_BHEIGHT;
+        private const int ADVENTURE_OVERSCAN = Adv.ADVENTURE_OVERSCAN_BHEIGHT;
         private const int ADVENTURE_TOTAL_SCREEN_HEIGHT = Adv.ADVENTURE_TOTAL_SCREEN_HEIGHT;
         private const double ADVENTURE_FRAME_PERIOD = Adv.ADVENTURE_FRAME_PERIOD;
         private const int ADVENTURE_MAX_NAME_LENGTH = Adv.ADVENTURE_MAX_NAME_LENGTH;
@@ -73,8 +73,8 @@ namespace GameEngine
 
         private readonly OBJECT[] surrounds;
 
-        private AiNav ai;
-        private AiPlayer[] aiPlayers = { null, null, null };
+        private Ai.AiNav ai;
+        private Ai.AiPlayer[] aiPlayers = { null, null, null };
 
         private Random randomGen = new Random();
 
@@ -169,16 +169,16 @@ namespace GameEngine
             }
 
             ports = new Portcullis[6];
-            ports[0] = new Portcullis("gold gate", Map.GOLD_CASTLE, gameMap.getRoom(Map.GOLD_FOYER), goldKey); // Gold
-            ports[1] = new Portcullis("white gate", Map.WHITE_CASTLE, gameMap.getRoom(Map.RED_MAZE_1), whiteKey); // White
+            ports[0] = new Portcullis("gold gate", Map.GOLD_CASTLE, gameMap.getRoom(Map.GOLD_FOYER), Ai.NavZone.GOLD_CASTLE, goldKey); // Gold
+            ports[1] = new Portcullis("white gate", Map.WHITE_CASTLE, gameMap.getRoom(Map.RED_MAZE_1), Ai.NavZone.WHITE_CASTLE_1, whiteKey); // White
             addAllRoomsToPort(ports[1], Map.RED_MAZE_3, Map.RED_MAZE_1);
-            ports[2] = new Portcullis("black gate", Map.BLACK_CASTLE, gameMap.getRoom(Map.BLACK_FOYER), blackKey); // Black
+            ports[2] = new Portcullis("black gate", Map.BLACK_CASTLE, gameMap.getRoom(Map.BLACK_FOYER), Ai.NavZone.BLACK_CASTLE, blackKey); // Black
             addAllRoomsToPort(ports[2], Map.BLACK_MAZE_1, Map.BLACK_MAZE_ENTRY);
             ports[2].addRoom(gameMap.getRoom(Map.BLACK_FOYER));
             ports[2].addRoom(gameMap.getRoom(Map.BLACK_INNERMOST_ROOM));
             ports[3] = new CrystalPortcullis(gameMap.getRoom(Map.CRYSTAL_FOYER), crystalKeys);
-            ports[4] = new Portcullis("copper gate", Map.COPPER_CASTLE, gameMap.getRoom(Map.COPPER_FOYER), copperKey);
-            ports[5] = new Portcullis("jade gate", Map.JADE_CASTLE, gameMap.getRoom(Map.JADE_FOYER), jadeKey);
+            ports[4] = new Portcullis("copper gate", Map.COPPER_CASTLE, gameMap.getRoom(Map.COPPER_FOYER), Ai.NavZone.COPPER_CASTLE, copperKey);
+            ports[5] = new Portcullis("jade gate", Map.JADE_CASTLE, gameMap.getRoom(Map.JADE_FOYER), Ai.NavZone.JADE_CASTLE, jadeKey);
             gameMap.addCastles(ports);
 
 
@@ -230,13 +230,13 @@ namespace GameEngine
             bool willUseAi = useAi[0] || useAi[1] || useAi[2];
             if (willUseAi)
             {
-                ai = new AiNav(gameMap);
+                ai = new Ai.AiNav(gameMap);
             }
             for (int ctr = 0; ctr < numPlayers; ++ctr)
             {
                 if (useAi[ctr])
                 {
-                    aiPlayers[ctr] = new AiPlayer(ai, gameBoard, ctr);
+                    aiPlayers[ctr] = new Ai.AiPlayer(ai, gameBoard, ctr);
                 }
             }
             joystickDisabled = joystickDisabled && useAi[thisPlayer];
@@ -818,14 +818,14 @@ namespace GameEngine
             {
                 int objct = p[ctr, 0];
                 int room = p[ctr, 1];
-                int xpos = p[ctr, 2];
-                int ypos = p[ctr, 3];
+                int oxpos = p[ctr, 2];
+                int oypos = p[ctr, 3];
                 int state = p[ctr, 4];
-                int movementX = p[ctr, 5];
-                int movementY = p[ctr, 6];
+                int movementOX = p[ctr, 5];
+                int movementOY = p[ctr, 6];
 
                 OBJECT toInit = gameBoard[objct];
-                toInit.init(room, xpos, ypos, state, movementX, movementY);
+                toInit.init(room, oxpos, oypos, state, movementOX, movementOY);
             }
 
             // Hide the jade if only 2 player and both new keys if cooperative
@@ -1278,7 +1278,7 @@ namespace GameEngine
                                 port.openFromInside();
                                 if (ai != null)
                                 {
-                                    ai.ConnectPortcullisPlots(port.room, port.insideRoom, true);
+                                    ai.ConnectPortcullisPlots(port, true);
                                 }
                                 PortcullisStateAction gateAction = new PortcullisStateAction(port.getPKey(), port.state, port.allowsEntry);
                                 sync.BroadcastAction(gateAction);
@@ -1496,7 +1496,7 @@ namespace GameEngine
                         nextPort.forceOpen();
                         if (ai != null)
                         {
-                            ai.ConnectPortcullisPlots(nextPort.room, nextPort.insideRoom, true);
+                            ai.ConnectPortcullisPlots(nextPort, true);
                         }
                         // Report to all the other players only if its the current player entering
                         if (ctr == thisPlayer)
@@ -1887,7 +1887,7 @@ namespace GameEngine
                         {
                             if (ai != null)
                             {
-                                ai.ConnectPortcullisPlots(port.room, port.insideRoom, port.allowsEntry);
+                                ai.ConnectPortcullisPlots(port, port.allowsEntry);
                             }
                             // Broadcast a state change if we are holding the key or if no one is holding the key and we
                             // are a witness
@@ -2614,7 +2614,7 @@ namespace GameEngine
         // Indexed array of all objects and their properties
         //
         // Object locations (room and coordinate) for game 01
-        //        - object, room, x, y, state, movement(x/y)
+        //        - object, room, ox, oy, state, movement(ox/oy)
         private readonly int[,] game1Objects =
         {
             {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, Portcullis.CLOSED_STATE, 0x00, 0x00}, // Port 1
@@ -2640,7 +2640,7 @@ namespace GameEngine
 
 
         // Object locations (room and coordinate) for Games 02 and 03
-        //        - object, room, x, y, state, movement(x/y)
+        //        - object, room, ox, oy, state, movement(ox/oy)
         private readonly int[,] game2Objects =
         {
             {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, Portcullis.CLOSED_STATE, 0x00, 0x00}, // Port 1
@@ -2665,17 +2665,25 @@ namespace GameEngine
             {Board.OBJECT_YELLOWKEY, Map.MAIN_HALL_RIGHT, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
             {Board.OBJECT_COPPERKEY, Map.MAIN_HALL_RIGHT, 0x79, 0x3E, 0x00, 0x00, 0x00}, // Copper Key
             #else
-            {Board.OBJECT_BRIDGE, Map.WHITE_MAZE_3, 0x3F, 0x3E, 0x00, 0x00, 0x00}, // Bridge
-            {Board.OBJECT_YELLOWKEY, Map.WHITE_MAZE_2, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
+            // MUST UNDO - Move bridge for testing
+            //{Board.OBJECT_BRIDGE, Map.WHITE_MAZE_3, 0x3F, 0x3E, 0x00, 0x00, 0x00}, // Bridge
+            {Board.OBJECT_BRIDGE, Map.SOUTH_HALL_LEFT, 0x3F, 0x1F, 0x00, 0x00, 0x00}, // Bridge
+            // MUST UNDO - Move key to make easier
+            //{Board.OBJECT_YELLOWKEY, Map.WHITE_MAZE_2, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
+            {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
             {Board.OBJECT_COPPERKEY, Map.WHITE_MAZE_2, 0x79, 0x3E, 0x00, 0x00, 0x00}, // Copper Key
             #endif
             {Board.OBJECT_JADEKEY, Map.BLUE_MAZE_4, 0x79, 0x3E, 0x00, 0x00, 0x00}, // Jade Key
-            {Board.OBJECT_WHITEKEY, Map.BLUE_MAZE_3, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // White Key
+            // MUST UNDO - Move key to make easier
+            //{Board.OBJECT_WHITEKEY, Map.BLUE_MAZE_3, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // White Key
+            {Board.OBJECT_WHITEKEY, Map.GOLD_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // White Key
             {Board.OBJECT_BLACKKEY, Map.RED_MAZE_4, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Black Key
             {Board.OBJECT_CRYSTALKEY1, Map.CRYSTAL_CASTLE, 0x4C, 0x53, 0x00, 0x00, 0x00}, // Crystal Key for Player 1
             {Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x4C, 0x53, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
             {Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x4C, 0x53, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
-            {Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x1F, 0x1E, 0x00, 0, -3}, // Bat
+            // MUST UNDO - Comment out Bat until we know how to deal with it
+            //{Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x1F, 0x1E, 0x00, 0, -3}, // Bat
+            {Board.OBJECT_BAT, Map.NUMBER_ROOM, 0x1F, 0x1E, 0x00, 0, -3}, // Bat
 #if DEBUG_EASTEREGG
             {Board.OBJECT_DOT, Map.MAIN_HALL_RIGHT, 0x1F, 0x0E, 0x00, 0x00, 0x00}, // Dot
 #else
@@ -2686,7 +2694,7 @@ namespace GameEngine
         };
 
         // Object locations (room and coordinate) for gauntlet
-        //        - object, room, x, y, state, movement(x/y)
+        //        - object, room, ox, oy, state, movement(ox/oy)
         private readonly int[,] gameGauntletObjects =
         {
             {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, Portcullis.PORT_X, Portcullis.PORT_Y, 0x0C, 0x00, 0x00}, // Port 1

@@ -18,13 +18,13 @@ namespace GameEngine
         public int velx;                   // Current horizontal speed (walls notwithstanding).  Positive = right.  Negative = left.
         public int vely;                   // Current vertical speed (walls notwithstanding).  Positive = right.  Negative = down.
         public int linkedObject;           // index of linked (carried) object
-        public int linkedObjectX;          // X value representing the offset from the ball to the object being carried
-        public int linkedObjectY;          // Y value representing the offset from the ball to the object being carried
+        public int linkedObjectX;          // X value representing the offset from the ball to the object being carried (object scale)
+        public int linkedObjectY;          // Y value representing the offset from the ball to the object being carried (object scale)
         public bool hit;                  // the ball hit something
         public int hitObject;              // the object that the ball hit
         public readonly byte[] gfxData;        // graphics data for ball
         public Portcullis homeGate;       // The gate of the castle you start at
-        public AiPlayer ai;                   // The ai behind this player, or null if not an computer player
+        public Ai.AiPlayer ai;                   // The ai behind this player, or null if not an computer player
 
         /** During the gauntlet, once you reach the black castle you flash like the chalise until you reset or you reach the
             * gold castle where you win. */
@@ -73,6 +73,16 @@ namespace GameEngine
             get { return y - RADIUS; }
             set { y = value + RADIUS; }
         }
+        /** The rectangle of the ball in object coordinate system */
+        public RRect ORect
+        {
+            get { return new RRect(room, x / Adv.BALL_SCALE, y / Adv.BALL_SCALE, BALL.DIAMETER / Adv.BALL_SCALE, BALL.DIAMETER / Adv.BALL_SCALE); }
+        }
+        /** The rectangle of the ball in object coordinate system */
+        public RRect BRect
+        {
+            get { return new RRect(room, x, y, BALL.DIAMETER, BALL.DIAMETER); }
+        }
         public int linkedObjectBX
         {
             get { return linkedObjectX * Adv.BALL_SCALE; }
@@ -106,12 +116,12 @@ namespace GameEngine
         public int distanceToObject(int objectMidX, int objectMidY)
         {
             // Figure out the distance (which is really the max difference along one axis)
-            int xdist = this.midX - 2 * objectMidX;
+            int xdist = this.midX - Adv.BALL_SCALE * objectMidX;
             if (xdist < 0)
             {
                 xdist = -xdist;
             }
-            int ydist = this.midY - 2 * objectMidY;
+            int ydist = this.midY - Adv.BALL_SCALE * objectMidY;
             if (ydist < 0)
             {
                 ydist = -ydist;
@@ -122,7 +132,7 @@ namespace GameEngine
 
         public enum Adjust
         {
-            CLOSEST, // Find the closest reachable point the desired point
+            CLOSEST, // Find the closest reachable point to the desired point
             BELOW, // Find the closest reachable point no higher than the desired point
             ABOVE // Find the closest reachable point no lower than the desired point
         }

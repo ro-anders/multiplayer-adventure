@@ -155,12 +155,12 @@ public class StartScreen : MonoBehaviour {
         };
         SessionInfo.ThisPlayerInfo.needsPopupHelp = false;
         SessionInfo.ThisPlayerInfo.needsMazeGuides = false;
-        SessionInfo.ThisPlayerId = SessionInfo.GameToPlay.playerTwo;
+        SessionInfo.ThisPlayerId = SessionInfo.GameToPlay.playerOne;
         //SessionInfo.ThisPlayerId = SessionInfo.GameToPlay.playerOne;
         SessionInfo.ThisPlayerName = SessionInfo.GameToPlay.playerOneName;
         SessionInfo.GameToPlay.playerMapping = 0;
         SessionInfo.GameToPlay.numPlayers = 3;
-        SessionInfo.GameToPlay.gameNumber = 0;
+        SessionInfo.GameToPlay.gameNumber = 1;
         SessionInfo.GameToPlay.diff1 = DIFF.B;
         SessionInfo.GameToPlay.diff2 = DIFF.B;
         SceneManager.LoadScene(SessionInfo.GAME_SCENE);
