@@ -7,15 +7,6 @@ namespace GameEngine.Ai
      **/
     public class RepositionBridge : AiObjective
     {
-        /** The width of the foot of the bridge */
-        private int FOOT_BWIDTH = 16;
-
-        /** The height of the foot of the bridge */
-        private int FOOT_BHEIGHT = 8;
-
-        /** The width of the part of the foot that sticks out past the main part */
-        private int FOOT_EXTENSION_BWIDTH = 8;
-
         private OBJECT bridge;
 
         /**
@@ -29,6 +20,7 @@ namespace GameEngine.Ai
         {
             RRect playerBRect = aiPlayer.BRect;
             bridge = board.getObject(Board.OBJECT_BRIDGE);
+            RRect bridgeBRect = bridge.BRect;
             NavZone playerZone = nav.WhichZone(playerBRect);
             bool inOrOut = (playerZone == NavZone.MAIN) ||
                 (playerZone == NavZone.WHITE_CASTLE_1);
@@ -37,7 +29,7 @@ namespace GameEngine.Ai
             // If we are not holding the bridge below its left foot, but
             // the left foot is in our plot and there's room to maneuver, just
             // drop the bridge and move to under the left foot and pick it up again.
-            RRect bSpaceNeeded = bSpaceNeededToReposition(playerBRect, bridge.BRect);
+            RRect bSpaceNeeded = bSpaceNeededToReposition(playerBRect, bridgeBRect);
             if (!bSpaceNeeded.IsValid)
             {
                 throw new Abort();
@@ -46,7 +38,12 @@ namespace GameEngine.Ai
             Plot[] plots = nav.GetPlots(bSpaceNeeded);
             if ((plots.Length == 1) && plots[0].Contains(bSpaceNeeded)) {
                 this.addChild(new DropObjective(Board.OBJECT_BRIDGE));
-                addObjectivesToMoveAroundBridge(0, 0);
+                RRect underLeftFoot = new RRect(bridge.room,
+                    bridgeBRect.left - BALL.DIAMETER + 1,
+                    bridgeBRect.bottom - 1,
+                    OBJECT.BRIDGE_FOOT_BWIDTH + 2 * BALL.DIAMETER - 2,
+                    2 * BALL.DIAMETER - 1);
+                this.addChild(new GoToObjective(underLeftFoot, CARRY_NO_OBJECT));
                 this.addChild(new PickupObject(Board.OBJECT_BRIDGE));
                 return;
             }
@@ -66,9 +63,7 @@ namespace GameEngine.Ai
                     int goto_bbottom = plot.BBottom + (playerBRect.bottom - bSpaceNeeded.bottom);
                     RRect goto_brect = RRect.fromTRBL(playerBRect.room, goto_btop, goto_bright, goto_bbottom, goto_bleft);
                     this.addChild(new GoToObjective(goto_brect, Board.OBJECT_BRIDGE));
-                    this.addChild(new DropObjective(Board.OBJECT_BRIDGE));
-                    addObjectivesToMoveAroundBridge(0, 0);
-                    this.addChild(new PickupObject(Board.OBJECT_BRIDGE));
+                    this.addChild(new RepositionBridge());
                     return;
                 }
             }
@@ -143,10 +138,10 @@ namespace GameEngine.Ai
                     playerBRect.room,
                     bridgeBRect.bottom - 1,
                     // If any part of ball is left of foot leftmost is ball, else leftmost is foot 
-                    playerBRect.left < bridgeBRect.left ? bridgeBRect.left + FOOT_BWIDTH : playerBRect.right,
+                    playerBRect.left < bridgeBRect.left ? bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH : playerBRect.right,
                     playerBRect.bottom,
                     // If any part of ball is right of foot rightmost is ball, else rightmost is foot
-                    playerBRect.right > bridgeBRect.left + FOOT_BWIDTH - 1 ? playerBRect.right : bridgeBRect.left + FOOT_BWIDTH - 1);
+                    playerBRect.right > bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH - 1 ? playerBRect.right : bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH - 1);
             }
             else
             {
@@ -155,34 +150,21 @@ namespace GameEngine.Ai
                 // If entire ball is left of foot leftmost is ball
                 int bleft = (playerBRect.right < bridgeBRect.left ? playerBRect.left :
                     // If ball is in left crook of bridge or directly above left bridge post must go to left of entire bridge
-                    (playerBRect.left < bridgeBRect.left+FOOT_BWIDTH-1 ? bridgeBRect.left - BALL.DIAMETER - BALL.MOVEMENT :
+                    (playerBRect.left < bridgeBRect.left+ OBJECT.BRIDGE_FOOT_BWIDTH - 1 ? bridgeBRect.left - BALL.DIAMETER - BALL.MOVEMENT :
                     // Else leftmost is foot
                     bridgeBRect.left ));
                 // If entire ball is right of bridge rightmost is ball
                 int bright = (playerBRect.left > bridgeBRect.right ? playerBRect.right :
                     // If ball is in right crook of bridge must go to the right of the entire bridge
-                    (playerBRect.left < bridgeBRect.right - FOOT_EXTENSION_BWIDTH && playerBRect.bottom <= bridgeBRect.top ? bridgeBRect.right + BALL.DIAMETER + BALL.MOVEMENT :
+                    (playerBRect.left < bridgeBRect.right - OBJECT.BRIDGE_FOOT_EXTENSION_BWIDTH && playerBRect.bottom <= bridgeBRect.top ? bridgeBRect.right + BALL.DIAMETER + BALL.MOVEMENT :
                     // If ball is right of foot rightmost is ball else rightmost is foot
-                    (playerBRect.right > bridgeBRect.left + FOOT_BWIDTH - 1 ? playerBRect.right : bridgeBRect.left + FOOT_BWIDTH - 1)));
+                    (playerBRect.right > bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH - 1 ? playerBRect.right : bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH - 1)));
                 bspace = RRect.fromTRBL(playerBRect.room, btop, bright, bbottom, bleft);
             }
             return bspace;
 
         }
 
-        /**
-         * This adds the objectives to move the ball to the 
-         * bottom of the bridge.
-         * @param the relative x position of the bridge compared to the ball in ball coordinates
-         * @param the relative y position of the bridge compared to the ball in ball coordinates
-         * 
-         */
-        private void addObjectivesToMoveAroundBridge(int bridgeRelBx, int bridgeRelBy)
-        {
-            // MUST_IMPLEMENT
-            // Right now cause an abort
-            this.addChild(new RepositionKey(0));
-        }
     }
 
 

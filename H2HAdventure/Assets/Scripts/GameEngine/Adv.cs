@@ -125,7 +125,7 @@ namespace GameEngine
         {
             get { return y - (height / 2); }
         }
-        public bool equals(RRect other)
+        public bool equals(in RRect other)
         {
             return (room == other.room) && (x == other.x) && (y == other.y) &&
                 (width == other.width) && (height == other.height);
@@ -143,7 +143,7 @@ namespace GameEngine
          * Returns true if this rectangles is in the same room 
          * and overlap the passed in rectangle.
          */
-        public bool overlaps(RRect other)
+        public bool overlaps(in RRect other)
         {
             if (other.room != this.room)
             {
@@ -163,7 +163,7 @@ namespace GameEngine
          * Returns true if this rectangles is in the same room 
          * and completely encompasss the passed in rectangle.
          */
-        public bool contains(RRect other)
+        public bool contains(in RRect other)
         {
             if (other.room != this.room)
             {
@@ -183,7 +183,7 @@ namespace GameEngine
          * Returns the rectangle that is formed by the overlap of this
          * rectangle with another or INVALID if the rectangles don't overlap.
          */
-        public RRect intersect(RRect other)
+        public RRect intersect(in RRect other)
         {
             if (!overlaps(other))
             {

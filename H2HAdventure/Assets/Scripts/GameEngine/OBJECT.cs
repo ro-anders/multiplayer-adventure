@@ -12,7 +12,15 @@ namespace GameEngine
         };
 
         // Unless the "size" modifier is used, objects are 8 blocks (16 pixels) wide
-        public const int OBJECT_WIDTH = 8; 
+        public const int OBJECT_WIDTH = 8;
+
+        // These constants only apply to the bridge, but it doesn't have it's own file
+        /** The width of the foot of the bridge */
+        public const int BRIDGE_FOOT_BWIDTH = 16;
+        /** The height of the foot of the bridge */
+        public const int BRIDGE_FOOT_BHEIGHT = 8;
+        /** The width of the part of the foot that sticks out past the main part */
+        public const int BRIDGE_FOOT_EXTENSION_BWIDTH = 8;
 
 
         public readonly byte[][] gfxData;        // graphics data for each state

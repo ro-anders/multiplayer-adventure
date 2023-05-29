@@ -166,13 +166,34 @@ namespace GameEngine.Ai
                     ignore = ignore || ((pkey >= Board.FIRST_CARRYABLE) && dontCare);
                     if (!ignore)
                     {
-                        // TODO: This isn't handling bridge correctly
-                        if ((objct.room == thisBall.room) &&
-                            quickCheckCollision(thisBall.x + nextVelX, thisBall.y + nextVelY, objct))
-                        {
-                            // Ball would connect with object next turn, figure a different direction
-                            avoidObject(objct, ref nextVelX, ref nextVelY);
-                            break;
+                        if (objct.room == thisBall.room) {
+                            if (objct.getPKey() == Board.OBJECT_BRIDGE)
+                            {
+                                RRect leftSide = new RRect(objct.room, objct.bx, objct.by, OBJECT.BRIDGE_FOOT_BWIDTH, objct.BHeight);
+                                if (quickCheckCollision(thisBall.x + nextVelX, thisBall.y + nextVelY, leftSide))
+                                {
+                                    // Ball would connect with object next turn, figure a different direction
+                                    avoidObject(leftSide, ref nextVelX, ref nextVelY);
+                                    break;
+                                }
+                                RRect rightSide = new RRect(objct.room, objct.bx + objct.bwidth - OBJECT.BRIDGE_FOOT_BWIDTH, objct.by, OBJECT.BRIDGE_FOOT_BWIDTH, objct.BHeight);
+                                if (quickCheckCollision(thisBall.x + nextVelX, thisBall.y + nextVelY, rightSide))
+                                {
+                                    // Ball would connect with object next turn, figure a different direction
+                                    avoidObject(rightSide, ref nextVelX, ref nextVelY);
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                RRect objectBrect = objct.BRect;
+                                if (quickCheckCollision(thisBall.x + nextVelX, thisBall.y + nextVelY, objectBrect))
+                                {
+                                    // Ball would connect with object next turn, figure a different direction
+                                    avoidObject(objectBrect, ref nextVelX, ref nextVelY);
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
@@ -199,22 +220,20 @@ namespace GameEngine.Ai
          * @param bally the y position of the ball (the top left corner)
          * @param objct the object to check
          */
-        private bool quickCheckCollision(int ballx, int bally, OBJECT objct)
+        private bool quickCheckCollision(int ball_bx, int ball_by, in RRect objectBrect)
         {
-            // TODO: This doesn't handle bridge correctly
-            int objectHt = objct.Height;
-            return Board.HitTestRects(ballx, bally, BALL.DIAMETER, BALL.DIAMETER,
-              objct.bx, objct.by, objct.bwidth, objct.BHeight);
+            return Board.HitTestRects(ball_bx, ball_by, BALL.DIAMETER, BALL.DIAMETER,
+                            objectBrect.left, objectBrect.top, objectBrect.width, objectBrect.height);
         }
 
         /**
          * Desired movement would cause ball to hit object.  Figure out a direction to 
          * avoid collision and still get to destination.
          */
-        public void avoidObject(OBJECT objct, ref int nextVelX, ref int nextVelY)
+        public void avoidObject(RRect objectBrect, ref int nextVelX, ref int nextVelY)
         {
             int blockedTop = 0, blockedRight = 0, blockedBottom = 0, blockedLeft = 0;
-            computeBlockedArea(objct, ref blockedTop, ref blockedRight, ref blockedBottom, ref blockedLeft);
+            computeBlockedArea(objectBrect, ref blockedTop, ref blockedRight, ref blockedBottom, ref blockedLeft);
             Turn toTurn = whichDirection(blockedTop, blockedRight, blockedBottom, blockedLeft);
 
             if (toTurn != Turn.NONE)
@@ -227,7 +246,7 @@ namespace GameEngine.Ai
                 for (int ctr = 1; !foundClearDirection && (ctr < directions.Length); ++ctr)
                 {
                     nextDir = MOD.mod(nextDir + step, directions.Length);
-                    if (!quickCheckCollision(thisBall.x + directions[nextDir][0], thisBall.y + directions[nextDir][1], objct))
+                    if (!quickCheckCollision(thisBall.x + directions[nextDir][0], thisBall.y + directions[nextDir][1], objectBrect))
                     {
                         nextVelX = directions[nextDir][0];
                         nextVelY = directions[nextDir][1];
@@ -259,12 +278,12 @@ namespace GameEngine.Ai
          * get within 4 pixels of an object because of its own width.  Also takes into 
          * account ball moving in quantum steps and other blocking objects touching this objects.
          */
-        private void computeBlockedArea(OBJECT objct, ref int top, ref int right, ref int bottom, ref int left)
+        private void computeBlockedArea(in RRect objectBrect, ref int top, ref int right, ref int bottom, ref int left)
         {
-            top = objct.by + BALL.DIAMETER;
-            right = objct.bx + objct.bwidth - 1;
-            bottom = objct.by - objct.BHeight + 1;
-            left = objct.bx - BALL.DIAMETER;
+            top = objectBrect.top + BALL.DIAMETER;
+            right = objectBrect.right;
+            bottom = objectBrect.bottom;
+            left = objectBrect.left - BALL.DIAMETER;
 
             // Now factor in that ball moves in 6 pixel steps
             top += MOD.mod(thisBall.y - top, BALL.MOVEMENT);

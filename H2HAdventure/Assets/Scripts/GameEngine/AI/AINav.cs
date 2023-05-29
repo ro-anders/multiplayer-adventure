@@ -170,6 +170,14 @@ namespace GameEngine.Ai
         }
 
         /**
+         * Find all plots that overlap this rectangle
+         */
+        public Plot[] GetPlots(RRect brect)
+        {
+            return GetPlots(brect.room, brect.x, brect.y, brect.width, brect.height);
+        }
+
+        /**
          * Return what zone a rectangle is in or NO_ZONE if rectangle
          * touches no navigable plots.
          * @param brect an area to check (in standard/ball coordinates)
@@ -206,14 +214,6 @@ namespace GameEngine.Ai
                 }
             }
             return found;
-        }
-
-        /**
-         * Find all plots that overlap this rectangle
-         */
-        public Plot[] GetPlots(RRect brect)
-        {
-            return GetPlots(brect.room, brect.x, brect.y, brect.width, brect.height);
         }
 
         /**
@@ -1510,7 +1510,15 @@ namespace GameEngine.Ai
          */
         public AiPathNode End
         {
-            get { return nextNode == null ? this : nextNode.End; }
+            get
+            {
+                AiPathNode foundEnd = this;
+                while (foundEnd.nextNode != null)
+                {
+                    foundEnd = nextNode;
+                }
+                return foundEnd;
+            }
         }
 
         /**

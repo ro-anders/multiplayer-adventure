@@ -288,11 +288,14 @@ namespace GameEngine
             return witnessed;
         }
 
-        public static bool HitTestRects(int x1, int y1, int w1, int h1,
-                      int x2, int y2, int w2, int h2)
+        /**
+         * Return if two rectangles intersect
+         */
+        public static bool HitTestRects(int bx1, int by1, int bwidth1, int bheight1,
+                      int bx2, int by2, int bwidth2, int bheight2)
         {
-            return !(((y1 - h1) >= y2) || (y1 <= (y2 - h2)) ||
-                ((x1 + w1) <= x2) || (x1 >= (x2 + w2)));
+            return !(((by1 - bheight1) >= by2) || (by1 <= (by2 - bheight2)) ||
+                ((bx1 + bwidth1) <= bx2) || (bx1 >= (bx2 + bwidth2)));
         }
 
         /**

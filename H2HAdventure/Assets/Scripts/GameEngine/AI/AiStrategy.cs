@@ -184,29 +184,16 @@ namespace GameEngine.Ai
          */
         public RRect closestReachableRectangle(OBJECT objct)
         {
-            int objbx = objct.bx;
-            int objby = objct.by;
-            int objbw = objct.bwidth;
-            int objbh = objct.BHeight;
-            Plot[] plots = nav.GetPlots(objct.room, objbx, objby, objbw, objbh);
-            if (plots.Length > 0)
-            {
-                // TODO: Right now we don't compute closest.  We return the area
-                // overlapping the first plot we find.
-                Plot plot = plots[0];
-                int x = -1;
-                int y = -1;
-                int width = -1;
-                int height = -1;
-                Board.intersect(objbx, objby, objbw, objbh, plot.BLeft, plot.BTop, plot.BRight - plot.BLeft, plot.BTop - plot.BBottom,
-                    ref x, ref y, ref width, ref height);
-                return new RRect(objct.room, x, y, width, height);
-            }
-            else
+            RRect objBRect = objct.BRect;
+            AiPathNode shortestPath = nav.ComputePathToArea(thisBall.room, thisBall.midX, thisBall.midY, objBRect);
+            if (shortestPath == null)
             {
                 return RRect.INVALID;
             }
-
+            else
+            {
+                return shortestPath.End.ThisPlot.BRect.intersect(objBRect);
+            }
 
         }
 
