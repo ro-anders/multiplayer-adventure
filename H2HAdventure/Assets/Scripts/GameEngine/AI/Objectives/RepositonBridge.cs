@@ -137,11 +137,11 @@ namespace GameEngine.Ai
                 bspace = RRect.fromTRBL(
                     playerBRect.room,
                     bridgeBRect.bottom - 1,
-                    // If any part of ball is left of foot leftmost is ball, else leftmost is foot 
-                    playerBRect.left < bridgeBRect.left ? bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH : playerBRect.right,
-                    playerBRect.bottom,
                     // If any part of ball is right of foot rightmost is ball, else rightmost is foot
-                    playerBRect.right > bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH - 1 ? playerBRect.right : bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH - 1);
+                    playerBRect.right > bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH - 1 ? playerBRect.right : bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH - 1,
+                    playerBRect.bottom,
+                    // If any part of ball is left of foot leftmost is ball, else leftmost is foot 
+                    playerBRect.left < bridgeBRect.left ? playerBRect.left : bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH);
             }
             else
             {

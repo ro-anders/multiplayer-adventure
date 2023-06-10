@@ -457,7 +457,7 @@ namespace GameEngine.Ai
          * specifically don't want to pick up an object or DONT_CARE_OBJECT if you
          * don't care if you pick up an object or not
          */
-        public GoToObjective(RRect inBTarget, int inCarrying = DONT_CARE_OBJECT)
+        public GoToObjective(in RRect inBTarget, int inCarrying = DONT_CARE_OBJECT)
         {
             btarget = inBTarget;
             carrying = inCarrying;
@@ -685,7 +685,7 @@ namespace GameEngine.Ai
             behindPortcullis = GoToObjective.isBehindPortcullis(board, aiPlayer, gotoRoom);
 
             // Figure out what point in the room is closest.
-            AiPathNode path = nav.ComputePathToClosestExit(aiPlayer.room, aiPlayer.midX, aiPlayer.midY, gotoRoom);
+            AiPathNode path = nav.ComputePathToRoom(aiPlayer.room, aiPlayer.midX, aiPlayer.midY, gotoRoom);
             if (path == null)
             {
                 // No way to get out of room

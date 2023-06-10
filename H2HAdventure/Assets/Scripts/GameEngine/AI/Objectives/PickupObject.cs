@@ -108,9 +108,28 @@
         {
             if (toPickup == Board.OBJECT_BRIDGE)
             {
-                // MUST IMPLEMENT
-                // Bridge is tricky.  Aim for the corner for now.
-                return new RRect(objectToPickup.room, objectToPickup.bx, objectToPickup.by, 1, 1);
+                // Bridge is tricky.  Aim for one of the two posts
+                RRect[] posts = {
+                    new RRect(objectToPickup.room, objectToPickup.bx, objectToPickup.by, OBJECT.BRIDGE_FOOT_BWIDTH, objectToPickup.BHeight),
+                    new RRect(objectToPickup.room, objectToPickup.bx+objectToPickup.bwidth-OBJECT.BRIDGE_FOOT_BWIDTH, objectToPickup.by, OBJECT.BRIDGE_FOOT_BWIDTH, objectToPickup.BHeight)
+                };
+                AiPathNode shortestPath = nav.ComputePathToAreas(aiPlayer.room, aiPlayer.midX, aiPlayer.midY, posts);
+                if (shortestPath == null)
+                {
+                    return RRect.INVALID;
+                }
+                else
+                {
+                    RRect endOfPath = shortestPath.End.ThisPlot.BRect;
+                    RRect intersect = endOfPath.intersect(posts[0]);
+                    if (intersect.IsValid) {
+                        return intersect;
+                    } else
+                    {
+                        intersect = endOfPath.intersect(posts[1]);
+                        return intersect;
+                    }
+                }
             }
             else
             {

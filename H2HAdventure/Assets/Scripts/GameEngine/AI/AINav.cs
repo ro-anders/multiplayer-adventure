@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GameEngine.Ai
 {
@@ -35,52 +36,58 @@ namespace GameEngine.Ai
          */
         public AiPathNode ComputePath(int fromRoom, int fromBX, int fromBY, int toRoom, int toBX, int toBY)
         {
+            // Determine the starting plot
             int fromPlot = FindPlot(fromRoom, fromBX, fromBY);
             if (fromPlot < 0)
             {
                 UnityEngine.Debug.LogError("Couldn't find starting plot");
             }
+
+            // Determine the ending plot
             int toPlot = FindPlot(toRoom, toBX, toBY);
             if (toPlot < 0)
             {
                 UnityEngine.Debug.LogError("Couldn't find ending plot");
             }
-            if ((fromPlot < 0) || (toPlot < 0))
+
+            if (aiPlots[fromPlot].thisPlot.Zone != aiPlots[toPlot].thisPlot.Zone)
             {
                 return null;
             }
-            else if (fromPlot == toPlot)
-            {
-                return new AiPathNode(aiPlots[toPlot]);
-            }
-            //UnityEngine.Debug.Log("Computing path from " + aiPlots[fromPlot].thisPlot + 
-            //    " to " + aiPlots[toPlot].thisPlot);
 
+            ToPlotGoal goal = new ToPlotGoal(toPlot);
+            AiPathNode path = this.BreadthFirstPathSearch(fromPlot, goal);
+            return path;
+        }
 
-            // Reset the already visited array
-            for (int ctr = 0; ctr < alreadyVisited.Length; ++ctr)
-            {
-                alreadyVisited[ctr] = false;
-            }
+        /**
+         * Compute path to get anywhere within a room.
+         * @param startRoom the room of the starting point (not the room we want to get to)
+         * @param startX the starting x position
+         * @param startY the starting y position
+         * @param toRoom the room that we want to get into
+         */
+        public AiPathNode ComputePathToRoom(int startRoom, int startX, int startY, int toRoom)
+        {
+            int fromPlot = FindPlot(startRoom, startX, startY);
+            PathSearchGoal goal = new InRoomGoal(toRoom);
+            AiPathNode path = BreadthFirstPathSearch(fromPlot, goal);
+            return path;
+        }
 
-            // We do a breadth first search, which requires a queue.
-            // Although we have a data structure for 
-            List<AiPathNode> q = new List<AiPathNode>();
-            // We start from the desired point and work our way back
-            q.Add(new AiPathNode(aiPlots[toPlot]));
-            alreadyVisited[toPlot] = true;
-            AiPathNode found = null;
-            while ((found == null) && (q.Count > 0))
-            {
-                found = ComputeNextStep(fromPlot, q, alreadyVisited);
-            }
-
-            if (found == null)
-            {
-                UnityEngine.Debug.Log("Could not find path from " + aiPlots[fromPlot] + " to " +
-                    aiPlots[toPlot]);
-            }
-            return found;
+        /**
+         * Compute path to get out of the current room.  Don't care where we end up
+         * as long as it's not in that room.
+         * @param startRoom the room of the starting point
+         * @param startX the starting x position
+         * @param startY the starting y position
+         */
+        public AiPathNode ComputePathOutOfRoom(int startRoom, int startX, int startY)
+        {
+            int fromPlot = FindPlot(startRoom, startX, startY);
+            PathSearchGoal goal = new NotInRoomGoal(startRoom);
+            AiPathNode path = BreadthFirstPathSearch(fromPlot, goal);
+            return path;
         }
 
         /**
@@ -93,23 +100,33 @@ namespace GameEngine.Ai
          */
         public AiPathNode ComputePathToArea(int startRoom, int startX, int startY, RRect desiredArea)
         {
-            AiPathNode shortestPath = null;
-            AiMapNode[] plots = aiPlotsByRoom[desiredArea.room];
-            foreach (AiMapNode nextPlot in plots)
+            int fromPlot = FindPlot(startRoom, startX, startY);
+            int[] toPlots = FindPlots(desiredArea.room, desiredArea.x, desiredArea.y, desiredArea.width, desiredArea.height);
+            PathSearchGoal goal = new ToPlotsGoal(toPlots);
+            AiPathNode path = BreadthFirstPathSearch(fromPlot, goal);
+            return path;
+        }
+
+        /**
+         * Look at all plots in a certain area, compute which one is closest and return a path
+         * to that plot.
+         * @param startRoom the room of the starting point (not the room with the desired region)
+         * @param startX the starting x position
+         * @param startY the starting y position
+         * @param desiredArea the area of a room that the plot needs to touch
+         */
+        public AiPathNode ComputePathToAreas(int startRoom, int startX, int startY, RRect[] desiredAreas)
+        {
+            int fromPlot = FindPlot(startRoom, startX, startY);
+            List<int> toPlotList = new List<int>();
+            foreach (RRect nextArea in desiredAreas)
             {
-                Plot plot = nextPlot.thisPlot;
-                bool touches = (plot.Touches(desiredArea));
-                if (touches)
-                {
-                    AiPathNode path = ComputePath(startRoom, startX, startY, plot.Room, plot.MidBX, plot.MidBY);
-                    if ((path != null) &&
-                        ((shortestPath == null) || (path.distance < shortestPath.distance)))
-                    {
-                        shortestPath = path;
-                    }
-                }
+                int[] toPlots = FindPlots(nextArea.room, nextArea.x, nextArea.y, nextArea.width, nextArea.height);
+                toPlotList.AddRange(toPlots);
             }
-            return shortestPath;
+            PathSearchGoal goal = new ToPlotsGoal(toPlotList.ToArray());
+            AiPathNode path = BreadthFirstPathSearch(fromPlot, goal);
+            return path;
         }
 
         /**
@@ -172,7 +189,7 @@ namespace GameEngine.Ai
         /**
          * Find all plots that overlap this rectangle
          */
-        public Plot[] GetPlots(RRect brect)
+        public Plot[] GetPlots(in RRect brect)
         {
             return GetPlots(brect.room, brect.x, brect.y, brect.width, brect.height);
         }
@@ -580,7 +597,67 @@ namespace GameEngine.Ai
             return found.ToArray();
         }
 
-        private AiPathNode ComputeNextStep(int goalPlot, List<AiPathNode> q, bool[] alreadyFound)
+        /**
+         * Do a breadth first search of all reachable plots until we find one that 
+         * satisifies the goal.
+         * @param startPlot the plot to start from
+         * @param goal the goal that indicates when we have reached a plot that works
+         * @return a path from the start plot to the plot that satisfies the goal
+         *   or null if no path was found
+         */
+        private AiPathNode BreadthFirstPathSearch(int startPlot, PathSearchGoal goal)
+        {
+            // Make sure from plot is valid
+            if (startPlot < 0)
+            {
+                return null;
+            }
+
+            AiMapNode startNode = aiPlots[startPlot];
+
+            // Check to see if we're already there
+            if (goal.Found(startNode.thisPlot))
+            {
+                return new AiPathNode(startNode);
+            }
+
+            // We use a queue of plots to process and a hash array of plots we have visited
+            // (hash array allocated once but reset everytime).
+            Array.Clear(alreadyVisited, 0, alreadyVisited.Length);
+            alreadyVisited[startPlot] = true;
+            List<AiPathNode> q = new List<AiPathNode>();
+            q.Add(new AiPathNode(aiPlots[startPlot]));
+
+            // Iterate through every reachable plot looking for the target plot
+            // As we look, new reachable plots are added to the queue.
+            // Continue until we find the target plot or run out of plots in the queue.
+            AiPathNode found = null;
+            while ((found == null) && (q.Count > 0))
+            {
+                found = ComputeNextStep(goal, q, alreadyVisited);
+            }
+
+            // It was more efficient to compute the reverse of the desired path,
+            // so now that we've found it, reverse it.
+            AiPathNode reversed = (found != null ? found.Reverse() : null);
+
+            return reversed;
+        }
+
+        /**
+         * This is one step in a breadth-first search function finding the path to
+         * a plot.  If it finds a path during this step, returns a path.  If not,
+         * returns null but updates the queue with more steps to take.
+         * @param goal - the test to tell when we've found the plot we're looking for
+         * @param q a queue of partial paths.  Take the next partial path off the queue, 
+         *   compute all the paths that could extend it and add them back to the q.
+         *   NOTE: these paths are all from current search point TO THE START PLOT (the reverse of what
+         *   we will want)
+         * @param alreadyFound - hasharray of already visited plots to prevent infinite loops
+         * @return path from goal to start node (NOTE: WE NEED TO REVERSE THIS BEFORE IT'S USEFUL) or null
+         * if no path found yet
+         */
+        private AiPathNode ComputeNextStep(PathSearchGoal goal, List<AiPathNode> q, bool[] alreadyFound)
         {
             AiPathNode nextStep = q[0];
             q.RemoveAt(0);
@@ -590,7 +667,7 @@ namespace GameEngine.Ai
                 if ((neighbor != null) && !alreadyVisited[neighbor.thisPlot.Key])
                 {
                     AiPathNode nextNextStep = nextStep.Prepend(neighbor, Plot.OppositeDirection(ctr));
-                    if (neighbor.thisPlot.Key == goalPlot)
+                    if (goal.Found(neighbor.thisPlot))
                     {
                         return nextNextStep;
                     }
@@ -1231,7 +1308,7 @@ namespace GameEngine.Ai
                     (bx >= edgesb[LEFT]) && (bx <= edgesb[RIGHT]) &&
                     (by >= edgesb[DOWN]) && (by <= edgesb[UP]));
         }
-        public bool Contains(RRect bRect)
+        public bool Contains(in RRect bRect)
         {
             return this.BRect.contains(bRect);
         }
@@ -1241,7 +1318,7 @@ namespace GameEngine.Ai
             return !((bx > edgesb[RIGHT]) || (bx + bwidth -1 < edgesb[LEFT]) ||
                 (by < edgesb[DOWN]) || (by - bheight + 1 > edgesb[UP])); 
         }
-        public bool Touches(RRect brect)
+        public bool Touches(in RRect brect)
         {
             return !((brect.left > edgesb[RIGHT]) || (brect.right < edgesb[LEFT]) ||
                 (brect.top < edgesb[DOWN]) || (brect.bottom > edgesb[UP]));
@@ -1515,7 +1592,7 @@ namespace GameEngine.Ai
                 AiPathNode foundEnd = this;
                 while (foundEnd.nextNode != null)
                 {
-                    foundEnd = nextNode;
+                    foundEnd = foundEnd.nextNode;
                 }
                 return foundEnd;
             }
@@ -1543,6 +1620,120 @@ namespace GameEngine.Ai
             }
             return str;
         }
+
+        /**
+         * Create the reverse path of this path.
+         * @return a path from this path's end to this path's start
+         */
+        public AiPathNode Reverse()
+        {
+            AiPathNode reversed = new AiPathNode(this.thisNode);
+            AiPathNode next = this;
+            while (next.nextNode != null)
+            {
+                reversed = reversed.Prepend(next.nextNode.thisNode, Plot.OppositeDirection(next.nextDirection));
+                next = next.nextNode;
+            }
+            return reversed;
+        }
     }
+
+    public abstract class PathSearchGoal
+    {
+        public abstract bool Found(Plot plot);
+    }
+
+    /**
+     * The goal when search for a path to a single plot
+     */
+    public class ToPlotGoal : PathSearchGoal
+    {
+        /** The key of the plot we want to get to */
+        private int desiredPlot;
+
+        /**
+         * Create a goal of reaching a single plot
+         * @param inDesiredPlot the plot we want to get to
+         */
+        public ToPlotGoal(int inDesiredPlot)
+        {
+            desiredPlot = inDesiredPlot;
+        }
+
+        public override bool Found(Plot plot)
+        {
+            return plot.Key == desiredPlot;
+        }
+    }
+
+    /**
+     * The goal when search for a path to a one of several plots
+     */
+    public class ToPlotsGoal : PathSearchGoal
+    {
+        /** The keys of the plots we want to get to */
+        private int[] desiredPlots;
+
+        /**
+         * Create a goal of reaching a single plot
+         * @param inDesiredPlot the plot we want to get to
+         */
+        public ToPlotsGoal(int[] inDesiredPlots)
+        {
+            desiredPlots = (int[])inDesiredPlots.Clone();
+        }
+
+        public override bool Found(Plot plot)
+        {
+            return desiredPlots.Contains(plot.Key);
+        }
+    }
+
+    /**
+     * The goal when search for a the nearest plot not in the current room
+     */
+    public class InRoomGoal : PathSearchGoal
+    {
+        /** The room we want to be in */
+        private int room;
+
+        /**
+         * Create a goal of getting into a room
+         * @param inRoom the room we want to get into
+         */
+        public InRoomGoal(int inRoom)
+        {
+            room = inRoom;
+        }
+
+        public override bool Found(Plot plot)
+        {
+            return plot.Room == room;
+        }
+    }
+
+    /**
+     * The goal when search for a the nearest plot not in the current room
+     */
+    public class NotInRoomGoal : PathSearchGoal
+    {
+        /** The room we don't want to be in */
+        private int notInRoom;
+
+        /**
+         * Create a goal of getting out of a room
+         * @param inNotInRoom the room we want to get out of
+         */
+        public NotInRoomGoal(int inNotInRoom)
+        {
+            notInRoom = inNotInRoom;
+        }
+
+        public override bool Found(Plot plot)
+        {
+            return plot.Room != notInRoom;
+        }
+    }
+
 
 }
