@@ -169,14 +169,14 @@ namespace GameEngine.Ai
                         if (objct.room == thisBall.room) {
                             if (objct.getPKey() == Board.OBJECT_BRIDGE)
                             {
-                                RRect leftSide = new RRect(objct.room, objct.bx, objct.by, OBJECT.BRIDGE_FOOT_BWIDTH, objct.BHeight);
+                                RRect leftSide = new RRect(objct.room, objct.bx, objct.by, Bridge.FOOT_BWIDTH, objct.BHeight);
                                 if (quickCheckCollision(thisBall.x + nextVelX, thisBall.y + nextVelY, leftSide))
                                 {
                                     // Ball would connect with object next turn, figure a different direction
                                     avoidObject(leftSide, ref nextVelX, ref nextVelY);
                                     break;
                                 }
-                                RRect rightSide = new RRect(objct.room, objct.bx + objct.bwidth - OBJECT.BRIDGE_FOOT_BWIDTH, objct.by, OBJECT.BRIDGE_FOOT_BWIDTH, objct.BHeight);
+                                RRect rightSide = new RRect(objct.room, objct.bx + objct.bwidth - Bridge.FOOT_BWIDTH, objct.by, Bridge.FOOT_BWIDTH, objct.BHeight);
                                 if (quickCheckCollision(thisBall.x + nextVelX, thisBall.y + nextVelY, rightSide))
                                 {
                                     // Ball would connect with object next turn, figure a different direction

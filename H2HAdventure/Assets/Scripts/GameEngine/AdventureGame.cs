@@ -199,8 +199,7 @@ namespace GameEngine
             gameBoard.addObject(Board.OBJECT_YELLOWDRAGON, dragons[1]);
             gameBoard.addObject(Board.OBJECT_GREENDRAGON, dragons[0]);
             gameBoard.addObject(Board.OBJECT_SWORD, new OBJECT("sword", objectGfxSword, new byte[0], 0, COLOR.YELLOW));
-            gameBoard.addObject(Board.OBJECT_BRIDGE, new OBJECT("bridge", objectGfxBridge, new byte[0], 0, COLOR.PURPLE,
-                                                                OBJECT.RandomizedLocations.OPEN_OR_IN_CASTLE, Board.BRIDGE_SIZE));
+            gameBoard.addObject(Board.OBJECT_BRIDGE, new Bridge());
             gameBoard.addObject(Board.OBJECT_YELLOWKEY, goldKey);
             gameBoard.addObject(Board.OBJECT_COPPERKEY, copperKey);
             gameBoard.addObject(Board.OBJECT_JADEKEY, jadeKey);
@@ -2149,17 +2148,15 @@ namespace GameEngine
         private bool CrossingBridge(int room, BALL ball)
         {
             // Check going through the bridge
-            OBJECT bridge = gameBoard[Board.OBJECT_BRIDGE];
+            Bridge bridge = (Bridge)gameBoard[Board.OBJECT_BRIDGE];
             if ((bridge.room == room)
                 && (ball.linkedObject != Board.OBJECT_BRIDGE))
             {
-                int bridgeLeft = 2 * (bridge.x + Board.BRIDGE_AREA_LEFT);
-                int bridgeRight = 2 * (bridge.x + Board.BRIDGE_AREA_RIGHT);
-                if ((ball.x > bridgeLeft) && (ball.x + BALL.DIAMETER < bridgeRight))
+                if ((ball.x > bridge.InsideBLeft) && (ball.x + BALL.DIAMETER -1 < bridge.InsideBRight))
                 {
-                    int bridgeTop = 2 * (bridge.y - Board.BRIDGE_AREA_TOP);
-                    int bridgeBottom = 2 * (bridge.y - Board.BRIDGE_AREA_BOTTOM);
-                    if ((ball.y > bridgeBottom) && (ball.y-BALL.DIAMETER < bridgeTop))
+                    int bridgeBTop = bridge.by;
+                    int bridgeBBottom = bridge.by - bridge.BHeight + 1;
+                    if ((ball.y >= bridgeBBottom) && (ball.y-BALL.DIAMETER < bridgeBTop))
                     {
                         return true;
                     }
@@ -2385,6 +2382,7 @@ namespace GameEngine
                 0xA7                   // X X  XXX
         } };
 
+        // Object #0A : Bridge defined in Bridge.cs                                                                                 
 
         // Object #1 : Graphic
         private static byte[][] objectGfxSurround =
@@ -2423,35 +2421,7 @@ namespace GameEngine
             0xFF                   // XXXXXXXX                                                                  
         } };
 
-        // Object #0A : State FF : Graphic                                                                                   
-        private static byte[][] objectGfxBridge =
-        { new byte[] {
-            0xC3,                  // XX    XX                                                                  
-            0xC3,                  // XX    XX                                                                  
-            0xC3,                  // XX    XX                                                                  
-            0xC3,                  // XX    XX                                                                  
-            0x42,                  //  X    X                                                                   
-            0x42,                  //  X    X                                                                   
-            0x42,                  //  X    X                                                                   
-            0x42,                  //  X    X                                                                   
-            0x42,                  //  X    X                                                                   
-            0x42,                  //  X    X                                                                   
-            0x42,                  //  X    X                                                                   
-            0x42,                  //  X    X                                                                   
-            0x42,                  //  X    X                                                                   
-            0x42,                  //  X    X                                                                   
-            0x42,                  //  X    X                                                                   
-            0x42,                  //  X    X                                                                   
-            0x42,                  //  X    X                                                                   
-            0x42,                  //  X    X                                                                   
-            0x42,                  //  X    X                                                                   
-            0x42,                  //  X    X                                                                   
-            0xC3,                  // XX    XX                                                                  
-            0xC3,                  // XX    XX                                                                  
-            0xC3,                  // XX    XX                                                                  
-            0xC3                   // XX    XX                                                                  
-        } };
-
+        // 
         // Object #9 : State FF : Graphics                                                                                   
         private static byte[][] objectGfxSword =
         { new byte[] {
@@ -2652,7 +2622,9 @@ namespace GameEngine
             {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x4F, 0x67, 0x00, 0x00, 0x00}, // Robinett message
             {Board. OBJECT_NUMBER, Map.NUMBER_ROOM, 0x4F, 0x3E, 0x00, 0x00, 0x00}, // Starting number
             {Board.OBJECT_REDDRAGON, Map.BLACK_MAZE_2, 0x4F, 0x1E, 0x00, 3, 3}, // Red Dragon
-            {Board.OBJECT_YELLOWDRAGON, Map.RED_MAZE_4, 0x4F, 0x1E, 0x00, 3, 3}, // Yellow Dragon
+            // MUST UNDO - Move bridge for testing
+            //{Board.OBJECT_YELLOWDRAGON, Map.RED_MAZE_4, 0x4F, 0x1E, 0x00, 3, 3}, // Yellow Dragon
+            {Board.OBJECT_YELLOWDRAGON, Map.NUMBER_ROOM, 0x4F, 0x1E, 0x00, 3, 3}, // Yellow Dragon
             // Commented out sections are for easy testing of Easter Egg
             #if DEBUG_EASTEREGG
             {Board.OBJECT_GREENDRAGON, Map.NUMBER_ROOM, 0x4F, 0x1E, 0x00, 3, 3}, // Green Dragon

@@ -41,9 +41,9 @@ namespace GameEngine.Ai
                 RRect underLeftFoot = new RRect(bridge.room,
                     bridgeBRect.left - BALL.DIAMETER + 1,
                     bridgeBRect.bottom - 1,
-                    OBJECT.BRIDGE_FOOT_BWIDTH + 2 * BALL.DIAMETER - 2,
+                    Bridge.FOOT_BWIDTH + 2 * BALL.DIAMETER - 2,
                     2 * BALL.DIAMETER - 1);
-                this.addChild(new GoToObjective(underLeftFoot, CARRY_NO_OBJECT));
+                this.addChild(new GoTo(underLeftFoot, CARRY_NO_OBJECT));
                 this.addChild(new PickupObject(Board.OBJECT_BRIDGE));
                 return;
             }
@@ -62,7 +62,7 @@ namespace GameEngine.Ai
                     int goto_btop = plot.BTop - (bSpaceNeeded.top - playerBRect.top);
                     int goto_bbottom = plot.BBottom + (playerBRect.bottom - bSpaceNeeded.bottom);
                     RRect goto_brect = RRect.fromTRBL(playerBRect.room, goto_btop, goto_bright, goto_bbottom, goto_bleft);
-                    this.addChild(new GoToObjective(goto_brect, Board.OBJECT_BRIDGE));
+                    this.addChild(new GoTo(goto_brect, Board.OBJECT_BRIDGE));
                     this.addChild(new RepositionBridge());
                     return;
                 }
@@ -74,11 +74,11 @@ namespace GameEngine.Ai
             // For out of, we use the large plot at the bottom of the hidden room.
             if (inOrOut)
             {
-                this.addChild(new GoToObjective(Map.RED_MAZE_1, Map.WALL_WIDTH * 20, Map.WALL_HEIGHT * 2, Board.OBJECT_BRIDGE));
+                this.addChild(new GoTo(Map.RED_MAZE_1, Map.WALL_WIDTH * 20, Map.WALL_HEIGHT * 2, Board.OBJECT_BRIDGE));
             }
             else
             {
-                this.addChild(new GoToObjective(Map.RED_MAZE_4, Map.WALL_WIDTH * 20, Map.WALL_HEIGHT * 2, Board.OBJECT_BRIDGE));
+                this.addChild(new GoTo(Map.RED_MAZE_4, Map.WALL_WIDTH * 20, Map.WALL_HEIGHT * 2, Board.OBJECT_BRIDGE));
             }
             // Once we're in the room, recompute repositioning
             this.addChild(new RepositionBridge());
@@ -138,10 +138,10 @@ namespace GameEngine.Ai
                     playerBRect.room,
                     bridgeBRect.bottom - 1,
                     // If any part of ball is right of foot rightmost is ball, else rightmost is foot
-                    playerBRect.right > bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH - 1 ? playerBRect.right : bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH - 1,
+                    playerBRect.right > bridgeBRect.left + Bridge.FOOT_BWIDTH - 1 ? playerBRect.right : bridgeBRect.left + Bridge.FOOT_BWIDTH - 1,
                     playerBRect.bottom,
                     // If any part of ball is left of foot leftmost is ball, else leftmost is foot 
-                    playerBRect.left < bridgeBRect.left ? playerBRect.left : bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH);
+                    playerBRect.left < bridgeBRect.left ? playerBRect.left : bridgeBRect.left + Bridge.FOOT_BWIDTH);
             }
             else
             {
@@ -150,15 +150,15 @@ namespace GameEngine.Ai
                 // If entire ball is left of foot leftmost is ball
                 int bleft = (playerBRect.right < bridgeBRect.left ? playerBRect.left :
                     // If ball is in left crook of bridge or directly above left bridge post must go to left of entire bridge
-                    (playerBRect.left < bridgeBRect.left+ OBJECT.BRIDGE_FOOT_BWIDTH - 1 ? bridgeBRect.left - BALL.DIAMETER - BALL.MOVEMENT :
+                    (playerBRect.left < bridgeBRect.left+ Bridge.FOOT_BWIDTH - 1 ? bridgeBRect.left - BALL.DIAMETER - BALL.MOVEMENT :
                     // Else leftmost is foot
                     bridgeBRect.left ));
                 // If entire ball is right of bridge rightmost is ball
                 int bright = (playerBRect.left > bridgeBRect.right ? playerBRect.right :
                     // If ball is in right crook of bridge must go to the right of the entire bridge
-                    (playerBRect.left < bridgeBRect.right - OBJECT.BRIDGE_FOOT_EXTENSION_BWIDTH && playerBRect.bottom <= bridgeBRect.top ? bridgeBRect.right + BALL.DIAMETER + BALL.MOVEMENT :
+                    (playerBRect.left < bridgeBRect.right - Bridge.FOOT_EXTENSION_BWIDTH && playerBRect.bottom <= bridgeBRect.top ? bridgeBRect.right + BALL.DIAMETER + BALL.MOVEMENT :
                     // If ball is right of foot rightmost is ball else rightmost is foot
-                    (playerBRect.right > bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH - 1 ? playerBRect.right : bridgeBRect.left + OBJECT.BRIDGE_FOOT_BWIDTH - 1)));
+                    (playerBRect.right > bridgeBRect.left + Bridge.FOOT_BWIDTH - 1 ? playerBRect.right : bridgeBRect.left + Bridge.FOOT_BWIDTH - 1)));
                 bspace = RRect.fromTRBL(playerBRect.room, btop, bright, bbottom, bleft);
             }
             return bspace;

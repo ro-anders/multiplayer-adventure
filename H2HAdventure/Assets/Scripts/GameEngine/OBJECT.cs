@@ -14,15 +14,6 @@ namespace GameEngine
         // Unless the "size" modifier is used, objects are 8 blocks (16 pixels) wide
         public const int OBJECT_WIDTH = 8;
 
-        // These constants only apply to the bridge, but it doesn't have it's own file
-        /** The width of the foot of the bridge */
-        public const int BRIDGE_FOOT_BWIDTH = 16;
-        /** The height of the foot of the bridge */
-        public const int BRIDGE_FOOT_BHEIGHT = 8;
-        /** The width of the part of the foot that sticks out past the main part */
-        public const int BRIDGE_FOOT_EXTENSION_BWIDTH = 8;
-
-
         public readonly byte[][] gfxData;        // graphics data for each state
         public readonly byte[] states;         // array of indicies for each state
         private int[] heights;                 // array of heights for each state
@@ -119,6 +110,23 @@ namespace GameEngine
         {
             get { return new RRect(room, bx, by, bwidth, BHeight); }
         }
+        public int BTop
+        {
+            get { return y * Adv.BALL_SCALE; }
+        }
+        public int BRight
+        {
+            get { return (x + width) * Adv.BALL_SCALE - 1; }
+        }
+        public int BBottom
+        {
+            get { return (y - heights[state]) * Adv.BALL_SCALE + 1; }
+        }
+        public int BLeft
+        {
+            get { return x * Adv.BALL_SCALE; }
+        }
+
 
         /**
          * How high is this object for purposes of avoiding it.  

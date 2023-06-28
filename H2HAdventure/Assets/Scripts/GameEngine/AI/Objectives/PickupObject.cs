@@ -110,8 +110,8 @@
             {
                 // Bridge is tricky.  Aim for one of the two posts
                 RRect[] posts = {
-                    new RRect(objectToPickup.room, objectToPickup.bx, objectToPickup.by, OBJECT.BRIDGE_FOOT_BWIDTH, objectToPickup.BHeight),
-                    new RRect(objectToPickup.room, objectToPickup.bx+objectToPickup.bwidth-OBJECT.BRIDGE_FOOT_BWIDTH, objectToPickup.by, OBJECT.BRIDGE_FOOT_BWIDTH, objectToPickup.BHeight)
+                    new RRect(objectToPickup.room, objectToPickup.bx, objectToPickup.by, Bridge.FOOT_BWIDTH, objectToPickup.BHeight),
+                    new RRect(objectToPickup.room, objectToPickup.bx+objectToPickup.bwidth-Bridge.FOOT_BWIDTH, objectToPickup.by, Bridge.FOOT_BWIDTH, objectToPickup.BHeight)
                 };
                 AiPathNode shortestPath = nav.ComputePathToAreas(aiPlayer.room, aiPlayer.midX, aiPlayer.midY, posts);
                 if (shortestPath == null)

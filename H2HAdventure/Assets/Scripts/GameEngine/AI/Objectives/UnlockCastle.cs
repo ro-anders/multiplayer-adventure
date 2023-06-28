@@ -20,7 +20,7 @@ namespace GameEngine.Ai
             port = (Portcullis)board.getObject(portId);
             int key = port.key.getPKey();
             this.addChild(new ObtainObject(key));
-            this.addChild(new GoToObjective(port.room, Portcullis.EXIT_X, 0x30, key));
+            this.addChild(new GoTo(port.room, Portcullis.EXIT_X, 0x30, key));
             this.addChild(new RepositionKey(key));
         }
 

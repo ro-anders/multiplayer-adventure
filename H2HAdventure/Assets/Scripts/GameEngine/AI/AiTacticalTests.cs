@@ -49,7 +49,7 @@ namespace GameEngine.Ai
             int velX = 0, velY = 0;
             int finalX = 208;
             int finalY = 80;
-            obj = new GoToObjective(1, finalX, finalY, AiObjective.CARRY_NO_OBJECT);
+            obj = new GoTo(1, finalX, finalY, AiObjective.CARRY_NO_OBJECT);
 
             // 1.0: Room is empty.  Ball has a straight line right to exit
             block.setExists(false);
@@ -109,7 +109,7 @@ namespace GameEngine.Ai
             int velX = 0, velY = 0;
             int finalX = 208;
             int finalY = 80;
-            obj = new GoToObjective(1, finalX, finalY, AiObjective.CARRY_NO_OBJECT);
+            obj = new GoTo(1, finalX, finalY, AiObjective.CARRY_NO_OBJECT);
 
             // 2.0: Only 8 pixels between block and bottom.  Can get around that
             // way because ball starts in the right place.

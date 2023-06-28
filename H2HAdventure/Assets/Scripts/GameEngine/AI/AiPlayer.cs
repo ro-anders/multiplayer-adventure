@@ -117,6 +117,14 @@ namespace GameEngine.Ai
         {
             checkStrategy(frameNumber);
 
+            bool moveBlindly = currentObjective.shouldMoveDirection(ref thisBall.velx, ref thisBall.vely);
+
+            if (moveBlindly)
+            {
+                return;
+            }
+
+
             RRect newDesiredLocation = currentObjective.getBDestination();
 
 

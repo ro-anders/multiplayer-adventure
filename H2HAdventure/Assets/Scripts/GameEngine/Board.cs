@@ -21,16 +21,6 @@ namespace GameEngine
         public const int STARTING_X = Adv.ADVENTURE_SCREEN_BWIDTH/2 - BALL.RADIUS;
         public const int STARTING_Y = 2 * Map.WALL_HEIGHT - 3; // 3 pixels below gate
 
-
-
-
-        // The inside of the bridge (the part that lets the ball cross walls) in relation to its coordinates
-        public const int BRIDGE_SIZE = 0x07; // Bridge is 4 times wider than everything else ( 7/2 + 1 = 4 )
-        public const int BRIDGE_AREA_TOP = 0;
-        public const int BRIDGE_AREA_BOTTOM = 24 /* pixels */;
-        public const int BRIDGE_AREA_LEFT = 2 /*pixels*/ * (BRIDGE_SIZE/2 + 1);
-        public const int BRIDGE_AREA_RIGHT = 6 /*pixels*/ * (BRIDGE_SIZE/2 + 1);
-
         public const int OBJECT_BALL = -2;
         public const int OBJECT_SURROUND = -5; // Actually, up to 3 surrounds with values -5 to -7
 

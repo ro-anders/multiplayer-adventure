@@ -13,6 +13,11 @@ namespace GameEngine.Ai
         private OBJECT bridge;
         private Portcullis whitePort;
 
+        /** The coordinates where we want to place the bridge to get to
+         * the hidden room */
+        private const int RED_MAZE_PLACEMENT_BX = 19 * Map.WALL_WIDTH;
+        private const int RED_MAZE_PLACEMENT_BY = 3 * Map.WALL_HEIGHT + Bridge.FOOT_BHEIGHT;
+
         /**
          * Put the bridge down where we can travel to and from the hidden
          * room in the red maze.
@@ -35,13 +40,12 @@ namespace GameEngine.Ai
                 // Reposition will always place you under the left foot of the bridge
                 // So go to the right place in RedMaze2 - the bottom area where
                 // you first enter from RedMaze1.
-                this.addChild(new GoToObjective(new RRect(Map.RED_MAZE_2, Map.WALL_WIDTH * 16, Map.WALL_HEIGHT * 3 - 1, Map.WALL_WIDTH * 8, Map.WALL_HEIGHT * 3), Board.OBJECT_BRIDGE));
-                this.addChild(new GoExactlyToObjective(Map.RED_MAZE_2, Map.WALL_WIDTH * 21, (int)(Map.WALL_HEIGHT * 1.5), Board.OBJECT_BRIDGE));
+                this.addChild(new GoTo(new RRect(Map.RED_MAZE_2, Map.WALL_WIDTH * 16, Map.WALL_HEIGHT * 3 - 1, Map.WALL_WIDTH * 8, Map.WALL_HEIGHT * 3), Board.OBJECT_BRIDGE));
+                this.addChild(new PlaceObjectAt(Board.OBJECT_BRIDGE, Map.RED_MAZE_2, RED_MAZE_PLACEMENT_BX, RED_MAZE_PLACEMENT_BY, BALL.Adjust.BELOW));
             } else
             {
                 // MUST_IMPLEMENT
             }
-            this.addChild(new DropObjective(Board.OBJECT_BRIDGE));
         }
 
         public override bool isStillValid()
@@ -62,7 +66,7 @@ namespace GameEngine.Ai
             // and not being carried.
             bool completed = false;
             if ((bridge.room >= Map.RED_MAZE_3) && (bridge.room <= Map.RED_MAZE_1) &&
-                (strategy.heldByPlayer(bridge) == null))
+                (strategy.heldByPlayer(bridge, false) == null))
             {
                 // Figure out the zones just above and below the bridge
                 RRect bridgeRect = bridge.BRect;

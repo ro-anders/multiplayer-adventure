@@ -14,7 +14,7 @@ namespace GameEngine.Ai
         private PlaceBridgeToHiddenRoom placeBridgeObjective;
 
         /**
-         * Go to these coordinates.
+         * Go from the main zone to the hidden room zone or vice versa
          * @param inInOut True if we want to get into the hidden room, false if 
          * we want to get out of the hidden room
          * @param inCarrying the object you want to carry or CARRY_NO_OBJECT if you
@@ -37,8 +37,7 @@ namespace GameEngine.Ai
             {
                 addChild(new ObtainObject(carrying));
             }
-            // MUST IMPLEMENT
-            // addChild(new CrossBridge(carrying));
+            addChild(new CrossBridge(inOut, carrying));
         }
 
         /**

@@ -89,6 +89,23 @@ namespace GameEngine.Ai
         }
 
         /**
+         * Following this object, do we need blindly move in a direction
+         * (this ignores walls and objects and is in contrast to getBDestination()
+         * which smartly figures out the directions needed to get to a place)
+         * An objective should not return a blind direction AND a destination
+         * at the same time.
+         * 
+         * @param the x direction to move
+         * @param the y direction to move
+         * @return whether a direction is being returned
+         */
+        public virtual bool shouldMoveDirection(ref int velbx, ref int velby)
+        {
+            // Do nothing
+            return false;
+        }
+
+        /**
          * Does this objective still make sense, e.g. if the bat picks 
          * up an object, the PickupObjective is no longer valid.
          */
@@ -184,7 +201,7 @@ namespace GameEngine.Ai
         /**
          * Whether an objective has been fulfilled
          */
-        protected bool isCompleted()
+        public bool isCompleted()
         {
             if (!completed)
             {
@@ -425,227 +442,6 @@ namespace GameEngine.Ai
 
     //-------------------------------------------------------------------------
 
-    public class GoToObjective : AiObjective
-    {
-        private RRect btarget;
-        private int carrying;
-        private Portcullis behindPortcullis = null; // If the target room is behind a Portcullis
-
-        /**
-         * Go to these coordinates.
-         * @param inRoom the desired room
-         * @param inX the desired X
-         * @param inY the desired Y
-         * @param inCarrying the object you want to carry or CARRY_NO_OBJECT if you
-         * specifically don't want to pick up an object or DONT_CARE_OBJECT if you
-         * don't care if you pick up an object or not
-         */
-        public GoToObjective(int inRoom, int inBX, int inBY, int inCarrying = DONT_CARE_OBJECT)
-        {
-            btarget = new RRect(inRoom, inBX, inBY, 1, 1);
-            carrying = inCarrying;
-        }
-
-        /**
-         * Go to somewhere within this area.  If the area is big enough, will put
-         * the ball entirely within the area.  If it is not big enough, will be
-         * as much in the area as possible.  If the area is a point or smaller than
-         * the ball, will attempt to get the balls midpoint as close to the center
-         * of the area as possible.
-         * @param inTarget desired area in ball coordinates
-         * @param inCarrying the object you want to carry or CARRY_NO_OBJECT if you
-         * specifically don't want to pick up an object or DONT_CARE_OBJECT if you
-         * don't care if you pick up an object or not
-         */
-        public GoToObjective(in RRect inBTarget, int inCarrying = DONT_CARE_OBJECT)
-        {
-            btarget = inBTarget;
-            carrying = inCarrying;
-        }
-
-        protected override void doComputeStrategy()
-        {
-            behindPortcullis = GoToObjective.isBehindPortcullis(board, aiPlayer, btarget.room);
-        }
-
-        public override RRect getBDestination()
-        {
-            return btarget;
-        }
-
-        /**
-         * Still valid as long as you are carrying the object you are supposed to
-         * be carrying and you can still get to where you're supposed to go.
-         */
-        public override bool isStillValid()
-        {
-            bool stillHaveObject =
-                (carrying == DONT_CARE_OBJECT) ||
-                ((carrying == CARRY_NO_OBJECT) && (aiPlayer.linkedObject == Board.OBJECT_NONE)) ||
-                (aiPlayer.linkedObject == carrying);
-            bool blocked = (behindPortcullis != null) && (aiPlayer.room == behindPortcullis.room) && !behindPortcullis.allowsEntry;
-            return stillHaveObject && !blocked;
-        }
-
-        protected override bool computeIsCompleted()
-        {
-            if (aiPlayer.room == btarget.room)
-            {
-                int xBuffer = (BALL.DIAMETER + BALL.MOVEMENT - btarget.width + 1) / 2;
-                if (xBuffer < 0)
-                {
-                    xBuffer = 0;
-                }
-                else if (Math.Abs(aiPlayer.midY - btarget.midY) <= BALL.MOVEMENT / 2)
-                {
-                    xBuffer += 2; // 2 to increase the buffer from 3 (BALL.MOVEMENT/2) to 5 (BALL.MOVEMENT-1)
-                }
-                bool xcheck = (aiPlayer.x >= btarget.left - xBuffer) &&
-                    (aiPlayer.x + BALL.DIAMETER <= btarget.right + xBuffer);
-
-                int yBuffer = (BALL.DIAMETER + BALL.MOVEMENT - btarget.height + 1) / 2;
-                if (yBuffer < 0)
-                {
-                    yBuffer = 0;
-                }
-                else if (Math.Abs(aiPlayer.midX - btarget.midX) <= BALL.MOVEMENT / 2)
-                {
-                    yBuffer += 2; // 2 to increase the buffer from 3 (BALL.MOVEMENT/2) to 5 (BALL.MOVEMENT-1)
-                }
-                bool ycheck = (aiPlayer.y - BALL.DIAMETER >= btarget.bottom - yBuffer) &&
-                    (aiPlayer.y <= btarget.top + yBuffer);
-                return xcheck && ycheck;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public override string ToString()
-        {
-            string str = "go to " + btarget.ToStringWithRoom(board.map.roomDefs[btarget.room].label);
-            if (carrying == CARRY_NO_OBJECT)
-            {
-                str += " carrying nothing";
-            }
-            if (carrying != DONT_CARE_OBJECT)
-            {
-                str += " with " + carrying;
-            }
-            return str;
-        }
-
-        public override int getDesiredObject()
-        {
-            return carrying;
-        }
-
-        /**
-         * Return if a desired room is behind a portcullis.
-         * If you are also behind the same portcullis then this returns that it is not
-         * behind a portcullis.
-         * @param board the board
-         * @param ball the player
-         * @param targetRoom the rooom of interest
-         * @returns the portcullis that stands between the ball and the room or null
-         * if none does
-         */
-        public static Portcullis isBehindPortcullis(Board board, BALL ball, int targetRoom)
-        {
-            Portcullis targetPort = null;
-            Portcullis myPort = null;
-            // Figure out if the desired room is behind a locked gate
-            int FIRST_PORT = Board.OBJECT_YELLOW_PORT;
-            int LAST_PORT = Board.OBJECT_CRYSTAL_PORT;
-            for (int portNum = FIRST_PORT; portNum <= LAST_PORT; ++portNum)
-            {
-                Portcullis port = (Portcullis)board.getObject(portNum);
-                targetPort = ((targetPort == null) && port.containsRoom(targetRoom) ? port : targetPort);
-                myPort = ((myPort == null) && port.containsRoom(ball.room) ? port : myPort);
-            }
-            return (targetPort == myPort ? null : targetPort);
-        }
-    }
-
-
-    //-------------------------------------------------------------------------
-
-    /**
-     * Go to these exact coordinates.  Only to be used when you've 
-     * calculated that these coordinates can be reached given the balls
-     * current coordinates and 6 pixel step.
-     * Which means only to be used when the destination is in the same room
-     * as the ball
-     */
-    public class GoExactlyToObjective : AiObjective
-    {
-        private RRect btarget;
-        private int carrying;
-
-        /**
-         * Go to these coordinates.
-         * @param inRoom the desired room
-         * @param inX the desired X of the ball (meaning the left coordinate)
-         * @param inY the desired Y of the ball (meaning the top coordinate)
-         * @param inCarrying the object you want to carry or CARRY_NO_OBJECT if you
-         * specifically don't want to pick up an object or DONT_CARE_OBJECT if you
-         * don't care if you pick up an object or not
-         */
-        public GoExactlyToObjective(int inRoom, int inLeftBX, int inTopBY, int inCarrying = DONT_CARE_OBJECT)
-        {
-            btarget = new RRect(inRoom, inLeftBX, inTopBY, BALL.DIAMETER, BALL.DIAMETER);
-            carrying = inCarrying;
-        }
-
-        protected override void doComputeStrategy()
-        {
-            // Objective is target
-        }
-
-        public override RRect getBDestination()
-        {
-            return btarget;
-        }
-
-        /**
-         * Still valid as long as you are carrying the object you are supposed to
-         * be carrying and you can still get to where you're supposed to go.
-         */
-        public override bool isStillValid()
-        {
-            return btarget.room == aiPlayer.room;
-        }
-
-        protected override bool computeIsCompleted()
-        {
-            return (aiPlayer.x == btarget.left) && (aiPlayer.y == btarget.top);
-        }
-
-        public override string ToString()
-        {
-            string str = "go to exact spot " + btarget.ToStringWithRoom(board.map.roomDefs[btarget.room].label);
-            if (carrying == CARRY_NO_OBJECT)
-            {
-                str += " carrying nothing";
-            }
-            else if (carrying != DONT_CARE_OBJECT)
-            {
-                str += " with " + carrying;
-            }
-            return str;
-        }
-
-        public override int getDesiredObject()
-        {
-            return carrying;
-        }
-    }
-
-
-    //-------------------------------------------------------------------------
-
-
     /**
      * Finds the shortest route to the room
      * @param inRoom the desired room
@@ -682,7 +478,7 @@ namespace GameEngine.Ai
 
         protected override void doComputeStrategy()
         {
-            behindPortcullis = GoToObjective.isBehindPortcullis(board, aiPlayer, gotoRoom);
+            behindPortcullis = GoTo.isBehindPortcullis(board, aiPlayer, gotoRoom);
 
             // Figure out what point in the room is closest.
             AiPathNode path = nav.ComputePathToRoom(aiPlayer.room, aiPlayer.midX, aiPlayer.midY, gotoRoom);
@@ -694,7 +490,7 @@ namespace GameEngine.Ai
                 throw new Abort();
             }
             targetPlot = path.End.ThisPlot.BRect;
-            addChild(new GoToObjective(targetPlot, carrying));
+            addChild(new GoTo(targetPlot, carrying));
         }
 
         public override RRect getBDestination()
@@ -758,7 +554,7 @@ namespace GameEngine.Ai
 
         protected override void doComputeStrategy()
         {
-            behindPortcullis = GoToObjective.isBehindPortcullis(board, aiPlayer, gotoRoom);
+            behindPortcullis = GoTo.isBehindPortcullis(board, aiPlayer, gotoRoom);
 
             objectToBring = board.getObject(toBring);
 
@@ -794,7 +590,7 @@ namespace GameEngine.Ai
 
             }
             RRect target = closestPlot.End.ThisPlot.BRect.intersect(ballTargetSpace);
-            addChild(new GoToObjective(target, toBring));
+            addChild(new GoTo(target, toBring));
         }
 
         public override string ToString()
@@ -808,9 +604,6 @@ namespace GameEngine.Ai
         }
 
     }
-
-
-    //-------------------------------------------------------------------------
 
     //-------------------------------------------------------------------------
 
@@ -859,14 +652,14 @@ namespace GameEngine.Ai
                     int xLeftToDropAt = Adv.ADVENTURE_SCREEN_BWIDTH / 2 - key.bwidth / 2 - aiPlayer.linkedObjectBX;
                     int yTopToDropAt = CASTLE_FOOT - 1;
                     aiPlayer.adjustDestination(ref xLeftToDropAt, ref yTopToDropAt, BALL.Adjust.BELOW);
-                    this.addChild(new GoExactlyToObjective(aiPlayer.room, xLeftToDropAt, yTopToDropAt, keyId));
+                    this.addChild(new GoExactlyTo(aiPlayer.room, xLeftToDropAt, yTopToDropAt, keyId));
                     this.addChild(new DropObjective(keyId));
 
                     // Pick a point under the key and let the tactical algorithms get around the key
                     int yTopToPickupAt = yTopToDropAt + aiPlayer.linkedObjectBY - key.BHeight;
                     int xLeftToPickupAt = Portcullis.EXIT_X;
                     aiPlayer.adjustDestination(ref xLeftToPickupAt, ref yTopToPickupAt, BALL.Adjust.BELOW);
-                    this.addChild(new GoExactlyToObjective(aiPlayer.room, xLeftToPickupAt, yTopToPickupAt, CARRY_NO_OBJECT));
+                    this.addChild(new GoExactlyTo(aiPlayer.room, xLeftToPickupAt, yTopToPickupAt, CARRY_NO_OBJECT));
                     this.addChild(new PickupObject(keyId));
                 }
             }
@@ -967,10 +760,10 @@ namespace GameEngine.Ai
             if (otherGate.allowsEntry)
             {
                 this.addChild(new ObtainObject(otherKeyId));
-                this.addChild(new GoToObjective(otherGate.room, Portcullis.EXIT_X, 0x30, otherKeyId));
+                this.addChild(new GoTo(otherGate.room, Portcullis.EXIT_X, 0x30, otherKeyId));
                 this.addChild(new RepositionKey(otherKeyId));
-                this.addChild(new GoToObjective(otherGate.insideRoom, Portcullis.EXIT_X, Map.WALL_HEIGHT, otherKeyId));
-                this.addChild(new GoToObjective(otherGate.room, Portcullis.EXIT_X, Map.WALL_HEIGHT, otherKeyId));
+                this.addChild(new GoTo(otherGate.insideRoom, Portcullis.EXIT_X, Map.WALL_HEIGHT, otherKeyId));
+                this.addChild(new GoTo(otherGate.room, Portcullis.EXIT_X, Map.WALL_HEIGHT, otherKeyId));
             }
         }
 
@@ -1082,12 +875,12 @@ namespace GameEngine.Ai
                 addChild(new PickupObject(attracted));
                 AiPathNode hidePath = plotToHideFromMagnet();
                 RRect plotToStash = hidePath.End.ThisPlot.BRect;
-                addChild(new GoToObjective(plotToStash));
+                addChild(new GoTo(plotToStash));
                 // Make sure the object is all the way in the room
                 addChild(new BringObjectToRoomObjective(plotToStash.room, attracted));
                 addChild(new DropObjective(attracted));
                 // Go back to the magnet room
-                addChild(new GoToObjective(hidePath.ThisPlot.BRect, CARRY_NO_OBJECT));
+                addChild(new GoTo(hidePath.ThisPlot.BRect, CARRY_NO_OBJECT));
                 // We need to make this recursive in case there are other objects
                 // that the magnet attracts more than the desired one.
                 addChild(new WaitForMagnetObjective(toPickup));
