@@ -57,13 +57,6 @@ namespace GameEngine.Ai
             NavZone desiredZone = nav.WhichZone(objectToPickup.BRect, currentZone);
             if (currentZone != desiredZone)
             {
-                // Check if we're in a zone we don't want to be in.
-                if (currentZone != NavZone.MAIN)
-                {
-                    // MUST_IMPLEMENT: Deal with getting back to main zone
-                    throw new Abort();
-                }
-
                 // Check if the object is locked in a castle
                 Portcullis portcullis = strategy.behindLockedGate(objectToPickup.room);
                 if (portcullis != null)
@@ -99,6 +92,13 @@ namespace GameEngine.Ai
                     return;
                 }
 
+                // Check if we're in a zone we don't want to be in.
+                if (currentZone != NavZone.MAIN)
+                {
+                    // MUST_IMPLEMENT: Deal with getting back to main zone
+                    throw new Abort();
+                }
+
 
             }
             else
@@ -129,7 +129,7 @@ namespace GameEngine.Ai
             Type obtainType = this.GetType();
 
             // An ObtainObject objective may add a duplicate of itself to its list of children - multiple
-            // time even.  We use recursion level to make sure we are actually making progress and not stuck
+            // times even.  We use recursion level to make sure we are actually making progress and not stuck
             // in an infinite loop
             for (AiObjective nextParent = this.parent; nextParent != null; nextParent = getParentOf(nextParent))
             {

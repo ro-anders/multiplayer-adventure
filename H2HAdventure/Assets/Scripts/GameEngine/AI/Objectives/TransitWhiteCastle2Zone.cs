@@ -11,6 +11,8 @@ namespace GameEngine.Ai
         private bool inOut; // True if getting into hidden room, False if getting out
         private int carrying;
         private Portcullis whitePort;
+        private Bridge bridge = null;
+        private RRect bridgePlacedBLoc = RRect.NOWHERE;
         private PlaceBridgeToHiddenRoom placeBridgeObjective;
 
         /**
@@ -30,6 +32,7 @@ namespace GameEngine.Ai
         protected override void doComputeStrategy()
         {
             whitePort = (Portcullis)board.getObject(Board.OBJECT_WHITE_PORT);
+            bridge = (Bridge)board.getObject(Board.OBJECT_BRIDGE);
 
             placeBridgeObjective = new PlaceBridgeToHiddenRoom(inOut);
             addChild(placeBridgeObjective);
@@ -62,7 +65,16 @@ namespace GameEngine.Ai
                 return false;
             }
 
-            // MUST_IMPLEMENT
+            if ((placeBridgeObjective != null) && (placeBridgeObjective.isCompleted()))
+            {
+                if (bridgePlacedBLoc.IsSomewhere)
+                {
+                    return bridgePlacedBLoc.equals(bridge.BRect);
+                } else
+                {
+                    bridgePlacedBLoc = bridge.BRect;
+                }
+            }
 
             return true;
         }

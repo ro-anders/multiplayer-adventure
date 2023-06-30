@@ -203,7 +203,7 @@ namespace GameEngine.Ai
          *   Otherwise returns the zone that comes first in the enumeration.
          */
         public NavZone WhichZone(
-            RRect brect,
+            in RRect brect,
             NavZone preferredZone = NavZone.NO_ZONE)
         {
             // If the rectangle is in a room that is all one zone, this is easy
