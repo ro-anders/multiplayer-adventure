@@ -88,9 +88,11 @@ namespace GameEngine
         public const int OBJECT_CHALISE = (int)OBJLIST.OBJECTLIST_CHALISE;
         public const int OBJECT_MAGNET = (int)OBJLIST.OBJECTLIST_MAGNET;
 
-        /** useful for iterating through dragons. */
+        /** useful for iterating through certain types of objects. */
         public const int FIRST_DRAGON = OBJECT_REDDRAGON;
         public const int LAST_DRAGON = OBJECT_GREENDRAGON;
+        public const int FIRST_PORT = OBJECT_YELLOW_PORT;
+        public const int LAST_PORT = OBJECT_CRYSTAL_PORT;
         public const int FIRST_CARRYABLE = OBJECT_SWORD;
 
         /**

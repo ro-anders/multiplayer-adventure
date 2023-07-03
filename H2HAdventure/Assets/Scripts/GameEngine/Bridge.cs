@@ -54,6 +54,28 @@ namespace GameEngine
             }
         }
 
+        /**
+         * The area just above the bridge
+         * */
+        public RRect TopExitBRect
+        {
+            get
+            {
+                return RRect.fromTRBL(room, by + 1, InsideBRight, by + 1, InsideBLeft);
+            }
+        }
+
+        /**
+         * The area just below the bridge
+         * */
+        public RRect BottomExitBRect
+        {
+            get
+            {
+                return RRect.fromTRBL(room, by - BHeight, InsideBRight, by-BHeight, InsideBLeft);
+            }
+        }
+
         // Object #0A : State FF : Graphic                                                                                   
         private static byte[][] objectGfxBridge =
         { new byte[] {

@@ -25,9 +25,7 @@ namespace GameEngine.Ai
         public CrossBridge(bool inUpOrDown, int inCarrying = DONT_CARE_OBJECT)
         {
             upOrDown = inUpOrDown;
-            // To avoid hitting the bridge we don't pick up any new objects while
-            // executing this objective
-            carrying = inCarrying == DONT_CARE_OBJECT ? CARRY_NO_OBJECT : inCarrying;
+            carrying = inCarrying;
             bridge = null;
             startingBLocation = RRect.NOWHERE;
         }
@@ -35,12 +33,21 @@ namespace GameEngine.Ai
         protected override void doComputeStrategy()
         {
             bridge = (Bridge)board.getObject(Board.OBJECT_BRIDGE);
+            startingBLocation = bridge.BRect;
 
-            // Put the ball directly under/over the bridge
-            int desiredBX = bridge.BLeft + (bridge.bwidth) / 2;
-            int desiredBY = (upOrDown ? bridge.BBottom - BALL.RADIUS - 1 : bridge.BTop + BALL.RADIUS + 1);
-            goToStart = new GoTo(bridge.room, desiredBX, desiredBY, carrying);
-            this.addChild(goToStart);
+            // This may be called while we're actually in the middle of the bridge.
+            // Don't bother going to the entrance of the bridge if we're already on it.
+            if (!bridge.InsideBRect.overlaps(aiPlayer.BRect))
+            {
+                // Put the ball directly under/over the bridge
+                int desiredBX = bridge.BLeft + (bridge.bwidth) / 2;
+                int desiredBY = (upOrDown ? bridge.BBottom - BALL.RADIUS - 1 : bridge.BTop + BALL.RADIUS + 1);
+                // To avoid hitting the bridge we don't pick up any new objects while
+                // executing this objective
+                int goToCarrying = carrying == DONT_CARE_OBJECT ? CARRY_NO_OBJECT : carrying;
+                goToStart = new GoTo(bridge.room, desiredBX, desiredBY, goToCarrying);
+                this.addChild(goToStart);
+            }
             // Once the child is satisfied, the shouldMoveDirection kicks in.
         }
 
@@ -51,18 +58,23 @@ namespace GameEngine.Ai
         public override bool isStillValid()
         {
             RRect currentBLocation = bridge.BRect;
-            bool still_carrying = (carrying == CARRY_NO_OBJECT && aiPlayer.linkedObject == Board.OBJECT_NONE) ||
-                (carrying != CARRY_NO_OBJECT && aiPlayer.linkedObject == carrying);
+            bool still_carrying =
+                (carrying == DONT_CARE_OBJECT) ||
+                ((carrying == CARRY_NO_OBJECT) && (aiPlayer.linkedObject == Board.OBJECT_NONE)) ||
+                (aiPlayer.linkedObject == carrying);
             return currentBLocation.equals(startingBLocation) && still_carrying;
         }
 
         protected override bool computeIsCompleted()
         {
             RRect playerBrect = aiPlayer.BRect;
-            bool still_carrying = (carrying == CARRY_NO_OBJECT && aiPlayer.linkedObject == Board.OBJECT_NONE) ||
-                (carrying != CARRY_NO_OBJECT && aiPlayer.linkedObject == carrying);
+            bool still_carrying =
+                (carrying == DONT_CARE_OBJECT) ||
+                ((carrying == CARRY_NO_OBJECT) && (aiPlayer.linkedObject == Board.OBJECT_NONE)) ||
+                (aiPlayer.linkedObject == carrying);
             // Only completed if we're within the column of the bridge
-            bool withinColumn = playerBrect.left >= bridge.InsideBLeft &&
+            bool withinColumn = playerBrect.room == bridge.room &&
+                    playerBrect.left >= bridge.InsideBLeft &&
                     playerBrect.right <= bridge.InsideBRight;
             if (upOrDown)
             {

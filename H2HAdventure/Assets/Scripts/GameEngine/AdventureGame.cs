@@ -2622,9 +2622,7 @@ namespace GameEngine
             {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x4F, 0x67, 0x00, 0x00, 0x00}, // Robinett message
             {Board. OBJECT_NUMBER, Map.NUMBER_ROOM, 0x4F, 0x3E, 0x00, 0x00, 0x00}, // Starting number
             {Board.OBJECT_REDDRAGON, Map.BLACK_MAZE_2, 0x4F, 0x1E, 0x00, 3, 3}, // Red Dragon
-            // MUST UNDO - Move bridge for testing
-            //{Board.OBJECT_YELLOWDRAGON, Map.RED_MAZE_4, 0x4F, 0x1E, 0x00, 3, 3}, // Yellow Dragon
-            {Board.OBJECT_YELLOWDRAGON, Map.NUMBER_ROOM, 0x4F, 0x1E, 0x00, 3, 3}, // Yellow Dragon
+            {Board.OBJECT_YELLOWDRAGON, Map.RED_MAZE_4, 0x4F, 0x1E, 0x00, 3, 3}, // Yellow Dragon
             // Commented out sections are for easy testing of Easter Egg
             #if DEBUG_EASTEREGG
             {Board.OBJECT_GREENDRAGON, Map.NUMBER_ROOM, 0x4F, 0x1E, 0x00, 3, 3}, // Green Dragon
@@ -2637,9 +2635,7 @@ namespace GameEngine
             {Board.OBJECT_YELLOWKEY, Map.MAIN_HALL_RIGHT, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
             {Board.OBJECT_COPPERKEY, Map.MAIN_HALL_RIGHT, 0x79, 0x3E, 0x00, 0x00, 0x00}, // Copper Key
             #else
-            // MUST UNDO - Move bridge for testing
-            //{Board.OBJECT_BRIDGE, Map.WHITE_MAZE_3, 0x3F, 0x3E, 0x00, 0x00, 0x00}, // Bridge
-            {Board.OBJECT_BRIDGE, Map.SOUTH_HALL_LEFT, 0x3F, 0x1F, 0x00, 0x00, 0x00}, // Bridge
+            {Board.OBJECT_BRIDGE, Map.WHITE_MAZE_3, 0x3F, 0x3E, 0x00, 0x00, 0x00}, // Bridge
             // MUST UNDO - Move key to make easier
             //{Board.OBJECT_YELLOWKEY, Map.WHITE_MAZE_2, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
             {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key

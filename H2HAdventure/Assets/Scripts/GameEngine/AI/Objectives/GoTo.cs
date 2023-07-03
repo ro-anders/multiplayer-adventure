@@ -4,11 +4,16 @@ namespace GameEngine.Ai
 {
 
 
+    /**
+     * Go to coordinates.  This is the high level objective and can get to
+     * coordinates even if they're behind a locked portcullis or
+     * in the hidden maze.
+     */
     public class GoTo : AiObjective
     {
         private RRect btarget;
         private int carrying;
-        private Portcullis behindPortcullis = null; // If the target room is behind a Portcullis
+        private static int[] insideRooms = { }; // We cache the ids of the rooms just inside all portcullises
 
         /**
          * Go to these coordinates.
@@ -44,61 +49,120 @@ namespace GameEngine.Ai
 
         protected override void doComputeStrategy()
         {
-            behindPortcullis = GoTo.isBehindPortcullis(board, aiPlayer, btarget.room);
-        }
-
-        public override RRect getBDestination()
-        {
-            return btarget;
-        }
-
-        /**
-         * Still valid as long as you are carrying the object you are supposed to
-         * be carrying and you can still get to where you're supposed to go.
-         */
-        public override bool isStillValid()
-        {
-            bool stillHaveObject =
-                (carrying == DONT_CARE_OBJECT) ||
-                ((carrying == CARRY_NO_OBJECT) && (aiPlayer.linkedObject == Board.OBJECT_NONE)) ||
-                (aiPlayer.linkedObject == carrying);
-            bool blocked = (behindPortcullis != null) && (aiPlayer.room == behindPortcullis.room) && !behindPortcullis.allowsEntry;
-            return stillHaveObject && !blocked;
-        }
-
-        protected override bool computeIsCompleted()
-        {
-            if (aiPlayer.room == btarget.room)
+            if (insideRooms.Length == 0)
             {
-                int xBuffer = (BALL.DIAMETER + BALL.MOVEMENT - btarget.width + 1) / 2;
-                if (xBuffer < 0)
-                {
-                    xBuffer = 0;
-                }
-                else if (Math.Abs(aiPlayer.midY - btarget.midY) <= BALL.MOVEMENT / 2)
-                {
-                    xBuffer += 2; // 2 to increase the buffer from 3 (BALL.MOVEMENT/2) to 5 (BALL.MOVEMENT-1)
-                }
-                bool xcheck = (aiPlayer.x >= btarget.left - xBuffer) &&
-                    (aiPlayer.x + BALL.DIAMETER <= btarget.right + xBuffer);
+                cacheInsideRooms();
+            }
+            // Reasons we would need to abort
+            // The immediately apparent reasons - will be checked by GoTo's isStillValid()
+            //   but handled by both GoTo's and WinGame's computeStrategy()
+            // - We're eaten by a dragon
+            // - We're stuck in a wall
+            // More complicated reasons
+            // - We're locked behind a portcullis - This, while not immediately apparent, will also be checked by GoTo's isStillValid()
+            //    and handled by both GoTo's and WinGame's computeStrategy()
+            // - We're stuck in the white castle's hidden maze without a bridge - This, is checked and handled by TransiteWhiteCastle
+            //    objective's isStilValid() and computeStrategy()
+            // - Where we want to get to is in a wall - This is handled in GoTo's computeStrategy()
+            // Not yet handled
+            // - We're stuck in a dragon or portcullis - TBD
+            // - Where we want to get to is blocked by a dragon or portcullis - TBD
+            // - Anything to do with the dot plot or the robinett room - TBD
 
-                int yBuffer = (BALL.DIAMETER + BALL.MOVEMENT - btarget.height + 1) / 2;
-                if (yBuffer < 0)
-                {
-                    yBuffer = 0;
-                }
-                else if (Math.Abs(aiPlayer.midX - btarget.midX) <= BALL.MOVEMENT / 2)
-                {
-                    yBuffer += 2; // 2 to increase the buffer from 3 (BALL.MOVEMENT/2) to 5 (BALL.MOVEMENT-1)
-                }
-                bool ycheck = (aiPlayer.y - BALL.DIAMETER >= btarget.bottom - yBuffer) &&
-                    (aiPlayer.y <= btarget.top + yBuffer);
-                return xcheck && ycheck;
+            if (strategy.eatenByDragon() || strategy.isBallEmbeddedInWall(true))
+            {
+                markShouldReset();
+                return;
+            }
+
+            if (strategy.behindLockedGate(aiPlayer.room) != null)
+            {
+                // We can't do anything if we are locked inside a castle, so reset.
+                // More intelligent code may decide if the object we are carrying
+                // needs to be shoved in a wall or if the player with the key is
+                // waiting outside and may unlock it shortly
+                markShouldReset();
+                return;
+            }
+
+            // If the object is in a different Zone, this is a lot more complicated.
+            NavZone currentZone = nav.WhichZone(aiPlayer.BRect);
+            NavZone desiredZone = nav.WhichZone(btarget, currentZone);
+            if (currentZone == desiredZone)
+            {
+                this.addChild(new GoStraightTo(btarget, carrying));
             }
             else
             {
+                // Check if the object is stuck in a wall
+                // This is bad, shouldn't be asking to go to an invalid place.
+                // Nothing to do but abort.
+                if (desiredZone == NavZone.NO_ZONE)
+                {
+                    UnityEngine.Debug.LogError("Being asked to go to invalid place, " + btarget);
+                    throw new Abort();
+                }
+
+                // Check if the target is behind a locked portcullis
+                Portcullis portcullis = strategy.behindLockedGate(btarget.room);
+                if (portcullis != null)
+                {
+                    addChild(new UnlockCastle(portcullis.getPKey()));
+                    this.addChild(new GoStraightTo(btarget, carrying));
+                    return;
+                }
+
+                // Check if the object is in the white castles hidden zone or if
+                // we're in the white castle hidden zone
+                if ((desiredZone == NavZone.WHITE_CASTLE_2) ||
+                    (currentZone == NavZone.WHITE_CASTLE_2))
+                {
+                    addChild(new TransitWhiteCastle2Zone(desiredZone == NavZone.WHITE_CASTLE_2, carrying));
+                    addChild(new GoStraightTo(btarget, carrying));
+                    return;
+                }
+
+                // Check if we're on the bridge.  We already know we're
+                // not embedded in a wall without the bridge, so if
+                // we're embedded in the wall we're on the bridge.
+                if (strategy.isBallEmbeddedInWall(false))
+                {
+                    // Figure out if we want to go up or down
+                    Bridge bridge = (Bridge)board.getObject(Board.OBJECT_BRIDGE);
+                    NavZone upZone = nav.WhichZone(bridge.TopExitBRect);
+                    addChild(new CrossBridge(upZone == desiredZone));
+                    addChild(new GoStraightTo(btarget, carrying));
+                    return;
+                }
+
+
+            }
+
+        }
+
+        /**
+         * Still valid as long as you can move and aren't locked in a castle
+         */
+        public override bool isStillValid()
+        {
+            if (strategy.eatenByDragon()) {
                 return false;
             }
+            if (strategy.isBallEmbeddedInWall(true)) 
+            {
+                return false;
+            }
+            if (isJustBehindLockedPortcullis())
+            {
+                return false;
+            }
+            return true;
+        }
+
+
+        protected override bool computeIsCompleted()
+        {
+            return GoStraightTo.hasPlayerGotTo(aiPlayer, btarget);
         }
 
         public override string ToString()
@@ -121,29 +185,42 @@ namespace GameEngine.Ai
         }
 
         /**
-         * Return if a desired room is behind a portcullis.
-         * If you are also behind the same portcullis then this returns that it is not
-         * behind a portcullis.
-         * @param board the board
-         * @param ball the player
-         * @param targetRoom the rooom of interest
-         * @returns the portcullis that stands between the ball and the room or null
-         * if none does
+         * Checks to see if we are locked behind a portcullis and close
+         * enough to the exit that it would soon be apparent that 
+         * its locked.
          */
-        public static Portcullis isBehindPortcullis(Board board, BALL ball, int targetRoom)
+        private bool isJustBehindLockedPortcullis()
         {
-            Portcullis targetPort = null;
-            Portcullis myPort = null;
-            // Figure out if the desired room is behind a locked gate
-            int FIRST_PORT = Board.OBJECT_YELLOW_PORT;
-            int LAST_PORT = Board.OBJECT_CRYSTAL_PORT;
-            for (int portNum = FIRST_PORT; portNum <= LAST_PORT; ++portNum)
-            {
-                Portcullis port = (Portcullis)board.getObject(portNum);
-                targetPort = ((targetPort == null) && port.containsRoom(targetRoom) ? port : targetPort);
-                myPort = ((myPort == null) && port.containsRoom(ball.room) ? port : myPort);
+            // We are "close enough to the exit that it would soon be apparent" if
+            // we're in the wally=0 part of the room.
+            if (aiPlayer.x < Map.WALL_HEIGHT) {
+                int portIndex = Array.FindIndex(insideRooms, insideRoom => aiPlayer.room == insideRoom);
+                if (portIndex >= 0)
+                {
+                    Portcullis port = (Portcullis)board.getObject(portIndex + Board.FIRST_PORT);
+                    if (!port.allowsEntry)
+                    {
+                        return true;
+                    }
+                }
             }
-            return (targetPort == myPort ? null : targetPort);
+            return false;
+        }
+
+        /**
+         * Cache the ids of all rooms just inside portcullises so we can do 
+         * fast calculation.
+         */
+        private void cacheInsideRooms()
+        {
+            int numPorts = Board.LAST_PORT - Board.FIRST_PORT + 1;
+            int[] cached = new int[numPorts];
+            for (int portNum = 0; portNum < numPorts; ++portNum)
+            {
+                Portcullis port = (Portcullis)board.getObject(portNum+Board.FIRST_PORT);
+                cached[portNum] = port.insideRoom;
+            }
+            insideRooms = cached;
         }
     }
 }

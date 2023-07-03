@@ -116,6 +116,35 @@ namespace GameEngine.Ai
             return eaten;
         }
 
+        /**
+         * Gross check to see if the ball is stuck in a wall.  If you're half
+         * in the wall but can still get out by going in the right direction,
+         * this method gives indeterminate results.
+         * @param allowForBridge if the bridge is present and provides a means
+         * to get out this will return false unless allowForBridge is false.
+         */
+        public bool isBallEmbeddedInWall(bool allowForBridge)
+        {
+            // Do a quick check is to see if the center of the ball is in a wall.
+            // If it is do a longer check to see if the entire ball is in the wall.
+            ROOM room = board.map.getRoom(thisBall.room);
+            bool stuckInWall = room.isWall(thisBall.midX, thisBall.midY);
+            if (stuckInWall)
+            {
+                stuckInWall = room.embeddedInWall(thisBall.x, thisBall.y, BALL.DIAMETER, BALL.DIAMETER);
+            }
+
+            // Even if we're stuck in wall, return false if we're inside the bridge.
+            if (stuckInWall && allowForBridge)
+            {
+                Bridge bridge = (Bridge)board.getObject(Board.OBJECT_BRIDGE);
+                bool insideBridge = (bridge.room == thisBall.room) &&
+                    (bridge.InsideBRect.overlaps(thisBall.BRect));
+                stuckInWall = !insideBridge;
+            }
+            return stuckInWall;
+        }
+
 
         /**
          * If an object is behind a locked gate, returns that gate.  Otherwise
@@ -170,8 +199,30 @@ namespace GameEngine.Ai
          */
         public bool IsObjectInWall(OBJECT objct)
         {
-            return nav.IsEmbeddedInWall(objct.room,
-                objct.bx, objct.by, objct.bwidth, objct.BHeight);
+            ROOM room = board.map.getRoom(objct.room);
+            return room.embeddedInWall(objct.bx, objct.by, objct.bwidth, objct.BHeight);
+        }
+
+        /**
+         * Return if a desired room is behind a portcullis.
+         * If you are also behind the same portcullis then this returns that it is not
+         * behind a portcullis.
+         * @param targetRoom the rooom of interest
+         * @returns the portcullis that stands between the ball and the room or null
+         * if none does
+         */
+        public Portcullis isBehindPortcullis(int targetRoom)
+        {
+            Portcullis targetPort = null;
+            Portcullis myPort = null;
+            // Figure out if the desired room is behind a locked gate
+            for (int portNum = Board.FIRST_PORT; portNum <= Board.LAST_PORT; ++portNum)
+            {
+                Portcullis port = (Portcullis)board.getObject(portNum);
+                targetPort = ((targetPort == null) && port.containsRoom(targetRoom) ? port : targetPort);
+                myPort = ((myPort == null) && port.containsRoom(thisBall.room) ? port : myPort);
+            }
+            return (targetPort == myPort ? null : targetPort);
         }
 
         /**

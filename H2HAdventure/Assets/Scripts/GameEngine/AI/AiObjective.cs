@@ -5,6 +5,13 @@ using GameEngine;
 
 namespace GameEngine.Ai
 {
+    public class Abort : Exception
+    {
+        public Abort(string message = "") :
+            base(message)
+        { }
+    }
+
     abstract public class AiObjective
     {
         public const int CARRY_NO_OBJECT = -10; // We specifically don't want to carry or bump into anything
@@ -14,7 +21,6 @@ namespace GameEngine.Ai
          * This is thrown when an objective can't be completed anymore.
          * If things change that make an objective impossible (e.g. a go to command
          * when the gate just closed) then the objective is aborted.*/
-        public class Abort : Exception { }
 
         /** The next objective after this to accomplish parent objective */
         protected AiObjective sibling;
@@ -154,7 +160,7 @@ namespace GameEngine.Ai
         {
             // If we're complete, maybe our sibling isn't and that's what we
             // should return
-            if (this.isCompleted())
+            if (this.completed)
             {
                 if (this.sibling != null)
                 {
@@ -478,7 +484,7 @@ namespace GameEngine.Ai
 
         protected override void doComputeStrategy()
         {
-            behindPortcullis = GoTo.isBehindPortcullis(board, aiPlayer, gotoRoom);
+            behindPortcullis = strategy.isBehindPortcullis(gotoRoom);
 
             // Figure out what point in the room is closest.
             AiPathNode path = nav.ComputePathToRoom(aiPlayer.room, aiPlayer.midX, aiPlayer.midY, gotoRoom);
@@ -554,7 +560,7 @@ namespace GameEngine.Ai
 
         protected override void doComputeStrategy()
         {
-            behindPortcullis = GoTo.isBehindPortcullis(board, aiPlayer, gotoRoom);
+            behindPortcullis = strategy.isBehindPortcullis(gotoRoom);
 
             objectToBring = board.getObject(toBring);
 

@@ -82,7 +82,7 @@ namespace GameEngine.Ai
                 {
                     // Check to see if we've accomplished anything
                     newObjective = winGameObjective.getNextObjective();
-                } catch (AiObjective.Abort)
+                } catch (Abort)
                 {
                     // Things have changed.  Just recompute the whole strategy
                     winGameObjective = new PlayGame(gameBoard, thisPlayer, aiStrategy, aiNav);
@@ -221,7 +221,7 @@ namespace GameEngine.Ai
         /**
          * Called during the checking reset switch, this will determine if the AI player
          * wants to reset.  This call clears the "wants to reset" flag. so only
-         * call when you intend to issue a reset.
+         * call when you intend to issue a reset.  
          */
         public bool shouldReset()
         {

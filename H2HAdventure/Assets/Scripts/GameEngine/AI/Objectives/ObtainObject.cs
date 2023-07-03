@@ -43,6 +43,11 @@ namespace GameEngine.Ai
             abortIfLooping();
             objectToPickup = board.getObject(toPickup);
 
+            if (strategy.eatenByDragon() || strategy.isBallEmbeddedInWall(true))
+            {
+                markShouldReset();
+                return;
+            }
 
             // Check if the object is held by another player
             BALL otherPlayer = strategy.heldByPlayer(objectToPickup);
@@ -92,11 +97,25 @@ namespace GameEngine.Ai
                     return;
                 }
 
+                // Check if we're on the bridge.  We already know we're
+                // not embedded in a wall without the bridge, so if
+                // we're embedded in the wall we're on the bridge.
+                if (strategy.isBallEmbeddedInWall(false))
+                {
+                    // Figure out if we want to go up or down
+                    Bridge bridge = (Bridge)board.getObject(Board.OBJECT_BRIDGE);
+                    NavZone upZone = nav.WhichZone(bridge.TopExitBRect);
+                    addChild(new CrossBridge(upZone == desiredZone));
+                    addChild(new ObtainObject(toPickup, 3));
+                    return;
+                }
+
                 // Check if we're in a zone we don't want to be in.
                 if (currentZone != NavZone.MAIN)
                 {
                     // MUST_IMPLEMENT: Deal with getting back to main zone
-                    throw new Abort();
+                    throw new Abort("Asked to obtain " + objectToPickup.label +
+                        " in zone " + desiredZone + " while ball is in zone " + currentZone);
                 }
 
 

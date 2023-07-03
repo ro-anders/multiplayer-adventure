@@ -61,6 +61,22 @@ namespace GameEngine
                 (linkedObject >= 0 ? " with " + linkedObject : "");
         }
 
+        public int BTop
+        {
+            get { return y; }
+        }
+        public int BRight
+        {
+            get { return x + DIAMETER - 1; }
+        }
+        public int BBottom
+        {
+            get { return y - DIAMETER + 1; }
+        }
+        public int BLeft
+        {
+            get { return x; }
+        }
         /** x coordinate of the middle of the ball **/
         public int midX
         {

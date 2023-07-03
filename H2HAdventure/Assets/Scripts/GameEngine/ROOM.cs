@@ -139,20 +139,20 @@ namespace GameEngine
 
         /**
          * Whether the rectangle overlaps any walls in this room.
-         * @param x the x value of the left side of the rectangle (in ball scale)
-         * @param y the y value of the top edge of the rectangle (in ball scale)
-         * @param width the width of the rectangle (in ball scale)
-         * @param height the height of the rectangle (in ball scale)
+         * @param bx the x value of the left side of the rectangle (in ball scale)
+         * @param by the y value of the top edge of the rectangle (in ball scale)
+         * @param bwidth the width of the rectangle (in ball scale)
+         * @param bheight the height of the rectangle (in ball scale)
          */
-        public bool hitsWall(int x, int y, int width, int height)
+        public bool hitsWall(int bx, int by, int bwidth, int bheight)
         {
             // Convert corners of rectangle down to wall coordinates
             const int MIRROR_EDGE = 2 * GRAPHICS_LENGTH - 1;
-            int top = y / Map.WALL_HEIGHT;
-            int bottom = (y - height + 1) / Map.WALL_HEIGHT;
+            int top = by / Map.WALL_HEIGHT;
+            int bottom = (by - bheight + 1) / Map.WALL_HEIGHT;
             bottom = (bottom < 0 ? 0 : bottom);
-            int left = x / Map.WALL_WIDTH;
-            int right = (x + width - 1) / Map.WALL_WIDTH;
+            int left = bx / Map.WALL_WIDTH;
+            int right = (bx + bwidth - 1) / Map.WALL_WIDTH;
             right = (right > MIRROR_EDGE ? MIRROR_EDGE : right);
 
             bool hitWall = false;
@@ -165,6 +165,47 @@ namespace GameEngine
             }
 
             return hitWall;
+        }
+
+        /**
+         * Whether the rectangle is entirely within a wall.
+         * @param bx the x value of the left side of the rectangle (in ball scale)
+         * @param by the y value of the top edge of the rectangle (in ball scale)
+         * @param bwidth the width of the rectangle (in ball scale)
+         * @param bheight the height of the rectangle (in ball scale)
+         */
+        public bool embeddedInWall(int bx, int by, int bwidth, int bheight)
+        {
+            // Convert corners of rectangle down to wall coordinates
+            const int MIRROR_EDGE = 2 * GRAPHICS_LENGTH - 1;
+            int top = by / Map.WALL_HEIGHT;
+            int bottom = (by - bheight + 1) / Map.WALL_HEIGHT;
+            bottom = (bottom < 0 ? 0 : bottom);
+            int left = bx / Map.WALL_WIDTH;
+            int right = (bx + bwidth - 1) / Map.WALL_WIDTH;
+            right = (right > MIRROR_EDGE ? MIRROR_EDGE : right);
+
+            bool hitWall = true;
+            for (int yctr = bottom; hitWall && (yctr <= top); ++yctr)
+            {
+                for (int xctr = left; hitWall && (xctr <= right); ++xctr)
+                {
+                    hitWall = walls[xctr, yctr];
+                }
+            }
+
+            return hitWall;
+        }
+
+
+        /**
+         * Whether the point in a room is a wall or a path
+         * @param bx the x coordinate (in ball scale)
+         * @param by the y coordinate (in ball scale)
+         */
+        public bool isWall(int bx, int by)
+        {
+            return walls[bx / Map.WALL_WIDTH, by / Map.WALL_HEIGHT];
         }
 
         /** 

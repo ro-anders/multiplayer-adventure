@@ -10,7 +10,7 @@ namespace GameEngine.Ai
     public class PlaceBridgeToHiddenRoom : AiObjective
     {
         private bool inOut; // True if getting into hidden room, False if getting out
-        private OBJECT bridge;
+        private Bridge bridge;
         private Portcullis whitePort;
 
         /** The coordinates where we want to place the bridge to get to
@@ -31,7 +31,7 @@ namespace GameEngine.Ai
 
         protected override void doComputeStrategy()
         {
-            bridge = board.getObject(Board.OBJECT_BRIDGE);
+            bridge = (Bridge)board.getObject(Board.OBJECT_BRIDGE);
             whitePort = (Portcullis)board.getObject(Board.OBJECT_WHITE_PORT);
 
             this.addChild(new ObtainObject(Board.OBJECT_BRIDGE));
@@ -70,20 +70,8 @@ namespace GameEngine.Ai
             {
                 // Figure out the zones just above and below the bridge
                 RRect bridgeRect = bridge.BRect;
-                RRect bottomExitRect = RRect.fromTRBL(
-                    bridge.room,
-                    bridgeRect.bottom - 1,
-                    bridgeRect.midX + (Map.WALL_WIDTH / 2),
-                    bridgeRect.bottom - 1,
-                    bridgeRect.midX - (Map.WALL_WIDTH / 2));
-                NavZone bottomZone = nav.WhichZone(bottomExitRect);
-                RRect topExitRect = RRect.fromTRBL(
-                    bridge.room,
-                    bridgeRect.top + 1,
-                    bridgeRect.midX + (Map.WALL_WIDTH / 2),
-                    bridgeRect.top + 1,
-                    bridgeRect.midX - (Map.WALL_WIDTH / 2));
-                NavZone topZone = nav.WhichZone(topExitRect);
+                NavZone bottomZone = nav.WhichZone(bridge.BottomExitBRect);
+                NavZone topZone = nav.WhichZone(bridge.TopExitBRect);
                 // One has to be WHITE_CASTLE_2 while the other must be MAIN or WHITE_CASTLE_1
                 completed = ((topZone == NavZone.WHITE_CASTLE_2) && ((bottomZone == NavZone.MAIN) || (bottomZone == NavZone.WHITE_CASTLE_1)) ||
                     (bottomZone == NavZone.WHITE_CASTLE_2) && ((topZone == NavZone.MAIN) || (topZone == NavZone.WHITE_CASTLE_1)));

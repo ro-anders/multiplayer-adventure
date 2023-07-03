@@ -141,7 +141,7 @@ namespace GameEngine
 
         /**
          * Returns true if this rectangles is in the same room 
-         * and overlap the passed in rectangle.
+         * and the two rectangles touch.
          */
         public bool overlaps(in RRect other)
         {

@@ -163,16 +163,6 @@ namespace GameEngine.Ai
 
 
         /**
-         * Returns true if an object is in or overlapping a reachable area.
-         * Returns false if the object is totally embedded in the wall.
-         */
-        public bool IsEmbeddedInWall(int room, int x, int y, int width, int height)
-        {
-            int[] plots = FindPlots(room, x, y, width, height, true);
-            return plots.Length == 0;
-        }
-
-        /**
          * Find all plots that overlap this region
          */
         public Plot[] GetPlots(int room, int bx, int by, int bwidth, int bheight)
