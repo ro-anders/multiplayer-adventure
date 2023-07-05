@@ -40,7 +40,10 @@ namespace GameEngine.Ai
             adjust = inAdjust;
         }
 
-        protected override void doComputeStrategy()
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
         {
             objectToPlace = board.getObject(objectKey);
             desiredBallBX = placeAtBX - aiPlayer.linkedObjectBX;
@@ -49,7 +52,10 @@ namespace GameEngine.Ai
             aiPlayer.adjustDestination(ref desiredBallBX, ref desiredBallBY, adjust);
             placeAtBX = desiredBallBX + aiPlayer.linkedObjectBX;
             placeAtBY = desiredBallBY + aiPlayer.linkedObjectBY;
+        }
 
+        protected override void doComputeStrategy()
+        {
             this.addChild(new GoExactlyTo(placeAtRoom, desiredBallBX, desiredBallBY, objectKey));
             this.addChild(new DropObjective(objectKey));
         }

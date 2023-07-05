@@ -30,11 +30,18 @@ namespace GameEngine.Ai
             startingBLocation = RRect.NOWHERE;
         }
 
-        protected override void doComputeStrategy()
+        /**
+         * Initialize the stategy.  This is called not when the strategy is
+         * created but when it's about to be computed.
+         */
+        protected override void initialize()
         {
             bridge = (Bridge)board.getObject(Board.OBJECT_BRIDGE);
             startingBLocation = bridge.BRect;
+        }
 
+        protected override void doComputeStrategy()
+        {
             // This may be called while we're actually in the middle of the bridge.
             // Don't bother going to the entrance of the bridge if we're already on it.
             if (!bridge.InsideBRect.overlaps(aiPlayer.BRect))
@@ -90,7 +97,11 @@ namespace GameEngine.Ai
 
         public override bool shouldMoveDirection(ref int velbx, ref int velby)
         {
-            if ((goToStart != null) && goToStart.isCompleted()) {
+            if (this.isCompleted())
+            {
+                return false;
+            }
+            else if ((goToStart == null) || goToStart.isCompleted()) {
                 velbx = 0;
                 velby = (upOrDown ? BALL.MOVEMENT : -BALL.MOVEMENT);
                 return true;

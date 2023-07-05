@@ -38,10 +38,17 @@ namespace GameEngine.Ai
             return (aiPlayer.linkedObject == toPickup);
         }
 
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
+        {
+            objectToPickup = board.getObject(toPickup);
+        }
+
         protected override void doComputeStrategy()
         {
             abortIfLooping();
-            objectToPickup = board.getObject(toPickup);
 
             if (strategy.eatenByDragon() || strategy.isBallEmbeddedInWall(true))
             {
@@ -102,12 +109,29 @@ namespace GameEngine.Ai
                 // we're embedded in the wall we're on the bridge.
                 if (strategy.isBallEmbeddedInWall(false))
                 {
-                    // Figure out if we want to go up or down
+                    // Figure out if we want to go up or down.
+                    // Try to get to the desired zone, but if neither end
+                    // leads to the desired zone try to get to the main zone
+                    // and if neither leads to the main zone, go to any zone.
                     Bridge bridge = (Bridge)board.getObject(Board.OBJECT_BRIDGE);
                     NavZone upZone = nav.WhichZone(bridge.TopExitBRect);
-                    addChild(new CrossBridge(upZone == desiredZone));
-                    addChild(new ObtainObject(toPickup, 3));
-                    return;
+                    NavZone downZone = nav.WhichZone(bridge.BottomExitBRect);
+                    if ((upZone == NavZone.NO_ZONE) && (downZone == NavZone.NO_ZONE))
+                    {
+                        markShouldReset();
+                        return;
+                    }
+                    else
+                    {
+                        bool goUp = (upZone == desiredZone ? true :
+                            (downZone == desiredZone ? false :
+                            (upZone == NavZone.MAIN) ? true :
+                            (downZone == NavZone.MAIN ? false :
+                            (upZone != NavZone.NO_ZONE ? true : false))));
+                        addChild(new CrossBridge(goUp));
+                        addChild(new ObtainObject(toPickup, 3));
+                        return;
+                    }
                 }
 
                 // Check if we're in a zone we don't want to be in.

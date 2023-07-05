@@ -15,9 +15,16 @@ namespace GameEngine.Ai
             portId = inPortId;
         }
 
-        protected override void doComputeStrategy()
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
         {
             port = (Portcullis)board.getObject(portId);
+        }
+
+        protected override void doComputeStrategy()
+        {
             int key = port.key.getPKey();
             this.addChild(new ObtainObject(key));
             this.addChild(new GoTo(port.room, Portcullis.EXIT_X, 0x30, key));

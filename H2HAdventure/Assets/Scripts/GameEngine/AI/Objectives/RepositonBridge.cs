@@ -16,10 +16,17 @@ namespace GameEngine.Ai
         {
         }
 
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
+        {
+            bridge = board.getObject(Board.OBJECT_BRIDGE);
+        }
+
         protected override void doComputeStrategy()
         {
             RRect playerBRect = aiPlayer.BRect;
-            bridge = board.getObject(Board.OBJECT_BRIDGE);
             RRect bridgeBRect = bridge.BRect;
             NavZone playerZone = nav.WhichZone(playerBRect);
             bool inOrOut = (playerZone == NavZone.MAIN) ||

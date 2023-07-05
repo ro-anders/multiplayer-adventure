@@ -47,12 +47,20 @@ namespace GameEngine.Ai
             carrying = inCarrying;
         }
 
-        protected override void doComputeStrategy()
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
         {
             if (insideRooms.Length == 0)
             {
                 cacheInsideRooms();
             }
+        }
+
+
+        protected override void doComputeStrategy()
+        {
             // Reasons we would need to abort
             // The immediately apparent reasons - will be checked by GoTo's isStillValid()
             //   but handled by both GoTo's and WinGame's computeStrategy()
@@ -127,15 +135,30 @@ namespace GameEngine.Ai
                 // we're embedded in the wall we're on the bridge.
                 if (strategy.isBallEmbeddedInWall(false))
                 {
-                    // Figure out if we want to go up or down
+                    // Figure out if we want to go up or down.
+                    // Try to get to the desired zone, but if neither end
+                    // leads to the desired zone try to get to the main zone
+                    // and if neither leads to the main zone, go to any zone.
                     Bridge bridge = (Bridge)board.getObject(Board.OBJECT_BRIDGE);
                     NavZone upZone = nav.WhichZone(bridge.TopExitBRect);
-                    addChild(new CrossBridge(upZone == desiredZone));
-                    addChild(new GoStraightTo(btarget, carrying));
-                    return;
+                    NavZone downZone = nav.WhichZone(bridge.BottomExitBRect);
+                    if ((upZone == NavZone.NO_ZONE) && (downZone == NavZone.NO_ZONE))
+                    {
+                        markShouldReset();
+                        return;
+                    }
+                    else
+                    {
+                        bool goUp = (upZone == desiredZone ? true :
+                            (downZone == desiredZone ? false :
+                            (upZone == NavZone.MAIN) ? true :
+                            (downZone == NavZone.MAIN ? false :
+                            (upZone != NavZone.NO_ZONE ? true : false))));
+                        addChild(new CrossBridge(goUp));
+                        addChild(new GoStraightTo(btarget, carrying));
+                        return;
+                    }
                 }
-
-
             }
 
         }

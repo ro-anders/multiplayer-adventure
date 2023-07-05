@@ -29,11 +29,17 @@ namespace GameEngine.Ai
             carrying = inCarrying;
         }
 
-        protected override void doComputeStrategy()
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
         {
             whitePort = (Portcullis)board.getObject(Board.OBJECT_WHITE_PORT);
             bridge = (Bridge)board.getObject(Board.OBJECT_BRIDGE);
+        }
 
+        protected override void doComputeStrategy()
+        {
             placeBridgeObjective = new PlaceBridgeToHiddenRoom(inOut);
             addChild(placeBridgeObjective);
             if (carrying >= 0)

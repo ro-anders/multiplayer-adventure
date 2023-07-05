@@ -11,7 +11,6 @@ namespace GameEngine.Ai
     {
         private bool inOut; // True if getting into hidden room, False if getting out
         private Bridge bridge;
-        private Portcullis whitePort;
 
         /** The coordinates where we want to place the bridge to get to
          * the hidden room */
@@ -29,11 +28,16 @@ namespace GameEngine.Ai
             inOut = inInOut;
         }
 
-        protected override void doComputeStrategy()
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
         {
             bridge = (Bridge)board.getObject(Board.OBJECT_BRIDGE);
-            whitePort = (Portcullis)board.getObject(Board.OBJECT_WHITE_PORT);
+        }
 
+        protected override void doComputeStrategy()
+        {
             this.addChild(new ObtainObject(Board.OBJECT_BRIDGE));
             this.addChild(new RepositionBridge());
             if (inOut) {

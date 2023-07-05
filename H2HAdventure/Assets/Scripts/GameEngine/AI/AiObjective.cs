@@ -185,6 +185,14 @@ namespace GameEngine.Ai
         { }
 
         /**
+         * Initialize the stategy.  This is called not when the strategy is
+         * created but when it's about to be computed.  It computes any
+         * state required by isCompleted() and isStillValid().
+         */
+        protected virtual void initialize()
+        {}
+
+        /**
          * Compute a set of objectives to complete this objective
          */
         protected void computeStrategy()
@@ -195,7 +203,12 @@ namespace GameEngine.Ai
                 throw new Exception("Asking to recompute an already computed strategy");
             }
 
-            doComputeStrategy();
+            initialize();
+            completed = computeIsCompleted();
+            if (!completed)
+            {
+                doComputeStrategy();
+            }
             computed = true;
         }
 
@@ -344,10 +357,17 @@ namespace GameEngine.Ai
             return "steal " + board.getObject(toSteal).label + " from player #" + toStealFrom;
         }
 
-        protected override void doComputeStrategy()
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
         {
             objectToSteal = board.getObject(toSteal);
             ballToStealFrom = board.getPlayer(toStealFrom);
+        }
+
+        protected override void doComputeStrategy()
+        {
             if (ballToStealFrom.linkedObject != toSteal)
             {
                 throw new Abort();
@@ -482,10 +502,16 @@ namespace GameEngine.Ai
             return stillHaveObject && !blocked;
         }
 
-        protected override void doComputeStrategy()
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
         {
             behindPortcullis = strategy.isBehindPortcullis(gotoRoom);
+        }
 
+        protected override void doComputeStrategy()
+        {
             // Figure out what point in the room is closest.
             AiPathNode path = nav.ComputePathToRoom(aiPlayer.room, aiPlayer.midX, aiPlayer.midY, gotoRoom);
             if (path == null)
@@ -558,12 +584,18 @@ namespace GameEngine.Ai
             return (aiPlayer.linkedObject == toBring) && !blocked;
         }
 
-        protected override void doComputeStrategy()
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
         {
             behindPortcullis = strategy.isBehindPortcullis(gotoRoom);
 
             objectToBring = board.getObject(toBring);
+        }
 
+        protected override void doComputeStrategy()
+        {
             // Compute the area of the room where, if the ball were in that area
             // then the object would be all the way in the room.
             RRect ballTargetSpace = RRect.fromTRBL(gotoRoom,
@@ -639,6 +671,14 @@ namespace GameEngine.Ai
                 (aiPlayer.room == key.room));
         }
 
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
+        {
+            key = board.getObject(keyId);
+        }
+
         protected override void doComputeStrategy()
         {
             if (aiPlayer.linkedObject != keyId)
@@ -647,7 +687,6 @@ namespace GameEngine.Ai
             }
             else
             {
-                key = board.getObject(keyId);
                 // The key may already be in a good enough position.  Check.
                 if ((aiPlayer.linkedObjectBY < 0) ||
                     (aiPlayer.linkedObjectBX < -key.bwidth) ||
@@ -758,11 +797,17 @@ namespace GameEngine.Ai
             return !otherGate.allowsEntry /* TBD --- && (aiPlayer.linkedObject != otherKeyId)*/;
         }
 
-        protected override void doComputeStrategy()
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
         {
             otherGate = board.getPlayer(otherPlayerNum).homeGate;
             otherKeyId = otherGate.key.getPKey();
+        }
 
+        protected override void doComputeStrategy()
+        {
             if (otherGate.allowsEntry)
             {
                 this.addChild(new ObtainObject(otherKeyId));
@@ -801,9 +846,16 @@ namespace GameEngine.Ai
             return (aiPlayer.linkedObject == toPickup);
         }
 
-        protected override void doComputeStrategy()
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
         {
             objectToPickup = board.getObject(toPickup);
+        }
+
+        protected override void doComputeStrategy()
+        {
             addChild(new ObtainObject(Board.OBJECT_MAGNET));
             addChild(new BringObjectToRoomObjective(objectToPickup.room, Board.OBJECT_MAGNET));
             addChild(new DropObjective(Board.OBJECT_MAGNET));
@@ -865,11 +917,17 @@ namespace GameEngine.Ai
         }
 
 
-        protected override void doComputeStrategy()
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
         {
             objectToPickup = board.getObject(toPickup);
             magnet = (Magnet)board.getObject(Board.OBJECT_MAGNET);
+        }
 
+        protected override void doComputeStrategy()
+        {
             // If there is another object in the room that is more attracted
             // to the magnet, we need to remove that from the room
 

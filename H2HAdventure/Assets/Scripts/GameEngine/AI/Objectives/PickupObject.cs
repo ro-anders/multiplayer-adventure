@@ -35,9 +35,16 @@
             return "go pickup " + board.getObject(toPickup).label;
         }
 
-        protected override void doComputeStrategy()
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
         {
             objectToPickup = board.getObject(toPickup);
+        }
+
+        protected override void doComputeStrategy()
+        {
             if (strategy.heldByPlayer(objectToPickup) != null)
             {
                 throw new Abort();

@@ -31,7 +31,10 @@ namespace GameEngine.Ai
             carrying = inCarrying;
         }
 
-        protected override void doComputeStrategy()
+        /**
+         * Initialize the stategy.
+         */
+        protected override void initialize()
         {
             // Make sure we're in the same zone
             NavZone currentZone = nav.WhichZone(aiPlayer.BRect);
@@ -43,6 +46,10 @@ namespace GameEngine.Ai
 
             behindPortcullis = strategy.isBehindPortcullis(btarget.room);
         }
+
+
+        protected override void doComputeStrategy()
+        {}
 
         public override RRect getBDestination()
         {
