@@ -1357,6 +1357,8 @@ namespace GameEngine.Ai
         // If the plots are not adjacent or are adjacent in the direction other
         // than the one specified, the return value is undefined.
         // If the plots are adjacent across a room switch it will still work.
+        // A left/right segment will always have point1bx < point2bx and an
+        // up/down segment will always have point1by < point2by.
         public void GetOverlapSegment(Plot otherPlot, int direction,
             ref int point1bx, ref int point1by, ref int point2bx, ref int point2by)
         {

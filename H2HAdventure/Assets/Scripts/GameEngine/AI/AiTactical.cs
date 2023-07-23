@@ -13,7 +13,14 @@ namespace GameEngine.Ai
         /** The game board */
         private Board board;
 
+        /** The last path we were trying to traverse */
         private AiPathNode currentPath;
+
+        /** 
+         * The coordinates we want to get to in the current plot.
+         * If we are in the middle of a path, the next step is the part
+         * of the next plot on the path that touches this plot.
+         */
         private int nextStepX;
         private int nextStepY;
 
@@ -51,6 +58,11 @@ namespace GameEngine.Ai
             }
         }
 
+        /**
+         * This is the main entry point of the AiTactical's ability to get your 
+         * from one point to another.  Given a path and coordinates at the end 
+         * of the path, figure out the direction we should move to get us there.
+         */
         public bool computeDirectionOnPath(AiPathNode path, int finalX, int finalY, AiObjective currentObjective,
             ref int nextVelx, ref int nextVely)
         {
@@ -64,9 +76,7 @@ namespace GameEngine.Ai
                 // Recompute how to get to the next step in the path
                 if (currentPath.nextNode != null)
                 {
-                    currentPath.ThisPlot.GetOverlapMidpoint(currentPath.nextNode.ThisPlot,
-                        currentPath.nextDirection, ref nextStepX, ref nextStepY);
-                    smoothMovement(ref nextStepX, ref nextStepY, currentPath.nextDirection);
+                    computeNextStepOnPath(ref nextStepX, ref nextStepY);
                 }
             }
 
@@ -82,6 +92,62 @@ namespace GameEngine.Ai
             bool canGetThere = computeDirection(nextStepX, nextStepY, currentObjective.getDesiredObject(), allowScrapingWalls, ref nextVelx, ref nextVely);
 
             return canGetThere;
+        }
+
+        /**
+         * Compute the x,y coordinates we should be aiming for to get to the next step on the path.
+         */
+        private void computeNextStepOnPath(ref int nextStepX, ref int nextStepY)
+        {
+            int point1bx = 0, point1by = 0, point2bx = 0, point2by = 0;
+            currentPath.ThisPlot.GetOverlapSegment(currentPath.nextNode.ThisPlot, currentPath.nextDirection, ref point1bx, ref point1by, ref point2bx, ref point2by);
+            switch (currentPath.nextDirection)
+            {
+                case Plot.UP:
+                case Plot.DOWN:
+                    nextStepY = point1by; // Which is same as point2by
+                    // TODOX
+                    //// Try to stay away from the left most edge so we don't get
+                    //// trapped by dragons
+                    //if (point1bx == currentPath.ThisPlot.BLeft) {
+                    //    point1bx += BALL.MOVEMENT;
+                    //}
+                    // Pick the closest x which keeps ball in plot but works with
+                    // ball movement steps
+                    if (point1bx > thisBall.BLeft)
+                    {
+                        nextStepX = thisBall.getSteppedBX(point1bx, BALL.STEP_ALG.GTE) + BALL.RADIUS;
+                    } else if (point2bx < thisBall.BRight)
+                    {
+                        nextStepX = thisBall.getSteppedBX(point2bx - BALL.DIAMETER + 1, BALL.STEP_ALG.LTE) + BALL.RADIUS;
+                    }
+                    else { 
+                        nextStepX = thisBall.midX;
+                    }
+                    return;
+                case Plot.LEFT:
+                case Plot.RIGHT:
+                default:
+                    nextStepX = point1bx; // Which is same as point2bx
+                    // TODOX
+                    // Try to stay away from the top most edge so we don't get trapped by dragons
+
+                    // Pick the closest y which keeps ball in plot but works with
+                    // ball movement steps
+                    if (point2by < thisBall.BTop)
+                    {
+                        nextStepY = thisBall.getSteppedBY(point2by, BALL.STEP_ALG.LTE) - BALL.RADIUS;
+                    }
+                    else if (point1by > thisBall.BBottom)
+                    {
+                        nextStepY = thisBall.getSteppedBY(point1by + BALL.DIAMETER - 1, BALL.STEP_ALG.GTE) - BALL.RADIUS;
+                    }
+                    else
+                    {
+                        nextStepY = thisBall.midY;
+                    }
+                    return;
+            }
         }
 
         /**
@@ -230,7 +296,7 @@ namespace GameEngine.Ai
          * Desired movement would cause ball to hit object.  Figure out a direction to 
          * avoid collision and still get to destination.
          */
-        public void avoidObject(RRect objectBrect, ref int nextVelX, ref int nextVelY)
+        private void avoidObject(RRect objectBrect, ref int nextVelX, ref int nextVelY)
         {
             int blockedTop = 0, blockedRight = 0, blockedBottom = 0, blockedLeft = 0;
             computeBlockedArea(objectBrect, ref blockedTop, ref blockedRight, ref blockedBottom, ref blockedLeft);
@@ -477,44 +543,5 @@ namespace GameEngine.Ai
             }
         }
 
-        /**
-         * To prevent a "drunken walk" pick a target point that the ball will hit and
-         * not overshoot with its 6 movement.
-         */
-        public void smoothMovement(ref int nextStepX, ref int nextStepY, int direction)
-        {
-            switch (direction)
-            {
-                case Plot.UP:
-                case Plot.DOWN:
-                    int diff = (nextStepX - thisBall.midX) % BALL.MOVEMENT;
-                    if (diff > BALL.MOVEMENT / 2)
-                    {
-                        diff -= BALL.MOVEMENT;
-                    }
-                    else if (diff <= -BALL.MOVEMENT / 2)
-                    {
-                        diff += BALL.MOVEMENT;
-                    }
-                    nextStepX -= diff;
-                    return;
-                case Plot.LEFT:
-                case Plot.RIGHT:
-                default:
-                    diff = (nextStepY - thisBall.midY) % BALL.MOVEMENT;
-                    if (diff > BALL.MOVEMENT / 2)
-                    {
-                        diff -= BALL.MOVEMENT;
-                    }
-                    else if (diff <= -BALL.MOVEMENT / 2)
-                    {
-                        diff += BALL.MOVEMENT;
-                    }
-                    nextStepY -= diff;
-                    return;
-            }
-
-
-        }
     }
 }

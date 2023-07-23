@@ -124,6 +124,69 @@ namespace GameEngine
         }
 
         /**
+         * Used when computing the closest point a ball can get
+         * to a given point.  Often a ball cannot get to the exact
+         * coordinate because it moves in 6 pixel steps.  This indicates
+         * whether to aim for the closest coordinate that is less than or equal 
+         * to the desired coordinate, the closest coordinate that is greated than
+         * or equal to the desired coordinate, or the closest coordinate.
+         */
+        public enum STEP_ALG
+        {
+            LTE,
+            CLOSEST,
+            GTE
+        }
+
+        /**
+         * Return the X coordinate that the ball can get to that is closest to 
+         * the desired X coordinate.
+         * @param desiredBX the x coordinate we want to get to
+         * @param step_computation whether we're looking for the closest coordinate without 
+         * going over, without going under, or just the closest.
+         * @return the closest x coordinate given the limitations
+         */
+        public int getSteppedBX(int desiredBX, STEP_ALG step_computation = STEP_ALG.CLOSEST)
+        {
+            switch (step_computation)
+            {
+                case STEP_ALG.LTE:
+                    return desiredBX - MOD.mod(desiredBX - this.x, BALL.MOVEMENT);
+                case STEP_ALG.GTE:
+                    return desiredBX + MOD.mod(this.x - desiredBX, BALL.MOVEMENT);
+                default:
+                    return (MOD.mod(desiredBX - this.x, BALL.MOVEMENT) <= BALL.MOVEMENT / 2 ?
+                        desiredBX - MOD.mod(desiredBX - this.x, BALL.MOVEMENT) :
+                        desiredBX + MOD.mod(this.x - desiredBX, BALL.MOVEMENT));
+            }
+
+        }
+
+        /**
+         * Return the Y coordinate that the ball can get to that is closest to 
+         * the desired Y coordinate.
+         * @param desiredBY the y coordinate we want to get to
+         * @param step_computation whether we're looking for the closest coordinate without 
+         * going over, without going under, or just the closest.
+         * @return the closest y coordinate given the limitations
+         */
+        public int getSteppedBY(int desiredBY, STEP_ALG step_computation = STEP_ALG.CLOSEST)
+        {
+            switch (step_computation)
+            {
+                case STEP_ALG.LTE:
+                    return desiredBY - MOD.mod(desiredBY - this.y, BALL.MOVEMENT);
+                case STEP_ALG.GTE:
+                    return desiredBY + MOD.mod(this.y - desiredBY, BALL.MOVEMENT);
+                default:
+                    return (MOD.mod(desiredBY - this.y, BALL.MOVEMENT) <= BALL.MOVEMENT / 2 ?
+                        desiredBY - MOD.mod(desiredBY - this.y, BALL.MOVEMENT) :
+                        desiredBY + MOD.mod(this.y - desiredBY, BALL.MOVEMENT));
+            }
+
+        }
+
+        /**
          * The distance to an object
          * @param objectX the x of the object (IN OBJECT COORDINATE SYSTEM)
          * @param otherY the y of the object (IN OBJECT COORDINATE SYSTEM)
