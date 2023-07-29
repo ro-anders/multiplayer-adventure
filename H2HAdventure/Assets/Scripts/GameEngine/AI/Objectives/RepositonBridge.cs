@@ -44,13 +44,13 @@ namespace GameEngine.Ai
             // See if the space needed is all in one plot
             Plot[] plots = nav.GetPlots(bSpaceNeeded);
             if ((plots.Length == 1) && plots[0].Contains(bSpaceNeeded)) {
-                this.addChild(new DropObjective(Board.OBJECT_BRIDGE));
                 RRect underLeftFoot = new RRect(bridge.room,
                     bridgeBRect.left - BALL.DIAMETER + 1,
                     bridgeBRect.bottom - 1,
                     Bridge.FOOT_BWIDTH + 2 * BALL.DIAMETER - 2,
                     2 * BALL.DIAMETER - 1);
-                this.addChild(new GoTo(underLeftFoot, CARRY_NO_OBJECT));
+                this.addChild(new DropObjective(Board.OBJECT_BRIDGE));
+                this.addChild(new GoStraightTo(underLeftFoot, CARRY_NO_OBJECT));
                 this.addChild(new PickupObject(Board.OBJECT_BRIDGE));
                 return;
             }
@@ -64,12 +64,18 @@ namespace GameEngine.Ai
                 Plot plot = ballPlots[ctr];
                 if ((plot.BWidth >= bSpaceNeeded.width) && (plot.BHeight >= bSpaceNeeded.height))
                 {
+                    //this.addChild(new DropObjective(Board.OBJECT_BRIDGE));
                     int goto_bleft = plot.BLeft + (playerBRect.left - bSpaceNeeded.left);
                     int goto_bright = plot.BRight - (bSpaceNeeded.right - playerBRect.right);
                     int goto_btop = plot.BTop - (bSpaceNeeded.top - playerBRect.top);
                     int goto_bbottom = plot.BBottom + (playerBRect.bottom - bSpaceNeeded.bottom);
                     RRect goto_brect = RRect.fromTRBL(playerBRect.room, goto_btop, goto_bright, goto_bbottom, goto_bleft);
-                    this.addChild(new GoTo(goto_brect, Board.OBJECT_BRIDGE));
+                    GoStraightTo goto_objective = new GoStraightTo(goto_brect, Board.OBJECT_BRIDGE);
+                    this.addChild(goto_objective);
+                    // Need to make sure we don't infinitely recurse
+                    if (goto_objective.isCompleted()) {
+                        throw new Abort("Trying to move bridge to someplace we already are.");
+                    }
                     this.addChild(new RepositionBridge());
                     return;
                 }

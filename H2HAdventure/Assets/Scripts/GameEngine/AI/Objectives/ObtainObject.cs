@@ -81,6 +81,12 @@ namespace GameEngine.Ai
                 // Check if the object is in the secret room in the white castle
                 if (objectToPickup.room == Map.RED_MAZE_4)
                 {
+                    // If we'll need the magnet once we get there, make the magnet
+                    // accessible to the secret room.
+                    if (strategy.IsObjectInWall(objectToPickup))
+                    {
+                        addChild(new PutMagnetInWhiteCastle2());
+                    }
                     addChild(new TransitWhiteCastle2Zone(desiredZone == NavZone.WHITE_CASTLE_2));
                     addChild(new ObtainObject(toPickup, 2));
                     return;

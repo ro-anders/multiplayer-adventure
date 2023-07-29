@@ -88,6 +88,14 @@ namespace GameEngine
             return new RRect(room, left, top, right - left + 1, top - bottom + 1);
         }
 
+        /**
+         * Create a rectangle
+         * @param inRoom - the room the rectangle is in
+         * @param inX - the x coordinate of the left side of the rectangle
+         * @param inY - the y coordinate of the top side of the rectangle
+         * @param inWidth - the width of the rectangle
+         * @param inHeight - the height of the rectangle
+         */
         public RRect(int inRoom, int inX, int inY, int inWidth, int inHeight)
         {
             room = inRoom;

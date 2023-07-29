@@ -6,8 +6,8 @@ namespace GameEngine
     {
 
         // When drawing on the display, each map block is an 8x32 block
-        public const int WALL_WIDTH = 8;
-        public const int WALL_HEIGHT = 32;
+        public const int WALL_WIDTH = 8; // In ball coordinates
+        public const int WALL_HEIGHT = 32; // In ball coordinates
         public const int MAX_WALL_X = Adv.ADVENTURE_SCREEN_BWIDTH / WALL_WIDTH;
         public const int MAX_WALL_Y = Adv.ADVENTURE_TOTAL_SCREEN_HEIGHT / WALL_HEIGHT;
 
