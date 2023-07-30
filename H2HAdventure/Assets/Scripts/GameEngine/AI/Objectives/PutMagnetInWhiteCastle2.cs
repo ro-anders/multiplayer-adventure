@@ -38,7 +38,7 @@
             this.addChild(new RepositionObject(Board.OBJECT_MAGNET, RepositionObject.RelativeToBall.LEFT_OF_BALL,
                 // Use the large plot just inside the white castle entrance to reposition the magnet
                 new RRect(Map.RED_MAZE_1, 8*Map.WALL_WIDTH, 4*Map.WALL_HEIGHT-1, 24*Map.WALL_WIDTH, 3*Map.WALL_HEIGHT)));
-            this.addChild(new GoTo(Map.RED_MAZE_1, Map.WALL_WIDTH * 8, (int)(Map.WALL_HEIGHT * 2.5)));
+            this.addChild(new GoTo(Map.RED_MAZE_1, Map.WALL_WIDTH * 8 + BALL.RADIUS, (int)(Map.WALL_HEIGHT * 2.5)-BALL.RADIUS));
             this.addChild(new DropObjective(Board.OBJECT_MAGNET));
         }
 
