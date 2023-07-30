@@ -1215,11 +1215,11 @@ namespace GameEngine.Ai
         }
         public int BHeight
         {
-            get { return edgesb[UP] - edgesb[DOWN]; }
+            get { return edgesb[UP] - edgesb[DOWN] + 1; }
         }
         public int BWidth
         {
-            get { return edgesb[RIGHT] - edgesb[LEFT]; }
+            get { return edgesb[RIGHT] - edgesb[LEFT] + 1; }
         }
         public int WTop
         {

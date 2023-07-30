@@ -119,7 +119,7 @@ namespace GameEngine.Ai
         /**
          * Gross check to see if the ball is stuck in a wall.  If you're half
          * in the wall but can still get out by going in the right direction,
-         * this method gives indeterminate results.
+         * this method returns false.
          * @param allowForBridge if the bridge is present and provides a means
          * to get out this will return false unless allowForBridge is false.
          */

@@ -72,10 +72,10 @@ namespace GameEngine.Ai
             if ((bridge.room >= Map.RED_MAZE_3) && (bridge.room <= Map.RED_MAZE_1) &&
                 (strategy.heldByPlayer(bridge, false) == null))
             {
-                // Figure out the zones just above and below the bridge
+                // Figure out the zones just above and below the bridge.
                 RRect bridgeRect = bridge.BRect;
-                NavZone bottomZone = nav.WhichZone(bridge.BottomExitBRect);
-                NavZone topZone = nav.WhichZone(bridge.TopExitBRect);
+                NavZone bottomZone = nav.WhichZone(bridge.BottomEffectiveExitBRect);
+                NavZone topZone = nav.WhichZone(bridge.TopEffectiveExitBRect);
                 // One has to be WHITE_CASTLE_2 while the other must be MAIN or WHITE_CASTLE_1
                 completed = ((topZone == NavZone.WHITE_CASTLE_2) && ((bottomZone == NavZone.MAIN) || (bottomZone == NavZone.WHITE_CASTLE_1)) ||
                     (bottomZone == NavZone.WHITE_CASTLE_2) && ((topZone == NavZone.MAIN) || (topZone == NavZone.WHITE_CASTLE_1)));

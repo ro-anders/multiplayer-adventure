@@ -16,10 +16,11 @@ namespace GameEngine.Ai
         private static int[] insideRooms = { }; // We cache the ids of the rooms just inside all portcullises
 
         /**
-         * Go to these coordinates.
+         * Go to these coordinates.  Places the balls middle as close to these
+         * coordinates as possible.
          * @param inRoom the desired room
-         * @param inX the desired X
-         * @param inY the desired Y
+         * @param inX the X of the desired ball middle
+         * @param inY the Y of the desired ball middle
          * @param inCarrying the object you want to carry or CARRY_NO_OBJECT if you
          * specifically don't want to pick up an object or DONT_CARE_OBJECT if you
          * don't care if you pick up an object or not
@@ -140,8 +141,8 @@ namespace GameEngine.Ai
                     // leads to the desired zone try to get to the main zone
                     // and if neither leads to the main zone, go to any zone.
                     Bridge bridge = (Bridge)board.getObject(Board.OBJECT_BRIDGE);
-                    NavZone upZone = nav.WhichZone(bridge.TopExitBRect);
-                    NavZone downZone = nav.WhichZone(bridge.BottomExitBRect);
+                    NavZone upZone = nav.WhichZone(bridge.TopEffectiveExitBRect);
+                    NavZone downZone = nav.WhichZone(bridge.BottomEffectiveExitBRect);
                     if ((upZone == NavZone.NO_ZONE) && (downZone == NavZone.NO_ZONE))
                     {
                         markShouldReset();

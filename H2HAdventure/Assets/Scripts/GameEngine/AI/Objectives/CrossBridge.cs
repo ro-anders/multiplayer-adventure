@@ -11,7 +11,7 @@ namespace GameEngine.Ai
         private bool upOrDown; // True if going up across the bridge.  False is going down across the bridge.
         private int carrying;
         private Bridge bridge;
-        private RRect startingBLocation;
+        private RRect startingBLocation; // Remember, because if the bridge moves while crossing, we abort
         private GoTo goToStart = null;
 
         /**
@@ -44,15 +44,34 @@ namespace GameEngine.Ai
         {
             // This may be called while we're actually in the middle of the bridge.
             // Don't bother going to the entrance of the bridge if we're already on it.
-            if (!bridge.InsideBRect.overlaps(aiPlayer.BRect))
+            bool onBridge = bridge.InsideBRect.overlaps(aiPlayer.BRect) && strategy.isBallEmbeddedInWall(false);
+            if (!onBridge)
             {
-                // Put the ball directly under/over the bridge
-                int desiredBX = bridge.BLeft + (bridge.bwidth) / 2;
+                // Figure out what space is actually open on the other side of the
+                // bridge and where we want to go
+                RRect exitBrect = (upOrDown ? bridge.TopEffectiveExitBRect : bridge.BottomEffectiveExitBRect);
+                Plot[] plotsAtEnd = nav.GetPlots(exitBrect);
+                int desiredBX;
+                if (plotsAtEnd.Length == 0)
+                {
+                    throw new Abort("Can't cross bridge");
+                }
+                else if (plotsAtEnd.Length > 1)
+                {
+                    // The effective exit can never straddle a wall, so if the
+                    // effective exit touches two plots, the center must be clear
+                    desiredBX = bridge.BLeft + (bridge.bwidth) / 2;
+                }
+                else
+                {
+                    desiredBX = exitBrect.intersect(plotsAtEnd[0].BRect).midX - BALL.RADIUS;
+                }
                 int desiredBY = (upOrDown ? bridge.BBottom - BALL.RADIUS - 1 : bridge.BTop + BALL.RADIUS + 1);
+
                 // To avoid hitting the bridge we don't pick up any new objects while
                 // executing this objective
                 int goToCarrying = carrying == DONT_CARE_OBJECT ? CARRY_NO_OBJECT : carrying;
-                goToStart = new GoTo(bridge.room, desiredBX, desiredBY, goToCarrying);
+                goToStart = new GoTo(bridge.room, desiredBX+BALL.RADIUS, desiredBY-BALL.RADIUS, goToCarrying);
                 this.addChild(goToStart);
             }
             // Once the child is satisfied, the shouldMoveDirection kicks in.

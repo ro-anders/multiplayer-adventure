@@ -55,24 +55,26 @@ namespace GameEngine
         }
 
         /**
-         * The area just above the bridge
+         * The area just above the bridge which accounts for the ball width
+         * when crossing the bridge.
          * */
-        public RRect TopExitBRect
+        public RRect TopEffectiveExitBRect
         {
             get
             {
-                return RRect.fromTRBL(room, by + 1, InsideBRight, by + 1, InsideBLeft);
+                return RRect.fromTRBL(room, by + 1, InsideBRight - BALL.DIAMETER, by + 1, InsideBLeft + BALL.DIAMETER);
             }
         }
 
         /**
-         * The area just below the bridge
+         * The area just below the bridge which accounts for the ball width
+         * when crossing the bridge.
          * */
-        public RRect BottomExitBRect
+        public RRect BottomEffectiveExitBRect
         {
             get
             {
-                return RRect.fromTRBL(room, by - BHeight, InsideBRight, by-BHeight, InsideBLeft);
+                return RRect.fromTRBL(room, by - BHeight, InsideBRight - BALL.DIAMETER, by - BHeight, InsideBLeft + BALL.DIAMETER);
             }
         }
 

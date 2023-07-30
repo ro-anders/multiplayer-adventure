@@ -120,8 +120,8 @@ namespace GameEngine.Ai
                     // leads to the desired zone try to get to the main zone
                     // and if neither leads to the main zone, go to any zone.
                     Bridge bridge = (Bridge)board.getObject(Board.OBJECT_BRIDGE);
-                    NavZone upZone = nav.WhichZone(bridge.TopExitBRect);
-                    NavZone downZone = nav.WhichZone(bridge.BottomExitBRect);
+                    NavZone upZone = nav.WhichZone(bridge.TopEffectiveExitBRect);
+                    NavZone downZone = nav.WhichZone(bridge.BottomEffectiveExitBRect);
                     if ((upZone == NavZone.NO_ZONE) && (downZone == NavZone.NO_ZONE))
                     {
                         markShouldReset();
