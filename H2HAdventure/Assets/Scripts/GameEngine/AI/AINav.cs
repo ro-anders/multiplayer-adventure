@@ -1411,7 +1411,7 @@ namespace GameEngine.Ai
 
         public override string ToString()
         {
-            return "[" + key + "=" + room + "-" + BLeft + "," + BBottom + "-" + BRight + "," + BTop + "]";
+            return "[" + key + "=" + this.BRect + "]";
         }
 
         public static string DirToString(int dir)

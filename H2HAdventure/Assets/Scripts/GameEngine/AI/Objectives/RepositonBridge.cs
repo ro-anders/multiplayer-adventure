@@ -163,13 +163,13 @@ namespace GameEngine.Ai
                 // If entire ball is left of foot leftmost is ball
                 int bleft = (playerBRect.right < bridgeBRect.left ? playerBRect.left :
                     // If ball is in left crook of bridge or directly above left bridge post must go to left of entire bridge
-                    (playerBRect.left < bridgeBRect.left+ Bridge.FOOT_BWIDTH - 1 ? bridgeBRect.left - BALL.DIAMETER - BALL.MOVEMENT :
+                    (playerBRect.left < bridgeBRect.left+ Bridge.FOOT_BWIDTH ? bridgeBRect.left - BALL.DIAMETER - BALL.MOVEMENT :
                     // Else leftmost is foot
                     bridgeBRect.left ));
                 // If entire ball is right of bridge rightmost is ball
                 int bright = (playerBRect.left > bridgeBRect.right ? playerBRect.right :
                     // If ball is in right crook of bridge must go to the right of the entire bridge
-                    (playerBRect.left < bridgeBRect.right - Bridge.FOOT_EXTENSION_BWIDTH && playerBRect.bottom <= bridgeBRect.top ? bridgeBRect.right + BALL.DIAMETER + BALL.MOVEMENT :
+                    (playerBRect.left > bridgeBRect.right - Bridge.FOOT_EXTENSION_BWIDTH && playerBRect.bottom <= bridgeBRect.top ? bridgeBRect.right + BALL.DIAMETER + BALL.MOVEMENT :
                     // If ball is right of foot rightmost is ball else rightmost is foot
                     (playerBRect.right > bridgeBRect.left + Bridge.FOOT_BWIDTH - 1 ? playerBRect.right : bridgeBRect.left + Bridge.FOOT_BWIDTH - 1)));
                 bspace = RRect.fromTRBL(playerBRect.room, btop, bright, bbottom, bleft);
