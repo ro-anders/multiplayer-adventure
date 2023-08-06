@@ -41,6 +41,7 @@ namespace GameEngine.Ai
             if (fromPlot < 0)
             {
                 UnityEngine.Debug.LogError("Couldn't find starting plot");
+                return null;
             }
 
             // Determine the ending plot
@@ -48,6 +49,7 @@ namespace GameEngine.Ai
             if (toPlot < 0)
             {
                 UnityEngine.Debug.LogError("Couldn't find ending plot");
+                return null;
             }
 
             if (aiPlots[fromPlot].thisPlot.Zone != aiPlots[toPlot].thisPlot.Zone)

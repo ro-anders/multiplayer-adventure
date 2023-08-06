@@ -36,7 +36,7 @@ namespace GameEngine.Ai
             thisPlayer = inPlayerSlot;
             thisBall = gameBoard.getPlayer(thisPlayer);
             thisBall.ai = this;
-            aiTactical = new AiTactical(thisBall, gameBoard);
+            aiTactical = AiTactical.get(thisBall, gameBoard);
             aiStrategy = new AiStrategy(gameBoard, thisPlayer, aiNav);
         }
 

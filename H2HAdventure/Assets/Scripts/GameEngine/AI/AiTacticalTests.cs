@@ -28,7 +28,7 @@ namespace GameEngine.Ai
 
             ball = new BALL(0, ballsPortcullis, false);
             ball.room = 1;
-            toTest = new AiTactical(ball, board);
+            toTest = AiTactical.get(ball, board);
         }
 
         public void testAll()

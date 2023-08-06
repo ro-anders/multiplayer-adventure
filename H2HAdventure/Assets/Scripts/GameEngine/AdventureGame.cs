@@ -2636,22 +2636,16 @@ namespace GameEngine
             {Board.OBJECT_COPPERKEY, Map.MAIN_HALL_RIGHT, 0x79, 0x3E, 0x00, 0x00, 0x00}, // Copper Key
             #else
             {Board.OBJECT_BRIDGE, Map.WHITE_MAZE_3, 0x3F, 0x3E, 0x00, 0x00, 0x00}, // Bridge
-            // MUST UNDO - Move key to make easier
-            //{Board.OBJECT_YELLOWKEY, Map.WHITE_MAZE_2, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
-            {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
+            {Board.OBJECT_YELLOWKEY, Map.WHITE_MAZE_2, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Yellow Key
             {Board.OBJECT_COPPERKEY, Map.WHITE_MAZE_2, 0x79, 0x3E, 0x00, 0x00, 0x00}, // Copper Key
             #endif
             {Board.OBJECT_JADEKEY, Map.BLUE_MAZE_4, 0x79, 0x3E, 0x00, 0x00, 0x00}, // Jade Key
-            // MUST UNDO - Move key to make easier
-            //{Board.OBJECT_WHITEKEY, Map.BLUE_MAZE_3, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // White Key
-            {Board.OBJECT_WHITEKEY, Map.GOLD_CASTLE, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // White Key
+            {Board.OBJECT_WHITEKEY, Map.BLUE_MAZE_3, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // White Key
             {Board.OBJECT_BLACKKEY, Map.RED_MAZE_4, 0x1F, 0x3E, 0x00, 0x00, 0x00}, // Black Key
             {Board.OBJECT_CRYSTALKEY1, Map.CRYSTAL_CASTLE, 0x4C, 0x53, 0x00, 0x00, 0x00}, // Crystal Key for Player 1
             {Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x4C, 0x53, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
             {Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x4C, 0x53, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
-            // MUST UNDO - Comment out Bat until we know how to deal with it
-            //{Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x1F, 0x1E, 0x00, 0, -3}, // Bat
-            {Board.OBJECT_BAT, Map.NUMBER_ROOM, 0x1F, 0x1E, 0x00, 0, -3}, // Bat
+            {Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x1F, 0x1E, 0x00, 0, -3}, // Bat
 #if DEBUG_EASTEREGG
             {Board.OBJECT_DOT, Map.MAIN_HALL_RIGHT, 0x1F, 0x0E, 0x00, 0x00, 0x00}, // Dot
 #else
