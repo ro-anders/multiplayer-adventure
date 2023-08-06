@@ -60,7 +60,7 @@ namespace GameEngine.Ai
             BALL otherPlayer = strategy.heldByPlayer(objectToPickup);
             if (otherPlayer != null)
             {
-                addChild(new GetObjectFromPlayer(toPickup, otherPlayer.playerNum));
+                addChild(new StealObjectFromPlayer(toPickup, otherPlayer.playerNum));
                 return;
             }
 
