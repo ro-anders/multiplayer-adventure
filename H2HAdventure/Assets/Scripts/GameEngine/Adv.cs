@@ -138,10 +138,12 @@ namespace GameEngine
             return (room == other.room) && (x == other.x) && (y == other.y) &&
                 (width == other.width) && (height == other.height);
         }
+        /** Note: NOWHERE.IsValid() will return true */
         public bool IsValid
         {
             get { return (width >= 0) && (height >= 0); }
         }
+        /** Note: Calling INVALID.IsSomewhere() will return false */
         public bool IsSomewhere
         {
             get { return (width >= 0) && (height >= 0) && (room >= 0); }
