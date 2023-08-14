@@ -130,17 +130,9 @@ namespace GameEngine.Ai
 
             if (!newDesiredLocation.IsSomewhere)
             {
-                thisBall.velx = 0;
-                thisBall.vely = 0;
-
                 // We have no goal.  Don't do anything.
-                if (DEBUG.TRACE_PLAYER == thisPlayer)
-                {
-                    UnityEngine.Debug.Log("Player " + thisPlayer + " @" + thisBall.room + "(" + thisBall.x + "," + thisBall.y + ")" +
-                        " trying to " + currentObjective + " doing nothing");
-                }
+                doNothing();
                 return;
-
             }
 
             // We need to recompute the path if where we
@@ -165,9 +157,7 @@ namespace GameEngine.Ai
                     UnityEngine.Debug.Log("Couldn't compute path for AI player #" + thisPlayer + " for objective \"" + currentObjective +
                         "\" to get to " + gameBoard.map.roomDefs[desiredLocation.room].label + "("+desiredLocation.midX+","+desiredLocation.midY+")");
                     // ABORT PATH
-                    desiredLocation = RRect.NOWHERE;
-                    thisBall.velx = 0;
-                    thisBall.vely = 0;
+                    doNothing();
                     return;
                 }
             }
@@ -177,9 +167,7 @@ namespace GameEngine.Ai
             {
                 // ABORT PATH
                 UnityEngine.Debug.LogError("Ball " + thisBall.playerNum + " has fallen off the AI path! Aborting.");
-                desiredLocation = RRect.NOWHERE;
-                thisBall.velx = 0;
-                thisBall.vely = 0;
+                doNothing();
                 return;
             }
 
@@ -195,9 +183,7 @@ namespace GameEngine.Ai
             else
             {
                 UnityEngine.Debug.LogError("Ball cannot get where it needs to go.");
-                desiredLocation = RRect.NOWHERE;
-                thisBall.velx = 0;
-                thisBall.vely = 0;
+                doNothing();
                 return;
             }
             //if (DEBUG.TRACE_PLAYER == thisPlayer)
@@ -205,6 +191,23 @@ namespace GameEngine.Ai
             //    UnityEngine.Debug.Log("Player " + thisPlayer + " @" + thisBall.room + "(" + thisBall.x + "," + thisBall.y + ")" +
             //        " trying to " + currentObjective + " going (" + nextVelx + "," + nextVely + ") to get to " + desiredLocation);
             //}
+        }
+
+        /**
+         * Sometimes we have to wait.  This sets up the ball to wait, but
+         * does make sure that we don't get eaten by a dragon.
+         */
+        private void doNothing()
+        {
+            desiredLocation = RRect.NOWHERE;
+            thisBall.velx = 0;
+            thisBall.vely = 0;
+            if (DEBUG.TRACE_PLAYER == thisPlayer)
+            {
+                UnityEngine.Debug.Log("Player " + thisPlayer + " @" + thisBall.room + "(" + thisBall.x + "," + thisBall.y + ")" +
+                    " trying to " + currentObjective + " doing nothing");
+            }
+            aiTactical.avoidBeingEaten(ref thisBall.velx, ref thisBall.vely, thisBall.x, thisBall.y);
         }
 
         /**

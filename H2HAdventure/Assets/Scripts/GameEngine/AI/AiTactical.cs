@@ -29,5 +29,11 @@ namespace GameEngine.Ai
          */
         public abstract bool computeDirectionOnPath(AiPathNode path, int finalX, int finalY, AiObjective currentObjective,
                     ref int nextVelx, ref int nextVely);
+
+        /**
+         * If a dragon is currently biting us, take evasive action.
+         */
+        public abstract bool avoidBeingEaten(ref int nextVelX, ref int nextVelY, int nextStepX, int nextStepY, int desiredObject = AiObjective.DONT_CARE_OBJECT);
+
     }
 }

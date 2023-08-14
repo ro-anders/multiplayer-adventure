@@ -35,6 +35,7 @@ namespace GameEngine.Ai
             COUNTERCLOCKWISE
         }
 
+        /** Starting with up and moving clockwise the 8 possible movement directions */
         private static int[][] directions = new int[][]{
             new int[]{ 0, BALL.MOVEMENT},
             new int[]{BALL.MOVEMENT, BALL.MOVEMENT },
@@ -88,10 +89,14 @@ namespace GameEngine.Ai
                 nextStepY = finalY;
             }
 
-            bool allowScrapingWalls = (currentPath.nextNode == null); // Don't worry about scraping walls once we're in the right plot
-            bool canGetThere = computeDirection(nextStepX, nextStepY, currentObjective.getDesiredObject(), allowScrapingWalls, ref nextVelx, ref nextVely);
-
-            return canGetThere;
+            bool avoided_dragon = avoidBeingEaten(ref nextVelx, ref nextVely, nextStepX, nextStepY, currentObjective.getDesiredObject());
+            if (avoided_dragon) {
+                return true;
+            } else {
+                bool allowScrapingWalls = (currentPath.nextNode == null); // Don't worry about scraping walls once we're in the right plot
+                bool canGetThere = computeDirection(nextStepX, nextStepY, currentObjective.getDesiredObject(), allowScrapingWalls, ref nextVelx, ref nextVely);
+                return canGetThere;
+            }
         }
 
         /**
@@ -99,13 +104,13 @@ namespace GameEngine.Ai
          */
         private void computeNextStepOnPath(ref int nextStepX, ref int nextStepY)
         {
-            int point1bx = 0, point1by = 0, point2bx = 0, point2by = 0;
-            currentPath.ThisPlot.GetOverlapSegment(currentPath.nextNode.ThisPlot, currentPath.nextDirection, ref point1bx, ref point1by, ref point2bx, ref point2by);
+            //int point1bx = 0, point1by = 0, point2bx = 0, point2by = 0;
+            RRect overlapb = currentPath.ThisPlot.GetOverlapSegment(currentPath.nextNode.ThisPlot, currentPath.nextDirection);
             switch (currentPath.nextDirection)
             {
                 case Plot.UP:
                 case Plot.DOWN:
-                    nextStepY = point1by; // Which is same as point2by
+                    nextStepY = overlapb.bottom; // Which is same as top
                     // TODOX
                     //// Try to stay away from the left most edge so we don't get
                     //// trapped by dragons
@@ -114,12 +119,12 @@ namespace GameEngine.Ai
                     //}
                     // Pick the closest x which keeps ball in plot but works with
                     // ball movement steps
-                    if (point1bx > thisBall.BLeft)
+                    if (overlapb.left > thisBall.BLeft)
                     {
-                        nextStepX = thisBall.getSteppedBX(point1bx, BALL.STEP_ALG.GTE) + BALL.RADIUS;
-                    } else if (point2bx < thisBall.BRight)
+                        nextStepX = thisBall.getSteppedBX(overlapb.left, BALL.STEP_ALG.GTE) + BALL.RADIUS;
+                    } else if (overlapb.right < thisBall.BRight)
                     {
-                        nextStepX = thisBall.getSteppedBX(point2bx - BALL.DIAMETER + 1, BALL.STEP_ALG.LTE) + BALL.RADIUS;
+                        nextStepX = thisBall.getSteppedBX(overlapb.right - BALL.DIAMETER + 1, BALL.STEP_ALG.LTE) + BALL.RADIUS;
                     }
                     else { 
                         nextStepX = thisBall.midX;
@@ -128,19 +133,19 @@ namespace GameEngine.Ai
                 case Plot.LEFT:
                 case Plot.RIGHT:
                 default:
-                    nextStepX = point1bx; // Which is same as point2bx
+                    nextStepX = overlapb.left; // Which is same as right
                     // TODOX
                     // Try to stay away from the top most edge so we don't get trapped by dragons
 
                     // Pick the closest y which keeps ball in plot but works with
                     // ball movement steps
-                    if (point2by < thisBall.BTop)
+                    if (overlapb.top < thisBall.BTop)
                     {
-                        nextStepY = thisBall.getSteppedBY(point2by, BALL.STEP_ALG.LTE) - BALL.RADIUS;
+                        nextStepY = thisBall.getSteppedBY(overlapb.top, BALL.STEP_ALG.LTE) - BALL.RADIUS;
                     }
-                    else if (point1by > thisBall.BBottom)
+                    else if (overlapb.bottom > thisBall.BBottom)
                     {
-                        nextStepY = thisBall.getSteppedBY(point1by + BALL.DIAMETER - 1, BALL.STEP_ALG.GTE) - BALL.RADIUS;
+                        nextStepY = thisBall.getSteppedBY(overlapb.bottom + BALL.DIAMETER - 1, BALL.STEP_ALG.GTE) - BALL.RADIUS;
                     }
                     else
                     {
@@ -148,6 +153,75 @@ namespace GameEngine.Ai
                     }
                     return;
             }
+        }
+
+        /**
+         * If a dragon is currently biting us, take evasive action.
+         */
+        public override bool avoidBeingEaten(ref int nextVelX, ref int nextVelY, int nextStepX, int nextStepY, int desiredObject)
+        {
+            // See if we just got roared at
+            Dragon biting_dragon = null;
+            for (int ctr = Board.FIRST_DRAGON; (biting_dragon==null) && (ctr <= Board.LAST_DRAGON); ++ctr)
+            {
+                Dragon dragon = (Dragon)board.getObject(ctr);
+                if ((dragon != null) &&
+                    (dragon.state == Dragon.ROAR) &&
+                    (dragon.room == thisBall.room) &&
+                    (dragon.bx == thisBall.x + 1) &&
+                    (dragon.by == thisBall.y))
+                {
+                    biting_dragon = dragon;
+                }
+            }
+
+            if (biting_dragon != null)
+            {
+                // These lines are repeated from computeDirection() and will be outdated when computeDirection() is modified
+                int desiredVelX = (nextStepX > thisBall.midX ? BALL.MOVEMENT : (nextStepX == thisBall.midX ? 0 : -BALL.MOVEMENT));
+                int desiredVelY = (nextStepY > thisBall.midY ? BALL.MOVEMENT : (nextStepY == thisBall.midY ? 0 : -BALL.MOVEMENT));
+
+                // Of the possible directions to escape a bite, rank them based on
+                // what direction we want to go.
+                // 1 = up-right, 5 = down-left, 6 = left, 7 = up-left, 4 = down but down sucks
+                int[] choices = (desiredVelX > 0 ? new int[] { 1, 7, 6, 5} :
+                                (desiredVelY > 0 ? new int[] { 7, 6, 1, 5} :
+                                new int[] { 5, 6, 7, 1}));
+                // Figure out which direction is clear if none are clear figure
+                // out which direction is taken by a carryable object
+                int first_clear = -1; /* Initialize to our last choice */
+                int first_cluttered = -1;
+                for(int ctr=0; (first_clear) < 0 && (ctr<choices.Length); ++ctr)
+                {
+                    int choice = choices[ctr];
+                    int newBX = thisBall.x + directions[choice][0];
+                    int newBY = thisBall.y + directions[choice][1];
+                    bool blocked = checkCollisionWall(newBX, newBY, thisBall.room) ||
+                        checkCollisionFixedObjects(newBX, newBY, thisBall.room);
+                    bool cluttered = blocked || checkCollisionCarryable(newBX, newBY, desiredObject);
+                    first_clear = (!cluttered ? ctr : -1);
+                    first_cluttered = (!blocked && (first_cluttered < 0) ? ctr : first_cluttered);
+                }
+                if (first_clear >= 0)
+                {
+                    nextVelX = directions[choices[first_clear]][0];
+                    nextVelY = directions[choices[first_clear]][1];
+                }
+                else if (first_cluttered >= 0)
+                {
+                    nextVelX = directions[choices[first_cluttered]][0];
+                    nextVelY = directions[choices[first_cluttered]][1];
+                }
+                else
+                {
+                    // If there's no way to escape you can always go down one.
+                    nextVelX = 0;
+                    nextVelY = -BALL.MOVEMENT;
+                }
+            }
+
+
+            return biting_dragon != null;
         }
 
         /**
@@ -182,13 +256,13 @@ namespace GameEngine.Ai
         {
             if ((nextVelX != 0) && (nextVelY != 0))
             {
-                if (quickCheckWall(thisBall.x + nextVelX, thisBall.y + nextVelY, thisBall.room))
+                if (checkCollisionWall(thisBall.x + nextVelX, thisBall.y + nextVelY, thisBall.room))
                 {
-                    if (!quickCheckWall(thisBall.x, thisBall.y + nextVelY, thisBall.room))
+                    if (!checkCollisionWall(thisBall.x, thisBall.y + nextVelY, thisBall.room))
                     {
                         nextVelX = 0;
                     }
-                    else if (!quickCheckWall(thisBall.x + nextVelX, thisBall.y, thisBall.room))
+                    else if (!checkCollisionWall(thisBall.x + nextVelX, thisBall.y, thisBall.room))
                     {
                         nextVelY = 0;
                     }
@@ -267,12 +341,83 @@ namespace GameEngine.Ai
         }
 
         /**
-         * Check if a ball at a given position will collide with a wall.
+         * Check if this ball at a given position will collide with any fixed objects
+         * (uncarryable objects not including live dragons).  Also doesn't
+         * include open portcullises.
          * @param ballx the x position of the ball (the top left corner)
          * @param bally the y position of the ball (the top left corner)
          * @param roomNum the room in which to check
+         * @return true if this coordinate is an immovable object
          */
-        private bool quickCheckWall(int ballx, int bally, int roomNum)
+        private bool checkCollisionFixedObjects(int ballX, int ballY, int room)
+        {
+            bool hitFixed = false;
+
+            Board.ObjIter iter = board.getObjects();
+            Board.ObjIter end = board.getCarryableObjects();
+            while (!hitFixed && !iter.at(end))
+            {
+                OBJECT objct = iter.next();
+                if (objct.room == thisBall.room)
+                {
+                    // Don't check this object if it is a live dragon or open portcullis.
+                    int pkey = objct.getPKey();
+                    bool skip = ((pkey >= Board.FIRST_PORT) && (pkey <= Board.LAST_PORT) && ((Portcullis)objct).allowsEntry);
+                    skip = skip || ((pkey >= Board.FIRST_DRAGON) && (pkey <= Board.LAST_DRAGON) && (((Dragon)objct).state == Dragon.STALKING));
+
+                    hitFixed = !skip && quickCheckCollision(ballX, ballY, objct.BRect) &&
+                        board.CollisionCheckObject(objct, ballX, ballY, BALL.DIAMETER, BALL.DIAMETER);
+                }
+            }
+            return hitFixed;
+        }
+
+        /**
+         * Check what objects this ball at a given position would hit.
+         * @param ballX the X velocity of the direction we plan on going.  Will be modified
+         * to avoid objects
+         * @param nextVelY the X velocity of the direction we plan on going.  Will be modified
+         * to avoid objects
+         * @param desiredObject the object we would like (and don't mind running into) or
+         * AiObjective.DONT_CARE_OBJECT
+         * @return true if this position collides with an object
+         */
+        private bool checkCollisionCarryable(int ballX, int ballY, int desiredObject=AiObjective.CARRY_NO_OBJECT)
+        {
+            if (desiredObject == AiObjective.DONT_CARE_OBJECT)
+            {
+                // Why was this method even called.
+                return false;
+            }
+
+            bool hitCarryable = false;
+
+            Board.ObjIter iter = board.getCarryableObjects();
+            while (!hitCarryable && iter.hasNext())
+            {
+                OBJECT objct = iter.next();
+                if (objct.room == thisBall.room)
+                {
+                    int pkey = objct.getPKey();
+                    // Ignore objects we are currently holding or desiring
+                    bool ignore = (pkey == desiredObject) || (pkey == thisBall.linkedObject);
+                    hitCarryable = !ignore && quickCheckCollision(ballX, ballY, objct.BRect) &&
+                        board.CollisionCheckObject(objct, ballX, ballY, BALL.DIAMETER, BALL.DIAMETER);
+
+                }
+            }
+            return hitCarryable;
+        }
+
+
+        /**
+         * Check if this ball at a given position will collide with a wall.
+         * @param ballx the x position of the ball (the top left corner)
+         * @param bally the y position of the ball (the top left corner)
+         * @param roomNum the room in which to check
+         * @return true if this coordinate is a wall
+         */
+        private bool checkCollisionWall(int ballx, int bally, int roomNum)
         {
             ROOM room = board.map.roomDefs[roomNum];
             return room.hitsWall(ballx, bally, BALL.DIAMETER, BALL.DIAMETER);
@@ -416,9 +561,8 @@ namespace GameEngine.Ai
 
             if (currentPath.nextNode != null)
             {
-                int exit1x = 0, exit1y = 0, exit2x = 0, exit2y = 0;
-                currentPath.ThisPlot.GetOverlapSegment(currentPath.nextNode.ThisPlot, currentPath.nextDirection,
-                    ref exit1x, ref exit1y, ref exit2x, ref exit2y);
+                RRect exitb = currentPath.ThisPlot.GetOverlapSegment(currentPath.nextNode.ThisPlot, currentPath.nextDirection);
+                int exit1x = exitb.left, exit1y = exitb.bottom, exit2x = exitb.right, exit2y = exitb.top;
                 computeAvailableExit(ref exit2y, ref exit2x, ref exit1y, ref exit1x);
 
                 // Everything is in terms of where you are going, so to make calculations

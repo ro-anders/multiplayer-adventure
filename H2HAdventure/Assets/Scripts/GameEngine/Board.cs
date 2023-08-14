@@ -132,11 +132,20 @@ namespace GameEngine
 
             public OBJECT next()
             {
-                OBJECT rtn = null;
-                if ((board == null) || (nextExisting < 0)) return rtn;
-                rtn = board.getObject(nextExisting);
+                if ((board == null) || (nextExisting < 0)) return null;
+
+                OBJECT rtn = board.getObject(nextExisting);
                 nextExisting = findNext(nextExisting + 1, board);
                 return rtn;
+            }
+
+            /**
+             * Return true if this iterator is at the same position as
+             * the passed in iterator.  Return false, otherwise.
+             */
+            public bool at(in ObjIter other)
+            {
+                return this.nextExisting == other.nextExisting;
             }
 
             /**

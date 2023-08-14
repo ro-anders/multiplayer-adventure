@@ -1353,16 +1353,17 @@ namespace GameEngine.Ai
             return isAdjacent;
         }
 
-        // If two plots are adjacent, this will return the endpoints of the line
-        // segment marking where they are adjacent - it will be just inside the
-        // other plot and adjacent to the this plot.
+        // If two plots are adjacent, this will return the line
+        // segment marking where they are adjacent - it will be just outside this
+        // plot but adjacent to it.
         // If the plots are not adjacent or are adjacent in the direction other
         // than the one specified, the return value is undefined.
-        // If the plots are adjacent across a room switch it will still work.
+        // If the plots are adjacent across a room switch this will work but is
+        // returning a line segment just outside this plot's room (not a line
+        // segment just inside the other plot's room)
         // A left/right segment will always have point1bx < point2bx and an
         // up/down segment will always have point1by < point2by.
-        public void GetOverlapSegment(Plot otherPlot, int direction,
-            ref int point1bx, ref int point1by, ref int point2bx, ref int point2by)
+        public RRect GetOverlapSegment(Plot otherPlot, int direction)
         {
             // We know the two edges overlap so to find the segment of intersection we put the four
             // endpoints in sorted order and make a segment between the middle two.
@@ -1373,42 +1374,16 @@ namespace GameEngine.Ai
             switch (direction)
             {
                 case UP:
-                    point1bx = endpoints[1];
-                    point2bx = endpoints[2];
-                    point1by = point2by = this.BTop + 1;
-                    return;
+                    return RRect.fromTRBL(otherPlot.room, this.BTop + 1, endpoints[2], this.BTop + 1, endpoints[1]);
                 case DOWN:
-                    point1bx = endpoints[1];
-                    point2bx = endpoints[2];
-                    point1by = point2by = this.BBottom - 1;
-                    return;
+                    return RRect.fromTRBL(otherPlot.room, this.BBottom - 1, endpoints[2], this.BBottom - 1, endpoints[1]);
                 case LEFT:
-                    point1by = endpoints[1];
-                    point2by = endpoints[2];
-                    point1bx = point2bx = this.BLeft - 1;
-                    return;
+                    return RRect.fromTRBL(otherPlot.room, endpoints[2], this.BLeft - 1, endpoints[1], this.BLeft - 1);
                 case RIGHT:
                 default:
-                    point1by = endpoints[1];
-                    point2by = endpoints[2];
-                    point1bx = point2bx = this.BRight + 1;
-                    return;
+                    return RRect.fromTRBL(otherPlot.room, endpoints[2], this.BRight + 1, endpoints[1], this.BRight + 1);
             }
 
-        }
-
-        // If two plots are adjacent, this will return the point just inside the
-        // other plot and adjacent to the this plot.  The point will be the
-        // midpoint of their intersection.
-        // If the plots are not adjacent or are adjacent in the direction other
-        // than the one specified, the return value is undefined.
-        // If the plots are adjacent across a room switch it will still work.
-        public void GetOverlapMidpoint(Plot otherPlot, int direction, ref int outBX, ref int outBY)
-        {
-            int point1x = 0, point1y = 0, point2x = 0, point2y = 0;
-            GetOverlapSegment(otherPlot, direction, ref point1x, ref point1y, ref point2x, ref point2y);
-            outBX = (point1x + point2x) / 2;
-            outBY = (point1y + point2y) / 2;
         }
 
         public override string ToString()
