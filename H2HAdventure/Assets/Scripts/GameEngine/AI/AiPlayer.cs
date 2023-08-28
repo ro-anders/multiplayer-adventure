@@ -173,8 +173,8 @@ namespace GameEngine.Ai
 
             int nextVelx = 0;
             int nextVely = 0;
-            bool canGetThere = aiTactical.computeDirectionOnPath(desiredPath, desiredLocation.midX, desiredLocation.midY,
-                currentObjective, ref nextVelx, ref nextVely);
+            bool canGetThere = aiTactical.computeDirectionOnPath(desiredPath, desiredLocation,
+                currentObjective.getDesiredObject(), ref nextVelx, ref nextVely);
             if (canGetThere)
             {
                 thisBall.velx = nextVelx;

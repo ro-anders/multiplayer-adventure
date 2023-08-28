@@ -552,17 +552,14 @@ namespace GameEngine.Ai
                     (aiPlayer.linkedObjectBX > BALL.DIAMETER))
                 {
                     // Key is not in a good position.  Drop it and get under it.
-                    // 
-                    int xLeftToDropAt = Adv.ADVENTURE_SCREEN_BWIDTH / 2 - key.bwidth / 2 - aiPlayer.linkedObjectBX;
-                    int yTopToDropAt = CASTLE_FOOT - 1;
-                    aiPlayer.adjustDestination(ref xLeftToDropAt, ref yTopToDropAt, BALL.Adjust.BELOW);
+                    int xLeftToDropAt = aiPlayer.getSteppedBX(Adv.ADVENTURE_SCREEN_BWIDTH / 2 - key.bwidth / 2 - aiPlayer.linkedObjectBX);
+                    int yTopToDropAt = aiPlayer.getSteppedBY(CASTLE_FOOT - 1, BALL.STEP_ALG.LTE);
                     this.addChild(new GoExactlyTo(aiPlayer.room, xLeftToDropAt, yTopToDropAt, keyId));
                     this.addChild(new DropObjective(keyId));
 
                     // Pick a point under the key and let the tactical algorithms get around the key
-                    int yTopToPickupAt = yTopToDropAt + aiPlayer.linkedObjectBY - key.BHeight;
-                    int xLeftToPickupAt = Portcullis.EXIT_X;
-                    aiPlayer.adjustDestination(ref xLeftToPickupAt, ref yTopToPickupAt, BALL.Adjust.BELOW);
+                    int xLeftToPickupAt = aiPlayer.getSteppedBX(Portcullis.EXIT_X, BALL.STEP_ALG.LTE);
+                    int yTopToPickupAt = aiPlayer.getSteppedBY(yTopToDropAt + aiPlayer.linkedObjectBY - key.BHeight);
                     this.addChild(new GoExactlyTo(aiPlayer.room, xLeftToPickupAt, yTopToPickupAt, CARRY_NO_OBJECT));
                     this.addChild(new PickupObject(keyId));
                 }

@@ -5,8 +5,6 @@ namespace GameEngine.Ai
 {
     public class AiTactical1: AiTactical
     {
-        static private bool testsRun = false;
-
         /** The ball that is being moved */
         private BALL thisBall;
 
@@ -17,12 +15,11 @@ namespace GameEngine.Ai
         private AiPathNode currentPath;
 
         /** 
-         * The coordinates we want to get to in the current plot.
-         * If we are in the middle of a path, the next step is the part
+         * The area we want to get to in the current plot.
+         * If we are in the middle of a path, the next target is the part
          * of the next plot on the path that touches this plot.
          */
-        private int nextStepX;
-        private int nextStepY;
+        private RRect nextTargetB;
 
         /** Whether to turn clockwise or counter-clockwise when going around
          * an object. 
@@ -52,19 +49,36 @@ namespace GameEngine.Ai
         {
             thisBall = inBall;
             board = inBoard;
-            if (!testsRun) {
-                testsRun = true;
-                AiTacticalTests tests = new AiTacticalTests();
-                tests.testAll();
-            }
         }
 
         /**
-         * This is the main entry point of the AiTactical's ability to get your 
+         * Less desired form.  Just calls form asking for final RRect
+         * */
+        public override bool computeDirectionOnPath(AiPathNode path,
+            int finalBX, int finalBY, AiObjective currentObjective,
+            ref int nextVelx, ref int nextVely)
+        {
+            return computeDirectionOnPath(path,
+                new RRect(path.End.ThisPlot.Room, finalBX, finalBY, 1, 1),
+                currentObjective.getDesiredObject(),
+                ref nextVelx, ref nextVely);
+        }
+
+        /**
+         * This is the main function of the AiTactical's ability to get your 
          * from one point to another.  Given a path and coordinates at the end 
          * of the path, figure out the direction we should move to get us there.
+         * @param path the path to get to where we want to go
+         * @param finalTargetB the area we want to get to in the end
+         * @param desiredObject the object we are carrying or want to be 
+         *   carrying.  We will avoid connecting with other objects if we are 
+         *   intentionally carrying an object.  DONT_CARE_OBJECT to indicate
+         *   we don't care if we connect with an object along the way or 
+         *   CARRY_NO_OBJECT to indicate we don't want to connect with 
+         *   any object along the way.
          */
-        public override bool computeDirectionOnPath(AiPathNode path, int finalX, int finalY, AiObjective currentObjective,
+        public override bool computeDirectionOnPath(AiPathNode path,
+            in RRect finalTargetB, int desiredObject,
             ref int nextVelx, ref int nextVely)
         {
             // Go to the nextStep coordinates to get us to the next step on the path
@@ -77,7 +91,7 @@ namespace GameEngine.Ai
                 // Recompute how to get to the next step in the path
                 if (currentPath.nextNode != null)
                 {
-                    computeNextStepOnPath(ref nextStepX, ref nextStepY);
+                    nextTargetB = currentPath.ThisPlot.GetOverlapSegment(currentPath.nextNode.ThisPlot, currentPath.nextDirection);
                 }
             }
 
@@ -85,73 +99,16 @@ namespace GameEngine.Ai
             {
                 // We've reached the last plot in the path.  
                 // Now go to the desired coordinates
-                nextStepX = finalX;
-                nextStepY = finalY;
+                nextTargetB = finalTargetB;
             }
 
-            bool avoided_dragon = avoidBeingEaten(ref nextVelx, ref nextVely, nextStepX, nextStepY, currentObjective.getDesiredObject());
+            bool avoided_dragon = false; //= avoidBeingEaten(ref nextVelx, ref nextVely, nextStepX, nextStepY, currentObjective.getDesiredObject());
             if (avoided_dragon) {
                 return true;
             } else {
                 bool allowScrapingWalls = (currentPath.nextNode == null); // Don't worry about scraping walls once we're in the right plot
-                bool canGetThere = computeDirection(nextStepX, nextStepY, currentObjective.getDesiredObject(), allowScrapingWalls, ref nextVelx, ref nextVely);
+                bool canGetThere = computeDirection(desiredObject, allowScrapingWalls, ref nextVelx, ref nextVely);
                 return canGetThere;
-            }
-        }
-
-        /**
-         * Compute the x,y coordinates we should be aiming for to get to the next step on the path.
-         */
-        private void computeNextStepOnPath(ref int nextStepX, ref int nextStepY)
-        {
-            //int point1bx = 0, point1by = 0, point2bx = 0, point2by = 0;
-            RRect overlapb = currentPath.ThisPlot.GetOverlapSegment(currentPath.nextNode.ThisPlot, currentPath.nextDirection);
-            switch (currentPath.nextDirection)
-            {
-                case Plot.UP:
-                case Plot.DOWN:
-                    nextStepY = overlapb.bottom; // Which is same as top
-                    // TODOX
-                    //// Try to stay away from the left most edge so we don't get
-                    //// trapped by dragons
-                    //if (point1bx == currentPath.ThisPlot.BLeft) {
-                    //    point1bx += BALL.MOVEMENT;
-                    //}
-                    // Pick the closest x which keeps ball in plot but works with
-                    // ball movement steps
-                    if (overlapb.left > thisBall.BLeft)
-                    {
-                        nextStepX = thisBall.getSteppedBX(overlapb.left, BALL.STEP_ALG.GTE) + BALL.RADIUS;
-                    } else if (overlapb.right < thisBall.BRight)
-                    {
-                        nextStepX = thisBall.getSteppedBX(overlapb.right - BALL.DIAMETER + 1, BALL.STEP_ALG.LTE) + BALL.RADIUS;
-                    }
-                    else { 
-                        nextStepX = thisBall.midX;
-                    }
-                    return;
-                case Plot.LEFT:
-                case Plot.RIGHT:
-                default:
-                    nextStepX = overlapb.left; // Which is same as right
-                    // TODOX
-                    // Try to stay away from the top most edge so we don't get trapped by dragons
-
-                    // Pick the closest y which keeps ball in plot but works with
-                    // ball movement steps
-                    if (overlapb.top < thisBall.BTop)
-                    {
-                        nextStepY = thisBall.getSteppedBY(overlapb.top, BALL.STEP_ALG.LTE) - BALL.RADIUS;
-                    }
-                    else if (overlapb.bottom > thisBall.BBottom)
-                    {
-                        nextStepY = thisBall.getSteppedBY(overlapb.bottom + BALL.DIAMETER - 1, BALL.STEP_ALG.GTE) - BALL.RADIUS;
-                    }
-                    else
-                    {
-                        nextStepY = thisBall.midY;
-                    }
-                    return;
             }
         }
 
@@ -229,12 +186,16 @@ namespace GameEngine.Ai
          * Usually this just makes a straight line towards it, but will choose alternate
          * directions to deal with dragons or impeding obstacles.
          */
-        private bool computeDirection(int nextStepX, int nextStepY, int desiredObject, bool allowScrapingWalls, ref int nextVelX, ref int nextVelY)
+        private bool computeDirection(int desiredObject, bool allowScrapingWalls, ref int nextVelX, ref int nextVelY)
         {
-            nextVelX = (nextStepX > thisBall.midX ? BALL.MOVEMENT : (nextStepX == thisBall.midX ? 0 : -BALL.MOVEMENT));
-            nextVelY = (nextStepY > thisBall.midY ? BALL.MOVEMENT : (nextStepY == thisBall.midY ? 0 : -BALL.MOVEMENT));
+            // Figure out the exact point we are aiming for.
+            int nextTargetPointBX, nextTargetPointBY;
+            computePointToAimFor(out nextTargetPointBX, out nextTargetPointBY);
+            nextVelX = (nextTargetPointBX > thisBall.midX ? BALL.MOVEMENT : (nextTargetPointBX == thisBall.midX ? 0 : -BALL.MOVEMENT));
+            nextVelY = (nextTargetPointBY > thisBall.midY ? BALL.MOVEMENT : (nextTargetPointBY == thisBall.midY ? 0 : -BALL.MOVEMENT));
 
-            if (!allowScrapingWalls)
+            // We avoid scraping walls until we are close enough to the target
+            if (!closeToTarget(nextVelX, nextVelY))
             {
                 avoidScrapingWalls(ref nextVelX, ref nextVelY);
             }
@@ -268,6 +229,119 @@ namespace GameEngine.Ai
                     }
                 }
             }
+        }
+
+        /**
+         * Compute the exact point we should be aiming for to get to the next target on the path.
+         */
+        private void computePointToAimFor(out int nextStepX, out int nextStepY)
+        {
+            if (currentPath.nextNode == null)
+            {
+                // In the final plot, just aim for the center of the target
+                nextStepX = thisBall.getSteppedBX(nextTargetB.midX-BALL.RADIUS, BALL.STEP_ALG.CLOSEST) + BALL.RADIUS;
+                nextStepY = thisBall.getSteppedBY(nextTargetB.midY+BALL.RADIUS, BALL.STEP_ALG.CLOSEST) - BALL.RADIUS;
+                return;
+            }
+            else { 
+                switch (currentPath.nextDirection)
+                {
+                    case Plot.UP:
+                    case Plot.DOWN:
+                        nextStepY = nextTargetB.bottom; // Which is same as top
+                        // TODOX
+                        //// Try to stay away from the left most edge so we don't get
+                        //// trapped by dragons
+                        //if (point1bx == currentPath.ThisPlot.BLeft) {
+                        //    point1bx += BALL.MOVEMENT;
+                        //}
+                        // Pick the closest x which keeps ball in plot but works with
+                        // ball movement steps
+                        if (nextTargetB.left > thisBall.BLeft)
+                        {
+                            nextStepX = thisBall.getSteppedBX(nextTargetB.left, BALL.STEP_ALG.GTE) + BALL.RADIUS;
+                        }
+                        else if (nextTargetB.right < thisBall.BRight)
+                        {
+                            nextStepX = thisBall.getSteppedBX(nextTargetB.right - BALL.DIAMETER + 1, BALL.STEP_ALG.LTE) + BALL.RADIUS;
+                        }
+                        else
+                        {
+                            nextStepX = thisBall.midX;
+                        }
+                        return;
+                    case Plot.LEFT:
+                    case Plot.RIGHT:
+                    default:
+                        nextStepX = nextTargetB.left; // Which is same as right
+                        // TODOX
+                        // Try to stay away from the top most edge so we don't get trapped by dragons
+
+                        // Pick the closest y which keeps ball in plot but works with
+                        // ball movement steps
+                        if (nextTargetB.top < thisBall.BTop)
+                        {
+                            nextStepY = thisBall.getSteppedBY(nextTargetB.top, BALL.STEP_ALG.LTE) - BALL.RADIUS;
+                        }
+                        else if (nextTargetB.bottom > thisBall.BBottom)
+                        {
+                            nextStepY = thisBall.getSteppedBY(nextTargetB.bottom + BALL.DIAMETER - 1, BALL.STEP_ALG.GTE) - BALL.RADIUS;
+                        }
+                        else
+                        {
+                            nextStepY = thisBall.midY;
+                        }
+                        return;
+                }
+            }
+        }
+
+        /**
+         * Once we get close to a target we use slightly different rules to approach it.
+         * This returns when we are a move away.
+         */
+        private bool closeToTarget(int nextVelX, int nextVelY)
+        {
+            // We see if it is close enough in both x and y dimensions independently.
+            // If the ball can fit in the range, it is not close enough until it
+            // is in the range.  If it can't fit in the range it is close enough
+            // if the next step has it touching the range.
+            RRect effectiveTargetB = RRect.fromTRBL(nextTargetB.room,
+                thisBall.getSteppedBY(nextTargetB.top, BALL.STEP_ALG.LTE),
+                thisBall.getSteppedBX(nextTargetB.right-BALL.DIAMETER+1, BALL.STEP_ALG.LTE)+BALL.DIAMETER-1,
+                thisBall.getSteppedBY(nextTargetB.bottom+BALL.DIAMETER-1, BALL.STEP_ALG.GTE)-BALL.DIAMETER+1,
+                thisBall.getSteppedBX(nextTargetB.left, BALL.STEP_ALG.GTE));
+            // Compute in X dimenstion
+            bool closeEnoughX = false;
+            if (effectiveTargetB.width >= BALL.DIAMETER)
+            {
+                // Ball must fit entirely in range
+                closeEnoughX = (thisBall.BLeft >= effectiveTargetB.left) && (thisBall.BRight <= effectiveTargetB.right);
+            }
+            else
+            {
+                // Ball, after moving, must touch range
+                closeEnoughX = (thisBall.BRight + nextVelX >= effectiveTargetB.left) && (thisBall.BLeft + nextVelX <= effectiveTargetB.right);
+            }
+            // Don't bother computing Y dimension if not close enough in X dimension
+            if (!closeEnoughX)
+            {
+                return false;
+            }
+
+            // Compute in Y dimenstion
+            bool closeEnoughY = false;
+            if (effectiveTargetB.height >= BALL.DIAMETER)
+            {
+                // Ball must fit entirely in range
+                closeEnoughY = (thisBall.BTop <= effectiveTargetB.top) && (thisBall.BBottom >= effectiveTargetB.bottom);
+            }
+            else
+            {
+                // Ball, after moving, must touch range
+                closeEnoughY = (thisBall.BBottom + nextVelY <= effectiveTargetB.top) && (thisBall.BTop + nextVelY >= effectiveTargetB.bottom);
+            }
+            return closeEnoughX && closeEnoughY;
         }
 
         /**

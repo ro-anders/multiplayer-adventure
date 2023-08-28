@@ -9,12 +9,19 @@ namespace GameEngine.Ai
      **/
     public class PlaceObjectAt : AiObjective
     {
+        public enum Adjust
+        {
+            CLOSEST, // Find the closest reachable point to the desired point
+            BELOW, // Find the closest reachable point no higher than the desired point
+            ABOVE // Find the closest reachable point no lower than the desired point
+        }
+
         private int objectKey;
         private OBJECT objectToPlace;
         private int placeAtRoom;
         private int placeAtBX;
         private int placeAtBY;
-        private BALL.Adjust adjust;
+        private Adjust adjust;
         private int desiredBallBX;
         private int desiredBallBY;
 
@@ -30,7 +37,7 @@ namespace GameEngine.Ai
          *   choose the best possible close location.  Default is the closest 
          *   possible location.
          */
-        public PlaceObjectAt(int inObject, int inRoom, int inBX, int inBY, BALL.Adjust inAdjust = BALL.Adjust.CLOSEST)
+        public PlaceObjectAt(int inObject, int inRoom, int inBX, int inBY, Adjust inAdjust = Adjust.CLOSEST)
         {
             objectKey = inObject;
             objectToPlace = null; // Set at compute time
@@ -46,10 +53,10 @@ namespace GameEngine.Ai
         protected override void initialize()
         {
             objectToPlace = board.getObject(objectKey);
-            desiredBallBX = placeAtBX - aiPlayer.linkedObjectBX;
-            desiredBallBY = placeAtBY - aiPlayer.linkedObjectBY;
-            // Adjust where we're going if it falls between steps
-            aiPlayer.adjustDestination(ref desiredBallBX, ref desiredBallBY, adjust);
+            desiredBallBX = aiPlayer.getSteppedBX(placeAtBX - aiPlayer.linkedObjectBX);
+            BALL.STEP_ALG yStepAlg = (adjust == Adjust.ABOVE ? BALL.STEP_ALG.GTE :
+                (adjust == Adjust.BELOW ? BALL.STEP_ALG.LTE : BALL.STEP_ALG.CLOSEST));
+            desiredBallBY = aiPlayer.getSteppedBY(placeAtBY - aiPlayer.linkedObjectBY, yStepAlg);
             placeAtBX = desiredBallBX + aiPlayer.linkedObjectBX;
             placeAtBY = desiredBallBY + aiPlayer.linkedObjectBY;
         }

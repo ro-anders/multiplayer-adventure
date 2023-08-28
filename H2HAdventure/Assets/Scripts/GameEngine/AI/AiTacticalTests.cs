@@ -4,11 +4,13 @@ namespace GameEngine.Ai
 
     public class AiTacticalTests
     {
-        AiTactical toTest;
+        AiTactical tactical;
         OBJECT block;
         BALL ball;
         AiPathNode path;
         AiObjective obj;
+
+        public static bool tests_run = false;
 
         byte[][] blockGfx = { new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF } };
 
@@ -16,6 +18,12 @@ namespace GameEngine.Ai
         {
             UnityEngine.Debug.Log("RUNNING AI TACTICAL TESTS!!!!!!!!!!");
             UnityEngine.Debug.Log("You probably want to disable these before release");
+
+            // First thing we do is set that the tests have run (otherwise creating a tactical below will
+            // create an infinite loop)
+            tests_run = true;
+
+            // Create a test board
             Map map = new Map(2, Map.MAP_LAYOUT_SMALL, false, false);
             Board board = new Board(map, null);
             OBJECT key = new OBJECT("gold key", blockGfx, new byte[0], 0, COLOR.YELLOW, OBJECT.RandomizedLocations.OUT_IN_OPEN);
@@ -26,9 +34,12 @@ namespace GameEngine.Ai
             board.addObject(Board.OBJECT_MAGNET, block);
             block.room = 1;
 
+            // Create a test ball
             ball = new BALL(0, ballsPortcullis, false);
             ball.room = 1;
-            toTest = AiTactical.get(ball, board);
+
+            // Create a tactical to test
+            tactical = AiTactical.get(ball, board);
         }
 
         public void testAll()
@@ -53,7 +64,7 @@ namespace GameEngine.Ai
 
             // 1.0: Room is empty.  Ball has a straight line right to exit
             block.setExists(false);
-            toTest.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
+            tactical.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
             if ((velX != 6) || (velY != 0))
             {
                 throw new System.Exception("Failed test 1.0 with vel (" + velX + "," + velY + ")");
@@ -66,7 +77,7 @@ namespace GameEngine.Ai
             block.setExists(true);
             block.x = 60;
             block.y = 48;
-            toTest.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
+            tactical.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
             if ((velX != 0) || /* either 6 or -6 is ok */ (velY == 0))
             {
                 throw new System.Exception("Failed test 1.1 with vel (" + velX + "," + velY + ")");
@@ -78,7 +89,7 @@ namespace GameEngine.Ai
             ball.y = 84;
             block.x = 60;
             block.y = 39;
-            toTest.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
+            tactical.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
             if ((velX != 6) || (velY != 6))
             {
                 throw new System.Exception("Failed test 1.2 with vel (" + velX + "," + velY + ")");
@@ -90,7 +101,7 @@ namespace GameEngine.Ai
             ball.y = 78;
             block.x = 60;
             block.y = 39;
-            toTest.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
+            tactical.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
             if ((velX != 0) || (velY != 6))
             {
                 throw new System.Exception("Failed test 1.3 with vel (" + velX + "," + velY + ")");
@@ -119,7 +130,7 @@ namespace GameEngine.Ai
             block.y = 43;
             ball.x = 110;
             ball.y = 83;
-            toTest.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
+            tactical.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
             if ((velX != 0) || (velY != -6))
             {
                 throw new System.Exception("Failed test 2.0 with vel (" + velX + "," + velY + ")");
@@ -132,8 +143,8 @@ namespace GameEngine.Ai
             block.y = 43; 
             ball.x = 110;
             ball.y = 85;
-            toTest.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
-            if ((velX != 6) || (velY != -6))
+            tactical.computeDirectionOnPath(path, finalX, finalY, obj, ref velX, ref velY);
+            if ((velX != 6) || (velY != 0))
             {
                 throw new System.Exception("Failed test 2.1 with vel (" + velX + "," + velY + ")");
             }

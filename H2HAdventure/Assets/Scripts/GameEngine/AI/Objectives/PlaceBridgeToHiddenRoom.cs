@@ -45,7 +45,7 @@ namespace GameEngine.Ai
                 // So go to the right place in RedMaze2 - the bottom area where
                 // you first enter from RedMaze1.
                 this.addChild(new GoTo(new RRect(Map.RED_MAZE_2, Map.WALL_WIDTH * 16, Map.WALL_HEIGHT * 3 - 1, Map.WALL_WIDTH * 8, Map.WALL_HEIGHT * 3), Board.OBJECT_BRIDGE));
-                this.addChild(new PlaceObjectAt(Board.OBJECT_BRIDGE, Map.RED_MAZE_2, RED_MAZE_PLACEMENT_BX, RED_MAZE_PLACEMENT_BY, BALL.Adjust.BELOW));
+                this.addChild(new PlaceObjectAt(Board.OBJECT_BRIDGE, Map.RED_MAZE_2, RED_MAZE_PLACEMENT_BX, RED_MAZE_PLACEMENT_BY, PlaceObjectAt.Adjust.BELOW));
             } else
             {
                 // MUST_IMPLEMENT
