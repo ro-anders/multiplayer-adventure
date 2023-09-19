@@ -145,8 +145,8 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
         Debug.Log("Starting game.");
         GameInLobby game = SessionInfo.GameToPlay;
         // TODOX: Right now we are manually jamming the AI
-        bool[] useAi = { true, true, false };
-        inLocalPlayerSlot = 1;
+        bool[] useAi = { false, true, true };
+        inLocalPlayerSlot = 0;
         //// Setup AI whenever there is no network.  Turn it on for everyone but the local player
         //bool[] useAi = { false, false, false};
         //for(int ctr=0; ctr<game.numPlayers; ++ctr)
