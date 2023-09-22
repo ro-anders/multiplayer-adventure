@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using GameEngine;
 using UnityEngine;
-using UnityEngine.Networking;
-using UnityEngine.Networking.Match;
-using UnityEngine.Networking.Types;
 
 public class UnityTransport : MonoBehaviour, Transport
 {
@@ -15,12 +12,9 @@ public class UnityTransport : MonoBehaviour, Transport
         SHUTDOWN
     }
 
-    public NetworkManager networkManager;
     private string matchName; // The unique name of the game in Unity's matchmaker
     private bool needMatch = false; // Whether we are using matchmaker and need to setup a match
     private bool waitingOnListMatch = false; // Whether we are waiting for Unity to setup a match
-    private ulong matchNetwork; // Identifies the matchmaker match so we can disconnect cleanly later
-    private NodeID matchNode;  // Identifies the matchmaker host so we can disconnect cleanly later
     private ConnectionStates state = ConnectionStates.INITIATING;
     public ConnectionStates ConnectionState
     {
@@ -40,30 +34,22 @@ public class UnityTransport : MonoBehaviour, Transport
         {
             if (isHosting)
             {
-                networkManager.networkPort = int.Parse(SessionInfo.GameToPlay.connectionkey);
-                networkManager.serverBindAddress = "127.0.0.1";
-                networkManager.serverBindToIP = true;
-                networkManager.StartHost();
+                // RIPPED
                 state = ConnectionStates.CONNECTED;
             }
             else
             {
-                networkManager.networkPort = int.Parse(SessionInfo.GameToPlay.connectionkey);
-                networkManager.StartClient();
+                // RIPPED
                 state = ConnectionStates.CONNECTED;
             }
         }
         else if (SessionInfo.NetworkSetup == SessionInfo.Network.MATCHMAKER)
         {
             matchName = SessionInfo.GameToPlay.connectionkey;
-            if (networkManager.matchMaker == null)
-            {
-                networkManager.StartMatchMaker();
-            }
+            // RIPPED
             if (isHosting)
             {
-                networkManager.matchMaker.CreateMatch(matchName, (uint)100, true,
-                                    "", "", "", 0, 1, OnMatchCreate);
+                // RIPPED
             }
             else
             {
@@ -83,7 +69,7 @@ public class UnityTransport : MonoBehaviour, Transport
     {
         if (needMatch && !waitingOnListMatch)
         {
-            networkManager.matchMaker.ListMatches(0, 20, "", true, 0, 1, OnMatchList);
+            // RIPPED
             waitingOnListMatch = true;
         }
     }
@@ -102,7 +88,7 @@ public class UnityTransport : MonoBehaviour, Transport
         }
         else
         {
-            if ((thisPlayer == null) || (networkManager.matchMaker == null))
+            if ((thisPlayer == null) /*  ||  RIPPED */)
             {
                 // Host has already disconnected.
                 ShutdownNetworkManager();
@@ -110,11 +96,11 @@ public class UnityTransport : MonoBehaviour, Transport
             }
             else if (thisPlayer.isServer)
             {
-                networkManager.matchMaker.DestroyMatch((NetworkID)matchNetwork, 0, OnDestroyMatch);
+                // RIPPED
             }
             else
             {
-                networkManager.matchMaker.DropConnection((NetworkID)matchNetwork, matchNode, 0, OnDropConnection);
+                // RIPPED
             }
         }
     }
@@ -124,11 +110,11 @@ public class UnityTransport : MonoBehaviour, Transport
         yield return new WaitForSeconds(0.5f);
         if ((thisPlayer != null) && (thisPlayer.isServer))
         {
-            networkManager.StopHost();
+            // RIPPED
         }
         else
         {
-            networkManager.StopClient();
+            // RIPPED
         }
         ShutdownNetworkManager();
         state = ConnectionStates.SHUTDOWN;
@@ -136,11 +122,10 @@ public class UnityTransport : MonoBehaviour, Transport
 
     private void ShutdownNetworkManager()
     {
-        Destroy(networkManager);
-        NetworkManager.Shutdown();
+        // RIPPED
     }
 
-    public void OnMatchCreate(bool success, string extendedInfo, MatchInfo matchInfo)
+    public void OnMatchCreate(bool success, string extendedInfo/* RIPPED ,MatchInfo matchInfo */)
     {
         if (!success)
         {
@@ -149,13 +134,12 @@ public class UnityTransport : MonoBehaviour, Transport
         }
         else
         {
-            matchNetwork = (ulong)matchInfo.networkId;
-            networkManager.OnMatchCreate(success, extendedInfo, matchInfo);
+            // RIPPED
             Debug.Log("Now hosting h2h game " + matchName);
         }
     }
 
-    private void OnMatchList(bool success, string extendedInfo, List<MatchInfoSnapshot> matchList)
+    private void OnMatchList(bool success, string extendedInfo /* RIPPED, List<MatchInfoSnapshot> matchList */)
     {
         if (!success)
         {
@@ -165,38 +149,11 @@ public class UnityTransport : MonoBehaviour, Transport
         }
         else
         {
-            Debug.Log("Queried and found " + matchList.Count + " matches");
-            MatchInfoSnapshot found = null;
-            if (matchList.Count > 0)
-            {
-                // There should be only one match ever - the default one
-                // but we check just in case
-                foreach (MatchInfoSnapshot match in matchList)
-                {
-                    if (match.name.Equals(matchName))
-                    {
-                        found = match;
-                        break;
-                    }
-                    else
-                    {
-                        Debug.Log("Ignoring match named " + match.name);
-                    }
-                }
-            }
-            if (found == null)
-            {
-                // No one has hosted yet.  Try again.
-                waitingOnListMatch = false;
-            }
-            else
-            {
-                networkManager.matchMaker.JoinMatch(found.networkId, "", "", "", 0, 1, OnMatchJoined);
-            }
+            // RIPPED
         }
     }
 
-    public virtual void OnMatchJoined(bool success, string extendedInfo, MatchInfo matchInfo)
+    public virtual void OnMatchJoined(bool success, string extendedInfo /* RIPPED , MatchInfo matchInfo*/)
     {
         if (!success)
         {
@@ -205,11 +162,7 @@ public class UnityTransport : MonoBehaviour, Transport
         }
         else
         {
-            matchNetwork = (ulong)matchInfo.networkId;
-            matchNode = matchInfo.nodeId;
-            networkManager.OnMatchJoined(success, extendedInfo, matchInfo);
-            Debug.Log("Now joined h2h game");
-            needMatch = false;
+            // RIPPED
         }
     }
 
@@ -226,7 +179,7 @@ public class UnityTransport : MonoBehaviour, Transport
         {
             Debug.Log("Disconnected from match");
         }
-        networkManager.OnDropConnection(success, extendedInfo);
+        // RIPPED
         ShutdownNetworkManager();
         state = ConnectionStates.SHUTDOWN;
     }
@@ -242,7 +195,7 @@ public class UnityTransport : MonoBehaviour, Transport
         {
             Debug.Log("Shutdown match");
         }
-        networkManager.OnDestroyMatch(success, extendedInfo);
+        // RIPPED
         ShutdownNetworkManager();
         state = ConnectionStates.SHUTDOWN;
     }

@@ -1,23 +1,28 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 
-public class LobbyPlayer : NetworkBehaviour
+public class LobbyPlayer : MonoBehaviour
 {
 
-    public LobbyController lobbyController;
+    public bool isLocalPlayer = true;
+    public bool isServer = false;
 
-    [SyncVar(hook = "OnChangePlayerName")]
+    //[SyncVar(hook = "OnChangePlayerName")]
     public string playerName = "";
 
-    [SyncVar(hook = "OnChangeVoiceOnHost")]
+    //[SyncVar(hook = "OnChangeVoiceOnHost")]
     public bool voiceEnabledOnHost = false;
+
+    private static uint lastId = 0;
 
     public uint Id
     {
-        get { return this.GetComponent<NetworkIdentity>().netId.Value; }
+        get {
+            lastId += 1;
+            return lastId;
+        }
     }
 
     void Start()
@@ -30,35 +35,28 @@ public class LobbyPlayer : NetworkBehaviour
         // The lobby controller needs someway to talk to the server, so it uses
         // the LobbyPlayer representing the local player
         GameObject lobbyControllerGO = GameObject.FindGameObjectWithTag("LobbyController");
-        lobbyController = lobbyControllerGO.GetComponent<LobbyController>();
         if (isLocalPlayer)
         {
-            lobbyController.OnConnectedToLobby(this);
-            CmdSetPlayerName(lobbyController.ThisPlayerName);
-        }
-        else
-        {
-            lobbyController.NewPlayerAudioSource.Play();
+            CmdSetPlayerName("Phil");
         }
         if (voiceEnabledOnHost)
         {
             UnityEngine.Debug.Log("VoiceOnHost started true");
-            lobbyController.GetChatPanelController().OnTalkEnabledOnHost();
         }
         RefreshDisplay();
     }
 
-    [Command]
+    //[Command]
     public void CmdSetPlayerName(string name) {
         playerName = name;
     }
 
-    [Command]
+    //[Command]
     public void CmdHostGame(int numPlayers, int gameNumber, bool diff1, bool diff2,
         uint hostPlayerId, string hostPlayerName)
     {
         System.Random rand = new System.Random();
-        GameObject gameGO = Instantiate(lobbyController.gamePrefab);
+        GameObject gameGO = Instantiate((GameObject)null);
         GameInLobby game = gameGO.GetComponent<GameInLobby>();
         game.numPlayers = numPlayers;
         game.gameNumber = gameNumber;
@@ -72,28 +70,24 @@ public class LobbyPlayer : NetworkBehaviour
         } else {
             game.connectionkey = (30000 + rand.Next(100) * 100 + hostPlayerId).ToString();
         }
-        NetworkServer.Spawn(gameGO);
+        // RIPPED
     }
 
-    [Command]
+    //[Command]
     public void CmdJoinGame(uint gameId) {
-        lobbyController.PlayerJoinGame(this, gameId);
     }
 
-    [Command]
+    //[Command]
     public void CmdSignalStartingGame(uint gameId) {
         Debug.Log(this.playerName + " got start game command");
-        lobbyController.PlayerReadyToStartGame(this, gameId);
     }
 
-    [Command]
+    //[Command]
     public void CmdLeaveGame(uint gameId) {
-        lobbyController.PlayerLeaveGame(this, gameId);
     }
 
-    [Command]
+    //[Command]
     public void CmdPostChat(string message) {
-        lobbyController.GetChatPanelController().BroadcastChatMessage(playerName, message);
     }
 
     private void RefreshDisplay() {
@@ -114,16 +108,7 @@ public class LobbyPlayer : NetworkBehaviour
             voiceEnabledOnHost = newValue;
             if (voiceEnabledOnHost)
             {
-                lobbyController.GetChatPanelController().OnTalkEnabledOnHost();
             }
-        }
-    }
-
-    public override void OnNetworkDestroy()
-    {
-        if (lobbyController != null)
-        {
-            lobbyController.OnPlayerDropped(this);
         }
     }
 }

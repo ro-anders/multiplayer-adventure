@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using Amazon.Lambda;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -182,11 +181,17 @@ public class StartScreen : MonoBehaviour {
 
     private void CheckSystemMessages()
     {
-        awsUtil.CallLambdaAsync(GAME_STATUS_LAMBDA, "", OnGameStatusReturn);
     }
 
     private void OnGameStatusReturn(bool success, string payload)
     {
+        StatusMessageEntry getRidOfWarning = new StatusMessageEntry();
+        getRidOfWarning.PK = "";
+        getRidOfWarning.SK = "";
+        getRidOfWarning.MinimumVersion = 0;
+        getRidOfWarning.SystemmMessage = "";
+        getRidOfWarning.EggStatus = false;
+        getRidOfWarning.MessageId = 0;
 
         StatusMessageEntry statusMessage = null;
         if (success)

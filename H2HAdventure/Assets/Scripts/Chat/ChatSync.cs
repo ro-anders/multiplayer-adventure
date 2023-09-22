@@ -1,14 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 
-public class ChatSync : NetworkBehaviour
+public class ChatSync : MonoBehaviour
 {
     private const string NO_CHAT_YET = "No messages";
 
-    [SyncVar(hook = "OnChangeChatText")]
+    //[SyncVar(hook = "OnChangeChatText")]
     public string chatText;
 
     private Text chatTextUI;

@@ -3,10 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using GameEngine;
-using UnityEngine.Networking;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using Amazon.Lambda;
 
 [Serializable]
 class WonGameReport
@@ -49,7 +46,6 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
 
     public IntroPanelController introPanel;
     public ChatPanelController chatPanel;
-    public AWS awsUtil;
     public GameObject quitConfirmPanel;
 
     private UnityTransport xport;
@@ -228,7 +224,6 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
         WonGameReport report = new WonGameReport(SessionInfo.ThisPlayerName,
             losers.ToArray());
         string jsonStr = JsonUtility.ToJson(report);
-        awsUtil.CallLambdaAsync(UPDATE_STANDINGS_LAMBDA, jsonStr);
     }
 
     private void ReportRaceToEgg(int stage)
@@ -236,12 +231,10 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
         // Records people getting closer to finding the easter egg
         EggReport report = new EggReport(SessionInfo.ThisPlayerName, stage);
         string jsonStr = JsonUtility.ToJson(report);
-        awsUtil.CallLambdaAsync(UPDATE_EGG_SCOREBOARD_LAMBDA, jsonStr);
     }
 
     private void SendPing()
     {
-        awsUtil.CallLambdaAsync(PING_LAMBDA, "{}");
     }
 
 }

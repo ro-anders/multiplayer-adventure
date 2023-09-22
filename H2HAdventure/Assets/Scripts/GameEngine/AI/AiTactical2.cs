@@ -11,7 +11,7 @@ namespace GameEngine.Ai
          * a second, so limit how many iterations of the search
          * can be performed.
          */
-        private static int MAX_ATTEMPTS_PER_TURN = 30;
+        //private static int MAX_ATTEMPTS_PER_TURN = 30;
 
         enum direction
         {
@@ -49,8 +49,8 @@ namespace GameEngine.Ai
         /** 
          * We figure out several moves at a time.
          */
-        private bool recomputeSteps = true;
-        private AiPathNode lastComputedPath = null;
+        //private bool recomputeSteps = true;
+        //private AiPathNode lastComputedPath = null;
         private RRect lastComputedFinalDest = RRect.NOWHERE;
 
 

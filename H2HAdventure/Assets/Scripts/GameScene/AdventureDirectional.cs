@@ -10,8 +10,6 @@ public class AdventureDirectional : MonoBehaviour
     public Image joystickImage;
 
     private bool hasResetBeenPressed = false;
-    private int minDragDistance = 0;
-
 
 #if UNITY_ANDROID || UNITY_IOS
     private bool isDragging = false;
@@ -33,7 +31,6 @@ public class AdventureDirectional : MonoBehaviour
     {
 #if UNITY_ANDROID || UNITY_IOS
         Vector3 size = GetComponent<Renderer>().bounds.size;
-        minDragDistance = (int)(size.x / 4);
 #else
         if (joystickImage != null)
         {

@@ -1,59 +1,19 @@
-﻿using Amazon;
-using Amazon.CognitoIdentity;
-using Amazon.Lambda;
-using UnityEngine;
+﻿using UnityEngine;
 using System.Security.Cryptography;
 using System;
 using System.IO;
 using System.Text;
-
-[Serializable]
-class LambdaPayload
-{
-    public int statusCode;
-    public string body;
-}
-
-class LambdaError
-{
-    public string errorMessage;
-    public string errorType;
-    public string stackTrace;
-}
 
 public class AWS : MonoBehaviour {
 
     private static byte[] RijndaelKey = { 72, 127, 153, 45, 111, 94, 69, 91, 36, 248, 149, 7, 166, 80, 210, 47, 30, 192, 20, 200, 73, 238, 78, 136, 116, 101, 223, 56, 119, 15, 129, 127 };
     private static byte[] RijndaelIV = { 216, 105, 230, 72, 146, 231, 225, 103, 160, 49, 132, 32, 100, 194, 131, 107 };
     
-    private AmazonLambdaClient lambdaClient;
-    public AmazonLambdaClient LambdaClient
-    {
-        get
-        { return lambdaClient;}
-    }
-
     private bool isReady = false;
     private Action callOnReady = null;
 
     // Use this for initialization
     void Start () {
-        UnityInitializer.AttachToGameObject(gameObject);
-        AWSConfigs.HttpClient = AWSConfigs.HttpClientOption.UnityWebRequest;
-        // Initialize the Amazon Cognito credentials provider
-        string idPoolId = decryptCredentials();
-        CognitoAWSCredentials credentials = new CognitoAWSCredentials(
-            idPoolId, // Identity pool ID
-            RegionEndpoint.USEast2 // Region
-            );
-            lambdaClient = new AmazonLambdaClient(credentials, RegionEndpoint.USEast2);
-        isReady = true;
-        if (callOnReady != null)
-        {
-            Action action = callOnReady;
-            callOnReady = null;
-            action();
-        }
     }
 
     public void CallOnReady(Action action)
@@ -119,65 +79,6 @@ public class AWS : MonoBehaviour {
             }
             return plaintext;
 
-        }
-    }
-
-    public void CallLambdaAsync(string lambdaName, string inputStr)
-    {
-        CallLambdaAsync(lambdaName, inputStr, dummyCallback);
-    }
-
-    public void CallLambdaAsync(string lambdaName, string inputStr, Action<bool, string> callback)
-    {
-        try
-        {
-            LambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
-            {
-                FunctionName = lambdaName,
-                Payload = inputStr
-            },
-            (responseObject) =>
-            {
-                if (responseObject.Exception != null)
-                {
-                    Debug.LogError("Error calling " + lambdaName +
-                            " lambda returned thrown exception " + responseObject.Exception.ToString());
-                    callback(false, null);
-
-                }
-                else if ((responseObject.Response.FunctionError != null) && !responseObject.Response.FunctionError.Equals(""))
-                {
-                    string payloadStr = Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray());
-                    LambdaError errorResponse = JsonUtility.FromJson<LambdaError>(payloadStr);
-                    Debug.LogError("Error calling " + lambdaName +
-                    " lambda returned error message: " + errorResponse.errorMessage);
-                    callback(false, null);
-                }
-                else
-                {
-                    string payloadStr = Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray());
-                    LambdaPayload lambdaResponse = JsonUtility.FromJson<LambdaPayload>(payloadStr);
-                    if (lambdaResponse.statusCode != 200)
-                    {
-                        Debug.LogError("Error calling " + lambdaName +
-                        " lambda returned status code " + lambdaResponse.statusCode + ":" +
-                            lambdaResponse.body);
-                        callback(false, null);
-                    }
-                    else
-                    {
-                        //Debug.Log("Call to " + lambdaName + " successful.");
-                        callback(true, lambdaResponse.body);
-                    }
-                }
-            }
-            );
-        }
-        catch (Exception e)
-        {
-            Debug.LogError("Invoking " + lambdaName +
-                    " lambda threw exception " + e.ToString());
-            callback(false, null);
         }
     }
 

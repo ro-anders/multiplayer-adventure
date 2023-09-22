@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using GameEngine;
 using UnityEngine;
-using UnityEngine.Networking;
 
-public class PlayerSync : NetworkBehaviour
+public class PlayerSync : MonoBehaviour
 {
+    public bool isLocalPlayer = true;
+    public bool isServer = false;
 
-    [SyncVar(hook = "OnChangePlayerName")]
+    //[SyncVar(hook = "OnChangePlayerName")]
     public string playerName = "";
 
-    [SyncVar(hook = "OnChangePlayerId")]
+    //[SyncVar(hook = "OnChangePlayerId")]
     public uint playerId = GameInLobby.NO_PLAYER;
 
-    [SyncVar(hook = "OnChangeVoiceOnHost")]
+    //[SyncVar(hook = "OnChangeVoiceOnHost")]
     public bool voiceEnabledOnHost = false;
 
     private int slot = -1;
@@ -27,7 +28,8 @@ public class PlayerSync : NetworkBehaviour
         GameObject gameController = GameObject.FindGameObjectWithTag("GameController");
         xport = gameController.GetComponent<UnityTransport>();
         controller = gameController.GetComponent<UnityAdventureView>();
-        if (isLocalPlayer)
+        bool ripped = true;
+        if (ripped)
         {
             deduceSlot(SessionInfo.ThisPlayerId);
             CmdSetPlayerId(SessionInfo.ThisPlayerId);
@@ -99,37 +101,37 @@ public class PlayerSync : NetworkBehaviour
         return slot;
     }
 
-    [Command]
+    //[Command]
     public void CmdSetPlayerId(uint id)
     {
         playerId = id;
     }
 
-    [Command]
+    //[Command]
     public void CmdSetPlayerName(string name)
     {
         playerName = name;
     }
 
-    [ClientRpc]
+    //[ClientRpc]
     public void RpcStartGame()
     {
         controller.StartGame();
     }
 
-    [Command]
+    //[Command]
     public void CmdBroadcast(int[] dataPacket)
     {
         RpcReceiveBroadcast(dataPacket);
     }
 
-    [ClientRpc]
+    //[ClientRpc]
     public void RpcReceiveBroadcast(int[] dataPacket)
     {
         xport.receiveBroadcast(slot, dataPacket);
     }
 
-    [Command]
+    //[Command]
     public void CmdPostChat(string message)
     {
         controller.GetChatPanelController().BroadcastChatMessage(playerName, message);

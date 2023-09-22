@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 //using Dissonance;
 
@@ -114,7 +113,6 @@ public class ChatPanelController : MonoBehaviour
     {
         // The scene has just been created on the host.  So network the chat now.
         GameObject chatSyncGO = Instantiate(chatPrefab);
-        NetworkServer.Spawn(chatSyncGO);
         isHost = true;
         OnTalkEnabledOnHost();
     }

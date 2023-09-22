@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 
 public enum DIFF
@@ -11,14 +10,14 @@ public enum DIFF
     B
 }
 
-public class GameInLobby : NetworkBehaviour
+public class GameInLobby : MonoBehaviour
 {
     public Button actionButton;
     public Text text;
     public Text playerText;
  #pragma warning disable CS0618 // Type or member is obsolete
 
-    public static readonly uint NO_PLAYER = NetworkInstanceId.Invalid.Value;
+    public static readonly uint NO_PLAYER = 2743;
     private const string UNKNOWN_NAME = "--";
     private static readonly int[,] permutations = new int[,] {
         {0, 1, 2},
@@ -32,43 +31,43 @@ public class GameInLobby : NetworkBehaviour
 
     public uint gameId;
 
-    [SyncVar(hook = "OnChangePlayerOne")]
+    //[SyncVar(hook = "OnChangePlayerOne")]
     public uint playerOne = NO_PLAYER;
 
-    [SyncVar(hook = "OnChangePlayerOneName")]
+    //[SyncVar(hook = "OnChangePlayerOneName")]
     public string playerOneName = UNKNOWN_NAME;
 
-    [SyncVar(hook = "OnChangePlayerTwo")]
+    //[SyncVar(hook = "OnChangePlayerTwo")]
     public uint playerTwo = NO_PLAYER;
 
-    [SyncVar(hook = "OnChangePlayerTwoName")]
+    //[SyncVar(hook = "OnChangePlayerTwoName")]
     public string playerTwoName = UNKNOWN_NAME;
 
-    [SyncVar(hook = "OnChangePlayerThree")]
+    //[SyncVar(hook = "OnChangePlayerThree")]
     public uint playerThree = NO_PLAYER;
 
-    [SyncVar(hook = "OnChangePlayerThreeName")]
+    //[SyncVar(hook = "OnChangePlayerThreeName")]
     public string playerThreeName = UNKNOWN_NAME;
 
-    [SyncVar(hook = "OnChangeNumPlayers")]
+    //[SyncVar(hook = "OnChangeNumPlayers")]
     public int numPlayers = 0;
 
-    [SyncVar(hook = "OnChangeGameNumber")]
+    //[SyncVar(hook = "OnChangeGameNumber")]
     public int gameNumber = -1;
 
-    [SyncVar(hook = "OnChangeDiff1")]
+    //[SyncVar(hook = "OnChangeDiff1")]
     public DIFF diff1 = DIFF.NOT_SET;
 
-    [SyncVar(hook = "OnChangeDiff2")]
+    //[SyncVar(hook = "OnChangeDiff2")]
     public DIFF diff2 = DIFF.NOT_SET;
 
-    [SyncVar(hook = "OnChangeIsReadyToPlay")]
+    //[SyncVar(hook = "OnChangeIsReadyToPlay")]
     public bool isReadyToPlay = false;
 
-    [SyncVar(hook = "OnChangeConnectionKey")]
+    //[SyncVar(hook = "OnChangeConnectionKey")]
     public string connectionkey = "";
 
-    [SyncVar(hook = "OnChangePlayerMapping")]
+    //[SyncVar(hook = "OnChangePlayerMapping")]
     public int playerMapping = -1;
 #pragma warning restore CS0618 // Type or member is obsolete
 
@@ -82,17 +81,12 @@ public class GameInLobby : NetworkBehaviour
         get { return hasBeenDestroyed; }
     }
 
-    private LobbyController lobbyController;
-
     private LobbyPlayer localPlayer;
     private LobbyPlayer LocalPlayer
     {
         get
         {
-            if (localPlayer == null)
-            {
-                localPlayer = lobbyController.LocalLobbyPlayer;
-            }
+            // RIPPED
             return localPlayer;
         }
     }
@@ -146,30 +140,28 @@ public class GameInLobby : NetworkBehaviour
             (playerThreeName == playerName ? 2 : -1)));
     }
 
+    private static uint lastGameId = 0;
     void Start()
     {
-        gameId = this.GetComponent<NetworkIdentity>().netId.Value;
+        lastGameId += 1;
+        gameId = lastGameId;
 
         GameObject GameList = GameObject.FindGameObjectWithTag("GameParent");
         gameObject.transform.SetParent(GameList.transform, false);
         GameObject lobbyControllerGameObject = GameObject.FindGameObjectWithTag("LobbyController");
-        lobbyController = lobbyControllerGameObject.GetComponent<LobbyController>();
 
         OnInternalStateUpdated();
     }
 
     public void markReadyToPlay()
     {
-        if (!isServer)
-        {
-            throw new System.Exception("Illegal call.  Should only be called on server.");
-        }
+        localPlayer = null;
         isReadyToPlay = true;
     }
 
     public bool HasInitialSetup()
     {
-        bool hasData = (lobbyController != null) &&
+        bool hasData = 
             (playerOne != NO_PLAYER) &&
             (playerOneName != UNKNOWN_NAME) &&
             (numPlayers != 0) &&
@@ -204,13 +196,6 @@ public class GameInLobby : NetworkBehaviour
     public void StartGame()
     {
         localPlayer.CmdSignalStartingGame(this.gameId);
-        // Regular clients disconnect from the lobby and start playing immediately.
-        // But the host of the lobby has to wait until getting an ack from the other
-        // players before disconnecting.
-        if (!isServer)
-        {
-            lobbyController.StartGame(this);
-        }
     }
 
     /**
@@ -227,17 +212,10 @@ public class GameInLobby : NetworkBehaviour
         return numPlayersReady >= numPlayers;
     }
 
-    public override void OnNetworkDestroy()
-    {
-        hasBeenDestroyed = true;
-        OnInternalStateUpdated();
-    }
-
     private void OnInternalStateUpdated()
     {
-        if (HasInitialSetup() && (lobbyController != null))
+        if (HasInitialSetup())
         {
-            lobbyController.OnGameStateUpdated();
             if (IsForMeAndReadyToPlay() && !HasBeenDestroyed)
             {
                 StartGame();
