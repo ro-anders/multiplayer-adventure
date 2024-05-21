@@ -3,7 +3,8 @@ namespace GameEngine
 {
     public enum ActionType
     {
-        PING = 1,
+        RESERVED = 0,
+        PING,
         PLAYER_MOVE,
         PLAYER_PICKUP,
         PLAYER_RESET,
