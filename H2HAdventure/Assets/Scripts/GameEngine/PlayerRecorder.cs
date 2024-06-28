@@ -18,7 +18,7 @@ namespace GameEngine
 
         /** What mode the system is in.  Currently just hard coded and changed
          * in the code when running tests. */
-        public const Modes GLOBAL_PLAYER_RECORDER_MODE = Modes.RECORD;
+        public const Modes GLOBAL_PLAYER_RECORDER_MODE = Modes.NEITHER;
         public const int PLAYBACK_PLAYER_VIEW = -1;
 
         /** The recording file. */
