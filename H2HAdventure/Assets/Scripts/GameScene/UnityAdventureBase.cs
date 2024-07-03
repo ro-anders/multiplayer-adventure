@@ -27,7 +27,14 @@ public class Rectangle
     public readonly int height;
 }
 
-
+/**
+ * This is a Unity implementation of AdventureView and knows how to 
+ * paint pixels to a RawImage, read directions from a keyboard or virtual
+ * joystick and popup messages on a Text.  However, we often have multiple 
+ * possible scenes for displaying the game (single player vs multiplayer vs
+ * AwesomeCon version) so this only holds the common code and defers some
+ * view mechanics to derived classes.
+ */
 abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
 {
     private const int DRAW_AREA_WIDTH = Adv.ADVENTURE_SCREEN_BWIDTH;

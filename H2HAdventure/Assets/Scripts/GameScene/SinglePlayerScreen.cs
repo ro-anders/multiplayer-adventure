@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SinglePlayerScreen : MonoBehaviour
+/** 
+ * This is the canvas for the Single Player Screen.
+ * It handles events, which is just the button presses.
+ */
+public class MultiPlayerScreen : MonoBehaviour
 {
     public GameObject gamePanel;
     public SinglePlayerAdvView advView;

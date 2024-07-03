@@ -30,15 +30,22 @@ namespace GameScene
         /** Whether this is Player 1, 2 or 3.  Though value is acually 0, 1 or 2. */
         private int thisPlayerSlot = -1;
 
-        //TEMP private WebSocket websocket;
+        private WebSocket websocket;
+
+        /** Number of clients (including this one) connected to the session. */
+        private int numClients = 0;
 
         /** Keep a queue of actions read from the server. */
-        //TEMP private Queue<RemoteAction> receviedActions = new Queue<RemoteAction>();
+        private Queue<RemoteAction> receviedActions = new Queue<RemoteAction>();
 
         public int ThisPlayerSlot
         {
             get { return thisPlayerSlot; }
-            set { thisPlayerSlot = value; }
+        }
+
+        public int NumberClientsConnected
+        {
+            get { return numClients; }
         }
 
         void Start()
@@ -51,23 +58,22 @@ namespace GameScene
         // Do we need this?
         void Update()
         {
-            /*TEMP
             #if !UNITY_WEBGL || UNITY_EDITOR
             if (websocket != null) {
-                //TEMP websocket.DispatchMessageQueue();
+                websocket.DispatchMessageQueue();
             }
             #endif
-            */
         }
 
         // Connect to the back end server
-        public async Task<bool> Connect(byte session_in) {
-            /*TEMP
+        public async Task<bool> Connect(byte session_in, int slot_in) {
+            UnityEngine.Debug.Log("Setting up backend server connection");
             if ((session != NO_SESSION) && (session != session_in)) {
                 // Something's wrong.  Why are we connecting twice?
                 throw new Exception("Connect() called on already connected web socket transport");
             }
             session = session_in;
+            thisPlayerSlot = slot_in;
 
             if (websocket != null) {
                 return websocket.State == WebSocketState.Open;
@@ -75,12 +81,12 @@ namespace GameScene
 
             var thisTask = new TaskCompletionSource<bool>();
 
-            //TEMP websocket = new WebSocket(HOST_ADDRESS + "/ws");
+            websocket = new WebSocket(HOST_ADDRESS + "/ws");
 
             websocket.OnOpen += async () =>
             {
                 // Send a request to open a connection to the server.
-                // An open request is 5 bytes, the first being the session and the rest 0.
+                // An open request is 2 bytes, the first being the session and the second being 0x01.
                 Debug.Log("Connection open!");
                 connected = true;
                 byte[] bytes = new byte[] {session, CONNECT_CODE};
@@ -107,41 +113,54 @@ namespace GameScene
 
             websocket.OnMessage += (bytes) =>
             {
-                const int MINIMUM_MESSAGE_SIZE = 10; // 1 for session, 1 for server code, 4 for slot, 4 for message code
-                if (bytes.Length < MINIMUM_MESSAGE_SIZE) {
+                const int MIN_GAME_MESSAGE_SIZE = 10; // 1 for session, 1 for server code, 4 for slot, 4 for message code
+                if (bytes.Length < 3) {
                     Debug.LogWarning("Unexpected " + (bytes.Length == 0 ? "empty" : "short") + "message.");
                     return;
                 }
                 byte msg_session = bytes[0];
-                Debug.Log("Received " + bytes.Length + " byte message for session " + msg_session);
+                Debug.Log("Received [" + string.Join(" ", bytes) + "] for session " + msg_session);
 
                 if (session != msg_session) {
                     Debug.LogWarning("Unexpected message.  Session mismatch.  '" + msg_session + "' != '" + session + "'");
                     return;
                 }
 
-                // Convert byte array to int array and deserialize.
-                // Skip the bytes reserved by the server.  They are used by the server. 
-                int[] ints = new int[(bytes.Length - SERVER_BYTES) / sizeof(int)];
-                Buffer.BlockCopy(bytes, SERVER_BYTES, ints, 0, bytes.Length - SERVER_BYTES);
-                
-                RemoteAction nextAction = deserializeAction(ints);
-                if (nextAction != null) {
-                    receviedActions.Enqueue(nextAction);
+                byte msg_code = bytes[1];
+                if (msg_code == CONNECT_CODE) {
+                    // Process a system message
+                    numClients = bytes[2];
+                }
+                else {
+                    // Process a game message
+                    if (bytes.Length < MIN_GAME_MESSAGE_SIZE) {
+                        Debug.LogWarning("Unexpected " + (bytes.Length == 0 ? "empty" : "short") + "message.");
+                        return;
+                    }
+
+                    // Convert byte array to int array and deserialize.
+                    // Skip the bytes reserved by the server.  They are used by the server. 
+                    int[] ints = new int[(bytes.Length - SERVER_BYTES) / sizeof(int)];
+                    Buffer.BlockCopy(bytes, SERVER_BYTES, ints, 0, bytes.Length - SERVER_BYTES);
+                    
+                    RemoteAction nextAction = deserializeAction(ints);
+                    UnityEngine.Debug.Log("Decoded action " + nextAction);
+                    if (nextAction != null) {
+                        receviedActions.Enqueue(nextAction);
+                    }
                 }
             };
 
-            //TEMP _ = websocket.Connect();
+            UnityEngine.Debug.Log("Initiating connection");
+            _ = websocket.Connect();
+            UnityEngine.Debug.Log("waiting for callbacks");
 
             bool return_val = await thisTask.Task;
+            UnityEngine.Debug.Log("Connection setup complete");
             return return_val;
-            */ return true;
-            
         }
 
         public void send(RemoteAction action) {
-            Debug.Log("Sending action " + action.ToString());
-            /* //TEMP
             if (websocket.State == WebSocketState.Open)
             {
                 // Serialize into a byte array.  The first byte of the byte array is the 
@@ -152,21 +171,21 @@ namespace GameScene
                 bytes[0] = session;
                 bytes[1] = MESSAGE_CODE;
                 Buffer.BlockCopy(ints, 0, bytes, SERVER_BYTES, bytes.Length-SERVER_BYTES);
-                Debug.Log("Sending action on session " + session);
-                //TEMP await websocket.Send(bytes);
-                Debug.Log("Sent");
+                Debug.Log("Sending action " + action.ToString() + " on session " + session);
+                Debug.Log("Sending [" + string.Join(" ", bytes) + "]");
+                websocket.Send(bytes);
             }
-            //TEMP */
         }
         
         private async void OnApplicationQuit()
         {
-            //TEMP await websocket.Close();
+            if (websocket != null) {
+                await websocket.Close();
+            }
         }
 
         RemoteAction Transport.get()
         {
-            /*TEMP
             if (receviedActions.Count == 0)
             {
                 return null;
@@ -176,11 +195,9 @@ namespace GameScene
                 RemoteAction nextAction = receviedActions.Dequeue();
                 return nextAction;
             }
-            */return null;
         }
 
         private RemoteAction deserializeAction(int[] dataPacket) {
-            /*TEMP
             ActionType type = (ActionType)dataPacket[0];
             int sender = dataPacket[1];
             if (sender != thisPlayerSlot)
@@ -228,7 +245,6 @@ namespace GameScene
             else {
                 return null;
             }
-            */ return null;
         }
 
 

@@ -346,8 +346,8 @@ MonoBehaviour:
   messagePanel: {fileID: 332343955}
   messageText: {fileID: 1863325366}
   popupPanel: {fileID: 1314717646}
-  mode: single
-  slot: -1
+  mode: testmulti
+  slot: 0
 --- !u!1 &166667195
 GameObject:
   m_ObjectHideFlags: 0

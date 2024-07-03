@@ -2,6 +2,12 @@
 namespace GameEngine
 {
 
+    /**
+     * When the adventure game needs to interact with the outside world it uses
+     * this interface.  It uses this to paint the screen, read input and 
+     * signal the end of the game.  It is implemented by a class outside the
+     * GameEngine package.
+     */
     public interface AdventureView
     {
         /**

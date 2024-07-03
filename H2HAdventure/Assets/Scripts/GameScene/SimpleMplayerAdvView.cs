@@ -2,37 +2,59 @@ using System;
 using GameEngine;
 using UnityEngine;
 
-public class SimpleMplayerAdvView : UnityAdventureBase
+namespace GameScene
 {
 
-    private System.Random randomGen = new System.Random();
-
-    // Start is called before the first frame update
-    public override void Start()
+    /**
+    * This is used for testing.  It has very little behavior beyond the base 
+    * implementation but it is responsible for coordinating the remote players
+    * before starting the game.
+    */
+    public class SimpleMplayerAdvView : UnityAdventureBase
     {
-        base.Start();
-    }
+        public WebSocketTransport transport;
 
-    // Update is called once per frame
-    public override void Update()
-    {
-        base.Update();
-    }
+        private WebGameSetup setup = null;
 
-    public override void Platform_GameChange(GAME_CHANGES change)
-    {
-        base.Platform_GameChange(change);
-    }
+        private bool starting = false;
 
-    public void PlayGame()
-    {
-        // Randomly pick which player to play
-        bool[] useAi = { true, true, true };
-        int slot = randomGen.Next(3);
-        useAi[slot] = false;
-        gameEngine = new AdventureGame(this, 3, slot, null, 0,
-            false, false, false, false, false, useAi);
-        gameRenderable = true;
+        // Start is called before the first frame update
+        public override void Start()
+        {
+            base.Start();
+            setup = new WebGameSetup(transport);
+        }
+
+        // Update is called once per frame
+        public override void Update()
+        {
+            base.Update();
+            if (starting) {
+                if (setup.IsReady) {
+                    // Start the game
+                    bool[] useAi = { false, false, false };
+                    gameEngine = new AdventureGame(this, 2, setup.Slot, transport, 0,
+                        false, false, false, false, false, useAi);
+                    gameRenderable = true;
+                    starting = false;
+                }
+            }
+        }
+
+        public override void Platform_GameChange(GAME_CHANGES change)
+        {
+            base.Platform_GameChange(change);
+        }
+
+        // This starts the game.
+        public void PlayGame()
+        {
+            // Connect to the server
+            setup.Connect();
+            starting = true;
+
+        }
+
     }
 
 }
