@@ -17,7 +17,9 @@ namespace GameScene
     public class WebSocketTransport: MonoBehaviour, Transport
     {
 
-        private string HOST_ADDRESS = "ws://localhost:4080";
+        //private string HOST_ADDRESS = "ws://localhost:4080";
+        private string HOST_ADDRESS = "ws://rantonucci-fargate-test.sandbox.aws.arc.pub:3000";
+        
         private bool connected = false;
 
         private const int SERVER_BYTES = 2;

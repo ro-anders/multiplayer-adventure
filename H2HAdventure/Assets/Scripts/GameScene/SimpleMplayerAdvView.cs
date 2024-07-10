@@ -32,9 +32,11 @@ namespace GameScene
             if (starting) {
                 if (setup.IsReady) {
                     // Start the game
+                    Debug.Log("Starting game " + (setup.GameNumber + 1)  + ".  This player is " 
+                        + (setup.Slot + 1 ) + " of " + setup.NumPlayers);
                     bool[] useAi = { false, false, false };
-                    gameEngine = new AdventureGame(this, 2, setup.Slot, transport, 0,
-                        false, false, false, false, false, useAi);
+                    gameEngine = new AdventureGame(this, setup.NumPlayers, setup.Slot, transport, 
+                        setup.GameNumber, false, false, false, true, false, useAi);
                     gameRenderable = true;
                     starting = false;
                 }

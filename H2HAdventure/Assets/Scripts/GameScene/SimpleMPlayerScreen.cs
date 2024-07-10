@@ -34,5 +34,10 @@ namespace GameScene
             advView.PlayGame();
         }
 
+        public void OnRespawnClicked()
+        {
+            
+        }
+
     }
 }

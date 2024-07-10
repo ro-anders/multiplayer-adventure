@@ -457,7 +457,7 @@ namespace GameEngine
             for (int ctr = 0; (ctr < numPlayers) && (heldBy < 0); ++ctr)
             {
                 BALL nextPlayer = players[ctr];
-                // Have to check if player is holding key or player is holding bat holding key
+                // Have to check if player is holding object or player is holding bat holding object
                 if ((nextPlayer.linkedObject == objectPkey) ||
                     ((nextPlayer.linkedObject == OBJECT_BAT) && (((Bat)objects[OBJECT_BAT]).linkedObject == objectPkey)))
                 {

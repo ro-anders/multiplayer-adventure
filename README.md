@@ -18,3 +18,24 @@ To Run the Whole Suite Locally:
 5. cd to lobby-fe and run npm start to run the Lobby Frontend React website
    which would normally be hosted on a webserver or S3 bucket
 
+To Deploy and Run the System:
+1. Login to DockerHub as roanders
+  - delete /Library/Application Support/com.docker.docker/registry.json
+  - set default browser to Opera
+  - docker login -u roanders
+2. Upload game-be to docker
+  - cd game-be
+  - docker build --platform linux/amd64 . -t roanders/h2hadv-server
+  - docker tag roanders/h2hadv-server roanders/h2hadv-server
+  - docker push roanders/h2hadv-server
+3. Launch game-be in a fargate service by standing up deploy/fargateservice.cfn.yml
+  - clokta-sandbox
+  - export AWS_PROFILE=sandbox
+  - aws cloudformation ... keep working on this
+4. Configure game-be location
+ - Edit multiplayer/H2HAdventure/Assets/Scripts/GameScene/WebSocketTransport.cs
+ - Line 20, set HOST_ADDRESS to ws://rantonucci-fargate-test.sandbox.aws.arc.pub:3000
+5. Create game package
+ - Unity File->Build and Run
+1. Until the lobby-be has the ability to spawn a Fargate cluster, 
+

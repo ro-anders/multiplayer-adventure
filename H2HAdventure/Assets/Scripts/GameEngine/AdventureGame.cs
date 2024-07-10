@@ -59,6 +59,10 @@ namespace GameEngine
         private int displayListIndex;
         private bool joyLeft, joyUp, joyRight, joyDown, joyFire;
         private bool joystickDisabled = false; // Only used when scripting and testing ai
+
+        /** Keep track of when the reset switch is pressed.  This boolean is whether the 
+         * reset switch was being pressed at the time we last checked (not to be confused
+         * with whether it is being pressed right now). */
         private bool switchReset;
         private bool useMazeGuides;
         private PlayerRecorder playerRecorder;
@@ -545,7 +549,7 @@ namespace GameEngine
             checkPlayers();
 
             // read the console switches every frame
-            bool reset = false;
+            bool reset = false;  // Whether the reset switch is pressed right now
             if (playerRecorder.Mode == PlayerRecorder.Modes.PLAYBACK)
             {
                 playerRecorder.playSwitches(frameNumber, ref reset);
@@ -565,6 +569,8 @@ namespace GameEngine
 
             // Reset switch
             handleAiReset();
+
+            // If the reset switch was being held down but is now released, trigger a reset.
             if (switchReset && !reset)
             {
                 handleResetSwitch();
