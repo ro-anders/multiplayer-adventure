@@ -16,11 +16,18 @@ namespace GameEngine {
             int numPlayers = board.getNumPlayers();
             for (int i = 0; i < magnetMatrix.Length; ++i)
             {
-                // Look for items in the magnet matrix that are in the same room as the magnet
+                // Look for items in the magnet matrix that are in the same room 
+                // as the magnet
                 OBJECT objct = board[magnetMatrix[i]];
                 if ((objct.room == room) && (objct.exists()))
                 {
-                    return objct;
+                    // If the object is held by a player, then the magnet does not
+                    // attract it, nor does it attract anything else.
+                    if (board.getPlayerHoldingObject(objct) >= 0) {
+                        return null;
+                    } else {
+                        return objct;
+                    }
                 }
             }
             return null;
