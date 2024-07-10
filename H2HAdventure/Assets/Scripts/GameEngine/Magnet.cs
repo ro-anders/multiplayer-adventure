@@ -21,11 +21,16 @@ namespace GameEngine {
                 OBJECT objct = board[magnetMatrix[i]];
                 if ((objct.room == room) && (objct.exists()))
                 {
-                    // If the object is held by a player, then the magnet does not
-                    // attract it, nor does it attract anything else.
-                    if (board.getPlayerHoldingObject(objct) >= 0) {
+                    // If the object is held by a player or bat, then the magnet 
+                    // does not attract it, nor does it attract anything else.
+                    if (board.getPlayerHoldingObject(objct) >= 0)
+                    {
                         return null;
-                    } else {
+                    } 
+                    else if (((Bat)board.getObject(Board.OBJECT_BAT)).linkedObject == objct.getPKey()) {
+                        return null;
+                    }
+                    else {
                         return objct;
                     }
                 }
