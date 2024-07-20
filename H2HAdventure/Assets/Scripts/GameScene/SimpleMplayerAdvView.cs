@@ -36,7 +36,7 @@ namespace GameScene
                         + (setup.Slot + 1 ) + " of " + setup.NumPlayers);
                     bool[] useAi = { false, false, false };
                     gameEngine = new AdventureGame(this, setup.NumPlayers, setup.Slot, transport, 
-                        setup.GameNumber, false, false, false, true, false, useAi);
+                        setup.GameNumber, false, false, false, false, false, useAi);
                     gameRenderable = true;
                     starting = false;
                 }

@@ -39,7 +39,7 @@ public class SinglePlayerAdvView : UnityAdventureBase
         }
         bool[] useAi = { true, true, true };
         useAi[slot] = false;
-        gameEngine = new AdventureGame(this, 3, slot, null, 0,
+        gameEngine = new AdventureGame(this, 3, slot, null, 2,
             false, false, false, false, false, useAi);
 
         base.gameRenderable = true;

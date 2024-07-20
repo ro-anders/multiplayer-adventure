@@ -34,7 +34,7 @@ To Deploy and Run the System:
   - aws cloudformation ... keep working on this
 4. Configure game-be location
  - Edit multiplayer/H2HAdventure/Assets/Scripts/GameScene/WebSocketTransport.cs
- - Line 20, set HOST_ADDRESS to ws://rantonucci-fargate-test.sandbox.aws.arc.pub:3000
+ - Line 20, set HOST_ADDRESS to ws://h2hadv.somedomain:3000
 5. Create game package
  - Unity File->Build and Run
 1. Until the lobby-be has the ability to spawn a Fargate cluster, 

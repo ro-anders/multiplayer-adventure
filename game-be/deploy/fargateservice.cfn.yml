@@ -11,17 +11,17 @@ Parameters:
     Type: String
     # # Update with the Docker image. "You can use images in the Docker Hub registry or specify other repositories (repository-url/image:tag)."
     # Default: 123456789012.dkr.ecr.region.amazonaws.com/image:tag
-    Default: rantonucci/fargate-test:latest
+    Default: roanders/h2hadv-server:latest
   LoadBalancerPort:
     Type: Number
     Default: 3000
   ServiceName:
     Type: String
     # update with the name of the service
-    Default: RantonucciFargateTest
+    Default: h2hadv-server
   Subdomain:
     Type: String
-    Default: rantonucci-fargate-test
+    Default: h2hadv
   SubnetA:
     Type: AWS::EC2::Subnet::Id
     Default: subnet-0d51c110a455d7dcd

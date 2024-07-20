@@ -8,7 +8,9 @@ import GameService from './services/GameService'
 function App() {
   const label = GameService.getLabel();
   let [load_games, setLoadGames] = useState<boolean>(true);
-  let [games, setGames] = useState<string[]>([]);
+  let [games, setGames] = useState<string[]>(["1", "2", "3"]);
+  let [chosenSlot, setChosenSlot] = useState<Number>(-1);
+  let [chosenSession, setChosenSession] = useState<string>("");
   let [url, setUrl] = useState<string>("");
 
   useEffect(() => {
@@ -28,13 +30,18 @@ function App() {
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <Form.Select aria-label="Game Chooser" onChange={(value)=>setUrl("http://localhost:56205/?session=" + value.target.value)}>
+        <Form.Select aria-label="Game Chooser" onChange={(value)=>setChosenSession(value.target.value)}>
           <option>Choose a game:</option>
           {games.map((game) => (
             <option value={game} key={game}>{game}</option>
           ))}
         </Form.Select>
-        <Button href={url}>Launch Game</Button>
+        <Form.Select aria-label="Slot Chooser" onChange={(value)=>setChosenSlot(parseInt(value.target.value))}>
+          <option>Which player:</option>
+          <option value="0" key="0">Player 1</option>
+          <option value="1" key="1">Player 2</option>
+        </Form.Select>
+        <Button href={"http://localhost:8080/?gamecode="+chosenSession+"&slot="+chosenSlot}>Launch Game</Button>
         <p>
           {label}
         </p>

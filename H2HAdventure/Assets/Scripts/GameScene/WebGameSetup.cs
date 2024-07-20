@@ -52,8 +52,8 @@ namespace GameScene
             const string SLOT_PARAM = "slot";
             slot = 0;
             // Temporarily hardcode
-            numPlayersNeeded = 3;
-            gameNum = 2;
+            numPlayersNeeded = 2;
+            gameNum = 0;
 
             if (Application.isEditor) {
                 UnityEngine.Debug.Log("Web game setup disabled when running in editor");
