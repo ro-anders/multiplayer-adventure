@@ -3,34 +3,34 @@ Description: An example CloudFormation template for Fargate.
 Parameters:
   ContainerPort:
     Type: Number
-    Default: 3000
-  HostedZoneName:
-    Type: String
-    Default: sandbox.aws.arc.pub
+    Default: 4000
+  # Subdomain:
+  #   Type: String
+  #   Default: h2hadv
+  # HostedZoneName:
+  #   Type: String
+  #   Default: h2hatariadventure.com
   Image:
     Type: String
-    # # Update with the Docker image. "You can use images in the Docker Hub registry or specify other repositories (repository-url/image:tag)."
+    # Update with the Docker image. "You can use images in the Docker Hub registry or specify other repositories (repository-url/image:tag)."
     # Default: 123456789012.dkr.ecr.region.amazonaws.com/image:tag
     Default: roanders/h2hadv-server:latest
   LoadBalancerPort:
     Type: Number
-    Default: 3000
+    Default: 4000
   ServiceName:
     Type: String
     # update with the name of the service
     Default: h2hadv-server
-  Subdomain:
-    Type: String
-    Default: h2hadv
   SubnetA:
     Type: AWS::EC2::Subnet::Id
-    Default: subnet-0d51c110a455d7dcd
+    Default: subnet-0d46ce42b6ae7a1ee
   SubnetB:
     Type: AWS::EC2::Subnet::Id
-    Default: subnet-0ce89efd82fef9b6a
+    Default: subnet-011083badbc3f216e
   VPC:
     Type: AWS::EC2::VPC::Id
-    Default: vpc-048f1eacaf1b92697
+    Default: vpc-0598605f272198f50
   HealthCheckPath:
     Type: String
     Default: /health
@@ -83,13 +83,14 @@ Resources:
           Image: !Ref Image
           PortMappings:
             - ContainerPort: !Ref ContainerPort
-          # Send logs to CloudWatch Logs
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-region: !Ref AWS::Region
-              awslogs-group: !Ref LogGroup
-              awslogs-stream-prefix: ecs
+          # # Send logs to CloudWatch Logs
+          # LogConfiguration:
+          #   LogDriver: awslogs
+          #   Options:
+          #     awslogs-region: !Ref AWS::Region
+          #     awslogs-group: !Ref LogGroup
+          #     awslogs-stream-prefix: ecs
+
   # A role needed by ECS
   ExecutionRole:
     Type: AWS::IAM::Role
@@ -130,24 +131,14 @@ Resources:
         - IpProtocol: tcp
           FromPort: !Ref ContainerPort
           ToPort: !Ref ContainerPort
-          SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
-
-  LoadBalancerSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: !Join ['', [!Ref ServiceName, LoadBalancerSecurityGroup]]
-      VpcId: !Ref VPC
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: !Ref LoadBalancerPort
-          ToPort: !Ref LoadBalancerPort
-          CidrIp: 0.0.0.0/0
+          CidrIp: "0.0.0.0/0"
+          #SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
 
   Service:
     Type: AWS::ECS::Service
     # This dependency is needed so that the load balancer is setup correctly in time
-    DependsOn:
-      - ListenerWeb
+    # DependsOn:
+    #   - ListenerWeb
     Properties: 
       ServiceName: !Ref ServiceName
       Cluster: !Ref Cluster
@@ -156,8 +147,6 @@ Resources:
         MinimumHealthyPercent: 100
         MaximumPercent: 200
       DesiredCount: 1
-      # This may need to be adjusted if the container takes a while to start up
-      HealthCheckGracePeriodSeconds: 30
       LaunchType: FARGATE
       NetworkConfiguration: 
         AwsvpcConfiguration:
@@ -168,76 +157,92 @@ Resources:
             - !Ref SubnetB
           SecurityGroups:
             - !Ref ContainerSecurityGroup
-      LoadBalancers:
-        - ContainerName: !Ref ServiceName
-          ContainerPort: !Ref ContainerPort
-          TargetGroupArn: !Ref TargetGroup
+      # Uncomment if using load balancer
+      # # This may need to be adjusted if the container takes a while to start up
+      # HealthCheckGracePeriodSeconds: 30
+      # LoadBalancers:
+      #   - ContainerName: !Ref ServiceName
+      #     ContainerPort: !Ref ContainerPort
+      #     TargetGroupArn: !Ref TargetGroup
 
-  TargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      HealthCheckIntervalSeconds: 10
-      # will look for a 200 status code by default unless specified otherwise
-      HealthCheckPath: !Ref HealthCheckPath
-      HealthCheckTimeoutSeconds: 5
-      UnhealthyThresholdCount: 2
-      HealthyThresholdCount: 2
-      Name: !Join ['', [!Ref ServiceName, TargetGroup]]
-      Port: !Ref ContainerPort
-      Protocol: HTTP
-      TargetGroupAttributes:
-        - Key: deregistration_delay.timeout_seconds
-          Value: 60 # default is 300
-      TargetType: ip
-      VpcId: !Ref VPC
+  # Uncomment if using load balancer
+  # LoadBalancerSecurityGroup:
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupDescription: !Join ['', [!Ref ServiceName, LoadBalancerSecurityGroup]]
+  #     VpcId: !Ref VPC
+  #     SecurityGroupIngress:
+  #       - IpProtocol: tcp
+  #         FromPort: !Ref LoadBalancerPort
+  #         ToPort: !Ref LoadBalancerPort
+  #         CidrIp: 0.0.0.0/0
+  #
+  # TargetGroup:
+  #   Type: AWS::ElasticLoadBalancingV2::TargetGroup
+  #   Properties:
+  #     HealthCheckIntervalSeconds: 10
+  #     # will look for a 200 status code by default unless specified otherwise
+  #     HealthCheckPath: !Ref HealthCheckPath
+  #     HealthCheckTimeoutSeconds: 5
+  #     UnhealthyThresholdCount: 2
+  #     HealthyThresholdCount: 2
+  #     Name: !Join ['', [!Ref ServiceName, TargetGroup]]
+  #     Port: !Ref ContainerPort
+  #     Protocol: HTTP
+  #     TargetGroupAttributes:
+  #       - Key: deregistration_delay.timeout_seconds
+  #         Value: 60 # default is 300
+  #     TargetType: ip
+  #     VpcId: !Ref VPC
+  #
+  # ListenerWeb:
+  #   Type: AWS::ElasticLoadBalancingV2::Listener
+  #   Properties:
+  #     DefaultActions:
+  #       - TargetGroupArn: !Ref TargetGroup
+  #         Type: forward
+  #     LoadBalancerArn: !Ref LoadBalancer
+  #     Port: !Ref LoadBalancerPort
+  #     Protocol: HTTP
+  #
+  # LoadBalancer:
+  #   Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+  #   Properties:
+  #     LoadBalancerAttributes:
+  #       # this is the default, but is specified here in case it needs to be changed
+  #       - Key: idle_timeout.timeout_seconds
+  #         Value: 60
+  #     Name: !Join ['', [!Ref ServiceName, LB]]
+  #     # "internal" is also an option
+  #     Scheme: internet-facing
+  #     SecurityGroups:
+  #       - !Ref LoadBalancerSecurityGroup
+  #     Subnets:
+  #       - !Ref SubnetA
+  #       - !Ref SubnetB
 
-  ListenerWeb:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      DefaultActions:
-        - TargetGroupArn: !Ref TargetGroup
-          Type: forward
-      LoadBalancerArn: !Ref LoadBalancer
-      Port: !Ref LoadBalancerPort
-      Protocol: HTTP
+  # DNSRecord:
+  #   Type: AWS::Route53::RecordSet
+  #   Properties:
+  #     HostedZoneName: !Join ['', [!Ref HostedZoneName, .]]
+  #     Name: !Join ['', [!Ref Subdomain, ., !Ref HostedZoneName, .]]
+  #     Type: A
+  #     AliasTarget:
+  #       DNSName: !GetAtt LoadBalancer.DNSName
+  #       HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
 
-  LoadBalancer:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties:
-      LoadBalancerAttributes:
-        # this is the default, but is specified here in case it needs to be changed
-        - Key: idle_timeout.timeout_seconds
-          Value: 60
-      Name: !Join ['', [!Ref ServiceName, LB]]
-      # "internal" is also an option
-      Scheme: internet-facing
-      SecurityGroups:
-        - !Ref LoadBalancerSecurityGroup
-      Subnets:
-        - !Ref SubnetA
-        - !Ref SubnetB
+  # LogGroup:
+  #   Condition: LogToAWS
+  #   Type: AWS::Logs::LogGroup
+  #   Properties:
+  #     LogGroupName: !Join ['', [/service/, !Ref ServiceName]]
 
-  DNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneName: !Join ['', [!Ref HostedZoneName, .]]
-      Name: !Join ['', [!Ref Subdomain, ., !Ref HostedZoneName, .]]
-      Type: A
-      AliasTarget:
-        DNSName: !GetAtt LoadBalancer.DNSName
-        HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
+# Outputs:
+  # Endpoint:
+  #   Description: Static Endpoint
+  #   Value: !Join ['', ['http://', !Ref DNSRecord]]
 
-  LogGroup:
-    Condition: LogToAWS
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Join ['', [/service/, !Ref ServiceName]]
-
-Outputs:
-  Endpoint:
-    Description: Static Endpoint
-    Value: !Join ['', ['http://', !Ref DNSRecord]]
-
-  LBEndpoint:
-    Description: Dynamic Endpoint
-    Value: !Join ['', ['http://', !GetAtt LoadBalancer.DNSName]]
+  # Uncomment if using load balancer
+  # LBEndpoint:
+  #   Description: Dynamic Endpoint
+  #   Value: !Join ['', ['http://', !GetAtt LoadBalancer.DNSName]]

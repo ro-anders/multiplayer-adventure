@@ -12,7 +12,7 @@ const { createServer } = require('http');
 const WebSocket = require('ws');
 
 const app = express();
-const port = 3000;
+const port = 4000;
 
 /** The byte code to indicate a message is a connect message */
 const CONNECT_CODE = 0x01;

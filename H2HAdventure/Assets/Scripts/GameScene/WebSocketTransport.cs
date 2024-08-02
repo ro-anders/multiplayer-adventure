@@ -17,8 +17,6 @@ namespace GameScene
     public class WebSocketTransport: MonoBehaviour, Transport
     {
 
-        private string HOST_ADDRESS = "ws://localhost:4080";
-        
         private bool connected = false;
 
         private const int SERVER_BYTES = 2;
@@ -30,6 +28,8 @@ namespace GameScene
 
         /** Whether this is Player 1, 2 or 3.  Though value is acually 0, 1 or 2. */
         private int thisPlayerSlot = -1;
+
+        private string host_address = "localhost";
 
         private WebSocket websocket;
 
@@ -66,8 +66,13 @@ namespace GameScene
             #endif
         }
 
-        // Connect to the back end server
-        public async Task<bool> Connect(byte session_in, int slot_in) {
+        /// <summary>
+        /// Connect to the back end server
+        /// </summary>
+        /// <param name="backend_host_in">the IP of the back end server</param>
+        /// <param name="session_in">the unique id of the game to play</param>         
+        /// <param name="slot_in">the player number of this player (0-2)</param>         
+        public async Task<bool> Connect(String backend_host_in, byte session_in, int slot_in) {
             UnityEngine.Debug.Log("Setting up backend server connection");
             if ((session != NO_SESSION) && (session != session_in)) {
                 // Something's wrong.  Why are we connecting twice?
@@ -75,6 +80,7 @@ namespace GameScene
             }
             session = session_in;
             thisPlayerSlot = slot_in;
+            host_address = backend_host_in;
 
             if (websocket != null) {
                 return websocket.State == WebSocketState.Open;
@@ -82,7 +88,7 @@ namespace GameScene
 
             var thisTask = new TaskCompletionSource<bool>();
 
-            websocket = new WebSocket(HOST_ADDRESS + "/ws");
+            websocket = new WebSocket("ws://" + host_address + ":4000/ws");
 
             websocket.OnOpen += async () =>
             {

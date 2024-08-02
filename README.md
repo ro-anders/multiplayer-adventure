@@ -7,35 +7,43 @@ Download and Install Dissonance HLAPI
 
 To Run the Whole Suite Locally:
 1. Run the game-be backend game server by running 
+  - cd game-be
   - docker build --platform linux/amd64 . -t roanders/h2hadv-server
-  - docker run -p 4080:3000 roanders/h2hadv-server
+  - docker run -p 4000:4000 roanders/h2hadv-server
   This mimics the fargate task started at game time
 2. cd to lobby-be and run "npx ts-node src/index.ts" to run the Lobby Backend Express server
    which mimics the APIGateway & Lambda
-3. Run the webserver serving the game by opening the Unity project and selecting File --> Build and Run
-   (take note of the port on the web page that pops up, but you may close the tab)
-4. <<instructions for setting port>>
+3. Run the webserver serving the game 
+  - open the Unity project and selecting File --> Build and Run
+  - cd multiplayer-adventure/H2HAdventure/target
+  - docker run -it --rm -p 8080:80 --name web -v ./H2HAdventure2P:/usr/share/nginx/html nginx
 5. cd to lobby-fe and run npm start to run the Lobby Frontend React website
    which would normally be hosted on a webserver or S3 bucket
 
 To Deploy and Run the System:
-1. Login to DockerHub as roanders
-  - delete /Library/Application Support/com.docker.docker/registry.json
-  - set default browser to Opera
-  - docker login -u roanders
-2. Upload game-be to docker
-  - cd game-be
-  - docker build --platform linux/amd64 . -t roanders/h2hadv-server
-  - docker tag roanders/h2hadv-server roanders/h2hadv-server
-  - docker push roanders/h2hadv-server
+1. Authenticate with AWS, credentials stored in ~/.aws/credentials
+  - export AWS_PROFILE=h2hadventure
+  - export AWS_REGION=us-east-2
+1. Build the Game Back-End Server
+  - just commit to Github and Github action will deploy the latest to Docker.io
 3. Launch game-be in a fargate service by standing up deploy/fargateservice.cfn.yml
-  - clokta-sandbox
-  - export AWS_PROFILE=sandbox
-  - aws cloudformation ... keep working on this
-4. Configure game-be location
+  - aws cloudformation create-stack --stack-name game-be --template-body file://game-be/deploy/fargateservice.cfn.yml --capabilities "CAPABILITY_NAMED_IAM"
+4. Configure game-be location and build game package
+ - Get the ENI of the Fargate task by copying the task ARN into the following command
+     aws ecs describe-tasks --cluster h2hadv-serverCluster --task <<task-arn>> | jq -r -e '.tasks[0].attachments[0].details[] | select(.name=="networkInterfaceId").value'
+ - Get the Public IP address by copying the ENI into the following command
+     aws ec2 describe-network-interfaces --network-interface-ids <<eni>> | jq -r -e ".NetworkInterfaces[0].Association.PublicIp"
  - Edit multiplayer/H2HAdventure/Assets/Scripts/GameScene/WebSocketTransport.cs
- - Line 20, set HOST_ADDRESS to ws://h2hadv.somedomain:3000
-5. Create game package
+ - Line 20, set HOST_ADDRESS to ws://<<ip>>:3000
  - Unity File->Build and Run
-1. Until the lobby-be has the ability to spawn a Fargate cluster, 
+6. Deploy game package
+ - aws cloudformation create-stack --stack-name s3-website  --template-body file://deploy/s3website.cfn.yml
+ - aws s3 cp --recursive H2HAdventure/target/H2HAdventure2P s3://h2adventure-website/game/H2HAdventureMP
+7. Build lobby-fe
+ - cd lobby-fe
+ - npm run build
+8. Deploy lobby-fe
+ - aws s3 cp --recursive build/ s3://h2adventure-website/
+9. Play game
+ - goto https://h2adventure-website.s3.amazonaws.com
 

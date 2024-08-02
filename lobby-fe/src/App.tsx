@@ -11,6 +11,7 @@ function App() {
   let [games, setGames] = useState<string[]>(["1", "2", "3"]);
   let [chosenSlot, setChosenSlot] = useState<Number>(-1);
   let [chosenSession, setChosenSession] = useState<string>("");
+  let [hostIp, setHostIp] = useState<string>("127.0.0.1");
   let [url, setUrl] = useState<string>("");
 
   useEffect(() => {
@@ -41,7 +42,9 @@ function App() {
           <option value="0" key="0">Player 1</option>
           <option value="1" key="1">Player 2</option>
         </Form.Select>
-        <Button href={"http://localhost:8080/?gamecode="+chosenSession+"&slot="+chosenSlot}>Launch Game</Button>
+        <Form.Label>Game Backend IP</Form.Label>
+        <Form.Control type="text" placeholder="127.0.0.1" onChange={(value)=>setHostIp(value.target.value)} />
+        <Button href={process.env.REACT_APP_MPLAYER_GAME_URL+"?gamecode="+chosenSession+"&slot="+chosenSlot+"&host="+hostIp}>Launch Game</Button>
         <p>
           {label}
         </p>

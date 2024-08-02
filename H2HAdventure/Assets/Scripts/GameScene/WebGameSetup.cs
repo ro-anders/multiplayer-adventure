@@ -26,6 +26,10 @@ namespace GameScene
 
         private int gameNum = -1;
 
+        /** The IP address of the Game Backend server which is either running
+         * in Fargate or locally */
+        private string backend_host = "localhost";
+
         public int Slot {
             get {return slot;}
         }
@@ -50,6 +54,8 @@ namespace GameScene
             transport = transport_in;
             const string GAMECODE_PARAM = "gamecode";
             const string SLOT_PARAM = "slot";
+            const string HOST_PARAM = "host";
+
             slot = 0;
             // Temporarily hardcode
             numPlayersNeeded = 2;
@@ -76,6 +82,10 @@ namespace GameScene
                 if (slot_str != null) {
                     slot = Int32.Parse(slot_str);
                 }
+                string host_str = HttpUtility.ParseQueryString(url.Query).Get(HOST_PARAM);
+                if (host_str != null) {
+                    backend_host = host_str;
+                }
                 Debug.Log("Game setup: session=" + session + ", slot=" + slot);
             }
         }
@@ -83,7 +93,7 @@ namespace GameScene
         public void Connect() {
             // Initiate transport connecting with the backend server and with all the other
             // clients
-            _ = transport.Connect(session, slot);
+            _ = transport.Connect(backend_host, session, slot);
         }
     }
 
