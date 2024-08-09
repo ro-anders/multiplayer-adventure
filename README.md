@@ -28,13 +28,7 @@ To Deploy and Run the System:
   - just commit to Github and Github action will deploy the latest to Docker.io
 3. Launch game-be in a fargate service by standing up deploy/fargateservice.cfn.yml
   - aws cloudformation create-stack --stack-name game-be --template-body file://game-be/deploy/fargateservice.cfn.yml --capabilities "CAPABILITY_NAMED_IAM"
-4. Configure game-be location and build game package
- - Get the ENI of the Fargate task by copying the task ARN into the following command
-     aws ecs describe-tasks --cluster h2hadv-serverCluster --task <<task-arn>> | jq -r -e '.tasks[0].attachments[0].details[] | select(.name=="networkInterfaceId").value'
- - Get the Public IP address by copying the ENI into the following command
-     aws ec2 describe-network-interfaces --network-interface-ids <<eni>> | jq -r -e ".NetworkInterfaces[0].Association.PublicIp"
- - Edit multiplayer/H2HAdventure/Assets/Scripts/GameScene/WebSocketTransport.cs
- - Line 20, set HOST_ADDRESS to ws://<<ip>>:3000
+4. Build game package
  - Unity File->Build and Run
 6. Deploy game package
  - aws cloudformation create-stack --stack-name s3-website  --template-body file://deploy/s3website.cfn.yml
@@ -45,5 +39,10 @@ To Deploy and Run the System:
 8. Deploy lobby-fe
  - aws s3 cp --recursive build/ s3://h2adventure-website/
 9. Play game
- - goto https://h2adventure-website.s3.amazonaws.com
-
+ - goto http://h2adventure-website.s3-website.us-east-2.amazonaws.com 
+10. Get IP
+ - Get the ENI of the Fargate task by copying the task ARN into the following command
+     aws ecs describe-tasks --cluster h2hadv-serverCluster --task <<task-arn>> | jq -r -e '.tasks[0].attachments[0].details[] | select(.name=="networkInterfaceId").value'
+ - Get the Public IP address by copying the ENI into the following command
+     aws ec2 describe-network-interfaces --network-interface-ids <<eni>> | jq -r -e ".NetworkInterfaces[0].Association.PublicIp"
+ - Enter IP in the web page
