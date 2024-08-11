@@ -10,22 +10,33 @@ import LobbyPage from "./pages/Lobby";
 
 
 
+
 function App() {
+
+  let [username, setUsername] = useState<string>("");
+
+  let defaultPage = (!!username ? 
+    <LobbyPage username={username}/> : 
+    <LoginPage username={username} setUsername={setUsername}/>
+  )
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <LoginPage/>,
+      element: defaultPage,
+    },
+    {
+      path: "/login",
+      element: <LoginPage username={username} setUsername={setUsername}/>
     },
     {
       path: "/lobby",
-      element: <LobbyPage/>
+      element: <LobbyPage username={username}/>
     }
   ]);
   return (
 
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
         <p>
           Root
         </p>
@@ -37,8 +48,8 @@ function App() {
         >
           React.js
         </a>
-      </header>
-      <RouterProvider router={router} />
+        <RouterProvider router={router} />
+        </header>
     </div>
   );
 }

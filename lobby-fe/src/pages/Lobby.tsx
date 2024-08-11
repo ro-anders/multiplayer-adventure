@@ -6,7 +6,12 @@ import '../App.css';
 import Roster from '../components/Roster'
 import GameService from '../services/GameService'
 
-function Lobby() {
+interface LobbyProps {
+  /** The name of the currently logged in user */
+  username: string;
+}
+
+function Lobby({username}: LobbyProps) {
   const label = GameService.getLabel();
   let [load_games, setLoadGames] = useState<boolean>(true);
   let [games, setGames] = useState<string[]>(["1", "2", "3"]);
@@ -31,7 +36,8 @@ function Lobby() {
 
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+      <Form.Label>Welcome {username}</Form.Label>
+      <img src={logo} className="App-logo" alt="logo" />
         <Roster/>
         <Form.Select aria-label="Game Chooser" onChange={(value)=>setChosenSession(value.target.value)}>
           <option>Choose a game:</option>
