@@ -2,7 +2,7 @@
 
 export default class PlayerService {
 
-	 static async getGames(): Promise<string[]> {
+	 static async getOnlinePlayers(): Promise<string[]> {
 		// We can use the `Headers` constructor to create headers
 		// and assign it as the type of the `headers` variable
 		const headers: Headers = new Headers()

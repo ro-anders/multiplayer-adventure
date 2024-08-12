@@ -1,0 +1,1 @@
+aws dynamodb create-table --table-name players --attribute-definitions AttributeName=playerName,AttributeType=S --key-schema AttributeName=playerName,KeyType=HASH --billing-mode PAY_PER_REQUEST --endpoint-url http://localhost:8000
