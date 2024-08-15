@@ -1,10 +1,12 @@
 // Create clients and set shared const values outside of the handler.
 
 // Create a DocumentClient that represents the query to add an item
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, ListTablesCommand, CreateTableCommand } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib-dynamodb';
-const client = new DynamoDBClient({});
-const ddbDocClient = DynamoDBDocumentClient.from(client);
+import { NodeHttpHandler }  from "@aws-sdk/node-http-handler";
+import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
+
+const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
 // Get the DynamoDB table name from environment variables
 const tableName = process.env.SAMPLE_TABLE;
@@ -18,6 +20,8 @@ export const getAllItemsHandler = async (event) => {
     }
     // All log statements are written to CloudWatch
     console.info('received:', event);
+
+    await CheckDDB();
 
     // get all items from the table (only first 1MB data, you can use `LastEvaluatedKey` to get the rest of data)
     // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property

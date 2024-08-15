@@ -3,8 +3,9 @@
 // Create a DocumentClient that represents the query to add an item
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand } from '@aws-sdk/lib-dynamodb';
-const client = new DynamoDBClient({});
-const ddbDocClient = DynamoDBDocumentClient.from(client);
+import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
+
+const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
 // Get the DynamoDB table name from environment variables
 const tableName = process.env.SAMPLE_TABLE;
@@ -18,6 +19,8 @@ export const getByIdHandler = async (event) => {
   }
   // All log statements are written to CloudWatch
   console.info('received:', event);
+
+  await CheckDDB();
  
   // Get id from pathParameters from APIGateway because of `/{id}` at template.yaml
   const id = event.pathParameters.id;
