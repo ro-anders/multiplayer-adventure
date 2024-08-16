@@ -37,7 +37,25 @@ const initializeSchema = async () => {
     ],
     BillingMode: "PAY_PER_REQUEST"
   };
-  const data = await ddbDocClient.send(new CreateTableCommand(input))
+  await ddbDocClient.send(new CreateTableCommand(input))
+  // Create the player list table
+  const playerDef = { 
+    AttributeDefinitions: [ 
+      { 
+        AttributeName: "playername", 
+        AttributeType: "S", 
+      },
+    ],
+    TableName: "Players", 
+    KeySchema: [ 
+      { 
+        AttributeName: "playername", 
+        KeyType: "HASH", 
+      },
+    ],
+    BillingMode: "PAY_PER_REQUEST"
+  };
+  await ddbDocClient.send(new CreateTableCommand(playerDef))
 } 
 
 /**
@@ -48,7 +66,7 @@ export const CheckDDB = async () => {
   if (!'TableNames' in data) {
     throw new Error(`Unexpected response from database.: ${data}`);
   }
-  if (!data.TableNames.includes('SampleTable')) {
+  if (!data.TableNames.includes('Players')) {
     console.log("No schema detected.  Initializing database schema.")
     await initializeSchema();
   }
