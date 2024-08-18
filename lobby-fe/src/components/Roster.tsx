@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ListGroup from 'react-bootstrap/ListGroup';
 import '../App.css';
-import GameService from '../services/GameService'
+import PlayerService from '../services/PlayerService'
 
 /**
  * 
@@ -9,10 +9,15 @@ import GameService from '../services/GameService'
 function Roster() {
   let [names, setNames] = useState<string[]>(["loading..."]);
 
+  async function getOnlinePlayers() {
+    const player_names = await PlayerService.getOnlinePlayers();
+    setNames(player_names)
+  }
+
   useEffect(() => {
     // Query now and once every interval
     const interval = setInterval(() => {
-        setNames(["Parzival", "Art3mis", "Aech"]);
+        getOnlinePlayers();
     }, 10000);
 
     //Must clearing the interval to avoid memory leak.

@@ -12,6 +12,14 @@ Description: >-
 Transform:
 - AWS::Serverless-2016-10-31
 
+Globals:
+    Api:
+        Cors:
+            AllowMethods: "'GET,POST,OPTIONS'"
+            AllowHeaders: "'Content-Type'"
+            AllowOrigin: "'*'"
+            # AllowCredentials: true  Uncomment only if you choose a specific origin instead of the * wildcard.
+            
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:

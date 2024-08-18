@@ -9,12 +9,10 @@ export default class PlayerService {
 		// Add a few headers
 		headers.set('Content-Type', 'application/json')
 		headers.set('Accept', 'application/json')
-		// Add a custom header, which we can use to check
-		headers.set('X-Custom-Header', 'CustomValue')
 
 		// Create the request object, which will be a RequestInfo type. 
 		// Here, we will pass in the URL as well as the options object as parameters.
-		const request: RequestInfo = new Request('http://localhost:3000/api/game', {
+		const request: RequestInfo = new Request('http://localhost:3000/player/', {
 			method: 'GET',
 			headers: headers
 		})
@@ -26,8 +24,9 @@ export default class PlayerService {
 			.then(res => {
 			// The response has an `any` type, so we need to cast
 			// it to the `User` type, and return it from the promise
-			console.log("Got response from server: " + res['games'])
-			return res['games'] as string[]
+			console.log("Got response from server: " + res)
+			const player_names: string[] = res.map((player: any) => player['playername'])
+			return player_names
 		})
 	 }	  
 }

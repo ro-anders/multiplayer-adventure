@@ -20,17 +20,17 @@ function Lobby({username}: LobbyProps) {
   let [hostIp, setHostIp] = useState<string>("127.0.0.1");
   let [url, setUrl] = useState<string>("");
 
-  useEffect(() => {
-    async function fetchGames() {
-      if (load_games) { 
-        const fetched_games = await GameService.getGames()
-        setGames(fetched_games)
-      }
-      setLoadGames(false)
-    }
+  // useEffect(() => {
+  //   async function fetchGames() {
+  //     if (load_games) { 
+  //       const fetched_games = await GameService.getGames()
+  //       setGames(fetched_games)
+  //     }
+  //     setLoadGames(false)
+  //   }
 
-    fetchGames();
-  }, [load_games])
+  //   fetchGames();
+  // }, [load_games])
 
   return (
 
