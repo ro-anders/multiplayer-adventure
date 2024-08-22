@@ -1,0 +1,6 @@
+{
+    "httpMethod": "PUT",
+    "pathParameters": {
+        "name": "Phil"
+    }
+}

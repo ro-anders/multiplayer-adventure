@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import logo from '../logo.svg';
 import '../App.css';
 import Roster from '../components/Roster'
 import GameService from '../services/GameService'
@@ -37,7 +36,6 @@ function Lobby({username}: LobbyProps) {
     <div className="App">
       <header className="App-header">
       <Form.Label>Welcome {username}</Form.Label>
-      <img src={logo} className="App-logo" alt="logo" />
         <Roster/>
         <Form.Select aria-label="Game Chooser" onChange={(value)=>setChosenSession(value.target.value)}>
           <option>Choose a game:</option>

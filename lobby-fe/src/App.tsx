@@ -3,10 +3,10 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import logo from './logo.svg';
 import './App.css';
 import LoginPage from "./pages/Login";
 import LobbyPage from "./pages/Lobby";
+import PlayerService from './services/PlayerService'
 
 
 
@@ -14,6 +14,23 @@ import LobbyPage from "./pages/Lobby";
 function App() {
 
   let [username, setUsername] = useState<string>("");
+  useEffect(() => {
+    async function registerCurrentPlayer() {
+      if (username) {
+        await PlayerService.registerPlayer(username);
+      }
+    }
+    
+    // Constantly re-register the current user.
+    registerCurrentPlayer();
+    const interval = setInterval(() => {
+        registerCurrentPlayer();
+    }, 60000);
+
+    //Must clearing the interval to avoid memory leak.
+    return () => clearInterval(interval);
+  }, [username]);
+
 
   let defaultPage = (!!username ? 
     <LobbyPage username={username}/> : 
@@ -38,16 +55,8 @@ function App() {
     <div className="App">
       <header className="App-header">
         <p>
-          Root
+          Head-to-Head Atari Adventure
         </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          React.js
-        </a>
         <RouterProvider router={router} />
         </header>
     </div>

@@ -22,8 +22,8 @@ function LoginPage({username, setUsername}: LoginProps) {
    * @param formText the text in the form
    */
   function loginClicked() {
-    if (!!newUsername) {
-      setUsername(newUsername);
+    if (!!newUsername.trim()) {
+      setUsername(newUsername.trim());
       navigate("/lobby");
     }
   }

@@ -15,7 +15,7 @@ Transform:
 Globals:
     Api:
         Cors:
-            AllowMethods: "'GET,POST,OPTIONS'"
+            AllowMethods: "'GET,POST,PUT,OPTIONS'"
             AllowHeaders: "'Content-Type'"
             AllowOrigin: "'*'"
             # AllowCredentials: true  Uncomment only if you choose a specific origin instead of the * wildcard.
@@ -135,7 +135,7 @@ Resources:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
   # This is a Lambda function config associated with the source code: put-player.js
-  putItemFunction:
+  putPlayerFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/put-player.putPlayerHandler
@@ -153,8 +153,8 @@ Resources:
         Api:
           Type: Api
           Properties:
-            Path: /player/
-            Method: POST
+            Path: /player/{name}
+            Method: PUT
   # Simple syntax to create a DynamoDB table with a single attribute primary key, more in
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlesssimpletable
 

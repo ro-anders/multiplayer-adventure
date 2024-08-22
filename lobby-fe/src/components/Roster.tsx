@@ -16,13 +16,14 @@ function Roster() {
 
   useEffect(() => {
     // Query now and once every interval
+    getOnlinePlayers();
     const interval = setInterval(() => {
         getOnlinePlayers();
     }, 10000);
 
     //Must clearing the interval to avoid memory leak.
     return () => clearInterval(interval);
-}, [names]);
+  }, []);
 
   return (
 

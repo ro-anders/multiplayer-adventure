@@ -11,17 +11,16 @@ const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
  * A simple example includes a HTTP post method to add one item to a DynamoDB table.
  */
 export const putPlayerHandler = async (event) => {
-    if (event.httpMethod !== 'POST') {
-        throw new Error(`postMethod only accepts POST method, you tried: ${event.httpMethod} method.`);
+    if (event.httpMethod !== 'PUT') {
+        throw new Error(`putMethod only accepts POST method, you tried: ${event.httpMethod} method.`);
     }
     // All log statements are written to CloudWatch
     console.info('received:', event);
 
     await CheckDDB();
 
-    // Get id and name from the body of the request
-    const body = JSON.parse(event.body);
-    const name = body.name;
+    // Get name from the request path
+    const name = event.pathParameters.name;
 
     // Creates a new item, or replaces an old item with a new item
     // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
@@ -39,10 +38,14 @@ export const putPlayerHandler = async (event) => {
 
     const response = {
         statusCode: 200,
-        body: JSON.stringify(body)
+        headers: {
+            "Access-Control-Allow-Headers" : "Content-Type",
+            "Access-Control-Allow-Origin": "*", // Allow from anywhere 
+            "Access-Control-Allow-Methods": "PUT" // Allow only GET request 
+        }
     };
 
     // All log statements are written to CloudWatch
-    console.info(`response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
+    console.info(`response from: ${event.httpMethod} ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
     return response;
 };

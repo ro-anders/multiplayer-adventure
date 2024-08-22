@@ -14,7 +14,7 @@ export const getAllPlayersHandler = async (event) => {
         throw new Error(`getAllPlayers only accept GET method, you tried: ${event.httpMethod}`);
     }
     // All log statements are written to CloudWatch
-    console.info('received:', event);
+    //console.info('received:', event);
 
     await CheckDDB();
 
