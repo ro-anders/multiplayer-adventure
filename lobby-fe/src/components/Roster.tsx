@@ -28,6 +28,7 @@ function Roster() {
   return (
 
     <div className="Roster">
+      <h2>Online Players</h2>
       <header className="Roster-header">
         <ListGroup>
             {names.map((name) => (

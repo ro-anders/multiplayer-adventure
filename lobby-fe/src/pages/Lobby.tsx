@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import '../App.css';
+import GameList from '../components/GameList'
 import Roster from '../components/Roster'
-import GameService from '../services/GameService'
 
 interface LobbyProps {
   /** The name of the currently logged in user */
@@ -11,7 +11,6 @@ interface LobbyProps {
 }
 
 function Lobby({username}: LobbyProps) {
-  const label = GameService.getLabel();
   let [load_games, setLoadGames] = useState<boolean>(true);
   let [games, setGames] = useState<string[]>(["1", "2", "3"]);
   let [chosenSlot, setChosenSlot] = useState<Number>(-1);
@@ -37,6 +36,7 @@ function Lobby({username}: LobbyProps) {
       <header className="App-header">
       <Form.Label>Welcome {username}</Form.Label>
         <Roster/>
+        <GameList/>
         <Form.Select aria-label="Game Chooser" onChange={(value)=>setChosenSession(value.target.value)}>
           <option>Choose a game:</option>
           {games.map((game) => (
@@ -51,9 +51,6 @@ function Lobby({username}: LobbyProps) {
         <Form.Label>Game Backend IP</Form.Label>
         <Form.Control type="text" placeholder="127.0.0.1" onChange={(value)=>setHostIp(value.target.value)} />
         <Button href={process.env.REACT_APP_MPLAYER_GAME_URL+"?gamecode="+chosenSession+"&slot="+chosenSlot+"&host="+hostIp}>Launch Game</Button>
-        <p>
-          {label}
-        </p>
         <a
           className="App-link"
           href="https://reactjs.org"

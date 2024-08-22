@@ -54,9 +54,7 @@ function App() {
 
     <div className="App">
       <header className="App-header">
-        <p>
-          Head-to-Head Atari Adventure
-        </p>
+        <h1>Head-to-Head Atari Adventure</h1>
         <RouterProvider router={router} />
         </header>
     </div>
