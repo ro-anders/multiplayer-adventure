@@ -38,8 +38,8 @@ const initializeSchema = async () => {
     BillingMode: "PAY_PER_REQUEST"
   };
   await ddbDocClient.send(new CreateTableCommand(input))
-  // Create the player list table
-  const playerDef = { 
+  // Create the players table
+  const playersDef = { 
     AttributeDefinitions: [ 
       { 
         AttributeName: "playername", 
@@ -55,7 +55,25 @@ const initializeSchema = async () => {
     ],
     BillingMode: "PAY_PER_REQUEST"
   };
-  await ddbDocClient.send(new CreateTableCommand(playerDef))
+  await ddbDocClient.send(new CreateTableCommand(playersDef))
+  // Create the games table
+  const gamesDef = { 
+    AttributeDefinitions: [ 
+      { 
+        AttributeName: "session", 
+        AttributeType: "N", 
+      },
+    ],
+    TableName: "Games", 
+    KeySchema: [ 
+      { 
+        AttributeName: "session", 
+        KeyType: "HASH", 
+      },
+    ],
+    BillingMode: "PAY_PER_REQUEST"
+  };
+  await ddbDocClient.send(new CreateTableCommand(gamesDef))
 } 
 
 /**
