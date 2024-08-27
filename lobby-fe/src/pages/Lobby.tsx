@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import '../App.css';
-import GameList from '../components/GameList'
+import GameBroker from '../components/GameBroker'
 import Roster from '../components/Roster'
 
 interface LobbyProps {
@@ -11,38 +11,19 @@ interface LobbyProps {
 }
 
 function Lobby({username}: LobbyProps) {
-  let [load_games, setLoadGames] = useState<boolean>(true);
-  let [games, setGames] = useState<string[]>(["1", "2", "3"]);
   let [chosenSlot, setChosenSlot] = useState<Number>(-1);
   let [chosenSession, setChosenSession] = useState<string>("");
   let [hostIp, setHostIp] = useState<string>("127.0.0.1");
   let [url, setUrl] = useState<string>("");
 
-  // useEffect(() => {
-  //   async function fetchGames() {
-  //     if (load_games) { 
-  //       const fetched_games = await GameService.getGames()
-  //       setGames(fetched_games)
-  //     }
-  //     setLoadGames(false)
-  //   }
-
-  //   fetchGames();
-  // }, [load_games])
-
   return (
 
     <div className="App">
       <header className="App-header">
-      <Form.Label>Welcome {username}</Form.Label>
+        <Form.Label>Welcome {username}</Form.Label>
         <Roster/>
-        <GameList/>
-        <Form.Select aria-label="Game Chooser" onChange={(value)=>setChosenSession(value.target.value)}>
-          <option>Choose a game:</option>
-          {games.map((game) => (
-            <option value={game} key={game}>{game}</option>
-          ))}
-        </Form.Select>
+        <GameBroker username={username}/>
+        <hr/>
         <Form.Select aria-label="Slot Chooser" onChange={(value)=>setChosenSlot(parseInt(value.target.value))}>
           <option>Which player:</option>
           <option value="0" key="0">Player 1</option>

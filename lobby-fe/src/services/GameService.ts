@@ -2,7 +2,7 @@ import {Game} from '../domain/Game'
 
 export default class GameServer {
 
-	 static async getGames(filter: string): Promise<Game[]> {
+	static async getGames(): Promise<Game[]> {
 		// We can use the `Headers` constructor to create headers
 		// and assign it as the type of the `headers` variable
 		const headers: Headers = new Headers()
@@ -25,6 +25,51 @@ export default class GameServer {
 			console.log("Got response from server: " + res)
 			return res
 		})
+	}
+
+	/**
+	 * Create a new proposed game that is visible to everyone.
+	 * @param game_setup the details of the game
+	 * @returns a list of all currently proposed games, including this one.
+	 */
+	static async proposeNewGame(game_setup: Game): Promise<Game[]> {
+		const headers: Headers = new Headers()
+		headers.set('Content-Type', 'application/json')
+		headers.set('Accept', 'application/json')
+
+		// Create the request object, which will be a RequestInfo type. 
+		// Here, we will pass in the URL as well as the options object as parameters.
+		const request: RequestInfo = new Request('http://localhost:3000/game', {
+			method: 'POST',
+			headers: headers,
+			body: JSON.stringify(game_setup)
+		})
+
+		const res = await fetch(request);
+		console.log("Got response from server: " + res)
+		return await this.getGames()
+	}
+
+	/**
+	 * Update an existing game with new information.
+	 * @param game the details of the game
+	 * @returns a list of all currently proposed games, including this one.
+	 */
+	static async updateGame(game: Game) {
+		const headers: Headers = new Headers()
+		headers.set('Content-Type', 'application/json')
+		headers.set('Accept', 'application/json')
+
+		// Create the request object, which will be a RequestInfo type. 
+		// Here, we will pass in the URL as well as the options object as parameters.
+		const request: RequestInfo = new Request(`http://localhost:3000/game/${game.session}`, {
+			method: 'PUT',
+			headers: headers,
+			body: JSON.stringify(game)
+		})
+
+		const res = await fetch(request);
+		console.log("Got response from server: " + res)
 	}
 }
 

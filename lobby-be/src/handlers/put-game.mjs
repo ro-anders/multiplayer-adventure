@@ -1,9 +1,10 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
 
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
+/**Updates and existing game
+ */
 export const putGameHandler = async (event) => {
     if (event.httpMethod !== 'PUT') {
         throw new Error(`putMethod only accepts PUT method, you tried: ${event.httpMethod} method.`);
@@ -13,15 +14,13 @@ export const putGameHandler = async (event) => {
 
     await CheckDDB();
 
-    // Get id and name from the body of the request
+    // Get session from the URL and the rest of the game from the body
     const session = event.pathParameters.session;
     const body = JSON.parse(event.body);
-    // TBD: Make sure session and body.session are the same
+    if (body.session != session) {
+        throw new Error(`Invalid request: game session in request URL does not match game session in body.`);
+    }
 
-    // For right now we just trust that the client is giving us the right structure.
-
-    // Creates a new item, or replaces an old item with a new item
-    // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
     var params = {
         TableName : "Games",
         Item: body
@@ -36,14 +35,10 @@ export const putGameHandler = async (event) => {
 
     const response = {
         statusCode: 200,
-        headers: {
-            "Access-Control-Allow-Headers" : "Content-Type",
-            "Access-Control-Allow-Origin": "*", // Allow from anywhere 
-            "Access-Control-Allow-Methods": "PUT" // Allow only GET request 
-        }
+        body: JSON.stringify(body)
     };
 
     // All log statements are written to CloudWatch
-    console.info(`response from: ${event.httpMethod} ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
+    console.info(`response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
     return response;
 };
