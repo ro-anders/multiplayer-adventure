@@ -33,6 +33,11 @@ function ProposedGameList({current_user}: ProposedGameListProps) {
     GameService.updateGame(game)
   }
 
+  function startGame(game: Game) {
+    const slot = (game.player1_name === current_user ? 0 : (game.player2_name === current_user ? 1 : 2));
+    window.open(`http://localhost:8080/index.html?gamecode=${game.session}&slot=${slot}`)
+  }
+
   useEffect(() => {
     // Query now and once every interval
     getProposedGames();
@@ -66,13 +71,27 @@ function ProposedGameList({current_user}: ProposedGameListProps) {
    * @returns whether the current user can join the game
    */
   function isJoinable(game: Game): boolean {
-    const inGame = game.player1_name == current_user || 
-      game.player2_name == current_user || 
-      game.player3_name == current_user;
+    const inGame = game.player1_name === current_user || 
+      game.player2_name === current_user || 
+      game.player3_name === current_user;
     const currentPlayers = (!game.player1_name ? 0 : (!game.player2_name ? 1 : (!game.player3_name ? 2 : 3)))
     return !inGame && (currentPlayers < game.number_players);
   }
 
+  /**
+   * Return whether the current user can start this game (meaning they're in the game and it has
+   * enough players)
+   * @param game a proposed game in question
+   * @returns whether the current user can start the game
+   */
+    function isStartable(game: Game): boolean {
+      const inGame = game.player1_name === current_user || 
+        game.player2_name === current_user || 
+        game.player3_name === current_user;
+      const currentPlayers = (!game.player1_name ? 0 : (!game.player2_name ? 1 : (!game.player3_name ? 2 : 3)))
+      return inGame && (currentPlayers+1 > game.number_players);
+    }
+  
   return (
 
     <div className="Roster">
@@ -81,7 +100,9 @@ function ProposedGameList({current_user}: ProposedGameListProps) {
         <ListGroup>
             {proposedGames.map((game) => (
             <ListGroup.Item key={game.player1_name}>
-              {gameLabel(game)} {isJoinable(game) && <Button onClick={() => joinGame(game)}>Join</Button>}
+              {gameLabel(game)} 
+              {isJoinable(game) && <Button onClick={() => joinGame(game)}>Join</Button>}
+              {isStartable(game) && <Button onClick={() => startGame(game)}>Start</Button>}
             </ListGroup.Item>
             ))}
         </ListGroup>

@@ -12,15 +12,16 @@ To Run the Whole Suite Locally:
   This mimics the fargate task started at game time
 2. Run a DynamoDB locally (port 8000)
   - `docker run -p 8000:8000 amazon/dynamodb-local`
-2. Run the Lobby Backend lambdas using SAM (port 3000)
+3. Run the Lobby Backend lambdas using SAM (port 3000)
   - `sam local start-api`
   This mimics the APIGateway & Lambda
-3. Run the webserver serving the game 
+4. Run the webserver serving the game (port 8080)
   - open the Unity project and selecting File --> Build and Run
   - cd multiplayer-adventure/H2HAdventure/target
   - docker run -it --rm -p 8080:80 --name web -v ./H2HAdventure2P:/usr/share/nginx/html nginx
-5. cd to lobby-fe and run npm start to run the Lobby Frontend React website
-   which would normally be hosted on a webserver or S3 bucket
+5. Run the Lobby Frontend webapp (port 5000)
+  - run npm start
+  This mimics a webapp hosted on a webserver or S3 bucket
 
 To Deploy and Run the System:
 1. Authenticate with AWS, credentials stored in ~/.aws/credentials
