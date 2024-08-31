@@ -35,7 +35,7 @@ function ProposedGameList({current_user}: ProposedGameListProps) {
 
   function startGame(game: Game) {
     const slot = (game.player1_name === current_user ? 0 : (game.player2_name === current_user ? 1 : 2));
-    window.open(`http://localhost:8080/index.html?gamecode=${game.session}&slot=${slot}`)
+    window.open(`${process.env.REACT_APP_MPLAYER_GAME_URL}/index.html?gamecode=${game.session}&slot=${slot}`)
   }
 
   useEffect(() => {

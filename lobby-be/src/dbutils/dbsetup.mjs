@@ -5,14 +5,22 @@ import { DynamoDBClient, ListTablesCommand, CreateTableCommand } from '@aws-sdk/
 import { DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { NodeHttpHandler }  from "@aws-sdk/node-http-handler";
 
-export const DDBClient = new DynamoDBClient({
-    region: 'local',
-    endpoint: 'http://docker.for.mac.localhost:8000',
-    credentials: {
-      accessKeyId: 'xxx',
-      secretAccessKey: 'yyy',
-    },
-  });
+const local_dynamo_connect_config = {
+  region: 'local',
+  endpoint: 'http://docker.for.mac.localhost:8000',
+  credentials: {
+    accessKeyId: 'xxx',
+    secretAccessKey: 'yyy',
+  },
+}
+
+const production_dynamo_connect_config = {
+  region: 'us-east-2'
+}
+
+export const DDBClient = new DynamoDBClient(
+  (process.env.ENVIRONMENT_TYPE === 'development' ? local_dynamo_connect_config : production_dynamo_connect_config)
+);
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
 /**
