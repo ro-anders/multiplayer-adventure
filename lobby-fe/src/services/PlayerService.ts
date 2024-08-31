@@ -2,6 +2,8 @@
 
 export default class PlayerService {
 
+	 static back_end = process.env.REACT_APP_LOBBY_BE_HOST
+
 	 static async getOnlinePlayers(): Promise<string[]> {
 		// We can use the `Headers` constructor to create headers
 		// and assign it as the type of the `headers` variable
@@ -12,7 +14,7 @@ export default class PlayerService {
 
 		// Create the request object, which will be a RequestInfo type. 
 		// Here, we will pass in the URL as well as the options object as parameters.
-		const request: RequestInfo = new Request('http://localhost:3000/player/', {
+		const request: RequestInfo = new Request(`${PlayerService.back_end}/player/`, {
 			method: 'GET',
 			headers: headers
 		})
@@ -40,7 +42,7 @@ export default class PlayerService {
 
 		// Create the request object, which will be a RequestInfo type. 
 		// Here, we will pass in the URL as well as the options object as parameters.
-		const request: RequestInfo = new Request('http://localhost:3000/player/'+username, {
+		const request: RequestInfo = new Request(`${PlayerService.back_end}/player/${username}`, {
 			method: 'PUT',
 			headers: headers
 		})

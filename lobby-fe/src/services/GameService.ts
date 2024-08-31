@@ -1,6 +1,8 @@
 import {Game} from '../domain/Game'
 
-export default class GameServer {
+export default class GameService {
+
+	static back_end = process.env.REACT_APP_LOBBY_BE_HOST
 
 	static async getGames(): Promise<Game[]> {
 		// We can use the `Headers` constructor to create headers
@@ -10,7 +12,7 @@ export default class GameServer {
 		headers.set('Content-Type', 'application/json')
 		headers.set('Accept', 'application/json')
 
-		const request: RequestInfo = new Request('http://localhost:3000/game', {
+		const request: RequestInfo = new Request(`${GameService.back_end}/game`, {
 			method: 'GET',
 			headers: headers
 		})
@@ -39,7 +41,7 @@ export default class GameServer {
 
 		// Create the request object, which will be a RequestInfo type. 
 		// Here, we will pass in the URL as well as the options object as parameters.
-		const request: RequestInfo = new Request('http://localhost:3000/game', {
+		const request: RequestInfo = new Request(`${GameService.back_end}/newgame`, {
 			method: 'POST',
 			headers: headers,
 			body: JSON.stringify(game_setup)
@@ -62,7 +64,7 @@ export default class GameServer {
 
 		// Create the request object, which will be a RequestInfo type. 
 		// Here, we will pass in the URL as well as the options object as parameters.
-		const request: RequestInfo = new Request(`http://localhost:3000/game/${game.session}`, {
+		const request: RequestInfo = new Request(`${GameService.back_end}/game/${game.session}`, {
 			method: 'PUT',
 			headers: headers,
 			body: JSON.stringify(game)

@@ -5,6 +5,7 @@ version = 0.1
 [default]
 [default.global.parameters]
 stack_name = "lobby-be"
+parameter_overrides = "EnvironmentType=\"production\""
 
 [default.build.parameters]
 cached = true
@@ -17,6 +18,10 @@ lint = true
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
+s3_prefix = "lobby-be"
+region = "us-east-2"
+image_repositories = []
+parameter_overrides = "EnvironmentType=\"production\""
 
 [default.package.parameters]
 resolve_s3 = true
@@ -26,6 +31,8 @@ watch = true
 
 [default.local_start_api.parameters]
 warm_containers = "EAGER"
+parameter_overrides = "EnvironmentType=\"development\""
 
 [default.local_start_lambda.parameters]
 warm_containers = "EAGER"
+parameter_overrides = "EnvironmentType=\"development\""

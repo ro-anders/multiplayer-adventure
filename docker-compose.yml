@@ -1,0 +1,23 @@
+services:
+
+  dynamo:
+    image: amazon/dynamodb-local
+    ports:
+      - "8000:8000"
+
+  game-be:
+    image: roanders/h2hadv-server
+    build:
+      context: game-be
+      platforms:
+        - "linux/amd64"
+        - "linux/arm64"
+    ports:
+      - "4000:4000"
+
+  game-fe:
+    image: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - "./H2HAdventure/target/H2HAdventure2P:/usr/share/nginx/html"

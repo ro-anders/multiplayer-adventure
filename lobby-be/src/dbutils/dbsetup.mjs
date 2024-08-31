@@ -80,12 +80,15 @@ const initializeSchema = async () => {
  * Checks to see if the dynamodb has its schema setup.  If not, sets up the schema.
  */
 export const CheckDDB = async () => {
-  const data = await ddbDocClient.send(new ListTablesCommand());
-  if (!'TableNames' in data) {
-    throw new Error(`Unexpected response from database.: ${data}`);
-  }
-  if (!data.TableNames.includes('Players')) {
-    console.log("No schema detected.  Initializing database schema.")
-    await initializeSchema();
+  // Only needs to check schema in development
+  if (process.env.ENVIRONMENT_TYPE === 'development') {
+    const data = await ddbDocClient.send(new ListTablesCommand());
+    if (!'TableNames' in data) {
+      throw new Error(`Unexpected response from database.: ${data}`);
+    }
+    if (!data.TableNames.includes('Players')) {
+      console.log("No schema detected.  Initializing database schema.")
+      await initializeSchema();
+    }
   }
 }
