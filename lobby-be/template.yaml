@@ -213,7 +213,7 @@ Resources:
     Properties:
       TableName: Settings
       PrimaryKey:
-        Name: settingname
+        Name: name
         Type: String
 
 Outputs:
