@@ -1,34 +1,38 @@
+// Create clients and set shared const values outside of the handler.
+
+// Create a DocumentClient that represents the query to add an item
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
 
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
-/**Updates and existing game
+/**
+ * HTTP pput method to update one setting in the DynamoDB table.
  */
-export const putGameHandler = async (event) => {
+export const putSettingHandler = async (event) => {
     if (event.httpMethod !== 'PUT') {
         throw new Error(`putMethod only accepts PUT method, you tried: ${event.httpMethod} method.`);
     }
     // All log statements are written to CloudWatch
-    console.info('received:', event);
+    //console.info('received:', event);
 
     await CheckDDB();
 
-    // Get session from the URL and the rest of the game from the body
-    const session = event.pathParameters.session;
+    // Get name from the request path
+    const setting_name = event.pathParameters.setting_name;
     const body = JSON.parse(event.body);
-    if (body.session != session) {
-        throw new Error(`Invalid request: game session in request URL does not match game session in body.`);
+    if (body.name != setting_name) {
+        throw new Error(`Invalid request: setting name in request URL does not match name in body.`);
     }
 
     var params = {
-        TableName : "Games",
+        TableName : "Settings",
         Item: body
     };
 
     try {
         const data = await ddbDocClient.send(new PutCommand(params));
-        console.log("Success - item added or updated", data);
+        console.log("Success - setting added or updated", data);
       } catch (err) {
         console.log("Error", err.stack);
       }
@@ -38,12 +42,11 @@ export const putGameHandler = async (event) => {
         headers: {
             "Access-Control-Allow-Headers" : "Content-Type",
             "Access-Control-Allow-Origin": "*", // Allow from anywhere 
-            "Access-Control-Allow-Methods": "PUT" // Allow only PUT request 
-        },
-        body: JSON.stringify(body)
+            "Access-Control-Allow-Methods": "PUT" // Allow only GET request 
+        }
     };
 
     // All log statements are written to CloudWatch
-    console.info(`response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
+    console.info(`response from: ${event.httpMethod} ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
     return response;
 };

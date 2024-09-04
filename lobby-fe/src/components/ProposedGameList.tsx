@@ -4,6 +4,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import '../App.css';
 import {Game} from '../domain/Game'
 import GameService from '../services/GameService'
+import SettingsService from '../services/SettingsService';
 
 interface ProposedGameListProps {
   /** The name of the currently logged in user */
@@ -33,9 +34,10 @@ function ProposedGameList({current_user}: ProposedGameListProps) {
     GameService.updateGame(game)
   }
 
-  function startGame(game: Game) {
+  async function startGame(game: Game) {
     const slot = (game.player1_name === current_user ? 0 : (game.player2_name === current_user ? 1 : 2));
-    window.open(`${process.env.REACT_APP_MPLAYER_GAME_URL}/index.html?gamecode=${game.session}&slot=${slot}`)
+    const game_server_ip = await SettingsService.getGameServerIP()
+    window.open(`${process.env.REACT_APP_MPLAYER_GAME_URL}/index.html?gamecode=${game.session}&slot=${slot}&host=${game_server_ip}`)
   }
 
   useEffect(() => {

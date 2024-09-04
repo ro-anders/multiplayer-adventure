@@ -29,23 +29,23 @@ const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 const initializeSchema = async () => {
 
   // Create the SampleTable table
-  const input = { 
+  const settingsDef = { 
     AttributeDefinitions: [ 
       { 
-        AttributeName: "id", 
+        AttributeName: "name", 
         AttributeType: "S", 
       },
     ],
-    TableName: "SampleTable", 
+    TableName: "Settings", 
     KeySchema: [ 
       { 
-        AttributeName: "id", 
+        AttributeName: "name", 
         KeyType: "HASH", 
       },
     ],
     BillingMode: "PAY_PER_REQUEST"
   };
-  await ddbDocClient.send(new CreateTableCommand(input))
+  await ddbDocClient.send(new CreateTableCommand(settingsDef))
   // Create the players table
   const playersDef = { 
     AttributeDefinitions: [ 

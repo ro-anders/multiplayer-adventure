@@ -15,7 +15,7 @@ export const putPlayerHandler = async (event) => {
         throw new Error(`putMethod only accepts PUT method, you tried: ${event.httpMethod} method.`);
     }
     // All log statements are written to CloudWatch
-    console.info('received:', event);
+    //console.info('received:', event);
 
     await CheckDDB();
 
@@ -41,7 +41,7 @@ export const putPlayerHandler = async (event) => {
         headers: {
             "Access-Control-Allow-Headers" : "Content-Type",
             "Access-Control-Allow-Origin": "*", // Allow from anywhere 
-            "Access-Control-Allow-Methods": "PUT" // Allow only GET request 
+            "Access-Control-Allow-Methods": "PUT" // Allow only PUT request 
         }
     };
 
