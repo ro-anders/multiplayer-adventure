@@ -27,25 +27,31 @@ To Deploy and Run the System:
 1. Authenticate with AWS, credentials stored in ~/.aws/credentials
   - export AWS_PROFILE=h2hadventure
   - export AWS_REGION=us-east-2
-1. Build the Game Back-End Server
+2. Build the Game Back-End Server
   - just commit to Github and Github action will deploy the latest to Docker.io
 3. Launch game-be in a fargate service by standing up deploy/fargateservice.cfn.yml
   - aws cloudformation create-stack --stack-name game-be --template-body file://game-be/deploy/fargateservice.cfn.yml --capabilities "CAPABILITY_NAMED_IAM"
 4. Build game package
  - Unity File->Build and Run
-6. Deploy game package
+5. Deploy game package
  - aws cloudformation create-stack --stack-name s3-website  --template-body file://deploy/s3website.cfn.yml
  - aws s3 cp --recursive H2HAdventure/target/H2HAdventure2P s3://h2adventure-website/game/H2HAdventureMP
+6. Build and deploy lobby-be
+ - cd lobby-be
+ - sam build
+ - sam deploy
 7. Build lobby-fe
  - cd lobby-fe
  - npm run build
 8. Deploy lobby-fe
  - aws s3 cp --recursive build/ s3://h2adventure-website/
-9. Play game
+9. Post IP by running the following commands
+ - TASKARN=$(aws ecs list-tasks --cluster h2hadv-serverCluster | jq -re ".taskArns[0]")
+ - ENI=$(aws ecs describe-tasks --cluster h2hadv-serverCluster --task $TASKARN | jq -r -e '.tasks[0].attachments[0].details[] | select(.name=="networkInterfaceId").value')
+ - IP=$(aws ec2 describe-network-interfaces --network-interface-ids $ENI | jq -r -e ".NetworkInterfaces[0].Association.PublicIp")
+ - curl -d "{\"name\": \"game_server_ip\", \"value\": \"$IP\"}" -H "Content-Type: application/json" -X PUT https://z2rtswo351.execute-api.us-east-2.amazonaws.com/Prod/setting/game_server_ip
+10. Play game
  - goto http://h2adventure-website.s3-website.us-east-2.amazonaws.com 
-10. Get IP
- - Get the ENI of the Fargate task by copying the task ARN into the following command
-     aws ecs describe-tasks --cluster h2hadv-serverCluster --task <<task-arn>> | jq -r -e '.tasks[0].attachments[0].details[] | select(.name=="networkInterfaceId").value'
- - Get the Public IP address by copying the ENI into the following command
-     aws ec2 describe-network-interfaces --network-interface-ids <<eni>> | jq -r -e ".NetworkInterfaces[0].Association.PublicIp"
- - Enter IP in the web page
+
+ Note, to clear out old rows from dynamo
+
