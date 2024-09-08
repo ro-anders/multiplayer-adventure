@@ -29,8 +29,14 @@ To Deploy and Run the System:
   - export AWS_REGION=us-east-2
 2. Build the Game Back-End Server
   - just commit to Github and Github action will deploy the latest to Docker.io
-3. Launch game-be in a fargate service by standing up deploy/fargateservice.cfn.yml
-  - aws cloudformation create-stack --stack-name game-be --template-body file://game-be/deploy/fargateservice.cfn.yml --capabilities "CAPABILITY_NAMED_IAM"
+3. Launch game-be in a fargate service by standing up deploy/fargateservice.cfn.yml and running a task
+  - aws cloudformation create-stack --stack-name game-be \
+   --template-body file://game-be/deploy/fargateservice.cfn.yml --capabilities "CAPABILITY_NAMED_IAM"
+  - aws ecs run-task \
+   --cluster h2hadv-serverCluster \
+   --task-definition arn:aws:ecs:us-east-2:637423607158:task-definition/h2hadv-serverTaskDefinition:7 \
+   --launch-type FARGATE \
+   --network-configuration "awsvpcConfiguration={subnets=[subnet-0d46ce42b6ae7a1ee,subnet-011083badbc3f216e],securityGroups=[sg-07539077994dfb96c],assignPublicIp=ENABLED}"
 4. Build game package
  - Unity File->Build and Run
 5. Deploy game package
@@ -52,6 +58,3 @@ To Deploy and Run the System:
  - curl -d "{\"name\": \"game_server_ip\", \"value\": \"$IP\"}" -H "Content-Type: application/json" -X PUT https://z2rtswo351.execute-api.us-east-2.amazonaws.com/Prod/setting/game_server_ip
 10. Play game
  - goto http://h2adventure-website.s3-website.us-east-2.amazonaws.com 
-
- Note, to clear out old rows from dynamo
-

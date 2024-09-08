@@ -134,36 +134,37 @@ Resources:
           CidrIp: "0.0.0.0/0"
           #SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
 
-  Service:
-    Type: AWS::ECS::Service
-    # This dependency is needed so that the load balancer is setup correctly in time
-    # DependsOn:
-    #   - ListenerWeb
-    Properties: 
-      ServiceName: !Ref ServiceName
-      Cluster: !Ref Cluster
-      TaskDefinition: !Ref TaskDefinition
-      DeploymentConfiguration:
-        MinimumHealthyPercent: 100
-        MaximumPercent: 200
-      DesiredCount: 1
-      LaunchType: FARGATE
-      NetworkConfiguration: 
-        AwsvpcConfiguration:
-          # change to DISABLED if you're using private subnets that have access to a NAT gateway
-          AssignPublicIp: ENABLED
-          Subnets:
-            - !Ref SubnetA
-            - !Ref SubnetB
-          SecurityGroups:
-            - !Ref ContainerSecurityGroup
-      # Uncomment if using load balancer
-      # # This may need to be adjusted if the container takes a while to start up
-      # HealthCheckGracePeriodSeconds: 30
-      # LoadBalancers:
-      #   - ContainerName: !Ref ServiceName
-      #     ContainerPort: !Ref ContainerPort
-      #     TargetGroupArn: !Ref TargetGroup
+  # Uncomment if deploying as a service
+  # Service:
+  #   Type: AWS::ECS::Service
+  #   # This dependency is needed so that the load balancer is setup correctly in time
+  #   # DependsOn:
+  #   #   - ListenerWeb
+  #   Properties: 
+  #     ServiceName: !Ref ServiceName
+  #     Cluster: !Ref Cluster
+  #     TaskDefinition: !Ref TaskDefinition
+  #     DeploymentConfiguration:
+  #       MinimumHealthyPercent: 100
+  #       MaximumPercent: 200
+  #     DesiredCount: 1
+  #     LaunchType: FARGATE
+  #     NetworkConfiguration: 
+  #       AwsvpcConfiguration:
+  #         # change to DISABLED if you're using private subnets that have access to a NAT gateway
+  #         AssignPublicIp: ENABLED
+  #         Subnets:
+  #           - !Ref SubnetA
+  #           - !Ref SubnetB
+  #         SecurityGroups:
+  #           - !Ref ContainerSecurityGroup
+  #     # Uncomment if using load balancer
+  #     # # This may need to be adjusted if the container takes a while to start up
+  #     # HealthCheckGracePeriodSeconds: 30
+  #     # LoadBalancers:
+  #     #   - ContainerName: !Ref ServiceName
+  #     #     ContainerPort: !Ref ContainerPort
+  #     #     TargetGroupArn: !Ref TargetGroup
 
   # Uncomment if using load balancer
   # LoadBalancerSecurityGroup:
