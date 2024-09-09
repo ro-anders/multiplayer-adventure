@@ -6,14 +6,18 @@ services:
       - "8000:8000"
 
   game-be:
-    image: roanders/h2hadv-server
     build:
       context: game-be
+      target: build
       platforms:
         - "linux/amd64"
         - "linux/arm64"
+    volumes:
+     - ./game-be/:/app
+     - /app/node_modules
     ports:
-      - "4000:4000"
+     - 4000:4000
+    command: npm run dev
 
   game-fe:
     image: nginx
