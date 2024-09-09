@@ -20,7 +20,7 @@ To Run the Whole Suite Locally:
   - cd multiplayer-adventure/H2HAdventure/target
   - docker run -it --rm -p 8080:80 --name web -v ./H2HAdventure2P:/usr/share/nginx/html nginx
 5. Run the Lobby Frontend webapp (port 5000)
-  - run npm start
+  - npm start
   This mimics a webapp hosted on a webserver or S3 bucket
 
 To Deploy and Run the System:

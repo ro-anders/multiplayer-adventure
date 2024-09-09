@@ -1,0 +1,25 @@
+{
+  "name": "game-be3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node-dev --poll ./src/index.ts",
+    "build": "rimraf ./dist && tsc",
+    "start": "npm run build && node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/ws": "^8.5.12",
+    "rimraf": "^6.0.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.5.4"
+  }
+}
