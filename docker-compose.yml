@@ -13,10 +13,13 @@ services:
         - "linux/amd64"
         - "linux/arm64"
     volumes:
-     - ./game-be/:/app
-     - /app/node_modules
+      - ./game-be/:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      LOBBY_URL: http://localhost:3000
     ports:
-     - 4000:4000
+      - 4000:4000
     command: npm run dev
 
   game-fe:

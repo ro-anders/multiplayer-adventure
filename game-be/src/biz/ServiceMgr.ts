@@ -10,13 +10,16 @@ export default class ServiceMgr {
 	 * and shutting down.
 	 */
 	//static SHUTDOWN_SERVICE_TIMEOUT = 10 * 60 * 1000 // 10 minutes in milliseconds
-	static SHUTDOWN_SERVICE_TIMEOUT = 1 * 60 * 1000 // 10 minutes in milliseconds
+	static SHUTDOWN_SERVICE_TIMEOUT = 60000 // 1 minutes 
 
 	constructor(private lobby_url: string,
 				private last_comm_time: number = Date.now(),
 				private interval_id: NodeJS.Timeout = null
 	) 
 	{
+		if (!lobby_url) {
+			throw new Error("Undefined LOBBY_URL.  Cannot run Game Backend without lobby.")
+		}
 		this.report_to_lobby()
 		console.log("Creating periodic update")
 		interval_id = setInterval(this.periodic_update.bind(this), ServiceMgr.SHUTDOWN_SERVICE_TIMEOUT)

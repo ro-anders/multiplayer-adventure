@@ -14,8 +14,13 @@ import GameMgr from "./biz/GameMgr";
 import ServiceMgr from "./biz/ServiceMgr";
 
 const { createServer } = require('http');
+
+
+console.log("Stating game back end")
+console.log(`Environment = ${process.env.NODE_ENV}`)
+console.log(`Lobby URL = ${process.env.LOBBY_URL}`)
 const gamemgr: GameMgr = new GameMgr();
-const servicemg: ServiceMgr = new ServiceMgr("http://localhost:5000");
+const servicemgr: ServiceMgr = new ServiceMgr(process.env.LOBBY_URL);
 
 const app: Express = express();
 const port = 4000;
@@ -51,3 +56,13 @@ server.listen(port, function() {
 app.get('/health', (req, res) => {
   res.send("OK")
 })
+
+/**
+ * Occassionally the lobby will want to warn the game backend that a game is about to start and not
+ * to shutdown due to inactivity.
+ */
+app.put('/timer/reset', function (req, res) {
+  servicemgr.got_game_message()
+  res.send("OK")
+})
+

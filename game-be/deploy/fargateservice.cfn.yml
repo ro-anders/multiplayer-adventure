@@ -83,6 +83,12 @@ Resources:
           Image: !Ref Image
           PortMappings:
             - ContainerPort: !Ref ContainerPort
+          Environment:
+            - Name: ENVIRONMENT
+              Value: 'production'
+            # The LOBBY_URL needs to be defined when the service is launched
+            # - Name: LOBBY_URL
+            #   Value: Undefined
           # # Send logs to CloudWatch Logs
           # LogConfiguration:
           #   LogDriver: awslogs
