@@ -36,7 +36,7 @@ Parameters:
     Default: /health
   Log:
     Type: String
-    Default: "None"
+    Default: "AWS"
     AllowedValues: ["None", "AWS"]
 
 Conditions:
@@ -89,13 +89,13 @@ Resources:
             # The LOBBY_URL needs to be defined when the service is launched
             # - Name: LOBBY_URL
             #   Value: Undefined
-          # # Send logs to CloudWatch Logs
-          # LogConfiguration:
-          #   LogDriver: awslogs
-          #   Options:
-          #     awslogs-region: !Ref AWS::Region
-          #     awslogs-group: !Ref LogGroup
-          #     awslogs-stream-prefix: ecs
+          # Send logs to CloudWatch Logs
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref LogGroup
+              awslogs-stream-prefix: ecs
 
   # A role needed by ECS
   ExecutionRole:
@@ -140,6 +140,13 @@ Resources:
           CidrIp: "0.0.0.0/0"
           #SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
 
+  LogGroup:
+    Condition: LogToAWS
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ['', [/service/, !Ref ServiceName]]
+
+
   # Uncomment if deploying as a service
   # Service:
   #   Type: AWS::ECS::Service
@@ -162,24 +169,3 @@ Resources:
   #         SecurityGroups:
   #           - !Ref ContainerSecurityGroup
 
-
-  # DNSRecord:
-  #   Type: AWS::Route53::RecordSet
-  #   Properties:
-  #     HostedZoneName: !Join ['', [!Ref HostedZoneName, .]]
-  #     Name: !Join ['', [!Ref Subdomain, ., !Ref HostedZoneName, .]]
-  #     Type: A
-  #     AliasTarget:
-  #       DNSName: !GetAtt LoadBalancer.DNSName
-  #       HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
-
-  # LogGroup:
-  #   Condition: LogToAWS
-  #   Type: AWS::Logs::LogGroup
-  #   Properties:
-  #     LogGroupName: !Join ['', [/service/, !Ref ServiceName]]
-
-# Outputs:
-  # Endpoint:
-  #   Description: Static Endpoint
-  #   Value: !Join ['', ['http://', !Ref DNSRecord]]

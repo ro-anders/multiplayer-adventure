@@ -20,7 +20,11 @@ console.log("Stating game back end")
 console.log(`Environment = ${process.env.NODE_ENV}`)
 console.log(`Lobby URL = ${process.env.LOBBY_URL}`)
 const gamemgr: GameMgr = new GameMgr();
-const servicemgr: ServiceMgr = new ServiceMgr(process.env.LOBBY_URL);
+
+// If running in production we need a lobby url.  
+// If running locally, we assume the standard localhost lobby port.
+const lobby_url: string = (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.LOBBY_URL)
+const servicemgr: ServiceMgr = new ServiceMgr(lobby_url);
 
 const app: Express = express();
 const port = 4000;

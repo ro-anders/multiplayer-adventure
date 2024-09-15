@@ -4,6 +4,17 @@
  * and if it recognizes it is no longer being used, shuts itself down.
  */
 
+import { 
+	ECSClient,
+	DescribeTasksCommand, DescribeTasksCommandInput, DescribeTasksCommandOutput,
+	ListTasksCommand, ListTasksCommandInput, ListTasksCommandOutput,
+	Task
+ } from '@aws-sdk/client-ecs'
+ import {
+	EC2Client,
+    DescribeNetworkInterfacesCommand, DescribeNetworkInterfacesCommandInput, DescribeNetworkInterfacesCommandOutput,
+ } from '@aws-sdk/client-ec2'
+
 export default class ServiceMgr {
 
 	/** The time period to wait before deciding no one is using the service
@@ -14,15 +25,17 @@ export default class ServiceMgr {
 
 	constructor(private lobby_url: string,
 				private last_comm_time: number = Date.now(),
-				private interval_id: NodeJS.Timeout = null
+				private interval_id: NodeJS.Timeout = null,
+				private ip: string = null
 	) 
 	{
-		if (!lobby_url) {
+		if (!this.lobby_url) {
 			throw new Error("Undefined LOBBY_URL.  Cannot run Game Backend without lobby.")
 		}
+		
 		this.report_to_lobby()
 		console.log("Creating periodic update")
-		interval_id = setInterval(this.periodic_update.bind(this), ServiceMgr.SHUTDOWN_SERVICE_TIMEOUT)
+		this.interval_id = setInterval(this.periodic_update.bind(this), ServiceMgr.SHUTDOWN_SERVICE_TIMEOUT)
 	}	 
 
 	/**
@@ -36,8 +49,12 @@ export default class ServiceMgr {
 	/**
 	 * Posts to the lobby back end that it is still up.
 	 */	
-	report_to_lobby() {
-		// TBD
+	async report_to_lobby() {
+		if (this.ip === null) {
+			this.ip = await this.get_ip()
+		}
+
+		// TBD: Make call to lobby
 	}
 
 	/**
@@ -61,12 +78,79 @@ export default class ServiceMgr {
 	 */
 	shutdown() {
 		console.log("Game Backend shutting down due to inactivity")
+		clearInterval(this.interval_id)
 
 		// Report to the lobby that the game service has shutdown
 		// TBD
 
 		// Shutdown
 		process.exit(0)
+	}
+
+	/**
+	 * Query AWS for the IP address that this service's Fargate Service is using.
+	 */
+	async get_ip(): Promise<string> {
+
+		if (process.env.NODE_ENV === 'development') {
+			return '127.0.0.1'
+		}
+		
+		try {
+			console.log("Determining IP")
+			// aws ecs list-tasks --cluster h2hadv-serverCluster | jq -re ".taskArns[0]
+			const ecs_client: ECSClient = new ECSClient();
+			const list_tasks_req: ListTasksCommandInput = {
+				cluster: 'h2hadv-serverCluster'
+			}
+			const list_tasks_resp: ListTasksCommandOutput = 
+				await ecs_client.send(new ListTasksCommand(list_tasks_req))
+			const task_arn: string = list_tasks_resp.taskArns[0]
+			console.log(`Task ARN = ${task_arn}`)
+
+			// aws ecs describe-tasks --cluster h2hadv-serverCluster --task $TASKARN | \
+			//   jq -r -e '.tasks[0].attachments[0].details[] | select(.name=="networkInterfaceId").value'
+			const desc_tasks_req: DescribeTasksCommandInput = {
+				cluster: 'h2hadv-serverCluster',
+				tasks: [task_arn]
+			}
+			var eni = null
+			const desc_tasks_resp: DescribeTasksCommandOutput = 
+				await ecs_client.send(new DescribeTasksCommand(desc_tasks_req))
+			const task: Task = desc_tasks_resp.tasks[0]
+			const attachment_details = task.attachments[0].details
+			for (var detail of attachment_details) {
+				if (detail.name === "networkInterfaceId") {
+					eni = detail.value
+					break
+				}
+			}
+			if (!eni) {
+				throw new Error(`Could not find ENI for task ${task_arn}`)
+			}
+			console.log(`ENI = ${eni}`)
+
+			// aws ec2 describe-network-interfaces --network-interface-ids $ENI | \
+			//   jq -r -e ".NetworkInterfaces[0].Association.PublicIp"
+			const ec2_client: EC2Client = new EC2Client();
+			const desc_net_req: DescribeNetworkInterfacesCommandInput = {
+				NetworkInterfaceIds: [eni]
+			}
+			const desc_net_resp: DescribeNetworkInterfacesCommandOutput =
+				await ec2_client.send(new DescribeNetworkInterfacesCommand(desc_net_req))
+			const ip = desc_net_resp.NetworkInterfaces[0].Association.PublicIp
+			console.log(`IP = ${ip}`)
+			return ip
+		}
+		catch (err: any) {
+			console.log(`Encountered error determining IP: ${err.message}`)
+			const stack = err.stack.split("\n").slice(1, 4).join("\n");
+			console.log(stack); 
+			
+			return null;
+		}
+
+		return ''
 	}
 
 
