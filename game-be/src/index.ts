@@ -8,11 +8,14 @@
 
 //const express = require('express');
 import express, { Express, Request, Response } from "express";
-import GameManager from "./biz/GameManager";
 import WebSocket from 'ws';
 
+import GameMgr from "./biz/GameMgr";
+import ServiceMgr from "./biz/ServiceMgr";
+
 const { createServer } = require('http');
-const gamemgr: GameManager = new GameManager();
+const gamemgr: GameMgr = new GameMgr();
+const servicemg: ServiceMgr = new ServiceMgr("http://localhost:5000");
 
 const app: Express = express();
 const port = 4000;
@@ -27,8 +30,10 @@ server_socket.on('connection', (ws: WebSocket) => {
   // send "hello world" interval
   //const textInterval = setInterval(() => ws.send("hello world!"), 100);
 
-  ws.on('message', function(data: WebSocket.RawData) {
-    gamemgr.process_message(data, ws)
+  ws.on('message', function(data: WebSocket.RawData, isBinary: boolean) {
+    if (isBinary) {
+      gamemgr.process_message(data as Uint8Array, ws)
+    }
   });
 
   ws.on('close', function() {

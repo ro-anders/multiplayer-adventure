@@ -12,16 +12,14 @@ interface Game {
 	clients: WebSocket[];
 }
 
-export default class GameManager {
+export default class GameMgr {
 	constructor(private games: {[session: string]: Game;} = {}) 
 	{}	 
 
-	process_message(data: any, client_socket: WebSocket) {
-		if (typeof(data) === "string") {
-			console.log("Unexpected string received from client -> \"" + data + "\"");
-		  } else if (data.length < 2) {
+	process_message(data: Uint8Array, client_socket: WebSocket) {
+		if (data.length < 2) {
 			console.log("Unexpected message too short. " + Array.from(data).join(", ") + "")
-		  } else {
+		} else {
 			console.log("Received " + typeof(data) + " " + Object.prototype.toString.call(data) + " with data [" + Array.from(data).join(" ") + "]")
 			// The very first byte should indicate the session
 			const session = data[0]
@@ -35,8 +33,7 @@ export default class GameManager {
 			  console.log("Request to broadcast message to " + session)
 			  this.broadcast_message(session, data, client_socket);
 			}
-		  }
-	  
+		}
 	}
 
 	/**
