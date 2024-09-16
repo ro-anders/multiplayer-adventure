@@ -32,11 +32,11 @@ To Deploy and Run the System:
 3. Launch game-be in a fargate service by standing up deploy/fargateservice.cfn.yml and running a task
   - aws cloudformation create-stack --stack-name game-be \
    --template-body file://game-be/deploy/fargateservice.cfn.yml --capabilities "CAPABILITY_NAMED_IAM"
-  - aws ecs run-task \\
-   --cluster h2hadv-serverCluster \\
-   --task-definition arn:aws:ecs:us-east-2:637423607158:task-definition/h2hadv-serverTaskDefinition \\
-   --launch-type FARGATE \\
-   --network-configuration "awsvpcConfiguration={subnets=[subnet-0d46ce42b6ae7a1ee,subnet-011083badbc3f216e],securityGroups=[sg-07539077994dfb96c],assignPublicIp=ENABLED}" \\
+  - aws ecs run-task \
+   --cluster h2hadv-serverCluster \
+   --task-definition arn:aws:ecs:us-east-2:637423607158:task-definition/h2hadv-serverTaskDefinition \
+   --launch-type FARGATE \
+   --network-configuration "awsvpcConfiguration={subnets=[subnet-0d46ce42b6ae7a1ee,subnet-011083badbc3f216e],securityGroups=[sg-07539077994dfb96c],assignPublicIp=ENABLED}" \
    --overrides '{ "containerOverrides": [ { "name": "h2hadv-server", "environment": [ { "name": "LOBBY_URL", "value": "https://abcdefghij.execute-api.us-east-2.amazonaws.com/Prod/" } ] } ] }'
 4. Build game package
  - Unity File->Build and Run

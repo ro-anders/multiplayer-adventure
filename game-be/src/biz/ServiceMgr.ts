@@ -54,7 +54,23 @@ export default class ServiceMgr {
 			this.ip = await this.get_ip()
 		}
 
-		// TBD: Make call to lobby
+		const headers: Headers = new Headers()
+		headers.set('Content-Type', 'application/json')
+		headers.set('Accept', 'application/json')
+		const request: RequestInfo = new Request(`${this.lobby_url}//setting/game_server_ip`, {
+			method: 'PUT',
+			headers: headers,
+			body: JSON.stringify({
+				name: "game_server_ip",
+				value: this.ip,
+				time_set: Date.now()
+			})
+		})
+
+		const response = await fetch(request)
+		if (response.status != 200) {
+			console.log(`Update lobby's Server IP received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+		}
 	}
 
 	/**
@@ -76,12 +92,22 @@ export default class ServiceMgr {
 	/**
 	 * No games are currently being played.  Shut down the game backend service.
 	 */
-	shutdown() {
+	async shutdown() {
 		console.log("Game Backend shutting down due to inactivity")
 		clearInterval(this.interval_id)
 
 		// Report to the lobby that the game service has shutdown
-		// TBD
+		const headers: Headers = new Headers()
+		headers.set('Content-Type', 'application/json')
+		headers.set('Accept', 'application/json')
+		const request: RequestInfo = new Request(`${this.lobby_url}//setting/game_server_ip`, {
+			method: 'DELETE',
+			headers: headers
+		})
+		const response = await fetch(request)
+		if (response.status != 200) {
+			console.log(`Clear lobby's Server IP received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+		}
 
 		// Shutdown
 		process.exit(0)

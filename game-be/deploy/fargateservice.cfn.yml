@@ -122,11 +122,21 @@ Resources:
             Principal:
               Service: ecs-tasks.amazonaws.com
             Action: 'sts:AssumeRole'
-      # Note: Add policies here if the service needs to access AWS Resources
-      # ManagedPolicyArns:
-      #   -
-      # Policies:
-      #   -
+
+  TaskPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref TaskRole
+      PolicyName: h2hadv-server
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'ec2:DescribeNetworkInterfaces'
+              - 'ecs:DescribeTasks'
+              - 'ecs:ListTasks'
+            Resource: '*'
 
   ContainerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
