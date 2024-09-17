@@ -190,6 +190,27 @@ Resources:
             Path: /setting/{setting_name}
             Method: PUT
 
+  deleteSettingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/delete-setting.deleteSettingHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Delete a configuration setting
+      Policies:
+        # Give Create/Read/Update/Delete Permissions
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SettingsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /setting/{setting_name}
+            Method: DELETE
+
 
   # DynamoDB table to store item: {id: &lt;ID&gt;, name: &lt;NAME&gt;}
   PlayersTable:

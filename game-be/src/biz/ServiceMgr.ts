@@ -67,9 +67,14 @@ export default class ServiceMgr {
 			})
 		})
 
-		const response = await fetch(request)
-		if (response.status != 200) {
-			console.log(`Update lobby's Server IP received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+		try {
+			const response = await fetch(request)
+			if (response.status != 200) {
+				console.log(`Update lobby's Server IP received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+			}
+		}
+		catch (e) {
+			console.log(`Error encountered: ${e}`)
 		}
 	}
 
@@ -104,9 +109,13 @@ export default class ServiceMgr {
 			method: 'DELETE',
 			headers: headers
 		})
-		const response = await fetch(request)
-		if (response.status != 200) {
-			console.log(`Clear lobby's Server IP received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+		try {
+			const response = await fetch(request)
+			if (response.status != 200) {
+				console.log(`Clear lobby's Server IP received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+			}
+		} catch (e) {
+			console.log(`Error encountered: ${e}`)
 		}
 
 		// Shutdown
