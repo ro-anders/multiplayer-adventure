@@ -57,7 +57,7 @@ export default class ServiceMgr {
 		const headers: Headers = new Headers()
 		headers.set('Content-Type', 'application/json')
 		headers.set('Accept', 'application/json')
-		const request: RequestInfo = new Request(`${this.lobby_url}//setting/game_server_ip`, {
+		const request: RequestInfo = new Request(`${this.lobby_url}/setting/game_server_ip`, {
 			method: 'PUT',
 			headers: headers,
 			body: JSON.stringify({
@@ -68,7 +68,9 @@ export default class ServiceMgr {
 		})
 
 		try {
+			console.log(`PUT ${request.url}`)
 			const response = await fetch(request)
+			console.log(`PUT ${response.status}`)
 			if (response.status != 200) {
 				console.log(`Update lobby's Server IP received ${response.status} response: ${JSON.stringify(await response.json())}`)		
 			}
