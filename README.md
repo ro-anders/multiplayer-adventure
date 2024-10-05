@@ -6,15 +6,15 @@ In popup select UNet HLAPI
 Download and Install Dissonance HLAPI
 
 To Run the Whole Suite Locally:
-1. Run the game-be backend game server (port 4000) 
+1. Run a DynamoDB locally (port 8000)
+  - `docker run -p 8000:8000 amazon/dynamodb-local`
+2. Run the Lobby Backend lambdas using SAM (port 3000)
+  - `sam local start-api`
+  This mimics the APIGateway & Lambda
+3. Run the game-be backend game server (port 4000) 
   - `docker build --platform linux/amd64 . -t roanders/h2hadv-server`
   - `docker run -p 4000:4000 roanders/h2hadv-server`
   This mimics the fargate task started at game time
-2. Run a DynamoDB locally (port 8000)
-  - `docker run -p 8000:8000 amazon/dynamodb-local`
-3. Run the Lobby Backend lambdas using SAM (port 3000)
-  - `sam local start-api`
-  This mimics the APIGateway & Lambda
 4. Run the webserver serving the game (port 8080)
   - open the Unity project and selecting File --> Build and Run
   - cd multiplayer-adventure/H2HAdventure/target

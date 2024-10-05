@@ -24,7 +24,6 @@ export default class GameService {
 			.then(res => {
 			// The response has an `any` type, so we need to cast
 			// it to the `User` type, and return it from the promise
-			console.log("Got response from server: " + res)
 			return res
 		})
 	}
@@ -48,7 +47,6 @@ export default class GameService {
 		})
 
 		const res = await fetch(request);
-		console.log("Got response from server: " + res)
 		return await this.getGames()
 	}
 
@@ -71,7 +69,6 @@ export default class GameService {
 		})
 
 		const res = await fetch(request);
-		console.log("Got response from server: " + res)
 	}
 }
 

@@ -3,35 +3,22 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import '../App.css';
 import PlayerService from '../services/PlayerService'
 
+interface RosterListProps {
+  /** The name of the currently logged in user */
+  player_names: string[];
+}
+
 /**
- * 
+ * Displays a list of players that are online
  */
-function Roster() {
-  let [names, setNames] = useState<string[]>(["loading..."]);
-
-  async function getOnlinePlayers() {
-    const player_names = await PlayerService.getOnlinePlayers();
-    setNames(player_names)
-  }
-
-  useEffect(() => {
-    // Query now and once every interval
-    getOnlinePlayers();
-    const interval = setInterval(() => {
-        getOnlinePlayers();
-    }, 10000);
-
-    //Must clearing the interval to avoid memory leak.
-    return () => clearInterval(interval);
-  }, []);
-
+function Roster({player_names}: RosterListProps) {
   return (
 
     <div className="Roster">
       <h2>Online Players</h2>
       <header className="Roster-header">
         <ListGroup>
-            {names.map((name) => (
+            {player_names.map((name) => (
             <ListGroup.Item key={name}>{name}</ListGroup.Item>
             ))}
         </ListGroup>

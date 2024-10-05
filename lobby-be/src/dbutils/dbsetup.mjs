@@ -18,6 +18,9 @@ const production_dynamo_connect_config = {
   region: 'us-east-2'
 }
 
+/** The time a player will stay in the active players table before being cleaned out by the system. */
+export const ACTIVE_PLAYERS_TTL = 60 * 60 * 1000; // One hour
+
 export const DDBClient = new DynamoDBClient(
   (process.env.ENVIRONMENT_TYPE === 'development' ? local_dynamo_connect_config : production_dynamo_connect_config)
 );
@@ -28,7 +31,7 @@ const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
  */
 const initializeSchema = async () => {
 
-  // Create the SampleTable table
+  // Create the Settings table
   const settingsDef = { 
     AttributeDefinitions: [ 
       { 
@@ -46,20 +49,22 @@ const initializeSchema = async () => {
     BillingMode: "PAY_PER_REQUEST"
   };
   await ddbDocClient.send(new CreateTableCommand(settingsDef))
-  // Create the players table
+  // Create the players table.  This only keeps the players last active time.
+  // All other player info is kept in another table, and this drops non-recent players
+  // so all players can be returned in a 1MB call. 
   const playersDef = { 
     AttributeDefinitions: [ 
       { 
         AttributeName: "playername", 
         AttributeType: "S", 
-      },
+      }
     ],
     TableName: "Players", 
     KeySchema: [ 
       { 
         AttributeName: "playername", 
         KeyType: "HASH", 
-      },
+      }
     ],
     BillingMode: "PAY_PER_REQUEST"
   };

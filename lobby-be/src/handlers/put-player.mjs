@@ -3,7 +3,7 @@
 // Create a DocumentClient that represents the query to add an item
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
-import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
+import {DDBClient, CheckDDB, ACTIVE_PLAYERS_TTL} from '../dbutils/dbsetup.mjs'
 
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
@@ -26,7 +26,7 @@ export const putPlayerHandler = async (event) => {
     // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
     var params = {
         TableName : "Players",
-        Item: { playername : name, lastactive: Date.now() }
+        Item: { playername : name, lastactive: Date.now(), ttl: Date.now() + ACTIVE_PLAYERS_TTL }
     };
 
     try {

@@ -1,5 +1,5 @@
 export interface Game {
-    session?: number,
+    session: number,
     game_number: number;
     number_players: number; /* Should be 2, 2.5 or 3 */
     fast_dragons?: boolean;
