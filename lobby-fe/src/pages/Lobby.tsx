@@ -29,19 +29,25 @@ function Lobby({username}: LobbyProps) {
   let [url, setUrl] = useState<string>("");
 
   async function updateLobbyState() {
-    const new_lobby_state = await LobbyService.getLobbyState();
-    if (LobbyService.isLobbyStateEqual(lobbyState, new_lobby_state)) {
-      // No change in state.  Increase the time between polling.
-      if (pollWait < MAX_TIME_BETWEEN_POLL) {
-        setPollWait(pollWait < MAX_TIME_BETWEEN_POLL/2 ? 2*pollWait : MAX_TIME_BETWEEN_POLL)
+    try {
+      const new_lobby_state = await LobbyService.getLobbyState();
+      if (LobbyService.isLobbyStateEqual(lobbyState, new_lobby_state)) {
+        // No change in state.  Increase the time between polling.
+        if (pollWait < MAX_TIME_BETWEEN_POLL) {
+          setPollWait(pollWait < MAX_TIME_BETWEEN_POLL/2 ? 2*pollWait : MAX_TIME_BETWEEN_POLL)
+        }
       }
+      else {
+        console.log("Lobby state changed")
+          setLobbyState(new_lobby_state)
+          setPollWait(MIN_TIME_BETWEEN_POLL)
+      }
+      console.log(`Waiting ${pollWait}`)
     }
-    else {
-      console.log("Lobby state changed")
-        setLobbyState(new_lobby_state)
-        setPollWait(MIN_TIME_BETWEEN_POLL)
+    catch(e) {
+      console.error(`Error requesting lobby state: ${e}`)
+      setPollWait(MAX_TIME_BETWEEN_POLL)
     }
-    console.log(`Waiting ${pollWait}`)
   }
 
   /**

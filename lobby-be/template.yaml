@@ -161,9 +161,9 @@ Resources:
       Policies:
         # Give Create/Read/Update/Delete Permissions
         - DynamoDBReadPolicy:
-            TableName: !Ref PlayerTable
+            TableName: !Ref PlayersTable
         - DynamoDBReadPolicy:
-            TableName: !Ref GameTable
+            TableName: !Ref GamesTable
       Events:
         Api:
           Type: Api

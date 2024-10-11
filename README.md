@@ -30,7 +30,7 @@ To Deploy and Run the System:
 2. Build game package
  - Unity File->Build and Run
 3. Deploy game package
- - aws cloudformation create-stack --stack-name s3-website  --template-body file://deploy/s3website.cfn.yml
+ - aws cloudformation update-stack --stack-name s3-website  --template-body file://lobby-fe/deploy/s3website.cfn.yml
  - aws s3 cp --recursive H2HAdventure/target/H2HAdventure2P s3://h2adventure-website/game/H2HAdventureMP
 4. Build and deploy lobby-be
  - cd lobby-be
@@ -42,15 +42,17 @@ To Deploy and Run the System:
 6. Deploy lobby-fe
  - aws s3 cp --recursive build/ s3://h2adventure-website/
 7. Build the Game Back-End Server
-  - just commit to Github and Github action will deploy the latest to Docker.io
-8. Launch game-be in a fargate service by standing up deploy/fargateservice.cfn.yml and running a task
-  - aws cloudformation create-stack --stack-name game-be \
+  - commit to Github and Github action will deploy the latest to Docker.io
+  - Define the backend server by standing up deploy/fargateservice.cfn.yml
+  - aws cloudformation update-stack --stack-name game-be \
    --template-body file://game-be/deploy/fargateservice.cfn.yml --capabilities "CAPABILITY_NAMED_IAM"
+8. Play game
+ - goto http://h2adventure-website.s3-website.us-east-2.amazonaws.com 
+9. Until H2HAdventure knows how to launch it's own Fargate task, when ready to play a game manually start the task.
   - aws ecs run-task \
-   --cluster h2hadv-serverCluster \
+   --cluster h2hadv-serverCluster \ 
    --task-definition arn:aws:ecs:us-east-2:637423607158:task-definition/h2hadv-serverTaskDefinition \
    --launch-type FARGATE \
    --network-configuration "awsvpcConfiguration={subnets=[subnet-0d46ce42b6ae7a1ee,subnet-011083badbc3f216e],securityGroups=[sg-07539077994dfb96c],assignPublicIp=ENABLED}" \
    --overrides '{ "containerOverrides": [ { "name": "h2hadv-server", "environment": [ { "name": "LOBBY_URL", "value": "https://z2rtswo351.execute-api.us-east-2.amazonaws.com/Prod" } ] } ] }'
-9. Play game
- - goto http://h2adventure-website.s3-website.us-east-2.amazonaws.com 
+
