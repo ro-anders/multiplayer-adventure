@@ -30,7 +30,7 @@ export const getSettingByNameHandler = async (event) => {
 
   try {
     const data = await ddbDocClient.send(new GetCommand(params));
-    var item = data.Item;
+    var item = ( data.Item ? data.Item : "")
   } catch (err) {
     console.log("Error", err);
   }
