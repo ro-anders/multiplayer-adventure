@@ -1,4 +1,4 @@
-import {Game} from '../domain/Game'
+import {GameInLobby} from '../domain/GameInLobby'
 import { LobbyState } from '../domain/LobbyState'
 
 export default class LobbyService {
@@ -39,7 +39,7 @@ export default class LobbyService {
 			return false;
 		}
 
-		function gameSortFunc(game1: Game, game2: Game): number {
+		function gameSortFunc(game1: GameInLobby, game2: GameInLobby): number {
 			return (game1.session - game2.session);
 		}
 

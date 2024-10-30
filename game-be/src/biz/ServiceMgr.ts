@@ -14,6 +14,7 @@ import {
 	EC2Client,
     DescribeNetworkInterfacesCommand, DescribeNetworkInterfacesCommandInput, DescribeNetworkInterfacesCommandOutput,
  } from '@aws-sdk/client-ec2'
+import LobbyBackend from './LobbyBackend'
 
 export default class ServiceMgr {
 
@@ -23,16 +24,12 @@ export default class ServiceMgr {
 	static SHUTDOWN_SERVICE_TIMEOUT = 10 * 60 * 1000 // 10 minutes in milliseconds
 	//static SHUTDOWN_SERVICE_TIMEOUT = 60000 // 1 minutes 
 
-	constructor(private lobby_url: string,
+	constructor(private lobby_backend: LobbyBackend,
 				private last_comm_time: number = Date.now(),
 				private interval_id: NodeJS.Timeout = null,
 				private ip: string = null
 	) 
-	{
-		if (!this.lobby_url) {
-			throw new Error("Undefined LOBBY_URL.  Cannot run Game Backend without lobby.")
-		}
-		
+	{		
 		this.report_to_lobby()
 		console.log("Creating periodic update")
 		this.interval_id = setInterval(this.periodic_update.bind(this), ServiceMgr.SHUTDOWN_SERVICE_TIMEOUT)
@@ -53,31 +50,7 @@ export default class ServiceMgr {
 		if (this.ip === null) {
 			this.ip = await this.get_ip()
 		}
-
-		const headers: Headers = new Headers()
-		headers.set('Content-Type', 'application/json')
-		headers.set('Accept', 'application/json')
-		const request: RequestInfo = new Request(`${this.lobby_url}/setting/game_server_ip`, {
-			method: 'PUT',
-			headers: headers,
-			body: JSON.stringify({
-				name: "game_server_ip",
-				value: this.ip,
-				time_set: Date.now()
-			})
-		})
-
-		try {
-			console.log(`PUT ${request.url}`)
-			const response = await fetch(request)
-			console.log(`PUT ${response.status}`)
-			if (response.status != 200) {
-				console.log(`Update lobby's Server IP received ${response.status} response: ${JSON.stringify(await response.json())}`)		
-			}
-		}
-		catch (e) {
-			console.log(`Error encountered: ${e}`)
-		}
+		this.lobby_backend.set_gamesever_ip(this.ip)
 	}
 
 	/**
@@ -100,28 +73,13 @@ export default class ServiceMgr {
 	 * No games are currently being played.  Shut down the game backend service.
 	 */
 	async shutdown() {
-		console.log("Game Backend shutting down due to inactivity")
-		clearInterval(this.interval_id)
+		console.log("Game Backend shutting down due to inactivity");
+		clearInterval(this.interval_id);
 
-		// Report to the lobby that the game service has shutdown
-		const headers: Headers = new Headers()
-		headers.set('Content-Type', 'application/json')
-		headers.set('Accept', 'application/json')
-		const request: RequestInfo = new Request(`${this.lobby_url}//setting/game_server_ip`, {
-			method: 'DELETE',
-			headers: headers
-		})
-		try {
-			const response = await fetch(request)
-			if (response.status != 200) {
-				console.log(`Clear lobby's Server IP received ${response.status} response: ${JSON.stringify(await response.json())}`)		
-			}
-		} catch (e) {
-			console.log(`Error encountered: ${e}`)
-		}
+		this.lobby_backend.set_gamesever_ip(null);
 
 		// Shutdown
-		process.exit(0)
+		process.exit(0);
 	}
 
 	/**

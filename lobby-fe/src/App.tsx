@@ -7,6 +7,7 @@ import './App.css';
 import LoginPage from "./pages/Login";
 import LobbyPage from "./pages/Lobby";
 import PlayerService from './services/PlayerService'
+import RetroGamePage from './pages/RetroGamePage';
 
 
 
@@ -48,6 +49,10 @@ function App() {
     {
       path: "/lobby",
       element: <LobbyPage username={username}/>
+    },
+    {
+      path: "/retro",
+      element: <RetroGamePage/>
     }
   ]);
   return (

@@ -1,8 +1,8 @@
 /**
- * This sets up a server that listens for websocket connections and maintains server-side state.
- * State takes the form of multiple sessions (a client identifies which session it belongs to)
- * and within each session the state is a color.
- * Clients can query the color or increment the color with websocket messages.
+ * This sets up a server that listens for websocket connections and 
+ * maintains server-side state.
+ * State takes the form of multiple sessions (a client identifies which session 
+ * it belongs to).
  * 
  */
 
@@ -12,19 +12,21 @@ import WebSocket from 'ws';
 
 import GameMgr from "./biz/GameMgr";
 import ServiceMgr from "./biz/ServiceMgr";
+import LobbyBackend from "./biz/LobbyBackend";
 
 const { createServer } = require('http');
 
 
-console.log("Stating game back end")
+console.log("Starting game back end")
 console.log(`Environment = ${process.env.NODE_ENV}`)
 console.log(`Lobby URL = ${process.env.LOBBY_URL}`)
-const gamemgr: GameMgr = new GameMgr();
 
 // If running in production we need a lobby url.  
 // If running locally, we assume the standard localhost lobby port.
-const lobby_url: string = (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.LOBBY_URL)
-const servicemgr: ServiceMgr = new ServiceMgr(lobby_url);
+const lobby_url: string = (process.env.NODE_ENV === 'development' ? 'http://host.docker.internal:3000' : process.env.LOBBY_URL)
+const lobby_backend = new LobbyBackend(lobby_url);
+const gamemgr: GameMgr = new GameMgr(lobby_backend);
+const servicemgr: ServiceMgr = new ServiceMgr(lobby_backend);
 
 const app: Express = express();
 const port = 4000;
@@ -35,9 +37,6 @@ const server_socket: WebSocket.Server = new WebSocket.Server({ server: server, p
 server_socket.on('connection', (ws: WebSocket) => {
   console.log("client connected.  Waiting for join message.");
 
-
-  // send "hello world" interval
-  //const textInterval = setInterval(() => ws.send("hello world!"), 100);
 
   ws.on('message', function(data: WebSocket.RawData, isBinary: boolean) {
     if (isBinary) {
@@ -62,8 +61,8 @@ app.get('/health', (req, res) => {
 })
 
 /**
- * Occassionally the lobby will want to warn the game backend that a game is about to start and not
- * to shutdown due to inactivity.
+ * Occassionally the lobby will want to warn the game backend that a game is about
+ * to start and not to shutdown due to inactivity.
  */
 app.put('/timer/reset', function (req, res) {
   servicemgr.got_game_message()

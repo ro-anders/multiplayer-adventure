@@ -10,7 +10,7 @@ namespace GameScene
     /************************************************************************************
     * The WebGameSetup handles the setup of a WebGL-based game which has only one scene and
     * assumes all game setup and lobbying has been done in a separate web application
-    * with all needed game information passed through the URL parameters.
+    * with all needed game information passed through URL parameters and web sockets calls.
     * It will connect with the WebSocket server and, once all players are connected, start
     * the game using the WebSocket server as a transport for messages
     */
@@ -22,10 +22,6 @@ namespace GameScene
 
         private byte session = 0x01;
 
-        private int numPlayersNeeded = 10; // Some big, unreachable number
-
-        private int gameNum = -1;
-
         /** The IP address of the Game Backend server which is either running
          * in Fargate or locally */
         private string backend_host = "localhost";
@@ -35,15 +31,23 @@ namespace GameScene
         }
 
         public bool IsReady { 
-            get { return (transport != null) && (transport.NumberClientsConnected >= numPlayersNeeded) ;}
+            get { return (transport != null) && (transport.NumberClientsConnected >= NumPlayers) ;}
         }
 
         public int NumPlayers {
-            get {return numPlayersNeeded;}
+            get {return (transport.GameInfo == null ? 10 : transport.GameInfo.number_players);}
         }
 
         public int GameNumber {
-            get {return gameNum;}
+            get {return (transport.GameInfo == null ? -1 : transport.GameInfo.game_number);}
+        }
+
+        public bool FastDragons {
+            get {return (transport.GameInfo == null ? false : transport.GameInfo.fast_dragons); }
+        }
+
+        public bool FearfulDragons {
+            get {return (transport.GameInfo == null ? false : transport.GameInfo.fearful_dragons); }
         }
 
         // In a WebGame, setup parameters are passed through the URL of the game.
@@ -57,9 +61,6 @@ namespace GameScene
             const string HOST_PARAM = "host";
 
             slot = 0;
-            // Temporarily hardcode
-            numPlayersNeeded = 2;
-            gameNum = 0;
 
             if (Application.isEditor) {
                 UnityEngine.Debug.Log("Web game setup disabled when running in editor");

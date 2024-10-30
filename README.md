@@ -13,7 +13,7 @@ To Run the Whole Suite Locally:
   This mimics the APIGateway & Lambda
 3. Run the game-be backend game server (port 4000) 
   - `docker build --platform linux/amd64 . -t roanders/h2hadv-server`
-  - `docker run -p 4000:4000 roanders/h2hadv-server`
+  - `docker run -p 4000:4000 -e NODE_ENV=development --network=host roanders/h2hadv-server`
   This mimics the fargate task started at game time
 4. Run the webserver serving the game (port 8080)
   - open the Unity project and selecting File --> Build and Run

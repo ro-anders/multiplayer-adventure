@@ -18,7 +18,7 @@ export const getSettingByNameHandler = async (event) => {
 
   await CheckDDB();
  
-  // Get id from pathParameters from APIGateway because of `/{id}` at template.yaml
+  // Get setting name from pathParameters from APIGateway because of `/{setting_name}` at template.yaml
   const setting_name = event.pathParameters.setting_name;
  
   // Get the item from the table

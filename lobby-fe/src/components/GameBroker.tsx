@@ -1,14 +1,14 @@
 import Button from 'react-bootstrap/Button';
 import '../App.css';
 import ProposedGameList from './ProposedGameList'
-import {Game} from '../domain/Game'
+import {GameInLobby} from '../domain/GameInLobby'
 import GameService from '../services/GameService'
 
 interface GameBrokerProps {
   /** The name of the currently logged in user */
   username: string;
-  proposed_games: Game[];
-  game_change_callback: (games:Game[]) => void;
+  proposed_games: GameInLobby[];
+  game_change_callback: (games:GameInLobby[]) => void;
 }
 
 /**
@@ -20,11 +20,12 @@ function GameBroker({username, proposed_games, game_change_callback}: GameBroker
    * Create a proposed game
    */
   function proposeClicked() {
-    const new_game: Game = {
-      session: Math.floor(Math.random()*100000),
+    const new_game: GameInLobby = {
+      session: 0, // Backend will provide real session number
       game_number: 2,
       number_players: 2,
-      player1_name: username
+      player_names: [username],
+      state: 0
     };
     proposed_games.push(new_game);
     GameService.proposeNewGame(new_game);

@@ -100,7 +100,28 @@ Resources:
         Api:
           Type: Api
           Properties:
-            Path: /game/
+            Path: /game
+            Method: GET
+
+  getGameFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/get-game.getGameBySessionHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Get a configuration setting
+      Policies:
+        # Give Create/Read/Update/Delete Permissions
+        - DynamoDBReadPolicy:
+            TableName: !Ref GameTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /game/{session}
             Method: GET
 
   createGameFunction:
@@ -122,6 +143,27 @@ Resources:
           Type: Api
           Properties:
             Path: /newgame
+            Method: POST
+
+  createGameServerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/create-game-server.createGameServerHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Spawn a game server
+      Policies:
+        # Give Create/Read/Update/Delete Permissions
+        - DynamoDBReadPolicy:
+            TableName: !Ref SettingsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /newgameserver
             Method: POST
 
   putGameFunction:

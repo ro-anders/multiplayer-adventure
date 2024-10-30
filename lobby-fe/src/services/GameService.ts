@@ -1,10 +1,13 @@
-import {Game} from '../domain/Game'
+import {GameInLobby} from '../domain/GameInLobby'
 
+/**
+ * A class for performing CRUD operations on the Game database table.
+ */
 export default class GameService {
 
 	static back_end = process.env.REACT_APP_LOBBY_BE_HOST
 
-	static async getGames(): Promise<Game[]> {
+	static async getGames(): Promise<GameInLobby[]> {
 		// We can use the `Headers` constructor to create headers
 		// and assign it as the type of the `headers` variable
 		const headers: Headers = new Headers()
@@ -33,7 +36,7 @@ export default class GameService {
 	 * @param game_setup the details of the game
 	 * @returns a list of all currently proposed games, including this one.
 	 */
-	static async proposeNewGame(game_setup: Game): Promise<Game[]> {
+	static async proposeNewGame(game_setup: GameInLobby): Promise<GameInLobby[]> {
 		const headers: Headers = new Headers()
 		headers.set('Content-Type', 'application/json')
 		headers.set('Accept', 'application/json')
@@ -55,7 +58,7 @@ export default class GameService {
 	 * @param game the details of the game
 	 * @returns a list of all currently proposed games, including this one.
 	 */
-	static async updateGame(game: Game) {
+	static async updateGame(game: GameInLobby) {
 		const headers: Headers = new Headers()
 		headers.set('Content-Type', 'application/json')
 		headers.set('Accept', 'application/json')

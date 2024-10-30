@@ -4,7 +4,7 @@ import Form from 'react-bootstrap/Form';
 import '../App.css';
 import GameBroker from '../components/GameBroker'
 import LobbyService from '../services/LobbyService'
-import { Game } from '../domain/Game'
+import { GameInLobby } from '../domain/GameInLobby'
 import { LobbyState } from '../domain/LobbyState'
 import Roster from '../components/Roster'
 
@@ -56,7 +56,7 @@ function Lobby({username}: LobbyProps) {
    * to poll the server for it's updated list.
    * @param new_game_list a modified list of games
    */
-  function game_change_callback(new_game_list: Game[]) {
+  function game_change_callback(new_game_list: GameInLobby[]) {
     const new_lobby_state: LobbyState = {
       online_player_names: lobbyState.online_player_names,
       games: new_game_list

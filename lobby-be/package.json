@@ -5,7 +5,8 @@
     "private": true,
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.629.0",
-        "@aws-sdk/lib-dynamodb": "^3.398.0"
+        "@aws-sdk/lib-dynamodb": "^3.398.0",
+        "@types/aws-lambda": "^8.10.145"
     },
     "devDependencies": {
         "aws-sdk-client-mock": "^2.0.0",

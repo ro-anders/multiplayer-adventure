@@ -1,14 +1,21 @@
-import {Game} from '../domain/Game'
+import {GameInLobby} from '../domain/GameInLobby'
 
 export default class SettingsService {
 
 	static back_end = process.env.REACT_APP_LOBBY_BE_HOST
 
+	static GAMESERVER_START_POLL_TIME = 5000; // Milliseconds
+
+	/**
+	 * Query for the GameServer's IP.  If the GameServer is not running, it will
+	 * request the GameServer start up and poll until it gets an IP, but it will
+	 * not return until it has a valid IP or hits an error.
+	 * @returns the IP of the GameServer
+	 */
 	static async getGameServerIP(): Promise<String> {
-		if (process.env.NODE_ENV === 'development') {
-			return "127.0.0.1"
-		} 
-		else {
+		var ip: string = ''
+		var firstRequest = true
+		while (ip == '') {
 			// We can use the `Headers` constructor to create headers
 			// and assign it as the type of the `headers` variable
 			const headers: Headers = new Headers()
@@ -21,21 +28,36 @@ export default class SettingsService {
 				headers: headers
 			})
 
-			// For our example, the data is stored on a static `users.json` file
-			return fetch(request)
-				// the JSON body is taken from the response
-				.then(res => res.json())
-				.then(res => {
-				// The response has an `any` type, so we need to cast
-				// it to the `User` type, and return it from the promise
-				if (res && res['value']) {
-					return res['value']
+			const response = await fetch(request)
+			const jsonResp = await response.json()
+			if (jsonResp && jsonResp['value']) {
+				ip = jsonResp['value']
+			}
+			else {
+				if (firstRequest) {
+					SettingsService.spawnGameServer()
 				}
-				else {
-					return ''
-				}
-			})
+				await new Promise((resolve) => setTimeout(resolve, SettingsService.GAMESERVER_START_POLL_TIME));
+			}
+			firstRequest = false
 		}
+		return ip;
+	}
+
+	/**
+	 * Request the backend spawn a new game server.
+	 */
+	static async spawnGameServer() {
+		const headers: Headers = new Headers()
+		headers.set('Content-Type', 'application/json')
+		headers.set('Accept', 'application/json')
+
+		const request: RequestInfo = new Request(`${SettingsService.back_end}/newgameserver`, {
+			method: 'POST',
+			headers: headers
+		})
+
+		await fetch(request)
 	}
 
 }

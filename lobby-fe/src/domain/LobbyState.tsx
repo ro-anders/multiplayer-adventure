@@ -1,4 +1,4 @@
-import { Game } from "./Game";
+import { GameInLobby } from "./GameInLobby";
 
 /**
  * Represents the state of the lobby (e.g. what players
@@ -6,5 +6,5 @@ import { Game } from "./Game";
  */
 export interface LobbyState {
     online_player_names: string[];
-    games: Game[];
+    games: GameInLobby[];
 }

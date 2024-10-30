@@ -8,8 +8,9 @@ const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
  * @returns Generate a unique session id
  */
 const generateSessionId = async () => {
-    // TBD: actually check with existing sessions to make sure it's unique. 
-    return Math.floor(100000000 * Math.random())
+    // TBD: actually check with existing sessions to make sure it's unique.
+    // Needs to fit in a byte, and, just to be safe, in a signed byte. 
+    return Math.floor(100 * Math.random())
 }
 
 export const createGameHandler = async (event) => {

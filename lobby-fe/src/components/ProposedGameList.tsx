@@ -2,17 +2,22 @@ import React, { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import '../App.css';
-import {Game} from '../domain/Game'
+import {GameInLobby} from '../domain/GameInLobby'
+import GameStartingModal from './GameStartingModal'
 import GameService from '../services/GameService'
 import SettingsService from '../services/SettingsService';
 
 interface ProposedGameListProps {
   /** The name of the currently logged in user */
   current_user: string;
-  games: Game[];
-  game_change_callback: (games:Game[]) => void;
+  games: GameInLobby[];
+  game_change_callback: (games:GameInLobby[]) => void;
 }
 
+const MODAL_HIDDEN='no game'
+const MODAL_WAITING_ON_SERVER='server starting'
+const MODAL_WAITING_MINIMUM_TIME='waiting'
+const MODAL_MINIMUM_TIME=10000; // Milliseconds
 
 /**
  * Displays a list of proposed games and allows the user
@@ -20,21 +25,46 @@ interface ProposedGameListProps {
  */
 function ProposedGameList({current_user, games, game_change_callback}: ProposedGameListProps) {
 
-  function joinGame(game: Game) {
-    if (!game.player1_name) {
-      game.player1_name = current_user;
-    } else if (!game.player2_name) {
-      game.player2_name = current_user;
-    } else {
-      game.player3_name = current_user;
+  /** The list of players (in player order) in the game that is starting */
+  const [startingGamePlayers, setStartingGamePlayers] = useState<string[]>([]);
+
+  /** Whether the modal is shown and, if it is, what it is waiting for to dismiss */
+  const [startGameModal, setStartGameModal] = useState<string>(MODAL_HIDDEN);
+
+  /**
+   * User has just pressed "Join" on a game.
+   * @param game which game they have joined
+   */
+  function joinGame(game: GameInLobby) {
+    // Figure out the next open slot in the game and add the user
+    // to that slot.
+    if (game.player_names.length < game.number_players) {
+      game.player_names.push(current_user)
+      GameService.updateGame(game)
+      game_change_callback(games)
     }
-    GameService.updateGame(game)
-    game_change_callback(games)
   }
 
-  async function startGame(game: Game) {
-    const slot = (game.player1_name === current_user ? 0 : (game.player2_name === current_user ? 1 : 2));
-    const game_server_ip = await SettingsService.getGameServerIP()
+  /**
+   * User has just pressed "Start" on a game.
+   * @param game Which game the have started
+   */
+  async function startGame(game: GameInLobby) {
+    // TODO: Randomize the order of players
+    const slot = game.player_names.indexOf(current_user);
+    setStartingGamePlayers(game.player_names);
+    // Popup the modal but leave it up for at least 10 seconds
+    setStartGameModal(MODAL_WAITING_ON_SERVER);
+    const start_time = Date.now();
+    const game_server_ip = await SettingsService.getGameServerIP();
+    // TODO: Tell the game server not to shutdown
+    const elapsed_time = Date.now()-start_time;
+    if (elapsed_time < MODAL_MINIMUM_TIME) {
+      setStartGameModal(MODAL_WAITING_MINIMUM_TIME)
+      await new Promise((resolve) => setTimeout(resolve, MODAL_MINIMUM_TIME - elapsed_time));
+    }
+    // Bring down the modal
+    setStartGameModal(MODAL_HIDDEN)
     window.open(`${process.env.REACT_APP_MPLAYER_GAME_URL}/index.html?gamecode=${game.session}&slot=${slot}&host=${game_server_ip}`)
   }
 
@@ -43,11 +73,11 @@ function ProposedGameList({current_user, games, game_change_callback}: ProposedG
    * @param game a proposed game in question
    * @returns a description of the game
    */
-  function gameLabel(game: Game): string {
-    var playerList = (!game.player1_name ? "?" : game.player1_name)
-    playerList += (!game.player2_name ? ", ?" : `, ${game.player2_name}`)
+  function gameLabel(game: GameInLobby): string {
+    var playerList = (game.player_names.length < 1 ? "?" : game.player_names[0])
+    playerList += (game.player_names.length < 2 ? ", ?" : `, ${game.player_names[1]}`)
     if (game.number_players > 2) {
-      playerList += (!game.player3_name ? ", ?" : `, ${game.player3_name}`)
+      playerList += (game.player_names.length < 3 ? ", ?" : `, ${game.player_names[2]}`)
     }
 
     return `Game #${game.game_number+1}: ${playerList}`
@@ -59,12 +89,9 @@ function ProposedGameList({current_user, games, game_change_callback}: ProposedG
    * @param game a proposed game in question
    * @returns whether the current user can join the game
    */
-  function isJoinable(game: Game): boolean {
-    const inGame = game.player1_name === current_user || 
-      game.player2_name === current_user || 
-      game.player3_name === current_user;
-    const currentPlayers = (!game.player1_name ? 0 : (!game.player2_name ? 1 : (!game.player3_name ? 2 : 3)))
-    return !inGame && (currentPlayers < game.number_players);
+  function isJoinable(game: GameInLobby): boolean {
+    const inGame = game.player_names.includes(current_user);
+    return !inGame && (game.player_names.length < game.number_players);
   }
 
   /**
@@ -73,13 +100,10 @@ function ProposedGameList({current_user, games, game_change_callback}: ProposedG
    * @param game a proposed game in question
    * @returns whether the current user can start the game
    */
-    function isStartable(game: Game): boolean {
-      const inGame = game.player1_name === current_user || 
-        game.player2_name === current_user || 
-        game.player3_name === current_user;
-      const currentPlayers = (!game.player1_name ? 0 : (!game.player2_name ? 1 : (!game.player3_name ? 2 : 3)))
-      return inGame && (currentPlayers+1 > game.number_players);
-    }
+  function isStartable(game: GameInLobby): boolean {
+    const inGame = game.player_names.includes(current_user);
+    return inGame && (game.player_names.length+1 > game.number_players);
+  }
   
   return (
 
@@ -88,13 +112,16 @@ function ProposedGameList({current_user, games, game_change_callback}: ProposedG
       <header className="Roster-header">
         <ListGroup>
             {games.map((game) => (
-            <ListGroup.Item key={game.player1_name}>
+            <ListGroup.Item key={game.session}>
               {gameLabel(game)} 
               {isJoinable(game) && <Button onClick={() => joinGame(game)}>Join</Button>}
               {isStartable(game) && <Button onClick={() => startGame(game)}>Start</Button>}
             </ListGroup.Item>
             ))}
         </ListGroup>
+        {(startGameModal != MODAL_HIDDEN) && 
+          <GameStartingModal player_list={startingGamePlayers} waiting_on_server={startGameModal==MODAL_WAITING_ON_SERVER}/>
+        }
       </header>
     </div>
   );

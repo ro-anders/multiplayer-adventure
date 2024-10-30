@@ -10,6 +10,27 @@ using GameEngine;
 namespace GameScene
 {
     /**
+     * This represents the characteristics of the game (which board, the
+     * difficulty settings).  It does not change once agreed upon.
+     */
+    public class GameDetails {
+        public int session;
+        public int game_number;
+        public int number_players; /* Should be 2 or 3.  By this point 2.5 is not allowed. */
+        public bool fast_dragons;
+        public bool fearful_dragons;
+        public string[] player_names;
+    }
+
+    /**
+     * This represents a running game.  It has the game details but also
+     * state of the running game.
+     */
+    public class RunningGame: GameDetails {
+        public int joined_players;
+    }
+
+    /**
      * This implements the H2HAdventure Transport for WebGL H2HAdventure games
      * by making websocket requests to a server running in Fargate that relays them
      * to other WebGL games.
@@ -33,8 +54,8 @@ namespace GameScene
 
         private WebSocket websocket;
 
-        /** Number of clients (including this one) connected to the session. */
-        private int numClients = 0;
+        /** The details of the game being played */
+        private RunningGame gameInfo = null;
 
         /** Keep a queue of actions read from the server. */
         private Queue<RemoteAction> receviedActions = new Queue<RemoteAction>();
@@ -44,10 +65,17 @@ namespace GameScene
             get { return thisPlayerSlot; }
         }
 
+        public RunningGame GameInfo
+        {
+            get { return gameInfo; }
+        }
+
         public int NumberClientsConnected
         {
-            get { return numClients; }
+            get { return (gameInfo == null ? 0 : gameInfo.joined_players); }
         }
+
+        public 
 
         void Start()
         {
@@ -135,8 +163,19 @@ namespace GameScene
 
                 byte msg_code = bytes[1];
                 if (msg_code == CONNECT_CODE) {
-                    // Process a system message
-                    numClients = bytes[2];
+                    // Process a system message.  A system message, after the first two bytes, is 
+                    // JSON.
+                    char[] json_bytes = new char[bytes.Length - 1];
+                    for(int i = 2; i < bytes.Length; i++) {
+                        json_bytes[i - 2] = (char)bytes[i];
+                    }
+                    json_bytes[json_bytes.Length - 1] = '\0';
+                    string json_str = new string(json_bytes);
+                    Debug.Log("Deserializing game info from \"" + json_str + "\"");
+                    gameInfo = JsonUtility.FromJson<RunningGame>(json_str);
+                    Debug.Log("Read game info for Game #" + (gameInfo.game_number+1) +
+                        " (" + gameInfo.session + ") with " + gameInfo.joined_players + " of " + 
+                        gameInfo.number_players + " players joined.");
                 }
                 else {
                     // Process a game message
