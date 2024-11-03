@@ -1,0 +1,29 @@
+.lobby-main {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    flex-grow: 1;
+    background-color: rgb(107, 100, 255);
+  }
+  
+  .lobby-room {
+    padding: 10px;
+    background-color: rgb(205, 205, 205);
+    margin: 5px 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: black;
+  }
+  
+  .lobby-roster-column {
+    width: 30%;
+  }
+
+  .lobby-game-column {
+    width: 30%;
+  }
+
+  .lobby-chat-column {
+    width: 30%;
+  }

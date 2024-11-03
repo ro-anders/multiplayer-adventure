@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ListGroup from 'react-bootstrap/ListGroup';
 import '../App.css';
+import '../css/Lobby.css'
 import PlayerService from '../services/PlayerService'
 
 interface RosterListProps {
@@ -14,7 +15,7 @@ interface RosterListProps {
 function Roster({player_names}: RosterListProps) {
   return (
 
-    <div className="Roster">
+    <div className="lobby-roster-column lobby-room">
       <h2>Online Players</h2>
       <header className="Roster-header">
         <ListGroup>

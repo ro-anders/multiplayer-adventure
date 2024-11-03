@@ -82,26 +82,39 @@ function Lobby({username}: LobbyProps) {
   }, [lobbyState, pollWait]);
 
   return (
-
-    <div className="App">
-      <header className="App-header">
-        <Form.Label>Welcome {username}</Form.Label>
+    <div>
+      <div className="lobby-main">
         <Roster player_names={lobbyState.online_player_names}/>
-        <GameBroker 
-          username={username} 
-          proposed_games={lobbyState.games}
-          game_change_callback={game_change_callback}
-        />
-        <hr/>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          React.js
-        </a>
-      </header>
+        <div className="lobby-game-column">
+          <div className="lobby-room">
+            <GameBroker 
+              username={username} 
+              proposed_games={lobbyState.games}
+              game_change_callback={game_change_callback}
+            />
+          </div>
+          <div className="lobby-room">
+            <h2>Running Games</h2>
+          </div>
+        </div>
+        <div className="lobby-chat-column lobby-room">
+          <h2>Chat</h2>
+          <div className="chat-box">
+            <p><strong>Player 1:</strong> Ready to play!</p>
+            <p><strong>Player 2:</strong> Let’s go!</p>
+          </div>
+          <input type="text" placeholder="Type a message..." />
+          <button>Send</button>
+        </div>
+      </div>
+      <a
+            className="App-link"
+            href="https://reactjs.org"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            React.js
+      </a>
     </div>
   );
 }
