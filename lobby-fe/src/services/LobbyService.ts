@@ -1,6 +1,10 @@
 import {GameInLobby} from '../domain/GameInLobby'
 import { LobbyState } from '../domain/LobbyState'
 
+/**
+ * Fetched from the backend state of the entire lobby and holds business logic
+ * about the lobby.
+ */
 export default class LobbyService {
 
 	static back_end = process.env.REACT_APP_LOBBY_BE_HOST

@@ -23,9 +23,8 @@ export default class LobbyBackend {
 		headers.set('Accept', 'application/json')
         const method = (!ip ? 'DELETE': 'PUT')
         const body = (!ip ? null : JSON.stringify({
-            name: "game_server_ip",
-            value: ip,
-            time_set: Date.now()
+            setting_name: "game_server_ip",
+            setting_value: ip
         }));
 		const request: RequestInfo = new Request(`${this.lobby_url}/setting/game_server_ip`, {
 			method: method,

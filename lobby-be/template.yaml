@@ -280,7 +280,15 @@ Resources:
             Method: DELETE
 
 
-  # DynamoDB table to store item: {id: &lt;ID&gt;, name: &lt;NAME&gt;}
+  # Players table
+  #  Table of recent players and when they played.  Players that haven't played recently 
+  #  are deleted from this table.  More permanent and more detailed info on players is kept
+  #  in a different table, the PlayersDetails table.
+  #
+  #  playername (primary key): string - username of the player
+  #  lastactive: number - timestamp of last time they were in the lobby or playing the game
+  #  ttl: number - timestamp at which this player can be removed from this table
+  #
   PlayersTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
@@ -289,6 +297,16 @@ Resources:
         Name: playername
         Type: String
 
+  # Games table
+  #  Table of proposed and active games.  Past games are deleted from this table.
+  #
+  #  session (primary key): string - unique key assigned to the game
+  #  game_number: number - 0,1,2 indicating whether Game 1, 2 or 3
+  #  number_players: number - 2, 2.5, or 3 indicating whether to have exactly 2 players, 2 or 3, or exactly 3
+  #  fast_dragons: boolean - whether dragons are fast or slow
+  #  fearful_dragons: boolean - whether dragons frun from sword
+  #  player_names: string[] - array of player names
+  #  
   GamesTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
@@ -297,12 +315,20 @@ Resources:
         Name: session
         Type: Number
 
+  # Settings table
+  #  Table of name value settings of the system.  At time of creation "game_server_ip" is the only
+  #  setting
+  #
+  #  setting_name (primary key): string
+  #  setting_value: string
+  #  time_set: number - the timestamp of when this setting was last changed
+  #
   SettingsTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
       TableName: Settings
       PrimaryKey:
-        Name: name
+        Name: setting_name
         Type: String
 
 Outputs:

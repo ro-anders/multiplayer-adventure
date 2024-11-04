@@ -18,19 +18,19 @@ export const getSettingByNameHandler = async (event) => {
 
   await CheckDDB();
  
-  // Get setting name from pathParameters from APIGateway because of `/{setting_name}` at template.yaml
+  // Get setting_name from pathParameters from APIGateway because of `/{setting_name}` at template.yaml
   const setting_name = event.pathParameters.setting_name;
  
   // Get the item from the table
   // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property
   var params = {
     TableName : "Settings",
-    Key: { name: setting_name },
+    Key: { setting_name: setting_name },
   };
 
   try {
     const data = await ddbDocClient.send(new GetCommand(params));
-    var item = ( data.Item ? data.Item : "")
+    var item = ( data.Item ? data.Item : "" )
   } catch (err) {
     console.log("Error", err);
   }

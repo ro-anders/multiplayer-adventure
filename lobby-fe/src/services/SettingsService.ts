@@ -30,8 +30,8 @@ export default class SettingsService {
 
 			const response = await fetch(request)
 			const jsonResp = await response.json()
-			if (jsonResp && jsonResp['value']) {
-				ip = jsonResp['value']
+			if (jsonResp && jsonResp['setting_value']) {
+				ip = jsonResp['setting_value']
 			}
 			else {
 				if (firstRequest) {
@@ -47,7 +47,7 @@ export default class SettingsService {
 	/**
 	 * Request the backend spawn a new game server.
 	 */
-	static async spawnGameServer() {
+	private static async spawnGameServer() {
 		const headers: Headers = new Headers()
 		headers.set('Content-Type', 'application/json')
 		headers.set('Accept', 'application/json')

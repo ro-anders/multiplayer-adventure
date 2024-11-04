@@ -35,14 +35,14 @@ const initializeSchema = async () => {
   const settingsDef = { 
     AttributeDefinitions: [ 
       { 
-        AttributeName: "name", 
+        AttributeName: "setting_name", 
         AttributeType: "S", 
       },
     ],
     TableName: "Settings", 
     KeySchema: [ 
       { 
-        AttributeName: "name", 
+        AttributeName: "setting_name", 
         KeyType: "HASH", 
       },
     ],

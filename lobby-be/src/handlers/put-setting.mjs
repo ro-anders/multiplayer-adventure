@@ -18,12 +18,13 @@ export const putSettingHandler = async (event) => {
 
     await CheckDDB();
 
-    // Get name from the request path
+    // Get setting_name from the request path
     const setting_name = event.pathParameters.setting_name;
     const body = JSON.parse(event.body);
-    if (body.name != setting_name) {
+    if (body.setting_name != setting_name) {
         throw new Error(`Invalid request: setting name in request URL does not match name in body.`);
     }
+    body.time_set = Date.now()
 
     var params = {
         TableName : "Settings",

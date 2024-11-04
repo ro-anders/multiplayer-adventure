@@ -14,11 +14,11 @@ export const deleteSettingHandler = async (event) => {
 
     await CheckDDB();
 
-    // Get name from the request path
+    // Get setting_name from the request path
     const setting_name = event.pathParameters.setting_name;
     var params = {
         TableName : "Settings",
-        Key: { name: setting_name }
+        Key: { setting_name: setting_name }
     };
 
     try {
