@@ -14,8 +14,6 @@ export const getSettingByNameHandler = async (event) => {
     throw new Error(`getMethod only accept GET method, you tried: ${event.httpMethod}`);
   }
   // All log statements are written to CloudWatch
-  //console.info('received:', event);
-
   await CheckDDB();
  
   // Get setting_name from pathParameters from APIGateway because of `/{setting_name}` at template.yaml

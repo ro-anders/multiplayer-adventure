@@ -131,6 +131,7 @@ Resources:
       PolicyName: h2hadv-server
       PolicyDocument:
         Statement:
+          # Permissions to allow the game server to determine it's own IP
           - Effect: Allow
             Action:
               - 'ec2:DescribeNetworkInterfaces'

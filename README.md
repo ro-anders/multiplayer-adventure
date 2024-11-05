@@ -43,7 +43,7 @@ To Deploy and Run the System:
  - aws s3 cp --recursive build/ s3://h2adventure-website/
 7. Build the Game Back-End Server
   - commit to Github and Github action will deploy the latest to Docker.io
-  - Define the backend server by standing up deploy/fargateservice.cfn.yml
+8. Define the backend server by standing up deploy/fargateservice.cfn.yml
   - aws cloudformation update-stack --stack-name game-be \
    --template-body file://game-be/deploy/fargateservice.cfn.yml --capabilities "CAPABILITY_NAMED_IAM"
 8. Play game

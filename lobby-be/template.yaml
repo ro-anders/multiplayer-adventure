@@ -157,14 +157,27 @@ Resources:
       Description: Spawn a game server
       Policies:
         # Give Create/Read/Update/Delete Permissions
-        - DynamoDBReadPolicy:
+        - DynamoDBCrudPolicy:
             TableName: !Ref SettingsTable
+        - EcsRunTaskPolicy:
+            TaskDefinition: "h2hadv-serverTaskDefinition*"
+        - Statement:
+          - Sid: PassRolePolicy
+            Effect: Allow
+            Action:
+            - "iam:PassRole"
+            Resource:
+            - "arn:aws:iam::637423607158:role/h2hadv*"
+
       Events:
         Api:
           Type: Api
           Properties:
             Path: /newgameserver
             Method: POST
+      Environment:
+        Variables:
+          CUSTOM_DOMAIN_URL: !Sub CustomDomainUrl
 
   putGameFunction:
     Type: AWS::Serverless::Function

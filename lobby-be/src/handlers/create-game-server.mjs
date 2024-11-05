@@ -5,6 +5,10 @@ import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
 export const createGameServerHandler = async (event) => {
+    console.info('received:', event);
+    console.log(`Calling ${event.httpMethod} ${event.path} while ENVIRONMENT_TYPE=${process.env.ENVIRONMENT_TYPE}` +
+      `fullpath=https://${event.requestContext.domainName}/${event.requestContext.path}`
+    )
     if (event.httpMethod !== 'POST') {
         throw new Error(`postMethod only accepts POST method, you tried: ${event.httpMethod} method.`);
     }
@@ -28,8 +32,14 @@ export const createGameServerHandler = async (event) => {
         try {
             // Execute transaction
             await ddbDocClient.send(new PutCommand(dynamo_params))
-            console.log("Transaction completed successfully");
 
+
+            // The full path is probably something like /Prod/setting/game_server_ip and we want the "/Prod" part.
+            // So pull the REST path off the end of the full path to get that.
+            const path_prefix = ( event.requestContext.path.endsWith(event.path) ?
+              event.requestContext.path.slice(0, -event.path.length) : event.requestContext.path);
+            const lobby_url = `https://${event.requestContext.domainName}${path_prefix}`
+            const accountId = event.requestContext.accountId
             // Then issue the AWS commands to spawn a server in a fargate task
             // aws ecs run-task \
             // --cluster h2hadv-serverCluster \ 
@@ -40,11 +50,11 @@ export const createGameServerHandler = async (event) => {
             // Couple of things are hard-coded that we eventually want to make dynamic
             const subnets = ["subnet-0d46ce42b6ae7a1ee","subnet-011083badbc3f216e"]
             const security_group = "sg-07539077994dfb96c"
-            const lobby_url = "https://g0g3vzs6qf.execute-api.us-east-2.amazonaws.com/Prod"
+            const region = `us-east-2`
             const ecsClient = new ECSClient();
             const ecs_params = {
                 cluster: "h2hadv-serverCluster",              
-                taskDefinition: "arn:aws:ecs:us-east-2:637423607158:task-definition/h2hadv-serverTaskDefinition",    
+                taskDefinition: `arn:aws:ecs:${region}:${accountId}:task-definition/h2hadv-serverTaskDefinition`,    
                 launchType: "FARGATE",
                 networkConfiguration: {
                   awsvpcConfiguration: {
@@ -65,16 +75,17 @@ export const createGameServerHandler = async (event) => {
                 },
                 count: 1,
               };
+              console.log(`Spawning game server with LOBBY_URL=${lobby_url}`)
               const command = new RunTaskCommand(ecs_params);
               const response = await ecsClient.send(command);
               console.log("Task started:", response.tasks[0].taskArn);
                     
         } catch (error) {
             if (error.name === "ConditionalCheckFailedException") {
-                console.error("Condition check failed: Item already exists.");
+                console.error("Aborting.  Game server already in starting or running state.");
                 status_code = 302;
             } else {
-                console.error("Transaction failed", error);
+                console.error("Unexpected error recording game server as starting.", error);
                 status_code = 500;
             }
         }
