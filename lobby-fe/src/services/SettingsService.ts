@@ -30,10 +30,13 @@ export default class SettingsService {
 
 			const response = await fetch(request)
 			const jsonResp = await response.json()
-			if (jsonResp && jsonResp['setting_value']) {
-				ip = jsonResp['setting_value']
+			ip = (jsonResp ? jsonResp['setting_value'] : '')
+			if (ip === 'starting') {
+				// TODO: Put in a time check to retry if startup has taken too long
+				firstRequest = false;
+				ip = '';
 			}
-			else {
+			if (!ip) {
 				if (firstRequest) {
 					SettingsService.spawnGameServer()
 				}
