@@ -36,11 +36,11 @@ export const createGameServerHandler = async (event) => {
             // --task-definition arn:aws:ecs:us-east-2:637423607158:task-definition/h2hadv-serverTaskDefinition \
             // --launch-type FARGATE \
             // --network-configuration "awsvpcConfiguration={subnets=[subnet-0d46ce42b6ae7a1ee,subnet-011083badbc3f216e],securityGroups=[sg-07539077994dfb96c],assignPublicIp=ENABLED}" \
-            // --overrides '{ "containerOverrides": [ { "name": "h2hadv-server", "environment": [ { "name": "LOBBY_URL", "value": "https://z2rtswo351.execute-api.us-east-2.amazonaws.com/Prod" } ] } ] }'
+            // --overrides '{ "containerOverrides": [ { "name": "h2hadv-server", "environment": [ { "name": "LOBBY_URL", "value": "https://g0g3vzs6qf.execute-api.us-east-2.amazonaws.com/Prod" } ] } ] }'
             // Couple of things are hard-coded that we eventually want to make dynamic
             const subnets = ["subnet-0d46ce42b6ae7a1ee","subnet-011083badbc3f216e"]
             const security_group = "sg-07539077994dfb96c"
-            const lobby_url = "https://z2rtswo351.execute-api.us-east-2.amazonaws.com/Prod"
+            const lobby_url = "https://g0g3vzs6qf.execute-api.us-east-2.amazonaws.com/Prod"
             const ecsClient = new ECSClient();
             const ecs_params = {
                 cluster: "h2hadv-serverCluster",              
