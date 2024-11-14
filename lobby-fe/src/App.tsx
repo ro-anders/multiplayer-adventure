@@ -4,6 +4,7 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import './App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import LoginPage from "./pages/Login";
 import LobbyPage from "./pages/Lobby";
 import PlayerService from './services/PlayerService'
@@ -59,9 +60,8 @@ function App() {
 
     <div className="App">
       <header className="App-header">
-        <h1>Head-to-Head Atari Adventure</h1>
         <RouterProvider router={router} />
-        </header>
+      </header>
     </div>
   );
 }

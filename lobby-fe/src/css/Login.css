@@ -1,0 +1,40 @@
+.login-page {
+    width: 90vw;
+    height: 90vh;
+    margin: auto;
+    border: 5vh solid rgb(255, 216, 76);
+    background-color: rgb(205, 205, 205);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+  }
+  
+  .login-header {
+    height: 10%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    position: absolute;
+    top: 10%; /* Adjust for desired positioning over image */
+    width: 100%;
+    text-align: center;
+    font-family: 'Press Start 2P', cursive; /* Use a retro or pixel font */
+    font-size: 2rem;
+    color: black;
+    background: transparent;
+    padding: 0.5rem;
+  
+  }
+  
+  .login-main-image {
+    width: auto;
+    height: 40%;
+    margin-bottom: 2rem;
+  }
+  
+  .login-accordion-section {
+    color: black;
+  }
+  

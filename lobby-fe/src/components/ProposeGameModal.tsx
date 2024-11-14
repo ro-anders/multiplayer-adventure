@@ -37,6 +37,7 @@ function ProposeGameModal({username, propose_game_callback, close_modal_callback
     return (
         <div className="modal-overlay">
           <div className="modal-dialog">
+            <Form.Label>Choose a game board</Form.Label>
             <Form.Select 
                 aria-label="Choose a game board" 
                 value={selectedGame}
@@ -46,6 +47,7 @@ function ProposeGameModal({username, propose_game_callback, close_modal_callback
               <option value="1" key="1">Game 2: Standard map</option>
               <option value="2" key="2">Game 3: Standard map randomized</option>
             </Form.Select>
+            <Form.Label>How many players?</Form.Label>
             <Form.Select 
                 aria-label="Number players" 
                 value={selectedNumPlayers}
