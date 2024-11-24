@@ -34,9 +34,8 @@ export default class LobbyService {
 	 */
 	static isLobbyStateEqual(lobby1: LobbyState, lobby2: LobbyState): boolean {
 		// Handle player names differ
-		const fx = lobby1.online_player_names.filter(x => !lobby2.online_player_names.includes(x))
 		if (
-			(lobby1.online_player_names.length != lobby2.online_player_names.length) ||
+			(lobby1.online_player_names.length !== lobby2.online_player_names.length) ||
 			(lobby1.online_player_names.filter(x => !lobby2.online_player_names.includes(x)).length > 0))
 		{
 			console.log(`Change in players detected.  [${lobby1.online_player_names}] != [${lobby2.online_player_names}]`)
@@ -50,7 +49,7 @@ export default class LobbyService {
 		// Handle games differ
 		const games1 = lobby1.games.sort(gameSortFunc)
 		const games2 = lobby2.games.sort(gameSortFunc)
-		if (JSON.stringify(games1) != JSON.stringify(games2)) {
+		if (JSON.stringify(games1) !== JSON.stringify(games2)) {
 			console.log("Change in game detected")
 			return false;
 		}

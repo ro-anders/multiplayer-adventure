@@ -1,10 +1,12 @@
 .lobby-main {
-    display: flex;
-    justify-content: space-between;
-    padding: 20px;
-    flex-grow: 1;
-    background-color: rgb(107, 100, 255);
-  }
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  flex-grow: 1;
+  background-color: rgb(107, 100, 255);
+}
   
   .lobby-room {
     padding: 10px;

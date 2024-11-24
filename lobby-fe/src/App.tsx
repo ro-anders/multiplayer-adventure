@@ -3,12 +3,12 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import LoginPage from "./pages/Login";
 import LobbyPage from "./pages/Lobby";
 import PlayerService from './services/PlayerService'
 import RetroGamePage from './pages/RetroGamePage';
+import './App.css';
 
 
 
@@ -16,6 +16,7 @@ import RetroGamePage from './pages/RetroGamePage';
 function App() {
 
   let [username, setUsername] = useState<string>("");
+  let [experienceLevel, setExperienceLevel] = useState<number>(0);
   useEffect(() => {
     async function registerCurrentPlayer() {
       if (username) {
@@ -34,22 +35,19 @@ function App() {
   }, [username]);
 
 
-  let defaultPage = (!!username ? 
-    <LobbyPage username={username}/> : 
-    <LoginPage username={username} setUsername={setUsername}/>
-  )
+  let loginPage = <LoginPage username={username} setUsername={setUsername} experienceLevel={experienceLevel} setExperienceLevel={setExperienceLevel}/>
   const router = createBrowserRouter([
     {
       path: "/",
-      element: defaultPage,
+      element: loginPage
     },
     {
       path: "/login",
-      element: <LoginPage username={username} setUsername={setUsername}/>
+      element: loginPage
     },
     {
       path: "/lobby",
-      element: <LobbyPage username={username}/>
+      element: <LobbyPage username={username} experienceLevel={experienceLevel}/>
     },
     {
       path: "/retro",

@@ -1,11 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import Button from 'react-bootstrap/Button';
-import ListGroup from 'react-bootstrap/ListGroup';
 import '../App.css';
 import '../css/GameStartingModal.css'
-import {GameInLobby} from '../domain/GameInLobby'
-import GameService from '../services/GameService'
-import SettingsService from '../services/SettingsService';
 
 interface GameStartingModalProps {
   /** The names of those playing the game in slot order */

@@ -15,14 +15,9 @@ import {
     DescribeNetworkInterfacesCommand, DescribeNetworkInterfacesCommandInput, DescribeNetworkInterfacesCommandOutput,
  } from '@aws-sdk/client-ec2'
 import LobbyBackend from './LobbyBackend'
+import Constants from './Constants'
 
 export default class ServiceMgr {
-
-	/** The time period to wait before deciding no one is using the service
-	 * and shutting down.
-	 */
-	static SHUTDOWN_SERVICE_TIMEOUT = 10 * 60 * 1000 // 10 minutes in milliseconds
-	//static SHUTDOWN_SERVICE_TIMEOUT = 60000 // 1 minutes 
 
 	constructor(private lobby_backend: LobbyBackend,
 				private last_comm_time: number = Date.now(),
@@ -32,7 +27,7 @@ export default class ServiceMgr {
 	{		
 		this.report_to_lobby()
 		console.log("Creating periodic update")
-		this.interval_id = setInterval(this.periodic_update.bind(this), ServiceMgr.SHUTDOWN_SERVICE_TIMEOUT)
+		this.interval_id = setInterval(this.periodic_update.bind(this), Constants.GAMEBACKEND_PING_PERIOD)
 	}	 
 
 	/**
@@ -61,7 +56,7 @@ export default class ServiceMgr {
 	 */
 	periodic_update() {
 		console.log("Running periodic update")
-		if (Date.now() - this.last_comm_time > ServiceMgr.SHUTDOWN_SERVICE_TIMEOUT) {
+		if (Date.now() - this.last_comm_time > Constants.SHUTDOWN_SERVICE_TIMEOUT) {
 			this.shutdown()
 		}
 		else {

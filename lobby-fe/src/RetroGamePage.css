@@ -1,0 +1,108 @@
+/* Use Px437 or any similar ultra-low-resolution font */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); /* Fallback font if low-res font not available */
+
+.retro-container {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100vh;
+  
+  background-color: black;
+  color: lime;
+  font-family: 'Px437 IBM BIOS', 'Press Start 2P', monospace; /* Low-res blocky font */
+  margin: 0;
+  padding: 0;
+}
+
+.retro-title {
+  font-size: 4rem;
+  padding: 20px 0;
+  color: yellow;
+  text-shadow: 2px 2px red;
+  background-color: blue;
+  border-bottom: 3px solid lime;
+}
+
+.retro-main {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  flex-grow: 1;
+  background-color: black;
+}
+
+.room {
+  width: 30%;
+  padding: 10px;
+  background-color: black;
+  border: 5px solid lime;
+  margin: 0 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 5px 5px 0 yellow; /* Makes sections pop like a retro maze room */
+}
+
+.players-list ul, .games-list ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.players-list li, .games-list li {
+  font-size: 1.2rem;
+  padding: 5px 0;
+  background-color: black;
+  border: 1px solid lime;
+  margin-bottom: 5px;
+}
+
+.chat-panel .chat-box {
+  height: 200px;
+  overflow-y: auto;
+  background-color: black;
+  border: 2px solid lime;
+  margin-bottom: 10px;
+  padding: 10px;
+  color: white;
+}
+
+.chat-panel input {
+  width: 80%;
+  padding: 10px;
+  font-size: 1rem;
+  margin-right: 10px;
+  background-color: black;
+  color: lime;
+  border: 2px solid lime;
+}
+
+.chat-panel button {
+  padding: 10px;
+  font-size: 1rem;
+  background-color: lime;
+  border: none;
+  cursor: pointer;
+  color: black;
+}
+
+.retro-footer {
+  padding: 20px;
+  background-color: black;
+  border-top: 3px solid lime;
+}
+
+.retro-footer a {
+  font-size: 1.2rem;
+  color: lime;
+  text-decoration: none;
+  padding: 0 10px;
+}
+
+.retro-footer a:hover {
+  color: yellow;
+}
+
+.games-list p {
+  margin: 5px 0;
+}

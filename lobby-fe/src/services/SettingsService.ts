@@ -1,4 +1,4 @@
-import {GameInLobby} from '../domain/GameInLobby'
+import Constants from '../Constants'
 
 export default class SettingsService {
 
@@ -14,8 +14,8 @@ export default class SettingsService {
 	 */
 	static async getGameServerIP(): Promise<String> {
 		var ip: string = ''
-		var firstRequest = true
-		while (ip == '') {
+		var just_spawned = false
+		while (ip === '') {
 			// We can use the `Headers` constructor to create headers
 			// and assign it as the type of the `headers` variable
 			const headers: Headers = new Headers()
@@ -30,19 +30,30 @@ export default class SettingsService {
 
 			const response = await fetch(request)
 			const jsonResp = await response.json()
-			ip = (jsonResp ? jsonResp['setting_value'] : '')
-			if (ip === 'starting') {
-				// TODO: Put in a time check to retry if startup has taken too long
-				firstRequest = false;
-				ip = '';
-			}
-			if (!ip) {
-				if (firstRequest) {
+			const response_ip = (jsonResp ? jsonResp['setting_value'] : '')
+			const response_timestamp = (jsonResp ? jsonResp['time_set']: 0)
+			// Figure out from the response if we have an ip and, if not, if we need to spawn the server
+			const too_old_period = (response_ip === "starting" ? Constants.GAMEBACKEND_WORSTCASE_STARTUP_TIME : 2*Constants.GAMEBACKEND_PING_PERIOD)
+			const too_old = Date.now()-response_timestamp >= too_old_period
+			// We have an ip if the ip is not "starting" and isn't too old 
+			ip = (response_ip && (response_ip !== "starting") && !too_old ? response_ip : '')
+
+			// We spawn the server if we have no setting or if the setting is too old, but don't
+			// spawn if we just recently tried to spawn.
+			if ((!response_ip || too_old)) {
+				if (!just_spawned) {
 					SettingsService.spawnGameServer()
+					just_spawned = true
 				}
+			} else {
+				just_spawned = false
+			}
+
+			// If we don't yet have an ip, wait.
+			if (!ip) {
 				await new Promise((resolve) => setTimeout(resolve, SettingsService.GAMESERVER_START_POLL_TIME));
 			}
-			firstRequest = false
+
 		}
 		return ip;
 	}

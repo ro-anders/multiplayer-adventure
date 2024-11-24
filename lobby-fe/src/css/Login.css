@@ -1,6 +1,6 @@
 .login-page {
-    width: 90vw;
-    height: 90vh;
+    width: 100vw;
+    height: 100vh;
     margin: auto;
     border: 5vh solid rgb(255, 216, 76);
     background-color: rgb(205, 205, 205);
@@ -27,14 +27,51 @@
     padding: 0.5rem;
   
   }
+
+  .login-error-message {
+    height: 10%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    position: absolute;
+    top: 30%; /* Adjust for desired positioning over image */
+    width: 100%;
+    text-align: center;
+    font-family: 'Press Start 2P', cursive; /* Use a retro or pixel font */
+    font-size: 2rem;
+    color: black;
+    background: red;
+    padding: 0.5rem;
+  
+  }
+
   
   .login-main-image {
     width: auto;
     height: 40%;
     margin-bottom: 2rem;
   }
+
+  .login-form {
+    display: flex;
+    align-items: center;
+  }
   
   .login-accordion-section {
     color: black;
   }
-  
+
+  .login-form-experience {
+    font-size: 0.7rem;
+    text-align: left;
+    margin-left: 16px;
+  }
+
+  .login-form-label {
+    margin-right: 8px;
+  }
+
+  .login-form-field {
+    width: 24ch;
+  }

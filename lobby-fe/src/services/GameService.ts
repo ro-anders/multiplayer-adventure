@@ -49,7 +49,7 @@ export default class GameService {
 			body: JSON.stringify(game_setup)
 		})
 
-		const res = await fetch(request);
+		await fetch(request);
 		return await this.getGames()
 	}
 
@@ -71,7 +71,7 @@ export default class GameService {
 			body: JSON.stringify(game)
 		})
 
-		const res = await fetch(request);
+		await fetch(request);
 	}
 }
 

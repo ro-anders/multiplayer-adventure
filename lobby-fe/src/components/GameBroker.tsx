@@ -4,7 +4,7 @@ import '../App.css';
 import ProposedGameList from './ProposedGameList'
 import {GameInLobby} from '../domain/GameInLobby'
 import GameService from '../services/GameService'
-import ProposeGameModal from './ProposeGameModal';
+import ProposeModal from './ProposeModal';
 
 interface GameBrokerProps {
   /** The name of the currently logged in user */
@@ -19,7 +19,7 @@ interface GameBrokerProps {
  */
 function GameBroker({username, proposed_games, game_change_callback}: GameBrokerProps) {
 
-  const [proposeGameModalVisible, setProposeGameModalVisible] = useState(false);
+  const [proposeModalVisible, setProposeModalVisible] = useState(false);
 
   /**
    * Create a proposed game
@@ -30,19 +30,29 @@ function GameBroker({username, proposed_games, game_change_callback}: GameBroker
     game_change_callback(proposed_games);
   }
 
+  /**
+   * Return true if the current player is already selected to join an existing proposed game
+   * or is already in a running game.
+   */
+  function playerCommitted(): boolean {
+    let committed = false;
+    for (const proposed_game of proposed_games) {
+      committed = committed || (proposed_game.player_names.indexOf(username) >= 0);
+    }
+    return committed;
+  }
+
   return (
 
     <div className="GameBroker">
-      {proposeGameModalVisible && 
-        <ProposeGameModal 
-          username={username} 
-          propose_game_callback={gameProposed} 
-          close_modal_callback={()=>setProposeGameModalVisible(false)}
-        />
-      }
-
       <ProposedGameList current_user={username} games={proposed_games} game_change_callback={game_change_callback}/>
-      <Button onClick={()=>setProposeGameModalVisible(true)}>Propose Game</Button>
+      <Button disabled={playerCommitted()} onClick={()=>setProposeModalVisible(true)}>Propose Game</Button>
+      <ProposeModal
+        username={username}
+        show={proposeModalVisible}
+        onHide={()=>setProposeModalVisible(false)}
+        propose_game_callback={gameProposed}
+      />
     </div>
   );
 }

@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
+import { useEffect, useState } from 'react';
 import '../App.css';
 import GameBroker from '../components/GameBroker'
 import LobbyService from '../services/LobbyService'
@@ -18,37 +16,13 @@ const MAX_TIME_BETWEEN_POLL = 60000;
 interface LobbyProps {
   /** The name of the currently logged in user */
   username: string;
+  /** How much help they need.  0=no help, 1=map guides, 2=map guides & popup hints */
+  experienceLevel: number;
 }
 
-function Lobby({username}: LobbyProps) {
+function Lobby({username, experienceLevel}: LobbyProps) {
   const [pollWait, setPollWait] = useState(MIN_TIME_BETWEEN_POLL);
   const [lobbyState, setLobbyState] = useState<LobbyState>({online_player_names: ['loading...'], games: []})
-  let [chosenSlot, setChosenSlot] = useState<Number>(-1);
-  let [chosenSession, setChosenSession] = useState<string>("");
-  let [hostIp, setHostIp] = useState<string>("127.0.0.1");
-  let [url, setUrl] = useState<string>("");
-
-  async function updateLobbyState() {
-    try {
-      const new_lobby_state = await LobbyService.getLobbyState();
-      if (LobbyService.isLobbyStateEqual(lobbyState, new_lobby_state)) {
-        // No change in state.  Increase the time between polling.
-        if (pollWait < MAX_TIME_BETWEEN_POLL) {
-          setPollWait(pollWait < MAX_TIME_BETWEEN_POLL/2 ? 2*pollWait : MAX_TIME_BETWEEN_POLL)
-        }
-      }
-      else {
-        console.log("Lobby state changed")
-          setLobbyState(new_lobby_state)
-          setPollWait(MIN_TIME_BETWEEN_POLL)
-      }
-      console.log(`Waiting ${pollWait}`)
-    }
-    catch(e) {
-      console.error(`Error requesting lobby state: ${e}`)
-      setPollWait(MAX_TIME_BETWEEN_POLL)
-    }
-  }
 
   /**
    * Callback called by subcomponents that change the game state.
@@ -73,6 +47,28 @@ function Lobby({username}: LobbyProps) {
    * as if no changes are detected it updates less frequently.
    */
   useEffect(() => {
+    async function updateLobbyState() {
+      try {
+        const new_lobby_state = await LobbyService.getLobbyState();
+        if (LobbyService.isLobbyStateEqual(lobbyState, new_lobby_state)) {
+          // No change in state.  Increase the time between polling.
+          if (pollWait < MAX_TIME_BETWEEN_POLL) {
+            setPollWait(pollWait < MAX_TIME_BETWEEN_POLL/2 ? 2*pollWait : MAX_TIME_BETWEEN_POLL)
+          }
+        }
+        else {
+          console.log("Lobby state changed")
+            setLobbyState(new_lobby_state)
+            setPollWait(MIN_TIME_BETWEEN_POLL)
+        }
+        console.log(`Waiting ${pollWait}`)
+      }
+      catch(e) {
+        console.error(`Error requesting lobby state: ${e}`)
+        setPollWait(MAX_TIME_BETWEEN_POLL)
+      }
+    }
+  
     const timer = setInterval(() => {
       updateLobbyState();
     }, pollWait);
@@ -82,7 +78,6 @@ function Lobby({username}: LobbyProps) {
   }, [lobbyState, pollWait]);
 
   return (
-    <div>
       <div className="lobby-main">
         <Roster player_names={lobbyState.online_player_names}/>
         <div className="lobby-game-column">
@@ -98,7 +93,7 @@ function Lobby({username}: LobbyProps) {
           </div>
         </div>
         <div className="lobby-chat-column lobby-room">
-          <h2>Chat</h2>
+          <h3>Chat</h3>
           <div className="chat-box">
             <p><strong>Player 1:</strong> Ready to play!</p>
             <p><strong>Player 2:</strong> Let’s go!</p>
@@ -107,15 +102,6 @@ function Lobby({username}: LobbyProps) {
           <button>Send</button>
         </div>
       </div>
-      <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React.js
-      </a>
-    </div>
   );
 }
 

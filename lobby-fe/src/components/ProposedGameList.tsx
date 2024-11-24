@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import '../App.css';
@@ -107,9 +107,9 @@ function ProposedGameList({current_user, games, game_change_callback}: ProposedG
   
   return (
 
-    <div className="Roster">
-      <h2>Join a proposed game</h2>
-      <header className="Roster-header">
+    <div className="pgame-list">
+      <h3>Join a Game</h3>
+      <header>
         <ListGroup>
             {games.map((game) => (
             <ListGroup.Item key={game.session}>
@@ -119,8 +119,8 @@ function ProposedGameList({current_user, games, game_change_callback}: ProposedG
             </ListGroup.Item>
             ))}
         </ListGroup>
-        {(startGameModal != MODAL_HIDDEN) && 
-          <GameStartingModal player_list={startingGamePlayers} waiting_on_server={startGameModal==MODAL_WAITING_ON_SERVER}/>
+        {(startGameModal !== MODAL_HIDDEN) && 
+          <GameStartingModal player_list={startingGamePlayers} waiting_on_server={startGameModal===MODAL_WAITING_ON_SERVER}/>
         }
       </header>
     </div>

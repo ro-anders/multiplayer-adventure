@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from 'react';
 import ListGroup from 'react-bootstrap/ListGroup';
 import '../App.css';
 import '../css/Lobby.css'
-import PlayerService from '../services/PlayerService'
 
 interface RosterListProps {
   /** The name of the currently logged in user */
@@ -16,7 +14,7 @@ function Roster({player_names}: RosterListProps) {
   return (
 
     <div className="lobby-roster-column lobby-room">
-      <h2>Online Players</h2>
+      <h3>Online Players</h3>
       <header className="Roster-header">
         <ListGroup>
             {player_names.map((name) => (

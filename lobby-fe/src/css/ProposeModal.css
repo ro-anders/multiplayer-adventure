@@ -1,0 +1,38 @@
+.propose-modal {
+    background-color: rgb(107, 100, 255);
+    text-align: left;
+    height: null;
+}
+
+.propose-modal-body {
+    padding: 0px;
+}
+.propose-modal .modal-content {
+    background-color: rgb(107, 100, 255);
+}
+.propose-modal .modal-header {
+    background-color: rgb(205, 205, 205);
+    padding: 8px 16px;
+    margin: 0px 0px 8px 0px;
+}
+
+.propose-modal .modal-footer {
+    background-color: rgb(205, 205, 205);
+    padding: 8px 16px;
+    margin: 8px 0px 0px 0px;
+}
+
+.propose-modal-field {
+    background-color: rgb(205, 205, 205);
+    padding: 8px 16px;
+    margin: 8px 0px;
+}
+
+.propose-modal .btn-primary {
+    background-color: rgb(107, 100, 255);
+}
+
+.propose-modal .btn-secondary {
+    background-color: rgb(205, 205, 205);
+    color: black;
+}

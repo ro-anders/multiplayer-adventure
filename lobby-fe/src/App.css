@@ -1,5 +1,8 @@
+
 .App {
   text-align: center;
+  font-family: 'Px437 IBM BIOS', 'Press Start 2P', monospace; /* Low-res blocky font */
+  color: black;
 }
 
 .App-logo {
