@@ -61,7 +61,6 @@ function Lobby({username, experienceLevel}: LobbyProps) {
             setLobbyState(new_lobby_state)
             setPollWait(MIN_TIME_BETWEEN_POLL)
         }
-        console.log(`Waiting ${pollWait}`)
       }
       catch(e) {
         console.error(`Error requesting lobby state: ${e}`)

@@ -1,5 +1,6 @@
 import {GameInLobby} from '../domain/GameInLobby'
 import { LobbyState } from '../domain/LobbyState'
+import GameService from './GameService'
 
 /**
  * Fetched from the backend state of the entire lobby and holds business logic
@@ -22,7 +23,7 @@ export default class LobbyService {
 		return fetch(request)
 			.then(res => res.json())
 			.then(res => {
-			return res
+			return LobbyService.cleanLobby(res)
 		})
 	}
 
@@ -54,6 +55,40 @@ export default class LobbyService {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Examine the lobby state and find old data and clean it up
+	 * by making calls the the lobby back end (and by modifying 
+	 * the current state object)
+	 * @param lobby the state of the lobby
+	 * @returns a new, cleaned up state
+	 */
+	static cleanLobby(lobby: LobbyState) : LobbyState {
+		// The backend already filters out players that have gone offline
+
+		// Go through games removing players who are no longer active
+		const empty_games: GameInLobby[] = []
+		for (const game of lobby.games) {
+			const originalNumPlayers = game.player_names.length
+			game.player_names = game.player_names.filter((player_name: string) => lobby.online_player_names.indexOf(player_name)>=0)
+			if (game.player_names.length == 0) {
+				empty_games.push(game)
+			}
+			if (game.player_names.length != originalNumPlayers) {
+				// We make this call asynchronously.  Don't need to wait for response.
+				GameService.updateGame(game)
+			}
+		}
+
+		// Remove all games with no players
+		for (const game of empty_games) {
+			// We make this call asynchronously.  Don't need to wait for response.
+			GameService.deleteGame(game)
+		}
+		lobby.games = lobby.games.filter((game: GameInLobby)=>empty_games.indexOf(game)<0)
+
+		return lobby;
 	}
 }
 

@@ -5,26 +5,26 @@ import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
 /**
- * HTTP delete method to delete a setting in the DynamoDB table.
+ * HTTP delete method to delete a game in the DynamoDB table.
  */
-export const deleteSettingHandler = async (event) => {
+export const deleteGameHandler = async (event) => {
     if (event.httpMethod !== 'DELETE') {
         throw new Error(`deleteMethod only accepts DELETE method, you tried: ${event.httpMethod} method.`);
     }
 
     await CheckDDB();
 
-    // Get setting_name from the request path
-    const setting_name = event.pathParameters.setting_name;
+    // Get game session from the request path
+    const session = parseInt(event.pathParameters.session);
     var params = {
-        TableName : "Settings",
-        Key: { setting_name: setting_name }
+        TableName : "Games",
+        Key: { session: session },
     };
 
     try {
         const data = await ddbDocClient.send(new DeleteCommand(params));
       } catch (err) {
-        console.log("Error", err.stack);
+        console.error("Error", err.stack);
       }
 
     const response = {

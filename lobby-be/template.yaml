@@ -24,7 +24,7 @@ Globals:
                 ENVIRONMENT_TYPE: !Ref EnvironmentType
     Api:
         Cors:
-            AllowMethods: "'GET,POST,PUT,OPTIONS'"
+            AllowMethods: "'GET,POST,PUT,OPTIONS,DELETE'"
             AllowHeaders: "'Content-Type'"
             AllowOrigin: "'*'"
             # AllowCredentials: true  Uncomment only if you choose a specific origin instead of the * wildcard.
@@ -199,6 +199,28 @@ Resources:
           Properties:
             Path: /game/{session}
             Method: PUT
+
+  deleteGameFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/delete-game.deleteGameHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Delete a game
+      Policies:
+        # Give Create/Read/Update/Delete Permissions
+        - DynamoDBCrudPolicy:
+            TableName: !Ref GamesTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /game/{session}
+            Method: DELETE
+
 
   ###########################
   # Convenience method for getting all player, game and chat updates

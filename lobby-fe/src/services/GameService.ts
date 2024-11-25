@@ -73,5 +73,26 @@ export default class GameService {
 
 		await fetch(request);
 	}
+
+	/**
+	 * Update an existing game with new information.
+	 * @param game the details of the game
+	 * @returns a list of all currently proposed games, including this one.
+	 */
+	static async deleteGame(game: GameInLobby) {
+		const headers: Headers = new Headers()
+		headers.set('Content-Type', 'application/json')
+		headers.set('Accept', 'application/json')
+
+		// Create the request object, which will be a RequestInfo type. 
+		// Here, we will pass in the URL as well as the options object as parameters.
+		const request: RequestInfo = new Request(`${GameService.back_end}/game/${game.session}`, {
+			method: 'DELETE',
+			headers: headers
+		})
+
+		await fetch(request);
+	}
+
 }
 
