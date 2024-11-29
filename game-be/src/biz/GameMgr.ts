@@ -6,26 +6,33 @@
 
 import WebSocket from 'ws';
 import LobbyBackend from './LobbyBackend';
+import Constants from './Constants';
+import { RunningGame } from '../domain/RunningGame';
 
 /** The byte code to indicate a message is a connect message */
 const GAMEMSG_CODE = 0x00;
 const CONNECT_CODE = 0x01;
 
-interface GameInfo {
-	
-}
-
-interface Game {
-	session: string;	
+/** 
+ * All the client connections needed to run a game
+ */
+interface GamePlatform {
 	clients: WebSocket[]
-	game_info: any;
+	game_info: RunningGame;
 }
 
+
+/**
+ * This class broadcasts messages to all the players in a game.
+ */
 export default class GameMgr {
 
 	constructor(private lobby_backend: LobbyBackend, 
-		private games: {[session: string]: Game;} = {}) 
-	{}	 
+		private games: {[session: string]: GamePlatform;} = {}) 
+	{
+		// Setup a periodic task to report the games' and players' active status to the lobby
+		setInterval(this.periodic_lobby_update.bind(this), Constants.PLAYER_PING_PERIOD)
+	}	 
 
 	process_message(data: Uint8Array, client_socket: WebSocket) {
 		if (data.length < 2) {
@@ -62,7 +69,6 @@ export default class GameMgr {
 			const game_info = await this.lobby_backend.get_game_info(session)
 			console.log(`Read game info ${JSON.stringify(game_info)}`)
 			this.games[session] = {
-				session: session,
 				clients: [],
 				game_info: game_info
 			}
@@ -70,6 +76,9 @@ export default class GameMgr {
 		const game = this.games[session]
 		game.clients.push(client_socket)
 		game.game_info.joined_players = game.clients.length
+		if (game.clients.length === game.game_info.player_names.length) {
+			game.game_info.state = 1
+		}
 		console.log("client joined session " + session + ".");
 	
 		// Now serialize the game info and send to all clients
@@ -82,6 +91,9 @@ export default class GameMgr {
 		message[1] = CONNECT_CODE;
 		message.set(encodedGameInfo, 2);
 		this.broadcast_message(session, message, null);
+
+		// Also notify the lobby
+		this.lobby_backend.update_game(game.game_info)
 	}
 	
 	/**
@@ -102,6 +114,24 @@ export default class GameMgr {
 		}
 	}
   
+	/**
+	 * This service pings the lobby for every game that is still running and
+	 * for every player that is in every running game.
+	 */
+	periodic_lobby_update() {
+		// Run through every game
+		for (const nextSession in this.games) {
+			const nextGame = this.games[nextSession]
+			if (nextGame.game_info.joined_players === nextGame.game_info.player_names.length) {
+				this.lobby_backend.update_game(nextGame.game_info)
+			}
+			const playerNames: string[] = nextGame.game_info.player_names;
+			for (const nextPlayer of playerNames) {
+				this.lobby_backend.update_player(nextPlayer)
+			}
+		}
+	}
+
   
 }
 

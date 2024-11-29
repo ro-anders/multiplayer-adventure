@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import '../App.css';
 import ProposedGameList from './ProposedGameList'
-import {GameInLobby} from '../domain/GameInLobby'
+import {GameInLobby, GAMESTATE__PROPOSED} from '../domain/GameInLobby'
 import GameService from '../services/GameService'
 import ProposeModal from './ProposeModal';
 
@@ -45,7 +45,12 @@ function GameBroker({username, proposed_games, game_change_callback}: GameBroker
   return (
 
     <div className="GameBroker">
-      <ProposedGameList current_user={username} games={proposed_games} game_change_callback={game_change_callback}/>
+      <ProposedGameList 
+        current_user={username} 
+        games={proposed_games} 
+        game_change_callback={game_change_callback}
+        state_to_display={GAMESTATE__PROPOSED}
+      />
       <Button disabled={playerCommitted()} onClick={()=>setProposeModalVisible(true)}>Propose Game</Button>
       <ProposeModal
         username={username}

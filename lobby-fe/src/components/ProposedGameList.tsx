@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import '../App.css';
-import {GameInLobby} from '../domain/GameInLobby'
+import {GameInLobby, GAMESTATE__PROPOSED} from '../domain/GameInLobby'
 import GameStartingModal from './GameStartingModal'
 import GameService from '../services/GameService'
 import SettingsService from '../services/SettingsService';
@@ -10,8 +10,15 @@ import SettingsService from '../services/SettingsService';
 interface ProposedGameListProps {
   /** The name of the currently logged in user */
   current_user: string;
+
+  /** The lobby's list of games to display */
   games: GameInLobby[];
+
+  /** A callback to call if a game is modified */
   game_change_callback: (games:GameInLobby[]) => void;
+
+  /** Whether this list is for displaying proposed games or running games */
+  state_to_display: number; 
 }
 
 const MODAL_HIDDEN='no game'
@@ -20,16 +27,25 @@ const MODAL_WAITING_MINIMUM_TIME='waiting'
 const MODAL_MINIMUM_TIME=10000; // Milliseconds
 
 /**
- * Displays a list of proposed games and allows the user
- * to join, start or leave a game.
+ * Displays a list of games.
+ * This is used both to display a list of proposed games that allows the user
+ * to join, start or leave a game, and also display a non-interactive list of running games.
  */
-function ProposedGameList({current_user, games, game_change_callback}: ProposedGameListProps) {
+function ProposedGameList({current_user, games: games, game_change_callback, state_to_display}: ProposedGameListProps) {
 
   /** The list of players (in player order) in the game that is starting */
   const [startingGamePlayers, setStartingGamePlayers] = useState<string[]>([]);
 
   /** Whether the modal is shown and, if it is, what it is waiting for to dismiss */
   const [startGameModal, setStartGameModal] = useState<string>(MODAL_HIDDEN);
+
+  /** Whether to display buttons that allow you to manipulate the state of games */
+  const interactive: boolean = state_to_display == GAMESTATE__PROPOSED;
+
+  /** Filter the list to only the games we want to display */
+  const games_to_display = games.filter((game: GameInLobby)=>{return game.state==state_to_display})
+
+  const list_title = (state_to_display == GAMESTATE__PROPOSED ? "Join a Game" : "Running Games")
 
   /**
    * User has just pressed "Join" on a game.
@@ -43,6 +59,17 @@ function ProposedGameList({current_user, games, game_change_callback}: ProposedG
       GameService.updateGame(game)
       game_change_callback(games)
     }
+  }
+
+  /**
+   * User has just pressed "Leave" on a game.
+   * @param game which game they are leaving
+   */
+  function quitGame(game: GameInLobby) {
+    // Remove the player from the game
+    game.player_names = game.player_names.filter((name: string) => name != current_user)
+    GameService.updateGame(game)
+    game_change_callback(games)
   }
 
   /**
@@ -77,10 +104,10 @@ function ProposedGameList({current_user, games, game_change_callback}: ProposedG
     var playerList = (game.player_names.length < 1 ? "?" : game.player_names[0])
     playerList += (game.player_names.length < 2 ? ", ?" : `, ${game.player_names[1]}`)
     if (game.number_players > 2) {
-      playerList += (game.player_names.length < 3 ? ", ?" : `, ${game.player_names[2]}`)
+      playerList += (game.player_names.length < 3 ? (game.number_players < 3 ? ", ..." : ", ?")  : `, ${game.player_names[2]}`)
     }
 
-    return `Game #${game.game_number+1}: ${playerList}`
+    return playerList
   } 
 
   /**
@@ -88,6 +115,17 @@ function ProposedGameList({current_user, games, game_change_callback}: ProposedG
    * they aren't already joined.)
    * @param game a proposed game in question
    * @returns whether the current user can join the game
+   */
+  function isQuitable(game: GameInLobby): boolean {
+    const inGame = game.player_names.includes(current_user);
+    return inGame && (game.player_names.length < game.number_players);
+  }
+
+  /**
+   * Return whether the current user can leave the game (meaning the player is currently
+   * enrolled in the game and it isn't ready to start)
+   * @param game a proposed game in question
+   * @returns whether the current user can leave the game
    */
   function isJoinable(game: GameInLobby): boolean {
     const inGame = game.player_names.includes(current_user);
@@ -108,14 +146,28 @@ function ProposedGameList({current_user, games, game_change_callback}: ProposedG
   return (
 
     <div className="pgame-list">
-      <h3>Join a Game</h3>
+      <h3>{list_title}</h3>
       <header>
         <ListGroup>
-            {games.map((game) => (
-            <ListGroup.Item key={game.session}>
-              {gameLabel(game)} 
-              {isJoinable(game) && <Button onClick={() => joinGame(game)}>Join</Button>}
-              {isStartable(game) && <Button onClick={() => startGame(game)}>Start</Button>}
+            {games_to_display.map((game) => (
+            <ListGroup.Item className="lobby-game" key={game.session}>
+              <div>
+                Game #{game.game_number+1}:
+                {game.fast_dragons && 
+                  <img src="dragon_head.png" 
+                    alt="fast dragons" 
+                    className="lobby-game-attribute-icon" 
+                  />}
+                {game.fearful_dragons && 
+                  <img src="sword.png" 
+                    alt="scary sword" 
+                    className="lobby-game-attribute-icon" 
+                  />}
+                {isJoinable(game) && <Button size="sm" className='lobby-game-action' onClick={() => joinGame(game)}>Join</Button>}
+                {isQuitable(game) && <Button size="sm" className='lobby-game-action' onClick={() => quitGame(game)}>Leave</Button>}
+                {isStartable(game) && <Button size="sm" className='lobby-game-action' onClick={() => startGame(game)}>Start</Button>}
+              </div>
+              <div>{gameLabel(game)}</div>
             </ListGroup.Item>
             ))}
         </ListGroup>

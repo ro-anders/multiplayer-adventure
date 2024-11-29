@@ -22,10 +22,23 @@
     width: 30%;
   }
 
-  .lobby-game-column {
+  .lobby-games-column {
     width: 30%;
   }
 
   .lobby-chat-column {
     width: 30%;
+  }
+
+  .lobby-game {
+    font-size: calc(5px + 1vmin);  
+  }
+
+  .lobby-game-attribute-icon {
+    height: calc(10px + 1vmin);
+    margin: 0px 5px 5px;
+  }
+
+  .lobby-game-action {
+    font-size: calc(5px + 1vmin);  
   }

@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import '../App.css';
 import GameBroker from '../components/GameBroker'
 import LobbyService from '../services/LobbyService'
-import { GameInLobby } from '../domain/GameInLobby'
+import { GameInLobby, GAMESTATE_RUNNING } from '../domain/GameInLobby'
 import { LobbyState } from '../domain/LobbyState'
 import Roster from '../components/Roster'
+import ProposedGameList from '../components/ProposedGameList';
 
 
 // When changes come in, poll every second for new changes, but back off as 
@@ -79,7 +80,7 @@ function Lobby({username, experienceLevel}: LobbyProps) {
   return (
       <div className="lobby-main">
         <Roster player_names={lobbyState.online_player_names}/>
-        <div className="lobby-game-column">
+        <div className="lobby-games-column">
           <div className="lobby-room">
             <GameBroker 
               username={username} 
@@ -88,7 +89,12 @@ function Lobby({username, experienceLevel}: LobbyProps) {
             />
           </div>
           <div className="lobby-room">
-            <h2>Running Games</h2>
+            <ProposedGameList 
+              current_user={username} 
+              games={lobbyState.games}
+              game_change_callback={(games)=>{}} // A noop callback
+              state_to_display={GAMESTATE_RUNNING}
+            />
           </div>
         </div>
         <div className="lobby-chat-column lobby-room">

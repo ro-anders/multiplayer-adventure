@@ -9,4 +9,9 @@ export default class Constants {
     /** How long to wait for the game backend to start up before giving up and
      * rerequesting a new one */
     static GAMEBACKEND_WORSTCASE_STARTUP_TIME = 5 * 60 * 1000 // milliseconds
+
+    /** How often the lobby and game backend ping the lobby backend to let it know a player
+     * is still active. */
+    static PLAYER_PING_PERIOD = 1 * 60 * 1000 // milliseconds
+    // DON'T CHANGE THIS WITHOUT CHANGING GAME BACKEND CONSTANT!!!
 }

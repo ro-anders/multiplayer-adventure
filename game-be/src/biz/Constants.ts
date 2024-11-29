@@ -11,4 +11,8 @@ export default class Constants {
 	static GAMEBACKEND_PING_PERIOD = 1 * 60 * 1000 // milliseconds
     // DON'T CHANGE THIS WITHOUT CHANGING LOBBY FRONTEND CONSTANT!!!
 
+    /** How often the lobby and game backend ping the lobby backend to let it know a player
+     * is still active. */
+    static PLAYER_PING_PERIOD = 1 * 60 * 1000 // milliseconds
+    // DON'T CHANGE THIS WITHOUT CHANGING LOBBY FRONTEND CONSTANT!!!	
 }

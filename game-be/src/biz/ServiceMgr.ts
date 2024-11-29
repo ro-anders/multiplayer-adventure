@@ -1,9 +1,3 @@
-/**
- * The service manager controls the lifecycle of this service.
- * It periodically reports its up status to the lobby backend
- * and if it recognizes it is no longer being used, shuts itself down.
- */
-
 import { 
 	ECSClient,
 	DescribeTasksCommand, DescribeTasksCommandInput, DescribeTasksCommandOutput,
@@ -17,6 +11,11 @@ import {
 import LobbyBackend from './LobbyBackend'
 import Constants from './Constants'
 
+/**
+ * The service manager controls the lifecycle of this service.
+ * It periodically reports its up status to the lobby backend
+ * and if it recognizes it is no longer being used, shuts itself down.
+ */
 export default class ServiceMgr {
 
 	constructor(private lobby_backend: LobbyBackend,
@@ -26,7 +25,6 @@ export default class ServiceMgr {
 	) 
 	{		
 		this.report_to_lobby()
-		console.log("Creating periodic update")
 		this.interval_id = setInterval(this.periodic_update.bind(this), Constants.GAMEBACKEND_PING_PERIOD)
 	}	 
 

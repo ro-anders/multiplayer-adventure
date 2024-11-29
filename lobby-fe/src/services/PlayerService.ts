@@ -39,15 +39,14 @@ export default class PlayerService {
 		headers.set('Content-Type', 'application/json')
 		headers.set('Accept', 'application/json')
 
-		// Create the request object, which will be a RequestInfo type. 
-		// Here, we will pass in the URL as well as the options object as parameters.
+		// A player is only a name and a timestamp (which is always now) so no body needs
+		// to be sent.  Just a URL with the playername.
 		const request: RequestInfo = new Request(`${PlayerService.back_end}/player/${username}`, {
 			method: 'PUT',
 			headers: headers
 		})
 
 		fetch(request)
-			// the JSON body is taken from the response
 			.then(res => {
 				// Don't need to do anything
 			})

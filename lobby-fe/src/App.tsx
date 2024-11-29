@@ -9,6 +9,7 @@ import LobbyPage from "./pages/Lobby";
 import PlayerService from './services/PlayerService'
 import RetroGamePage from './pages/RetroGamePage';
 import './App.css';
+import Constants from './Constants';
 
 
 
@@ -28,7 +29,7 @@ function App() {
     registerCurrentPlayer();
     const interval = setInterval(() => {
         registerCurrentPlayer();
-    }, 60000);
+    }, Constants.PLAYER_PING_PERIOD);
 
     //Must clearing the interval to avoid memory leak.
     return () => clearInterval(interval);

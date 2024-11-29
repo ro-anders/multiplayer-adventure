@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import { GameInLobby } from '../domain/GameInLobby';
+import { GameInLobby, GAMESTATE__PROPOSED } from '../domain/GameInLobby';
 import "../css/ProposeModal.css"
 
 interface ProposeModalProps {
@@ -32,7 +32,7 @@ function ProposeModal({username, show, onHide, propose_game_callback}: ProposeMo
       fast_dragons: isFastDragonsOn,
       fearful_dragons: isScarySwordOn,
       player_names: [username],
-      state: 0
+      state: GAMESTATE__PROPOSED
     };
     propose_game_callback(new_game);
     onHide();
@@ -48,6 +48,8 @@ function ProposeModal({username, show, onHide, propose_game_callback}: ProposeMo
           <Modal.Title>Choose Game Settings</Modal.Title>
         </Modal.Header>
         <Modal.Body className="propose-modal-body">
+
+          {/* Drop down to choose which game  */}
           <div className="propose-modal-field">
             <Form.Label>Choose a game board</Form.Label>
             <Form.Select 
@@ -60,6 +62,8 @@ function ProposeModal({username, show, onHide, propose_game_callback}: ProposeMo
               <option value="2" key="2">Game 3: Standard map randomized</option>
             </Form.Select>
           </div>
+
+          {/* Drop down to choose number of players  */}
           <div className="propose-modal-field">
             <Form.Label>How many players?</Form.Label>
             <Form.Select 
@@ -72,22 +76,37 @@ function ProposeModal({username, show, onHide, propose_game_callback}: ProposeMo
               <option value="2.5" key="2">Minimum 2, Maximum 3</option>
             </Form.Select>
           </div>
+
           <div className="propose-modal-field">
-            <Form.Check
-              type='switch'
-              id='diffl'
-              label='Fast dragons'
-              checked={isFastDragonsOn}
-              onChange={() => setIsFastDragonsOn(!isFastDragonsOn)}
-            />
-            <Form.Check
-              type='switch'
-              id='diffr'
-              label='Scary sword (dragons run from it)'
-              checked={isScarySwordOn}
-              onChange={() => setIsScarySwordOn(!isScarySwordOn)}
-            />
+
+            {/* Switch to turn on left difficulty (fast dragons)  */}
+            <div key='x' className="switch">
+              <Form.Check type='switch' id='diffl'>
+                <Form.Check.Input type='checkbox' checked={isFastDragonsOn}
+                  onChange={() => setIsFastDragonsOn(!isFastDragonsOn)}/>
+                <img src="dragon_head.png" 
+                  alt="fast dragons" 
+                  className="lobby-game-attribute-icon" 
+                />
+                <Form.Check.Label>Fast dragons</Form.Check.Label>
+              </Form.Check>
+            </div>
+
+            {/* Switch to turn on right difficulty (fearful dragons)  */}
+            <div key='x' className="switch">
+              <Form.Check type='switch' id='diffr'>
+                <Form.Check.Input type='checkbox' checked={isScarySwordOn}
+                  onChange={() => setIsScarySwordOn(!isScarySwordOn)}/>
+                <img src="sword.png" 
+                  alt="scary sword" 
+                  className="lobby-game-attribute-icon" 
+                />
+                <Form.Check.Label>Scary sword (dragons run from it)</Form.Check.Label>
+              </Form.Check>
+            </div>
+
           </div>
+          
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={onHide}>

@@ -1,3 +1,5 @@
+import { RunningGame } from "../domain/RunningGame";
+
 /**
  * This class encapsulates communication with the Lobby Backend.
  * The Lobby never communicates directly with the Game Backend.  Instead, it
@@ -71,5 +73,60 @@ export default class LobbyBackend {
 			console.log(`Error encountered: ${e}`)
 		}
 	}
+
+	/**
+	 * Updates the state of the game in the Lobby.  Usually this
+	 * is just updating last active time, but also updates the game state
+	 * or running and ended.
+	 */	
+	async update_game(game_info: RunningGame) {
+		const headers: Headers = new Headers()
+		headers.set('Content-Type', 'application/json')
+		headers.set('Accept', 'application/json')
+		const request: RequestInfo = new Request(`${this.lobby_url}/game/${game_info.session}`, {
+			method: 'PUT',
+			headers: headers,
+			body: JSON.stringify(game_info)
+		})
+
+		try {
+			const response = await fetch(request)
+			if (response.status != 200) {
+				console.log(`Update game ${game_info.session} received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+			}
+		}
+		catch (e) {
+			console.log(`Error encountered: ${e}`)
+		}
+	}
+
+	/**
+	 * Reports the IP of the game server to the lobby backend, or clears
+     * the IP if ip is null.
+	 */	
+	async update_player(player_name: string) {
+		const headers: Headers = new Headers()
+		headers.set('Content-Type', 'application/json')
+		headers.set('Accept', 'application/json')
+		// A player is only a name and a timestamp (which is always now) so no body needs
+		// to be sent.  Just a URL with the playername.
+		const request: RequestInfo = new Request(`${this.lobby_url}/player/${player_name}`, {
+			method: 'PUT',
+			headers: headers
+		})
+
+		try {
+			console.log(`PUT ${request.url}`)
+			const response = await fetch(request)
+			console.log(`PUT ${response.status}`)
+			if (response.status != 200) {
+				console.log(`Update player ${player_name} received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+			}
+		}
+		catch (e) {
+			console.log(`Error encountered: ${e}`)
+		}
+	}
+
 
 }

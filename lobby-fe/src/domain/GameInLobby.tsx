@@ -10,4 +10,7 @@ export interface GameDetails {
 export interface GameInLobby extends GameDetails {
     state: number; /* 0 = proposed, 1 = started, 2 = finished */
 }
+export const GAMESTATE__PROPOSED = 0;
+export const GAMESTATE_RUNNING = 1;
+export const GAMESTATE_ENDED = 2;
 
