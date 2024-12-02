@@ -20,6 +20,10 @@ namespace GameScene
 
         private int slot = -1;
 
+        private bool help_popups = false;
+
+        private bool map_guides = false;
+
         private byte session = 0x01;
 
         /** The IP address of the Game Backend server which is either running
@@ -28,6 +32,14 @@ namespace GameScene
 
         public int Slot {
             get {return slot;}
+        }
+
+        public bool HelpPopups {
+            get {return help_popups;}
+        }
+
+        public bool MapGuides {
+            get {return map_guides;}
         }
 
         public bool IsReady { 
@@ -57,15 +69,18 @@ namespace GameScene
         {
             transport = transport_in;
             const string GAMECODE_PARAM = "gamecode";
-            const string SLOT_PARAM = "slot";
             const string HOST_PARAM = "host";
 
             slot = 0;
+            help_popups = false;
+            map_guides = false;
 
             if (Application.isEditor) {
                 UnityEngine.Debug.Log("Web game setup disabled when running in editor");
                 session = 0x01;
                 slot=0;
+                help_popups=false;
+                map_guides= false;
             }
             else {
                 // Expecting a URL like http://localhost:55281/?gamecode=1234&slot=1
@@ -73,15 +88,18 @@ namespace GameScene
                 string urlstr = Application.absoluteURL;
                 Debug.Log("URL = " + urlstr);
                 Uri url = new Uri(urlstr);
-                string session_str = HttpUtility.ParseQueryString(url.Query).Get(GAMECODE_PARAM);
-                if (session_str != null) {
+                string gamecode_str = HttpUtility.ParseQueryString(url.Query).Get(GAMECODE_PARAM);
+                if (gamecode_str != null) {
                     // Not dealing with hexadecimal, so parse into an int and then to a byte
-                    int session_int = Int32.Parse(session_str);
-                    session = (byte)session_int;
-                }
-                string slot_str = HttpUtility.ParseQueryString(url.Query).Get(SLOT_PARAM);
-                if (slot_str != null) {
-                    slot = Int32.Parse(slot_str);
+                    int gamecode_int = Int32.Parse(gamecode_str);
+                    // First bit of gamecode is map guides boolean
+                    map_guides = gamecode_int % 2 == 1;
+                    // Second bit is help popups boolean
+                    help_popups = (gamecode_int/2) % 2 == 1;
+                    // Next two bits are slot 0-2
+                    slot = (gamecode_int/4) % 4;
+                    // Rest is session
+                    session = (byte)(gamecode_int/16);
                 }
                 string host_str = HttpUtility.ParseQueryString(url.Query).Get(HOST_PARAM);
                 if (host_str != null) {

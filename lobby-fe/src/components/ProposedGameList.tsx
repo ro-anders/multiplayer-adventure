@@ -11,6 +11,9 @@ interface ProposedGameListProps {
   /** The name of the currently logged in user */
   current_user: string;
 
+  /** The experience level of the current user */
+  experience_level: number;
+
   /** The lobby's list of games to display */
   games: GameInLobby[];
 
@@ -31,7 +34,7 @@ const MODAL_MINIMUM_TIME=10000; // Milliseconds
  * This is used both to display a list of proposed games that allows the user
  * to join, start or leave a game, and also display a non-interactive list of running games.
  */
-function ProposedGameList({current_user, games: games, game_change_callback, state_to_display}: ProposedGameListProps) {
+function ProposedGameList({current_user, experience_level, games: games, game_change_callback, state_to_display}: ProposedGameListProps) {
 
   /** The list of players (in player order) in the game that is starting */
   const [startingGamePlayers, setStartingGamePlayers] = useState<string[]>([]);
@@ -79,6 +82,15 @@ function ProposedGameList({current_user, games: games, game_change_callback, sta
   async function startGame(game: GameInLobby) {
     // TODO: Randomize the order of players
     const slot = game.player_names.indexOf(current_user);
+    const code =
+      // highest bits hold the session
+      16 * game.session +
+      // Next two bits hold the slot number
+      4 * game.player_names.indexOf(current_user) +
+      // next bit holds the help popups flag
+      2 * (experience_level == 1 ? 1 : 0) +
+      // last bit holds the maze guide flag
+      (experience_level <= 2 ? 1 : 0);
     setStartingGamePlayers(game.player_names);
     // Popup the modal but leave it up for at least 10 seconds
     setStartGameModal(MODAL_WAITING_ON_SERVER);
@@ -92,7 +104,7 @@ function ProposedGameList({current_user, games: games, game_change_callback, sta
     }
     // Bring down the modal
     setStartGameModal(MODAL_HIDDEN)
-    window.open(`${process.env.REACT_APP_MPLAYER_GAME_URL}/index.html?gamecode=${game.session}&slot=${slot}&host=${game_server_ip}`)
+    window.open(`${process.env.REACT_APP_MPLAYER_GAME_URL}/index.html?gamecode=${code}&host=${game_server_ip}`)
   }
 
   /**

@@ -36,7 +36,8 @@ namespace GameScene
                         + (setup.Slot + 1 ) + " of " + setup.NumPlayers);
                     bool[] useAi = { false, false, false };
                     gameEngine = new AdventureGame(this, setup.NumPlayers, setup.Slot, transport, 
-                        setup.GameNumber, setup.FastDragons, setup.FearfulDragons, false, false, false, useAi);
+                        setup.GameNumber, setup.FastDragons, setup.FearfulDragons, setup.HelpPopups, 
+                        setup.MapGuides, false, useAi);
                     gameRenderable = true;
                     starting = false;
                 }

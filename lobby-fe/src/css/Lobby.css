@@ -8,37 +8,37 @@
   background-color: rgb(107, 100, 255);
 }
   
-  .lobby-room {
-    padding: 10px;
-    background-color: rgb(205, 205, 205);
-    margin: 5px 5px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    color: black;
-  }
-  
-  .lobby-roster-column {
-    width: 30%;
-  }
+.lobby-room {
+  padding: 10px;
+  background-color: rgb(205, 205, 205);
+  margin: 5px 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: black;
+}
 
-  .lobby-games-column {
-    width: 30%;
-  }
+.lobby-roster-column {
+  width: 30%;
+}
 
-  .lobby-chat-column {
-    width: 30%;
-  }
+.lobby-games-column {
+  width: 30%;
+}
 
-  .lobby-game {
-    font-size: calc(5px + 1vmin);  
-  }
+.lobby-chat-column {
+  width: 30%;
+}
 
-  .lobby-game-attribute-icon {
-    height: calc(10px + 1vmin);
-    margin: 0px 5px 5px;
-  }
+.lobby-game {
+  font-size: calc(5px + 1vmin);  
+}
 
-  .lobby-game-action {
-    font-size: calc(5px + 1vmin);  
-  }
+.lobby-game-attribute-icon {
+  height: calc(10px + 1vmin);
+  margin: 0px 5px 5px;
+}
+
+.lobby-game-action {
+  font-size: calc(5px + 1vmin);  
+}

@@ -48,7 +48,7 @@ function App() {
     },
     {
       path: "/lobby",
-      element: <LobbyPage username={username} experienceLevel={experienceLevel}/>
+      element: <LobbyPage username={username} experience_level={experienceLevel}/>
     },
     {
       path: "/retro",

@@ -80,7 +80,7 @@ function ProposeModal({username, show, onHide, propose_game_callback}: ProposeMo
           <div className="propose-modal-field">
 
             {/* Switch to turn on left difficulty (fast dragons)  */}
-            <div key='x' className="switch">
+            <div key='a' className="switch">
               <Form.Check type='switch' id='diffl'>
                 <Form.Check.Input type='checkbox' checked={isFastDragonsOn}
                   onChange={() => setIsFastDragonsOn(!isFastDragonsOn)}/>
@@ -93,7 +93,7 @@ function ProposeModal({username, show, onHide, propose_game_callback}: ProposeMo
             </div>
 
             {/* Switch to turn on right difficulty (fearful dragons)  */}
-            <div key='x' className="switch">
+            <div key='b' className="switch">
               <Form.Check type='switch' id='diffr'>
                 <Form.Check.Input type='checkbox' checked={isScarySwordOn}
                   onChange={() => setIsScarySwordOn(!isScarySwordOn)}/>

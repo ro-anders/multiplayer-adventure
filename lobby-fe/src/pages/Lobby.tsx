@@ -18,10 +18,10 @@ interface LobbyProps {
   /** The name of the currently logged in user */
   username: string;
   /** How much help they need.  0=no help, 1=map guides, 2=map guides & popup hints */
-  experienceLevel: number;
+  experience_level: number;
 }
 
-function Lobby({username, experienceLevel}: LobbyProps) {
+function Lobby({username, experience_level: experience_level}: LobbyProps) {
   const [pollWait, setPollWait] = useState(MIN_TIME_BETWEEN_POLL);
   const [lobbyState, setLobbyState] = useState<LobbyState>({online_player_names: ['loading...'], games: []})
 
@@ -84,6 +84,7 @@ function Lobby({username, experienceLevel}: LobbyProps) {
           <div className="lobby-room">
             <GameBroker 
               username={username} 
+              experience_level={experience_level}
               proposed_games={lobbyState.games}
               game_change_callback={game_change_callback}
             />
@@ -91,6 +92,7 @@ function Lobby({username, experienceLevel}: LobbyProps) {
           <div className="lobby-room">
             <ProposedGameList 
               current_user={username} 
+              experience_level={experience_level}
               games={lobbyState.games}
               game_change_callback={(games)=>{}} // A noop callback
               state_to_display={GAMESTATE_RUNNING}

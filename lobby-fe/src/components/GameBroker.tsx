@@ -9,6 +9,7 @@ import ProposeModal from './ProposeModal';
 interface GameBrokerProps {
   /** The name of the currently logged in user */
   username: string;
+  experience_level: number;
   proposed_games: GameInLobby[];
   game_change_callback: (games:GameInLobby[]) => void;
 }
@@ -17,7 +18,7 @@ interface GameBrokerProps {
  * Displays the list of proposed games, allowing the user to join one.
  * Also displays an option to propose a new game.
  */
-function GameBroker({username, proposed_games, game_change_callback}: GameBrokerProps) {
+function GameBroker({username, experience_level, proposed_games, game_change_callback}: GameBrokerProps) {
 
   const [proposeModalVisible, setProposeModalVisible] = useState(false);
 
@@ -47,6 +48,7 @@ function GameBroker({username, proposed_games, game_change_callback}: GameBroker
     <div className="GameBroker">
       <ProposedGameList 
         current_user={username} 
+        experience_level={experience_level}
         games={proposed_games} 
         game_change_callback={game_change_callback}
         state_to_display={GAMESTATE__PROPOSED}
