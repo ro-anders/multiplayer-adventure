@@ -1,4 +1,5 @@
 using System;
+using System.IO.Compression;
 using GameEngine;
 using UnityEngine;
 
@@ -52,10 +53,16 @@ namespace GameScene
         // This starts the game.
         public void PlayGame()
         {
-            // Connect to the server
-            setup.Connect();
-            starting = true;
-
+            if (Application.isEditor) {
+                bool[] useAi = { false, true, true };
+                gameEngine = new AdventureGame(this, 3, 0, null, 1, false, false, false, false, false, useAi);
+                gameRenderable = true;
+                starting = false;
+            } else {
+                // Connect to the server
+                setup.Connect();
+                starting = true;
+            }
         }
 
     }

@@ -75,9 +75,9 @@ namespace GameScene
             get { return (gameInfo == null ? 0 : gameInfo.joined_players); }
         }
 
-        public 
+         
 
-        void Start()
+        public void Start()
         {
             // Start doesn't do anything.  It's all done
             // in Connect()
