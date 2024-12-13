@@ -31,7 +31,7 @@ namespace GameScene
         public void OnStartClicked()
         {
             gamePanel.SetActive(true);
-            advView.PlayGame();
+            advView.SetReady();
         }
 
         public void OnRespawnClicked()

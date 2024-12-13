@@ -16,5 +16,6 @@ export interface GameDetails {
 export interface RunningGame extends GameDetails {
 	state: number; /* 0 = proposed, 1 = started, 2 = finished */
 	joined_players: number; /* the number of players who have joined the game */
+	ready_players: number; /* NOT A COUNT!  A bitmask of which players are ready */
 }
 

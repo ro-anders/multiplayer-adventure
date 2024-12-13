@@ -44,6 +44,7 @@ namespace GameScene
         private const byte NO_SESSION = 0x00;
         private const byte MESSAGE_CODE = 0x00;
         private const byte CONNECT_CODE = 0x01;
+        private const byte READY_CODE = 0x02;
         /** A string representing the game this player is playing. */
         private byte session = NO_SESSION;
 
@@ -56,6 +57,9 @@ namespace GameScene
 
         /** The details of the game being played */
         private RunningGame gameInfo = null;
+
+        /** Whether the server has announced it is ready to start the game */
+        private bool receivedReady = false;
 
         /** Keep a queue of actions read from the server. */
         private Queue<RemoteAction> receviedActions = new Queue<RemoteAction>();
@@ -75,7 +79,9 @@ namespace GameScene
             get { return (gameInfo == null ? 0 : gameInfo.joined_players); }
         }
 
-         
+        public bool ReceivedReady {
+            get { return receivedReady; }
+        }         
 
         public void Start()
         {
@@ -162,6 +168,10 @@ namespace GameScene
                 }
 
                 byte msg_code = bytes[1];
+                if (msg_code == READY_CODE) {
+                    Debug.Log("Received message game is ready to start");
+                    receivedReady = true;
+                }
                 if (msg_code == CONNECT_CODE) {
                     // Process a system message.  A system message, after the first two bytes, is 
                     // JSON.
@@ -221,6 +231,19 @@ namespace GameScene
                 Debug.Log("Sending [" + string.Join(" ", bytes) + "]");
                 websocket.Send(bytes);
             }
+        }
+
+        // <summary>
+        /// Send a message that this client is ready to start the game.
+        /// </summary>
+        public void sendReady() {
+            if (websocket.State != WebSocketState.Open)
+            {
+                throw new Exception("Cannot start game before web socket is open");
+            }
+            byte[] bytes = new byte[] {session, READY_CODE};
+            Debug.Log("Requesting start game " + session);
+            websocket.Send(bytes);
         }
         
         private async void OnApplicationQuit()
@@ -291,6 +314,28 @@ namespace GameScene
             else {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// For running in the editor, create fake game info
+        /// </summary>
+        public void fakeGameInfo() {
+            gameInfo = new RunningGame();
+            gameInfo.session = 42;
+            gameInfo.game_number = 1;
+            gameInfo.number_players = 3;
+            gameInfo.fast_dragons = false;
+            gameInfo.fearful_dragons = false;
+            gameInfo.player_names = new string[]{"Tom", "Dick", "Harry"};
+            gameInfo.joined_players = 3;
+        }
+
+        /// <summary>
+        /// For running in the editor.  Pretend all other clients
+        /// have reported they are ready to start the game.
+        /// </summary>
+        public void fakeReceivedReady() {
+            receivedReady = true;
         }
 
 

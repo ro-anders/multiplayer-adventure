@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Web;
 using GameScene;
 using JetBrains.Annotations;
@@ -16,6 +17,12 @@ namespace GameScene
     */
     public class WebGameSetup
     {
+        // States of Web Game Setup
+        public const int WAITING_FOR_GAMEINFO = 0;
+        public const int WAITING_FOR_PLAYER = 1;
+        public const int WAITING_FOR_OTHERS = 2;
+        public const int GO = 3;
+
         private WebSocketTransport transport;
 
         private int slot = -1;
@@ -25,6 +32,8 @@ namespace GameScene
         private bool map_guides = false;
 
         private byte session = 0x01;
+
+        private int web_game_setup_state = WAITING_FOR_GAMEINFO;
 
         /** The IP address of the Game Backend server which is either running
          * in Fargate or locally */
@@ -42,8 +51,25 @@ namespace GameScene
             get {return map_guides;}
         }
 
-        public bool IsReady { 
-            get { return (transport != null) && (transport.NumberClientsConnected >= NumPlayers) ;}
+        public int WebGameSetupState {
+            get {
+                // Check to see if state needs to be updated before returning.
+                if (web_game_setup_state == WAITING_FOR_GAMEINFO) {
+                    if ((transport != null) && (transport.GameInfo != null)) {
+                        web_game_setup_state = WAITING_FOR_PLAYER;
+                    }
+                }
+                if (web_game_setup_state == WAITING_FOR_OTHERS) {
+                    if ((transport != null) && (transport.ReceivedReady)) {
+                        web_game_setup_state = GO;
+                    }
+                }
+                return web_game_setup_state;
+            }
+        }
+
+        public string[] PlayerNames {
+            get {return transport.GameInfo == null ? new string[0] : transport.GameInfo.player_names;}
         }
 
         public int NumPlayers {
@@ -113,6 +139,18 @@ namespace GameScene
             // Initiate transport connecting with the backend server and with all the other
             // clients
             _ = transport.Connect(backend_host, session, slot);
+        }
+
+        /// <summary>
+        /// Mark that this player is ready to start the game.
+        /// </summary>
+        public void SetReady() {
+            if (web_game_setup_state == WAITING_FOR_PLAYER) {
+                web_game_setup_state = WAITING_FOR_OTHERS;
+                if (!Application.isEditor) {
+                    transport.sendReady();
+                }
+            }
         }
     }
 

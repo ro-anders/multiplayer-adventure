@@ -10,8 +10,9 @@ import Constants from './Constants';
 import { RunningGame } from '../domain/RunningGame';
 
 /** The byte code to indicate a message is a connect message */
-const GAMEMSG_CODE = 0x00;
-const CONNECT_CODE = 0x01;
+const GAMEMSG_CODE = 0x00; // Code for when running games are sending game messages back and forth
+const CONNECT_CODE = 0x01; // Code for when a client first connects
+const READY_CODE = 0x02; // Code to indicate a client is ready to play
 
 /** 
  * All the client connections needed to run a game
@@ -41,15 +42,18 @@ export default class GameMgr {
 			console.log("Received " + typeof(data) + " " + Object.prototype.toString.call(data) + " with data [" + Array.from(data).join(" ") + "]")
 			// The very first byte should indicate the session
 			const session = data[0]
-			// This is either a connection request or a message to be broadcast.
-			// The second byte is 0x01 for connection requests and 0x00 for messages
+			// The second byte indicates the type of message
 			if (data[1] == GAMEMSG_CODE) {
 				console.log("Request to broadcast message to " + session)
 				this.broadcast_message(session, data, client_socket);
-			  }
+			}
 			else if (data[1] == CONNECT_CODE) {
-			  console.log("Request to join session " + session)
-			  this.join_session(session, client_socket)        
+				console.log("Request to join session " + session)
+				this.join_session(session, client_socket)        
+			}
+			else if (data[1] == READY_CODE) {
+				console.log("Request to start game " + session)
+				this.player_ready(session, client_socket);
 			}
 			else {
 			  console.error(`Unexpected message code ${data[1]} in message ${data}`)
@@ -68,6 +72,7 @@ export default class GameMgr {
 		if (!(session in this.games)) {
 			const game_info = await this.lobby_backend.get_game_info(session)
 			console.log(`Read game info ${JSON.stringify(game_info)}`)
+			game_info.ready_players = 0;
 			this.games[session] = {
 				clients: [],
 				game_info: game_info
@@ -94,6 +99,46 @@ export default class GameMgr {
 
 		// Also notify the lobby
 		this.lobby_backend.update_game(game.game_info)
+	}
+
+	/**
+	 * Mark that a player is ready to start the game.  Once all players
+	 * are ready to start broadcast a start message.
+	 * @param {byte} session - a number indicating the unique key of the game/session
+	 * @param {WebSocket} client_socket - the websocket of the client (we use it to 
+	 *                    identify the player)
+	 */
+	async player_ready(session, client_socket: WebSocket) {
+		if (!(session in this.games)) {
+			console.error("Request to start in non-existent session " + session);
+			return;
+		}
+
+		const game = this.games[session]
+		const client_index = game.clients.indexOf(client_socket);
+		if (client_index < 0) {
+			console.error("Request to start session " + session + " from unknown client")
+			return
+		}
+
+		// Keep a bitmask of players, setting each players bit to 1 when they are ready
+		// to play.  When bitmask reaches 7 (or 3 in a 2 player game)
+		// broadcast the start of the game.
+		game.game_info.ready_players = game.game_info.ready_players | 2 ** client_index;
+		console.log("client" + client_index + " ready to start session " + session + ".");
+	
+		// If all players have said they are ready, broadcast a start to all clients.
+		if (game.game_info.ready_players === (2 ** game.game_info.number_players)-1) {
+			// Now serialize the game info and send to all clients
+			const jsonData = JSON.stringify(game.game_info);
+			const encoder = new TextEncoder();
+			const encodedGameInfo = encoder.encode(jsonData);
+		
+			const message = new Uint8Array(2);
+			message[0] = session;
+			message[1] = READY_CODE;
+			this.broadcast_message(session, message, null);
+		}
 	}
 	
 	/**
