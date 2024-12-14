@@ -36,9 +36,6 @@ const MODAL_MINIMUM_TIME=10000; // Milliseconds
  */
 function ProposedGameList({current_user, experience_level, games: games, game_change_callback, state_to_display}: ProposedGameListProps) {
 
-  /** The list of players (in player order) in the game that is starting */
-  const [startingGamePlayers, setStartingGamePlayers] = useState<string[]>([]);
-
   /** Whether the modal is shown and, if it is, what it is waiting for to dismiss */
   const [startGameModal, setStartGameModal] = useState<string>(MODAL_HIDDEN);
 
@@ -91,17 +88,8 @@ function ProposedGameList({current_user, experience_level, games: games, game_ch
       2 * (experience_level == 1 ? 1 : 0) +
       // last bit holds the maze guide flag
       (experience_level <= 2 ? 1 : 0);
-    setStartingGamePlayers(game.player_names);
-    // Popup the modal but leave it up for at least 10 seconds
     setStartGameModal(MODAL_WAITING_ON_SERVER);
-    const start_time = Date.now();
     const game_server_ip = await SettingsService.getGameServerIP();
-    // TODO: Tell the game server not to shutdown
-    const elapsed_time = Date.now()-start_time;
-    if (elapsed_time < MODAL_MINIMUM_TIME) {
-      setStartGameModal(MODAL_WAITING_MINIMUM_TIME)
-      await new Promise((resolve) => setTimeout(resolve, MODAL_MINIMUM_TIME - elapsed_time));
-    }
     // Bring down the modal
     setStartGameModal(MODAL_HIDDEN)
     window.open(`${process.env.REACT_APP_MPLAYER_GAME_URL}/index.html?gamecode=${code}&host=${game_server_ip}`)
@@ -184,7 +172,7 @@ function ProposedGameList({current_user, experience_level, games: games, game_ch
             ))}
         </ListGroup>
         {(startGameModal !== MODAL_HIDDEN) && 
-          <GameStartingModal player_list={startingGamePlayers} waiting_on_server={startGameModal===MODAL_WAITING_ON_SERVER}/>
+          <GameStartingModal waiting_on_server={startGameModal===MODAL_WAITING_ON_SERVER}/>
         }
       </header>
     </div>

@@ -154,8 +154,7 @@ namespace GameScene
 
             websocket.OnMessage += (bytes) =>
             {
-                const int MIN_GAME_MESSAGE_SIZE = 10; // 1 for session, 1 for server code, 4 for slot, 4 for message code
-                if (bytes.Length < 3) {
+                if (bytes.Length < 2) {
                     Debug.LogWarning("Unexpected " + (bytes.Length == 0 ? "empty" : "short") + "message.");
                     return;
                 }
@@ -189,8 +188,9 @@ namespace GameScene
                 }
                 else {
                     // Process a game message
+                    const int MIN_GAME_MESSAGE_SIZE = 10; // 1 for session, 1 for server code, 4 for slot, 4 for message code
                     if (bytes.Length < MIN_GAME_MESSAGE_SIZE) {
-                        Debug.LogWarning("Unexpected " + (bytes.Length == 0 ? "empty" : "short") + "message.");
+                        Debug.LogWarning("Unexpected short message: " + bytes);
                         return;
                     }
 

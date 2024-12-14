@@ -125,10 +125,12 @@ export default class GameMgr {
 		// to play.  When bitmask reaches 7 (or 3 in a 2 player game)
 		// broadcast the start of the game.
 		game.game_info.ready_players = game.game_info.ready_players | 2 ** client_index;
-		console.log("client" + client_index + " ready to start session " + session + ".");
+		console.log("client" + client_index + " ready to start session " + session + 
+			".  All ready clients = " + game.game_info.ready_players);
 	
 		// If all players have said they are ready, broadcast a start to all clients.
-		if (game.game_info.ready_players === (2 ** game.game_info.number_players)-1) {
+		if (game.game_info.ready_players === (2 ** game.game_info.player_names.length)-1) {
+			console.log("Session " + session + " is ready to play.")
 			// Now serialize the game info and send to all clients
 			const jsonData = JSON.stringify(game.game_info);
 			const encoder = new TextEncoder();

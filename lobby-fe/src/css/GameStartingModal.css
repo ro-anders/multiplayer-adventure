@@ -1,4 +1,4 @@
-.modal-overlay {
+.starting-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -11,9 +11,10 @@
     z-index: 1000;
   }
   
-  .modal-dialog {
+  .starting-modal-dialog {
+    background-color: rgb(205, 205, 205);
     width: 50vw;
-    height: 50vh;
+    height: 25vh;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -22,15 +23,15 @@
     justify-content: space-between;
   }
   
-  .modal-dialog h2 {
+  .starting-modal-dialog h2 {
     margin: 0;
   }
     
-  .modal-dialog ul {
+  .starting-modal-dialog ul {
     list-style-type: '';
   }
 
-  .modal-dialog img {
+  .starting-modal-dialog img {
     width: 5%;
   }
 
