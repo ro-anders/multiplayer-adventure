@@ -13,6 +13,7 @@ import { RunningGame } from '../domain/RunningGame';
 const GAMEMSG_CODE = 0x00; // Code for when running games are sending game messages back and forth
 const CONNECT_CODE = 0x01; // Code for when a client first connects
 const READY_CODE = 0x02; // Code to indicate a client is ready to play
+const CHAT_CODE = 0x03; // Code for chat messages
 
 /** 
  * All the client connections needed to run a game
@@ -54,6 +55,10 @@ export default class GameMgr {
 			else if (data[1] == READY_CODE) {
 				console.log("Request to start game " + session)
 				this.player_ready(session, client_socket);
+			}
+			else if (data[1] == CHAT_CODE) {
+				console.log("Request to broadcast chat to session " + session);
+				this.broadcast_message(session, data, client_socket);
 			}
 			else {
 			  console.error(`Unexpected message code ${data[1]} in message ${data}`)

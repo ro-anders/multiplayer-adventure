@@ -39,6 +39,9 @@ namespace GameScene
          * in Fargate or locally */
         private string backend_host = "localhost";
 
+        public bool DummyMode {
+            get { return backend_host == WebSocketTransport.DUMMY_HOST; }
+        }
         public int Slot {
             get {return slot;}
         }
@@ -101,8 +104,22 @@ namespace GameScene
             help_popups = false;
             map_guides = false;
 
-            if (Application.isEditor) {
-                UnityEngine.Debug.Log("Web game setup disabled when running in editor");
+            Debug.Log("Reading URL");
+            string urlstr = Application.absoluteURL;
+            Debug.Log("URL = " + urlstr);
+            Uri url = ((urlstr != null) && (urlstr.Length > 0) ? new Uri(urlstr): null);
+            Debug.Log("With query part: " + (url != null ? url.Query : ""));
+
+            // Need to determine if we are running in dummy mode.  We are running in 
+            // dummy mode if we are running inside the Unity Editor or if we
+            // are running in a Unity "Build and Run" which will use a development build
+            // and no URL parameters.
+            bool no_query = (url == null || url.Query == null) || (url.Query.Trim().Length == 0);
+            bool use_dummy_mode = Application.isEditor || 
+              (Debug.isDebugBuild && no_query);
+
+            if (use_dummy_mode) {
+                backend_host=WebSocketTransport.DUMMY_HOST;
                 session = 0x01;
                 slot=0;
                 help_popups=false;
@@ -110,10 +127,6 @@ namespace GameScene
             }
             else {
                 // Expecting a URL like http://localhost:55281/?gamecode=1234&slot=1
-                Debug.Log("Reading URL");
-                string urlstr = Application.absoluteURL;
-                Debug.Log("URL = " + urlstr);
-                Uri url = new Uri(urlstr);
                 string gamecode_str = HttpUtility.ParseQueryString(url.Query).Get(GAMECODE_PARAM);
                 if (gamecode_str != null) {
                     // Not dealing with hexadecimal, so parse into an int and then to a byte
@@ -147,9 +160,7 @@ namespace GameScene
         public void SetReady() {
             if (web_game_setup_state == WAITING_FOR_PLAYER) {
                 web_game_setup_state = WAITING_FOR_OTHERS;
-                if (!Application.isEditor) {
-                    transport.sendReady();
-                }
+                transport.sendReady();
             }
         }
     }

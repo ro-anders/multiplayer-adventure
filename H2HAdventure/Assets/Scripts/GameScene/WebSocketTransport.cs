@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 using GameEngine;
+using UnityEngine.Purchasing.MiniJSON;
+using System.Linq;
 
 
 namespace GameScene
@@ -30,6 +32,12 @@ namespace GameScene
         public int joined_players;
     }
 
+    [Serializable]
+    public class ChatMessage {
+        public int slot;
+        public string message;
+    }
+
     /**
      * This implements the H2HAdventure Transport for WebGL H2HAdventure games
      * by making websocket requests to a server running in Fargate that relays them
@@ -37,6 +45,10 @@ namespace GameScene
      */
     public class WebSocketTransport: MonoBehaviour, Transport
     {
+        /** When wanting to run in dummy mode (running stand alone and mimicing
+            an internet game) pass this in as the host URL. */
+        public const string DUMMY_HOST="dummy";
+        private const int DUMMY_FAKE_PAUSE=200; /* 200 clicks, ~3 seconds */
 
         private bool connected = false;
 
@@ -45,6 +57,17 @@ namespace GameScene
         private const byte MESSAGE_CODE = 0x00;
         private const byte CONNECT_CODE = 0x01;
         private const byte READY_CODE = 0x02;
+        private const byte CHAT_CODE = 0x03;
+
+        /** For testing and debugging purposes DUMMY mode will not try
+         * to connect to a back end server and will fake that the game is running
+         * normally when it is running just by itself. */
+        private bool dummy_mode = false;
+
+        /** When in dummy mode we occasionally fake waiting for other clients
+         * when really we are waiting a set time. */
+        private int dummy_mode_timer = -1;
+
         /** A string representing the game this player is playing. */
         private byte session = NO_SESSION;
 
@@ -63,6 +86,8 @@ namespace GameScene
 
         /** Keep a queue of actions read from the server. */
         private Queue<RemoteAction> receviedActions = new Queue<RemoteAction>();
+
+        private Queue<ChatMessage> receivedChats = new Queue<ChatMessage>();
 
         public int ThisPlayerSlot
         {
@@ -90,14 +115,33 @@ namespace GameScene
         }   
 
         // Update is called once per frame.
-        // Do we need this?
         void Update()
         {
+            // Do we need this?
             #if !UNITY_WEBGL || UNITY_EDITOR
             if (websocket != null) {
                 websocket.DispatchMessageQueue();
             }
             #endif
+
+            if (dummy_mode_timer > 0) {
+                --dummy_mode_timer;
+                if (dummy_mode_timer == 0) {
+                    if (gameInfo == null) {
+                        gameInfo = new RunningGame();
+                        gameInfo.session = session;
+                        gameInfo.game_number = 1;
+                        gameInfo.number_players = 3;
+                        gameInfo.fast_dragons = false;
+                        gameInfo.fearful_dragons = false;
+                        gameInfo.player_names = new string[]{"Tom", "Dick", "Harry"};
+                        gameInfo.joined_players = 3;
+                    } else {
+                        receivedReady = true;
+                    }
+                }
+            }
+
         }
 
         /// <summary>
@@ -108,6 +152,16 @@ namespace GameScene
         /// <param name="slot_in">the player number of this player (0-2)</param>         
         public async Task<bool> Connect(String backend_host_in, byte session_in, int slot_in) {
             UnityEngine.Debug.Log("Setting up backend server connection");
+
+            // If running in dummy mode, set some fake setup values and return
+            if (backend_host_in == DUMMY_HOST) {
+                dummy_mode = true;
+                dummy_mode_timer = DUMMY_FAKE_PAUSE;
+                session = session_in;
+                thisPlayerSlot = slot_in;
+                return true;
+            }
+
             if ((session != NO_SESSION) && (session != session_in)) {
                 // Something's wrong.  Why are we connecting twice?
                 throw new Exception("Connect() called on already connected web socket transport");
@@ -171,20 +225,29 @@ namespace GameScene
                     Debug.Log("Received message game is ready to start");
                     receivedReady = true;
                 }
-                if (msg_code == CONNECT_CODE) {
+                else if (msg_code == CONNECT_CODE) {
                     // Process a system message.  A system message, after the first two bytes, is 
                     // JSON.
-                    char[] json_bytes = new char[bytes.Length - 1];
-                    for(int i = 2; i < bytes.Length; i++) {
-                        json_bytes[i - 2] = (char)bytes[i];
-                    }
-                    json_bytes[json_bytes.Length - 1] = '\0';
-                    string json_str = new string(json_bytes);
+                    byte[] json_bytes = bytes.Skip(SERVER_BYTES).ToArray();
+                    char[] json_chars = System.Text.Encoding.UTF8.GetChars(json_bytes);
+                    string json_str = new string(json_chars);
                     Debug.Log("Deserializing game info from \"" + json_str + "\"");
                     gameInfo = JsonUtility.FromJson<RunningGame>(json_str);
                     Debug.Log("Read game info for Game #" + (gameInfo.game_number+1) +
                         " (" + gameInfo.session + ") with " + gameInfo.joined_players + " of " + 
                         gameInfo.number_players + " players joined.");
+                }
+                else if (msg_code == CHAT_CODE) {
+                    // Process a chat message. A system message, after the first two bytes, is 
+                    // JSON.
+                    byte[] json_bytes = bytes.Skip(SERVER_BYTES).ToArray();
+                    char[] json_chars = System.Text.Encoding.UTF8.GetChars(json_bytes);
+                    string json_str = new string(json_chars);
+                    Debug.Log("Deserializing chat message from \"" + json_str + "\"");
+                    ChatMessage chat = JsonUtility.FromJson<ChatMessage>(json_str);
+                    Debug.Log("Read chat message from player #" + chat.slot + ": \"" +
+                        chat.message);
+                    receivedChats.Enqueue(chat);
                 }
                 else {
                     // Process a game message
@@ -217,7 +280,7 @@ namespace GameScene
         }
 
         public void send(RemoteAction action) {
-            if (websocket.State == WebSocketState.Open)
+            if (!dummy_mode && websocket.State == WebSocketState.Open)
             {
                 // Serialize into a byte array.  The first byte of the byte array is the 
                 // session.
@@ -233,17 +296,45 @@ namespace GameScene
             }
         }
 
+        public void sendChat(string message) {
+            if (!dummy_mode && websocket.State == WebSocketState.Open)
+            {
+                // First, express the player number and message as a JSON string
+                // and encode it as a byte array.
+                ChatMessage chat = new ChatMessage {slot = thisPlayerSlot, message = message};
+                Debug.Log("Sending chat \"" + chat.message + "\" on session " + session);
+                string json = JsonUtility.ToJson(chat);
+                Debug.Log("Chat json: " + json);
+                char[] json_chars = json.ToCharArray();
+                byte[] json_bytes = System.Text.Encoding.UTF8.GetBytes(json_chars);
+                Debug.Log("Chat bytes [" + string.Join(" ", json_bytes) + "]");
+
+                // The byte array to send starts with the session and code as the first
+                // two bytes and the encoded JSON string as the rest.
+                byte[] msg_bytes = new byte[json_bytes.Length + SERVER_BYTES];
+                msg_bytes[0] = session;
+                msg_bytes[1] = CHAT_CODE;
+                Buffer.BlockCopy(json_bytes, 0, msg_bytes, SERVER_BYTES, json_bytes.Length);
+                Debug.Log("Sending [" + string.Join(" ", msg_bytes) + "]");
+                websocket.Send(msg_bytes);
+            }
+        }
+
         // <summary>
         /// Send a message that this client is ready to start the game.
         /// </summary>
         public void sendReady() {
-            if (websocket.State != WebSocketState.Open)
-            {
-                throw new Exception("Cannot start game before web socket is open");
+            if (dummy_mode) {
+                dummy_mode_timer = DUMMY_FAKE_PAUSE;
+            } else {
+                if (websocket.State != WebSocketState.Open)
+                {
+                    throw new Exception("Cannot start game before web socket is open");
+                }
+                byte[] bytes = new byte[] {session, READY_CODE};
+                Debug.Log("Requesting start game " + session);
+                websocket.Send(bytes);
             }
-            byte[] bytes = new byte[] {session, READY_CODE};
-            Debug.Log("Requesting start game " + session);
-            websocket.Send(bytes);
         }
         
         private async void OnApplicationQuit()
@@ -264,6 +355,15 @@ namespace GameScene
                 RemoteAction nextAction = receviedActions.Dequeue();
                 return nextAction;
             }
+        }
+
+        /// <summary>
+        /// Get any chat messages that have been received
+        /// </summary>
+        /// <returns>the next chat message or null if no chat messages
+        /// have been received</returns>
+        public ChatMessage getChat() {
+            return (receivedChats.Count == 0 ? null : receivedChats.Dequeue());
         }
 
         private RemoteAction deserializeAction(int[] dataPacket) {
@@ -315,30 +415,6 @@ namespace GameScene
                 return null;
             }
         }
-
-        /// <summary>
-        /// For running in the editor, create fake game info
-        /// </summary>
-        public void fakeGameInfo() {
-            gameInfo = new RunningGame();
-            gameInfo.session = 42;
-            gameInfo.game_number = 1;
-            gameInfo.number_players = 3;
-            gameInfo.fast_dragons = false;
-            gameInfo.fearful_dragons = false;
-            gameInfo.player_names = new string[]{"Tom", "Dick", "Harry"};
-            gameInfo.joined_players = 3;
-        }
-
-        /// <summary>
-        /// For running in the editor.  Pretend all other clients
-        /// have reported they are ready to start the game.
-        /// </summary>
-        public void fakeReceivedReady() {
-            receivedReady = true;
-        }
-
-
     }
 }
 

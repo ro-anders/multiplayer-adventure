@@ -1,6 +1,7 @@
 using System;
 using System.IO.Compression;
 using GameEngine;
+using TMPro;
 using UnityEngine;
 
 namespace GameScene
@@ -17,13 +18,12 @@ namespace GameScene
 
         public GameStartPanel startPanel = null;
 
+        public TMP_Text roster; 
+
         private WebGameSetup setup = null;
 
-        private bool started = false;
 
-        /** When playing in the editor we simulate waiting for the game server with a
-            countdown timer. */
-        private int fakeTimer = -1;
+        private bool started = false;
 
         /// <summary>
         /// Setup the game (which reads some game info from URL) and 
@@ -33,37 +33,20 @@ namespace GameScene
         {
             base.Start();
             setup = new WebGameSetup(transport);
-            if (Application.isEditor) {
-                fakeTimer = 200;
-            } else {
-                setup.Connect();
-            }
+            setup.Connect();
         }
 
         // Update is called once per frame
         public override void Update()
         {
             base.Update();
-
-            // If we're in the editor handle faking some of the transitions
-            // initiated by the game server.
-            if (fakeTimer > 0) {
-                --fakeTimer;
-                if (fakeTimer == 0) {
-                    if (setup.WebGameSetupState == WebGameSetup.WAITING_FOR_GAMEINFO) {
-                        transport.fakeGameInfo();
-                    }
-                    if (setup.WebGameSetupState == WebGameSetup.WAITING_FOR_OTHERS) {
-                        transport.fakeReceivedReady();
-                    }
-                }
-            }
             
             if (!started) {
                 switch (setup.WebGameSetupState) {
                     case WebGameSetup.WAITING_FOR_PLAYER:
                         if (!startPanel.gameObject.activeInHierarchy) {
                             startPanel.showGameInfo(setup);
+                            showPlayersInRoster(setup.PlayerNames);
                         }
                         break;
                     case WebGameSetup.GO:
@@ -86,9 +69,6 @@ namespace GameScene
         public void SetReady() {
             setup.SetReady();
             startPanel.markStartPressed();
-            if (Application.isEditor) {
-                fakeTimer = 200;
-            }
         }
 
         // This starts the game.
@@ -97,7 +77,7 @@ namespace GameScene
             // Start the game
             Debug.Log("Starting game " + (setup.GameNumber + 1)  + ".  This player is " 
                 + (setup.Slot + 1 ) + " of " + setup.NumPlayers);
-            if (Application.isEditor) {
+            if (setup.DummyMode) {
                 bool[] useAi = { false, true, true };
                 gameEngine = new AdventureGame(this, setup.NumPlayers, setup.Slot, null, 
                     setup.GameNumber, setup.FastDragons, setup.FearfulDragons, 
@@ -110,6 +90,17 @@ namespace GameScene
             }
             gameRenderable = true;
             started = true;
+        }
+
+        private void showPlayersInRoster(string[] playerNames) {
+            roster.text = roster.text.Replace("Player1", playerNames[0]);
+            roster.text = roster.text.Replace("Player2", playerNames[1]);
+            if (playerNames.Length > 2) {
+                roster.text = roster.text.Replace("Player3", playerNames[2]);
+            } else {
+                // Strip off the last line
+                roster.text = roster.text.Remove(roster.text.LastIndexOf(Environment.NewLine));
+            }
         }
 
     }
