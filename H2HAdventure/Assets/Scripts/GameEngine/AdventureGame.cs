@@ -847,11 +847,14 @@ namespace GameEngine
             }
 
             // Put objects in random rooms for level 3.
-            // Only first player does this and then broadcasts to other players.
             bool gameRandomized = ((gameMode == Adv.GAME_MODE_3) ||
               (gameMode == Adv.GAME_MODE_C_3) ||
               (gameMode == Adv.GAME_MODE_ROLE_PLAY));
-            if (gameRandomized && (thisPlayer == 0))
+            // In a multi-player game, only first player does this and then broadcasts to other players.
+            if ((ai == null) && (thisPlayer != 0)) {
+                gameRandomized = false;
+            }
+            if (gameRandomized)
             {
                 randomizeRoomObjects();
             }

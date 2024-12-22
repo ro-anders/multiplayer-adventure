@@ -34,12 +34,10 @@ public class SinglePlayerAdvView : UnityAdventureBase
     public void PlayGame()
     {
         // Randomly pick which player to play
-        if (slot == -1) {
-            slot = randomGen.Next(3);
-        }
+        int slot_to_play = (slot == -1 ? randomGen.Next(3) : slot);
         bool[] useAi = { true, true, true };
-        useAi[slot] = false;
-        gameEngine = new AdventureGame(this, 3, slot, null, 2,
+        useAi[slot_to_play] = false;
+        gameEngine = new AdventureGame(this, 3, slot_to_play, null, 2,
             false, false, false, false, false, useAi);
 
         base.gameRenderable = true;

@@ -92,7 +92,7 @@ function ProposedGameList({current_user, experience_level, games: games, game_ch
     const game_server_ip = await SettingsService.getGameServerIP();
     // Bring down the modal
     setStartGameModal(MODAL_HIDDEN)
-    window.open(`${process.env.REACT_APP_MPLAYER_GAME_URL}/index.html?gamecode=${code}&host=${game_server_ip}`)
+    window.open(`${process.env.REACT_APP_MPLAYER_GAME_URL}/index.html?gamecode=${code}&host=${game_server_ip}`, '_self')
   }
 
   /**

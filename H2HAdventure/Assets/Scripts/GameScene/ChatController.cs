@@ -74,9 +74,9 @@ public class ChatController : MonoBehaviour
     public void HandlePostButtonPressed() {
         if (message_input.text.Trim().Length > 0) {
             ChatMessage chat = new ChatMessage {slot = xport.ThisPlayerSlot, message = message_input.text.Trim()};
-            displayChat(chat);
-            xport.sendChat(chat.message);
             message_input.text = "";
+            xport.sendChat(chat.message);
+            displayChat(chat);
         }
     }
 
