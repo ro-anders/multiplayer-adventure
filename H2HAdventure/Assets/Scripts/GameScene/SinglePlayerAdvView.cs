@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Web;
 using GameEngine;
+using GameScene;
 using UnityEngine;
 
 /**
@@ -31,14 +33,44 @@ public class SinglePlayerAdvView : UnityAdventureBase
         base.Platform_GameChange(change);
     }
 
+    public int deduceExperienceLevel() {
+        int defaultValue = 3;
+        Debug.Log("Reading URL");
+        const string GAMECODE_PARAM = "gamecode";
+        string urlstr = Application.absoluteURL;
+        if ((urlstr == null) || (urlstr.Length == 0)) {
+            return defaultValue;
+        }
+        Uri url = new Uri(urlstr);
+        if ((url == null) || (url.Query == null) || (url.Query.Trim().Length == 0)) {
+            return defaultValue;
+        }
+        string gamecode_str = HttpUtility.ParseQueryString(url.Query).Get(GAMECODE_PARAM);
+        if (gamecode_str == null) {
+            return defaultValue;
+        }
+
+        // Not dealing with hexadecimal, so parse into an int and then to a byte
+        int gamecode_int = Int32.Parse(gamecode_str);
+        // First bit of gamecode is map guides boolean
+        bool map_guides = gamecode_int % 2 == 1;
+        // Second bit is help popups boolean
+        bool help_popups = (gamecode_int/2) % 2 == 1;
+        return (help_popups ? 1 : (map_guides ? 2 : 3) );
+    }
+
     public void PlayGame()
     {
         // Randomly pick which player to play
         int slot_to_play = (slot == -1 ? randomGen.Next(3) : slot);
         bool[] useAi = { true, true, true };
         useAi[slot_to_play] = false;
+        int experience_level = deduceExperienceLevel();
         gameEngine = new AdventureGame(this, 3, slot_to_play, null, 2,
-            false, false, false, false, false, useAi);
+            false, false, 
+            experience_level <= 1, 
+            experience_level <= 2,
+            false, useAi);
 
         base.gameRenderable = true;
     }

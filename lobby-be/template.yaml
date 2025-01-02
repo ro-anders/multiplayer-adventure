@@ -80,6 +80,31 @@ Resources:
             Method: PUT
 
   ###########################
+  # Lambdas for Chat management
+  #
+
+  createChatFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/create-chat.createChatHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Post a chat message
+      Policies:
+        # Give Create/Read/Update/Delete Permissions
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ChatTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /newchat
+            Method: POST
+
+  ###########################
   # Lambdas for Game management
   #
   getAllGamesFunction:
@@ -320,7 +345,7 @@ Resources:
   #  are deleted from this table.  More permanent and more detailed info on players is kept
   #  in a different table, the PlayersDetails table.
   #
-  #  playername (primary key): string - username of the player
+  #  playername (partition key): string - username of the player
   #  lastactive: number - timestamp of last time they were in the lobby or playing the game
   #  ttl: number - timestamp at which this player can be removed from this table
   #
@@ -335,7 +360,7 @@ Resources:
   # Games table
   #  Table of proposed and active games.  Past games are deleted from this table.
   #
-  #  session (primary key): string - unique key assigned to the game
+  #  session (partition key): string - unique key assigned to the game
   #  game_number: number - 0,1,2 indicating whether Game 1, 2 or 3
   #  number_players: number - 2, 2.5, or 3 indicating whether to have exactly 2 players, 2 or 3, or exactly 3
   #  fast_dragons: boolean - whether dragons are fast or slow
@@ -350,11 +375,36 @@ Resources:
         Name: session
         Type: Number
 
+  # Chat table
+  #  Table of chat messages sent in the lobby.
+  #
+  #  partitionkey (partition key): string - just the string "CHAT"
+  #  sortkey (sortkey) : string - concatenation of timestamp and player_name
+  #  timestamp: number - timestamp of when the message was sent
+  #  player_name: string - the name of player
+  #  message: string - the message the player posted
+  #  
+  ChatTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Chat
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: "partitionkey"
+          AttributeType: "S"
+        - AttributeName: "sortkey"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "partionkey"
+          KeyType: "HASH"
+        - AttributeName: "sortkey"
+          KeyType: "RANGE"
+
   # Settings table
   #  Table of name value settings of the system.  At time of creation "game_server_ip" is the only
   #  setting
   #
-  #  setting_name (primary key): string
+  #  setting_name (partition key): string
   #  setting_value: string
   #  time_set: number - the timestamp of when this setting was last changed
   #

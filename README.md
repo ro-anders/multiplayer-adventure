@@ -27,11 +27,15 @@ To Deploy and Run the System:
 1. Authenticate with AWS, credentials stored in ~/.aws/credentials
   - export AWS_PROFILE=h2hadventure
   - export AWS_REGION=us-east-2
-2. Build game package
+2. Build SinglePlayer game package
+ - ????
+ - Unity File->Build and Run
+3. Build MultiPlayer game package
+ - ???
  - Unity File->Build and Run
 3. Deploy game package
  - aws cloudformation update-stack --stack-name s3-website  --template-body file://lobby-fe/deploy/s3website.cfn.yml
- - aws s3 cp --recursive H2HAdventure/target/H2HAdventure2P s3://h2adventure-website/game/H2HAdventureMP
+ - aws s3 cp --recursive H2HAdventure/target s3://h2adventure-website/game
 4. Build and deploy lobby-be
  - cd lobby-be
  - sam build

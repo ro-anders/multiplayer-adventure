@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace GameScene
@@ -28,6 +29,10 @@ namespace GameScene
             
         }
 
+        [DllImport("__Internal")]
+        private static extern void BrowserGoBack();
+
+
         public void OnStartClicked()
         {
             gamePanel.SetActive(true);
@@ -37,6 +42,10 @@ namespace GameScene
         public void OnRespawnClicked()
         {
             
+        }
+
+        public void OnQuickClicked() {
+            BrowserGoBack();
         }
 
     }

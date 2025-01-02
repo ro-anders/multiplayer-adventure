@@ -61,6 +61,17 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
     }
   }
 
+  function handlePlayAi() {
+    if (formUsername) {
+      Cookies.set(USERNAME_COOKIE, formUsername)
+    }
+    Cookies.set(EXPERIENCE_LEVEL_COOKIE, experienceLevel.toString())
+    setUsername(formUsername)
+    const url = process.env.REACT_APP_MPLAYER_GAME_URL?.replace('H2HAdventureMP','H2HAdventure1P')
+    const code = (experienceLevel == 1 ? 3 : (experienceLevel == 2 ? 1 : 0))
+    window.open(`${url}/index.html?gamecode=${code}`, '_self')
+  }
+
   return (
 
     <div className="login-page">
@@ -107,7 +118,7 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
         </Form.Group>
       </Form>
       <Button onClick={handlePlayOthers}>Play Against Others</Button>
-      <Button>Play Against the Computer</Button>
+      <Button onClick={handlePlayAi}>Play Against the Computer</Button>
       <Button>Find Other Players</Button>
       <Button>More Info</Button>
     </div>

@@ -9,3 +9,6 @@ To run the API Gateway/Lambdas locally on port 3000 run
   sam local start-api
 To hit the API run:
   curl http://localhost:3000/
+
+You can debug the dynamodb by running aws commandline against it,
+  aws dynamodb --endpoint-url http://localhost:8000 list-tables

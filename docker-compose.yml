@@ -1,9 +1,13 @@
 services:
 
   dynamo:
-    image: amazon/dynamodb-local
+    image: "amazon/dynamodb-local:latest"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
     ports:
       - "8000:8000"
+    volumes:
+      - "./tmp/dynamodb:/home/dynamodblocal/data"
+    working_dir: /home/dynamodblocal
 
   game-be:
     build:
@@ -26,4 +30,4 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - "./H2HAdventure/target/H2HAdventure2P:/usr/share/nginx/html"
+      - "./H2HAdventure/target:/usr/share/nginx/html"

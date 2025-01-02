@@ -114,7 +114,7 @@ namespace GameScene
             // dummy mode if we are running inside the Unity Editor or if we
             // are running in a Unity "Build and Run" which will use a development build
             // and no URL parameters.
-            bool no_query = (url == null || url.Query == null) || (url.Query.Trim().Length == 0);
+            bool no_query = (url == null) || (url.Query == null) || (url.Query.Trim().Length == 0);
             bool use_dummy_mode = Application.isEditor || 
               (Debug.isDebugBuild && no_query);
 

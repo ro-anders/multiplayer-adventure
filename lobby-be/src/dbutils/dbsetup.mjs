@@ -87,6 +87,33 @@ const initializeSchema = async () => {
     BillingMode: "PAY_PER_REQUEST"
   };
   await ddbDocClient.send(new CreateTableCommand(gamesDef))
+
+  // Create the chat table
+  const chatDef = { 
+    AttributeDefinitions: [ 
+      { 
+        AttributeName: "partitionkey", 
+        AttributeType: "S", 
+      },
+      {
+        AttributeName: "sortkey", 
+        AttributeType: "S", 
+      }
+    ],
+    TableName: "Chat", 
+    KeySchema: [ 
+      { 
+        AttributeName: "partitionkey", 
+        KeyType: "HASH", 
+      },
+      { 
+        AttributeName: "sortkey", 
+        KeyType: "RANGE", 
+      },
+    ],
+    BillingMode: "PAY_PER_REQUEST"
+  };
+  await ddbDocClient.send(new CreateTableCommand(chatDef))
 } 
 
 /**

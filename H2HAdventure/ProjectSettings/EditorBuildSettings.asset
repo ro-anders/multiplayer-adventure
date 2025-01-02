@@ -11,10 +11,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/AdvGame.unity
     guid: 0f136b38fc44f4455bce31b8681d5938
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/SinglePlayerScreen.unity
     guid: e7eb9776fef404780a4b4cea7dca2098
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/ProtoMPlayer.unity
     guid: 1af8dc7e517684d76a09fbf174d67c41
   m_configObjects: {}

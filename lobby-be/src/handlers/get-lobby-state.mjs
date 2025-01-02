@@ -1,4 +1,4 @@
-import { DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
 
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
@@ -13,36 +13,16 @@ export const getLobbyStateHandler = async (event) => {
 
     await CheckDDB();
 
-    // First, get all active players.  Players update their lastactive every minute,
-    // so throw out anyone more than two minutes old
-    var params = {
-        TableName : "Players"
-    };
-    try {
-        const data = await ddbDocClient.send(new ScanCommand(params));
-        var items = data.Items;
-    } catch (err) {
-        console.log("Error", err);
-    }
-    const too_old = Date.now() - (2 * 60 * 1000)
-    const active_players = items.filter((player) => player.lastactive >= too_old)
-    const active_player_names = active_players.map((player) => player.playername)
-    
-    // get all items from the table (only first 1MB data, but we shouldn't have that much game data)
-    var params = {
-        TableName : "Games"
-    };
-    try {
-        const data = await ddbDocClient.send(new ScanCommand(params));
-        var items = data.Items;
-    } catch (err) {
-        console.log("Error", err);
-    }
+    const active_player_names = await getPlayerNames();
+    const active_games = await getActiveGames();
+    const recent_chats = await getRecentChats(event.queryStringParameters?.lastactivity);
 
     const lobby_state = {
         online_player_names: active_player_names,
-        games: items
+        games: active_games,
+        recent_chats: recent_chats
     }
+    console.log(JSON.stringify(lobby_state))
 
     const response = {
         statusCode: 200,
@@ -57,4 +37,67 @@ export const getLobbyStateHandler = async (event) => {
     // All log statements are written to CloudWatch
     console.info(`response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
     return response;
+}
+
+/**
+ * Get a list of all active people
+ */
+const getPlayerNames = async () => {
+    // Get all active players.  Players update their lastactive every minute,
+    // so throw out anyone more than two minutes old
+    var params = {
+        TableName : "Players"
+    };
+    try {
+        const data = await ddbDocClient.send(new ScanCommand(params));
+        var items = data.Items;
+    } catch (err) {
+        console.log("Error", err);
+    }
+    const too_old = Date.now() - (2 * 60 * 1000)
+    const active_players = items.filter((player) => player.lastactive >= too_old)
+    const active_player_names = active_players.map((player) => player.playername)
+
+    return active_player_names;
+}
+
+/**
+ * Get a list of all active games
+ */
+const getActiveGames = async () => {
+    
+    // get all items from the table (only first 1MB data, but we shouldn't have that much game data)
+    var params = {
+        TableName : "Games"
+    };
+    try {
+        const data = await ddbDocClient.send(new ScanCommand(params));
+        var items = data.Items;
+    } catch (err) {
+        console.log("Error", err);
+    }
+
+    return items;
+}
+
+/**
+ * Get a list of chats since a given time.
+ */
+const getRecentChats = async (since) => {
+    console.log("Getting chats")
+    if (!!!since) {
+        since = (Date.now() - 3600000).toString();
+    }
+    var params = {
+        TableName : "Chat",
+        ScanIndexForward: false,
+        KeyConditionExpression: 'partitionkey = :pkey AND sortkey >= :skey',
+        ExpressionAttributeValues: {
+            ":pkey": "CHAT",
+            ":skey": since,
+          },
+        
+    };
+    const data = await ddbDocClient.send(new QueryCommand(params));
+    return data.Items;    
 }
