@@ -4,6 +4,7 @@ import GameBroker from '../components/GameBroker'
 import LobbyService from '../services/LobbyService'
 import { GameInLobby, GAMESTATE_RUNNING } from '../domain/GameInLobby'
 import { LobbyState } from '../domain/LobbyState'
+import ChatWindow from '../components/ChatWindow'
 import Roster from '../components/Roster'
 import ProposedGameList from '../components/ProposedGameList';
 
@@ -23,7 +24,9 @@ interface LobbyProps {
 
 function Lobby({username, experience_level: experience_level}: LobbyProps) {
   const [pollWait, setPollWait] = useState(MIN_TIME_BETWEEN_POLL);
-  const [lobbyState, setLobbyState] = useState<LobbyState>({online_player_names: ['loading...'], games: []})
+  const [lobbyState, setLobbyState] = useState<LobbyState>(
+    {online_player_names: ['loading...'], games: [], chats: []}
+  )
 
   /**
    * Callback called by subcomponents that change the game state.
@@ -34,7 +37,8 @@ function Lobby({username, experience_level: experience_level}: LobbyProps) {
   function game_change_callback(new_game_list: GameInLobby[]) {
     const new_lobby_state: LobbyState = {
       online_player_names: lobbyState.online_player_names,
-      games: new_game_list
+      games: new_game_list,
+      chats: lobbyState.chats
     }
     setLobbyState(new_lobby_state);
     // We want to get the latest from the server, but we do wait
@@ -99,15 +103,7 @@ function Lobby({username, experience_level: experience_level}: LobbyProps) {
             />
           </div>
         </div>
-        <div className="lobby-chat-column lobby-room">
-          <h3>Chat</h3>
-          <div className="chat-box">
-            <p><strong>Player 1:</strong> Ready to play!</p>
-            <p><strong>Player 2:</strong> Let’s go!</p>
-          </div>
-          <input type="text" placeholder="Type a message..." />
-          <button>Send</button>
-        </div>
+        <ChatWindow current_user={username} chats={lobbyState.chats}/>
       </div>
   );
 }

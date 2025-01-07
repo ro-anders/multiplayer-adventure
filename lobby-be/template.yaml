@@ -266,6 +266,8 @@ Resources:
             TableName: !Ref PlayersTable
         - DynamoDBReadPolicy:
             TableName: !Ref GamesTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref ChatTable
       Events:
         Api:
           Type: Api
@@ -395,7 +397,7 @@ Resources:
         - AttributeName: "sortkey"
           AttributeType: "S"
       KeySchema:
-        - AttributeName: "partionkey"
+        - AttributeName: "partitionkey"
           KeyType: "HASH"
         - AttributeName: "sortkey"
           KeyType: "RANGE"

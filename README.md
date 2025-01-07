@@ -40,10 +40,9 @@ To Deploy and Run the System:
  - cd lobby-be
  - sam build
  - sam deploy
-5. Build lobby-fe
+5. Build and deploy lobby-fe
  - cd lobby-fe
  - npm run build
-6. Deploy lobby-fe
  - aws s3 cp --recursive build/ s3://h2adventure-website/
 7. Build the Game Back-End Server
   - commit to Github and Github action will deploy the latest to Docker.io

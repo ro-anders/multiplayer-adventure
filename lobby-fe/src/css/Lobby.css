@@ -26,10 +26,6 @@
   width: 30%;
 }
 
-.lobby-chat-column {
-  width: 30%;
-}
-
 .lobby-game {
   font-size: calc(5px + 1vmin);  
 }
@@ -41,4 +37,26 @@
 
 .lobby-game-action {
   font-size: calc(5px + 1vmin);  
+}
+
+.lobby-chat-column {
+  width: 30%;
+  height: 100%;
+  padding: 10px;
+}
+
+.chat-box {
+  overflow-x: auto;
+  overflow-anchor: none;  
+}
+
+#anchor {
+  overflow-anchor: auto;
+  height: 1px;
+}
+
+.chat-message {
+  font-size: calc(5px + 1vmin);  
+  text-align: left;
+  padding: 5px;
 }
