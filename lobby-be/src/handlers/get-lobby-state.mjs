@@ -86,7 +86,12 @@ const getActiveGames = async () => {
 const getRecentChats = async (since) => {
     console.log("Getting chats")
     if (!!!since) {
-        since = (Date.now() - 3600000).toString();
+        // If no start time is specified, only return the last half hour of chats
+        since = (Date.now() - 1800000).toString();
+    } else {
+        // If a start time is specified, we need to increment it by one millisecond
+        // because the search excludes the passed in start time
+        since = (parseInt(since)+1).toString()
     }
     var params = {
         TableName : "Chat",

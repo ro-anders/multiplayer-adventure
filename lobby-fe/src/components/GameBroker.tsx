@@ -9,8 +9,15 @@ import ProposeModal from './ProposeModal';
 interface GameBrokerProps {
   /** The name of the currently logged in user */
   username: string;
+
+  /** The experience level of the currently logged in user 1, 2 or 3. */
   experience_level: number;
+
+  /** List of currently proposed games */
   proposed_games: GameInLobby[];
+
+  /** Callback to call if we change something about the currently proposed games (e.g. we
+   * proposed a new one, or withdrew the current player from an existing one) */
   game_change_callback: (games:GameInLobby[]) => void;
 }
 

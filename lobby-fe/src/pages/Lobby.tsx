@@ -22,10 +22,10 @@ interface LobbyProps {
   experience_level: number;
 }
 
-function Lobby({username, experience_level: experience_level}: LobbyProps) {
+function Lobby({username, experience_level}: LobbyProps) {
   const [pollWait, setPollWait] = useState(MIN_TIME_BETWEEN_POLL);
   const [lobbyState, setLobbyState] = useState<LobbyState>(
-    {online_player_names: ['loading...'], games: [], chats: []}
+    {online_player_names: ['loading...'], games: [], recent_chats: []}
   )
 
   /**
@@ -35,12 +35,14 @@ function Lobby({username, experience_level: experience_level}: LobbyProps) {
    * @param new_game_list a modified list of games
    */
   function game_change_callback(new_game_list: GameInLobby[]) {
-    const new_lobby_state: LobbyState = {
-      online_player_names: lobbyState.online_player_names,
-      games: new_game_list,
-      chats: lobbyState.chats
-    }
-    setLobbyState(new_lobby_state);
+    // TODO: This is causing weird flicker.  Comment out to see if that works.
+    // const new_lobby_state: LobbyState = {
+    //   online_player_names: lobbyState.online_player_names,
+    //   games: new_game_list,
+    //   recent_chats: lobbyState.recent_chats
+    // }
+    //setLobbyState(new_lobby_state);
+    
     // We want to get the latest from the server, but we do wait
     // a second to make sure whatever local change has posted to the server.
     setPollWait(MIN_TIME_BETWEEN_POLL)
@@ -49,12 +51,16 @@ function Lobby({username, experience_level: experience_level}: LobbyProps) {
   /**
    * Setup a timer to update the lobby state.
    * It starts out updating at a frequent rate but
-   * as if no changes are detected it updates less frequently.
+   * as no changes are detected it updates less frequently.
    */
   useEffect(() => {
     async function updateLobbyState() {
       try {
-        const new_lobby_state = await LobbyService.getLobbyState();
+        const old_chats = lobbyState.recent_chats;
+        const last_chat_timestamp = (old_chats.length === 0 ? -1 : old_chats[old_chats.length-1].timestamp)
+        const new_lobby_state = await LobbyService.getLobbyState(last_chat_timestamp);
+        // Only the most recent chats are returned, so retain the old chats from the previous state.
+        new_lobby_state.recent_chats = old_chats.concat(new_lobby_state.recent_chats);
         if (LobbyService.isLobbyStateEqual(lobbyState, new_lobby_state)) {
           // No change in state.  Increase the time between polling.
           if (pollWait < MAX_TIME_BETWEEN_POLL) {
@@ -62,6 +68,7 @@ function Lobby({username, experience_level: experience_level}: LobbyProps) {
           }
         }
         else {
+          // 
           console.log("Lobby state changed")
             setLobbyState(new_lobby_state)
             setPollWait(MIN_TIME_BETWEEN_POLL)
@@ -103,7 +110,10 @@ function Lobby({username, experience_level: experience_level}: LobbyProps) {
             />
           </div>
         </div>
-        <ChatWindow current_user={username} chats={lobbyState.chats}/>
+        <ChatWindow 
+          current_user={username} 
+          chats={lobbyState.recent_chats}
+          new_chat_callback={()=>{game_change_callback(lobbyState.games)}}/>
       </div>
   );
 }

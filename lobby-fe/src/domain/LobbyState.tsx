@@ -4,6 +4,9 @@ import { GameInLobby } from "./GameInLobby";
 export interface Chat {
     player_name: string;
     message: string;
+}
+
+export interface ReceivedChat extends Chat {
     timestamp: number; // UTC timestamp of when message was sent as recorded by server
 }
 
@@ -14,5 +17,5 @@ export interface Chat {
 export interface LobbyState {
     online_player_names: string[];
     games: GameInLobby[];
-    chats: Chat[]; // Only chats that have been posted since the last time the lobby state was polled
+    recent_chats: ReceivedChat[]; // Only chats that have been posted since the last time the lobby state was polled
 }

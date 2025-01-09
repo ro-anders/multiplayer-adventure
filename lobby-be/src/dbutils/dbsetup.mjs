@@ -3,7 +3,6 @@
 // Create a DocumentClient that represents the query to add an item
 import { DynamoDBClient, ListTablesCommand, CreateTableCommand } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib-dynamodb';
-import { NodeHttpHandler }  from "@aws-sdk/node-http-handler";
 
 const local_dynamo_connect_config = {
   region: 'local',
