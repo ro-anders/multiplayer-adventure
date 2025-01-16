@@ -19,3 +19,11 @@ export interface LobbyState {
     games: GameInLobby[];
     recent_chats: ReceivedChat[]; // Only chats that have been posted since the last time the lobby state was polled
 }
+
+export function LobbyStateToString(state: LobbyState): String {
+    const game_strs: String[] = []
+    for (const game of state.games) {
+        game_strs.push(game.player_names.toString())
+    }
+    return `games=[${game_strs.toString()}],#chats=${state.recent_chats.length}`
+}

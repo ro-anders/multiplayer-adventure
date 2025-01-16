@@ -9,7 +9,7 @@ interface ChatWindowProps {
   current_user: string;
   chats: ReceivedChat[];
   /** Callback to call when new chats are posted */
-  new_chat_callback: () => void;
+  new_chat_callback: (new_chat_message: string) => void;
 }
 
 /**
@@ -26,9 +26,8 @@ function ChatWindow({current_user, chats, new_chat_callback}: ChatWindowProps) {
    */
   function postChatMessage() {
     if (newChatText.trim()) {
-      ChatService.postChat(current_user, newChatText)
+      new_chat_callback(newChatText)
       setNewChatText("")
-      new_chat_callback()
     }
   }
 

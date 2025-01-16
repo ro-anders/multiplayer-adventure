@@ -95,7 +95,6 @@ const getRecentChats = async (since) => {
     }
     var params = {
         TableName : "Chat",
-        ScanIndexForward: false,
         KeyConditionExpression: 'partitionkey = :pkey AND sortkey >= :skey',
         ExpressionAttributeValues: {
             ":pkey": "CHAT",

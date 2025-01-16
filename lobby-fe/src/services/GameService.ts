@@ -36,7 +36,7 @@ export default class GameService {
 	 * @param game_setup the details of the game
 	 * @returns a list of all currently proposed games, including this one.
 	 */
-	static async proposeNewGame(game_setup: GameInLobby): Promise<GameInLobby[]> {
+	static async proposeNewGame(game_setup: GameInLobby): Promise<void> {
 		const headers: Headers = new Headers()
 		headers.set('Content-Type', 'application/json')
 		headers.set('Accept', 'application/json')
@@ -50,7 +50,6 @@ export default class GameService {
 		})
 
 		await fetch(request);
-		return await this.getGames()
 	}
 
 	/**
@@ -58,7 +57,7 @@ export default class GameService {
 	 * @param game the details of the game
 	 * @returns a list of all currently proposed games, including this one.
 	 */
-	static async updateGame(game: GameInLobby) {
+	static async updateGame(game: GameInLobby): Promise<void> {
 		const headers: Headers = new Headers()
 		headers.set('Content-Type', 'application/json')
 		headers.set('Accept', 'application/json')

@@ -18,7 +18,7 @@ interface ProposedGameListProps {
   games: GameInLobby[];
 
   /** A callback to call if a game is modified */
-  game_change_callback: (games:GameInLobby[]) => void;
+  game_change_callback: (games:GameInLobby) => void;
 
   /** Whether this list is for displaying proposed games or running games */
   state_to_display: number; 
@@ -56,8 +56,7 @@ function ProposedGameList({current_user, experience_level, games: games, game_ch
     // to that slot.
     if (game.player_names.length < game.number_players) {
       game.player_names.push(current_user)
-      GameService.updateGame(game)
-      game_change_callback(games)
+      game_change_callback(game)
     }
   }
 
@@ -68,8 +67,7 @@ function ProposedGameList({current_user, experience_level, games: games, game_ch
   function quitGame(game: GameInLobby) {
     // Remove the player from the game
     game.player_names = game.player_names.filter((name: string) => name != current_user)
-    GameService.updateGame(game)
-    game_change_callback(games)
+    game_change_callback(game)
   }
 
   /**

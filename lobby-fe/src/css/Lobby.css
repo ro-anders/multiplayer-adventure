@@ -24,6 +24,12 @@
 
 .lobby-games-column {
   width: 30%;
+  display: flex;
+  flex-direction: column;
+}
+
+.lobby-games-column .lobby-room {
+  flex: 1 1 auto;
 }
 
 .lobby-game {
@@ -43,11 +49,14 @@
   width: 30%;
   height: 100%;
   padding: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-box {
   overflow-x: auto;
   overflow-anchor: none;  
+  flex: 1 1 auto;
 }
 
 #anchor {

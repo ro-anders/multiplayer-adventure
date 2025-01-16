@@ -28,10 +28,7 @@ export default class ChatService {
 			body: JSON.stringify(newChat)
 		})
 
-		fetch(request)
-			.then(res => {
-				// Don't need to do anything
-			})
+		await fetch(request)
 	 }	  
 
 

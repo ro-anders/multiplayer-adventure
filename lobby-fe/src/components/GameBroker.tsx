@@ -18,7 +18,7 @@ interface GameBrokerProps {
 
   /** Callback to call if we change something about the currently proposed games (e.g. we
    * proposed a new one, or withdrew the current player from an existing one) */
-  game_change_callback: (games:GameInLobby[]) => void;
+  game_change_callback: (games:GameInLobby) => void;
 }
 
 /**
@@ -28,15 +28,6 @@ interface GameBrokerProps {
 function GameBroker({username, experience_level, proposed_games, game_change_callback}: GameBrokerProps) {
 
   const [proposeModalVisible, setProposeModalVisible] = useState(false);
-
-  /**
-   * Create a proposed game
-   */
-  function gameProposed(new_game: GameInLobby) {
-    proposed_games.push(new_game);
-    GameService.proposeNewGame(new_game);
-    game_change_callback(proposed_games);
-  }
 
   /**
    * Return true if the current player is already selected to join an existing proposed game
@@ -65,7 +56,7 @@ function GameBroker({username, experience_level, proposed_games, game_change_cal
         username={username}
         show={proposeModalVisible}
         onHide={()=>setProposeModalVisible(false)}
-        propose_game_callback={gameProposed}
+        propose_game_callback={game_change_callback}
       />
     </div>
   );
