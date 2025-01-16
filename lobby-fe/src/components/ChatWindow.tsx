@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Button from 'react-bootstrap/Button';
 import '../App.css';
 import '../css/Lobby.css'
 import { ReceivedChat } from '../domain/LobbyState'
@@ -10,12 +11,14 @@ interface ChatWindowProps {
   chats: ReceivedChat[];
   /** Callback to call when new chats are posted */
   new_chat_callback: (new_chat_message: string) => void;
+  /** Whether to enable the post-new-chat button.  It is disabled while syncing with the server. */
+  actions_disabled: boolean;
 }
 
 /**
  * Displays a list of players that are online
  */
-function ChatWindow({current_user, chats, new_chat_callback}: ChatWindowProps) {
+function ChatWindow({current_user, chats, new_chat_callback, actions_disabled}: ChatWindowProps) {
 
   let [newChatText, setNewChatText] = useState<string>("");
   
@@ -42,7 +45,7 @@ function ChatWindow({current_user, chats, new_chat_callback}: ChatWindowProps) {
           <div id="scroll-anchor"></div>
         </div>
       <input type="text" placeholder="Type a message..." value={newChatText} onChange={(event) => setNewChatText(event.target.value)}/>
-      <button onClick={postChatMessage}>Send</button>
+      <Button disabled={actions_disabled} onClick={postChatMessage}>Send</Button>
     </div>
 );
 }

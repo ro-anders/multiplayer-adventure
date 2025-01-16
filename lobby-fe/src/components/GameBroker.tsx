@@ -19,13 +19,21 @@ interface GameBrokerProps {
   /** Callback to call if we change something about the currently proposed games (e.g. we
    * proposed a new one, or withdrew the current player from an existing one) */
   game_change_callback: (games:GameInLobby) => void;
+
+  /** Whether to enable creating new games or changing game state. */
+  actions_disabled: boolean;
+
 }
 
 /**
  * Displays the list of proposed games, allowing the user to join one.
  * Also displays an option to propose a new game.
  */
-function GameBroker({username, experience_level, proposed_games, game_change_callback}: GameBrokerProps) {
+function GameBroker({username, 
+    experience_level, 
+    proposed_games, 
+    game_change_callback,
+    actions_disabled}: GameBrokerProps) {
 
   const [proposeModalVisible, setProposeModalVisible] = useState(false);
 
@@ -50,8 +58,10 @@ function GameBroker({username, experience_level, proposed_games, game_change_cal
         games={proposed_games} 
         game_change_callback={game_change_callback}
         state_to_display={GAMESTATE__PROPOSED}
+        actions_disabled={actions_disabled}
       />
-      <Button disabled={playerCommitted()} onClick={()=>setProposeModalVisible(true)}>Propose Game</Button>
+      <Button disabled={actions_disabled || playerCommitted()} 
+        onClick={()=>setProposeModalVisible(true)}>Propose Game</Button>
       <ProposeModal
         username={username}
         show={proposeModalVisible}

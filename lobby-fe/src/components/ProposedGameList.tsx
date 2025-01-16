@@ -22,6 +22,9 @@ interface ProposedGameListProps {
 
   /** Whether this list is for displaying proposed games or running games */
   state_to_display: number; 
+
+  /** Whether user is allowed to join or leave games. */
+  actions_disabled: boolean;
 }
 
 const MODAL_HIDDEN='no game'
@@ -34,7 +37,12 @@ const MODAL_MINIMUM_TIME=10000; // Milliseconds
  * This is used both to display a list of proposed games that allows the user
  * to join, start or leave a game, and also display a non-interactive list of running games.
  */
-function ProposedGameList({current_user, experience_level, games: games, game_change_callback, state_to_display}: ProposedGameListProps) {
+function ProposedGameList({current_user, 
+    experience_level, 
+    games: games, 
+    game_change_callback, 
+    state_to_display,
+    actions_disabled}: ProposedGameListProps) {
 
   /** Whether the modal is shown and, if it is, what it is waiting for to dismiss */
   const [startGameModal, setStartGameModal] = useState<string>(MODAL_HIDDEN);
@@ -161,9 +169,18 @@ function ProposedGameList({current_user, experience_level, games: games, game_ch
                     alt="scary sword" 
                     className="lobby-game-attribute-icon" 
                   />}
-                {isJoinable(game) && <Button size="sm" className='lobby-game-action' onClick={() => joinGame(game)}>Join</Button>}
-                {isQuitable(game) && <Button size="sm" className='lobby-game-action' onClick={() => quitGame(game)}>Leave</Button>}
-                {isStartable(game) && <Button size="sm" className='lobby-game-action' onClick={() => startGame(game)}>Start</Button>}
+                {isJoinable(game) && 
+                  <Button size="sm" className='lobby-game-action' 
+                    disabled={actions_disabled} 
+                    onClick={() => joinGame(game)}>Join</Button>}
+                {isQuitable(game) && 
+                  <Button size="sm" className='lobby-game-action' 
+                    disabled={actions_disabled} 
+                    onClick={() => quitGame(game)}>Leave</Button>}
+                {isStartable(game) && 
+                  <Button size="sm" className='lobby-game-action' 
+                    disabled={actions_disabled} 
+                    onClick={() => startGame(game)}>Start</Button>}
               </div>
               <div>{gameLabel(game)}</div>
             </ListGroup.Item>

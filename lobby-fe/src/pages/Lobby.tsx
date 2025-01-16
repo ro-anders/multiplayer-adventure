@@ -23,6 +23,7 @@ function Lobby({username, experience_level}: LobbyProps) {
     {online_player_names: ['loading...'], games: [], recent_chats: []}
   )
   const [allChats, setAllChats] = useState<ReceivedChat[]>([]);
+  const [actionsDisabled, setActionsDisabled] = useState<boolean>(false);
 
   /**
    * Callback called when a new chat message needs to be posted.
@@ -38,10 +39,12 @@ function Lobby({username, experience_level}: LobbyProps) {
       message: new_chat_message,
       timestamp: 0
     }
+    setActionsDisabled(true);
     setAllChats([...allChats, localChat])
     const action = async function (): Promise<void> {await ChatService.postChat(username, new_chat_message)};
     const new_lobby_state = await LobbyService.sync_action_with_backend(action);
     updateLobbyState(new_lobby_state);
+    setActionsDisabled(false);
   }
 
   /**
@@ -51,6 +54,7 @@ function Lobby({username, experience_level}: LobbyProps) {
    * @param new_game_list a modified list of games
    */
   async function game_change_callback(updated_game: GameInLobby) {
+    setActionsDisabled(true);
     const updated_game_in_list = lobbyState.games.find((game)=> game.session === updated_game.session)
     if (!updated_game_in_list) {
       // This is a new game.  Add a new game to the lobby state then post a create game request
@@ -82,6 +86,7 @@ function Lobby({username, experience_level}: LobbyProps) {
       const synced_lobby_state = await LobbyService.sync_action_with_backend(action);
       updateLobbyState(synced_lobby_state);
     }
+    setActionsDisabled(false);
   }
 
   /**
@@ -179,6 +184,7 @@ function Lobby({username, experience_level}: LobbyProps) {
               experience_level={experience_level}
               proposed_games={lobbyState.games}
               game_change_callback={game_change_callback}
+              actions_disabled={actionsDisabled}
             />
           </div>
           <div className="lobby-room">
@@ -188,13 +194,15 @@ function Lobby({username, experience_level}: LobbyProps) {
               games={lobbyState.games}
               game_change_callback={(games)=>{}} // A noop callback
               state_to_display={GAMESTATE_RUNNING}
+              actions_disabled={actionsDisabled}
             />
           </div>
         </div>
         <ChatWindow 
           current_user={username} 
           chats={allChats}
-          new_chat_callback={new_chat_callback}/>
+          new_chat_callback={new_chat_callback}
+          actions_disabled={actionsDisabled}/>
       </div>
   );
 }
