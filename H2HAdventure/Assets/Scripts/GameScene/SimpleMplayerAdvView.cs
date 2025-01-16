@@ -20,6 +20,8 @@ namespace GameScene
 
         public TMP_Text roster; 
 
+        public TMP_Text homeCastleWatermark;
+
         private WebGameSetup setup = null;
 
 
@@ -46,7 +48,7 @@ namespace GameScene
                     case WebGameSetup.WAITING_FOR_PLAYER:
                         if (!startPanel.gameObject.activeInHierarchy) {
                             startPanel.showGameInfo(setup);
-                            showPlayersInRoster(setup.PlayerNames);
+                            showPlayersInRoster(setup.PlayerNames, setup.Slot);
                         }
                         break;
                     case WebGameSetup.GO:
@@ -92,15 +94,17 @@ namespace GameScene
             started = true;
         }
 
-        private void showPlayersInRoster(string[] playerNames) {
-            roster.text = roster.text.Replace("Player1", playerNames[0]);
-            roster.text = roster.text.Replace("Player2", playerNames[1]);
+        private void showPlayersInRoster(string[] playerNames, int currentPlayer) {
+            roster.text = roster.text.Replace("Player1", (currentPlayer == 0 ? "<i>you</i>" : playerNames[0]));
+            roster.text = roster.text.Replace("Player2", (currentPlayer == 1 ? "<i>you</i>" : playerNames[1]));
             if (playerNames.Length > 2) {
-                roster.text = roster.text.Replace("Player3", playerNames[2]);
+                roster.text = roster.text.Replace("Player3", (currentPlayer == 2 ? "<i>you</i>" : playerNames[2]));
             } else {
                 // Strip off the last line
                 roster.text = roster.text.Remove(roster.text.LastIndexOf(Environment.NewLine));
             }
+            // Also set the watermark.  Gold=0, Copper=1, Jade=11
+            homeCastleWatermark.text = "<sprite=" + (currentPlayer == 2 ? 11 : currentPlayer) + ">";
         }
 
     }

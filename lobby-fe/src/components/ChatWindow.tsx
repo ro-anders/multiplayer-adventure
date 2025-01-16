@@ -47,7 +47,7 @@ function ChatWindow({current_user, chats, new_chat_callback, actions_disabled}: 
       <input type="text" placeholder="Type a message..." value={newChatText} onChange={(event) => setNewChatText(event.target.value)}/>
       <Button disabled={actions_disabled} onClick={postChatMessage}>Send</Button>
     </div>
-);
+  );
 }
 
 export default ChatWindow;
