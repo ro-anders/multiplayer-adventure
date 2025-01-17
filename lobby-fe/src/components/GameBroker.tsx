@@ -44,7 +44,7 @@ function GameBroker({username,
   function playerCommitted(): boolean {
     let committed = false;
     for (const proposed_game of proposed_games) {
-      committed = committed || (proposed_game.player_names.indexOf(username) >= 0);
+      committed = committed || (proposed_game.display_names.indexOf(username) >= 0);
     }
     return committed;
   }

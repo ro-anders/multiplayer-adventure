@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import '../App.css';
-import {GameInLobby, GAMESTATE__PROPOSED} from '../domain/GameInLobby'
+import {GameInLobby, GAMESTATE__PROPOSED, reorder} from '../domain/GameInLobby'
 import GameStartingModal from './GameStartingModal'
 import GameService from '../services/GameService'
 import SettingsService from '../services/SettingsService';
@@ -62,8 +62,9 @@ function ProposedGameList({current_user,
   function joinGame(game: GameInLobby) {
     // Figure out the next open slot in the game and add the user
     // to that slot.
-    if (game.player_names.length < game.number_players) {
-      game.player_names.push(current_user)
+    if (game.display_names.length < game.number_players) {
+      game.display_names.push(current_user)
+      game.player_names = reorder(game.display_names, game.order)
       game_change_callback(game)
     }
   }
@@ -74,7 +75,8 @@ function ProposedGameList({current_user,
    */
   function quitGame(game: GameInLobby) {
     // Remove the player from the game
-    game.player_names = game.player_names.filter((name: string) => name != current_user)
+    game.display_names = game.display_names.filter((name: string) => name != current_user)
+    game.player_names = reorder(game.display_names, game.order)
     game_change_callback(game)
   }
 
@@ -89,7 +91,7 @@ function ProposedGameList({current_user,
       // highest bits hold the session
       16 * game.session +
       // Next two bits hold the slot number
-      4 * game.player_names.indexOf(current_user) +
+      4 * slot +
       // next bit holds the help popups flag
       2 * (experience_level == 1 ? 1 : 0) +
       // last bit holds the maze guide flag
@@ -107,10 +109,10 @@ function ProposedGameList({current_user,
    * @returns a description of the game
    */
   function gameLabel(game: GameInLobby): string {
-    var playerList = (game.player_names.length < 1 ? "?" : game.player_names[0])
-    playerList += (game.player_names.length < 2 ? ", ?" : `, ${game.player_names[1]}`)
+    var playerList = (game.display_names.length < 1 ? "?" : game.display_names[0])
+    playerList += (game.display_names.length < 2 ? ", ?" : `, ${game.display_names[1]}`)
     if (game.number_players > 2) {
-      playerList += (game.player_names.length < 3 ? (game.number_players < 3 ? ", ..." : ", ?")  : `, ${game.player_names[2]}`)
+      playerList += (game.display_names.length < 3 ? (game.number_players < 3 ? ", ..." : ", ?")  : `, ${game.display_names[2]}`)
     }
 
     return playerList
@@ -123,8 +125,8 @@ function ProposedGameList({current_user,
    * @returns whether the current user can join the game
    */
   function isQuitable(game: GameInLobby): boolean {
-    const inGame = game.player_names.includes(current_user);
-    return inGame && (game.player_names.length < game.number_players);
+    const inGame = game.display_names.includes(current_user);
+    return inGame && (game.display_names.length < game.number_players);
   }
 
   /**
@@ -134,8 +136,8 @@ function ProposedGameList({current_user,
    * @returns whether the current user can leave the game
    */
   function isJoinable(game: GameInLobby): boolean {
-    const inGame = game.player_names.includes(current_user);
-    return !inGame && (game.player_names.length < game.number_players);
+    const inGame = game.display_names.includes(current_user);
+    return !inGame && (game.display_names.length < game.number_players);
   }
 
   /**
@@ -145,8 +147,8 @@ function ProposedGameList({current_user,
    * @returns whether the current user can start the game
    */
   function isStartable(game: GameInLobby): boolean {
-    const inGame = game.player_names.includes(current_user);
-    return inGame && (game.player_names.length+1 > game.number_players);
+    const inGame = game.display_names.includes(current_user);
+    return inGame && (game.display_names.length+1 > game.number_players);
   }
   
   return (

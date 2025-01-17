@@ -65,6 +65,16 @@ namespace GameScene
             base.Platform_GameChange(change);
         }
 
+        public override void Platform_ReportToServer(string message)
+        {
+
+            base.Platform_ReportToServer(message);
+            if (message == AdventureReports.WON_GAME)
+            {
+                transport.sendGameChange();
+            }
+        }
+
         /// <summary>
         /// This marks the player as ready to play
         /// </summary>

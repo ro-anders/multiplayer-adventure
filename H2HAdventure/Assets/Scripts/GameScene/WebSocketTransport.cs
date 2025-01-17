@@ -58,6 +58,7 @@ namespace GameScene
         private const byte CONNECT_CODE = 0x01;
         private const byte READY_CODE = 0x02;
         private const byte CHAT_CODE = 0x03;
+        private const byte GAME_CHANGES_CODE = 0x04;
 
         /** For testing and debugging purposes DUMMY mode will not try
          * to connect to a back end server and will fake that the game is running
@@ -335,6 +336,14 @@ namespace GameScene
                 Debug.Log("Requesting start game " + session);
                 websocket.Send(bytes);
             }
+        }
+
+        /// <summary>
+        /// When the game status changes.  Usually this is someone won the game, but
+        /// can also be used for discoveries
+        /// </summary>
+        public void sendGameChange() {
+            // TBD
         }
         
         private async void OnApplicationQuit()

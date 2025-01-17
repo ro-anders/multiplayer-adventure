@@ -1,4 +1,4 @@
-import {GameInLobby} from '../domain/GameInLobby'
+import {GameInLobby, reorder} from '../domain/GameInLobby'
 import { LobbyState, LobbyStateToString } from '../domain/LobbyState'
 import GameService from './GameService'
 
@@ -174,8 +174,8 @@ export default class LobbyService {
 			console.log(`Changes in game detected.  Game ${game1.session} changed number players. ${game1.number_players}->${game2.number_players}`)
 			return false;
 		}
-		if (game1.player_names.toString() !== game2.player_names.toString()) {
-			console.log(`Changes in game detected.  Game ${game1.session} changed players. ${game1.player_names}->${game2.player_names}`)
+		if (game1.display_names.toString() !== game2.display_names.toString()) {
+			console.log(`Changes in game detected.  Game ${game1.session} changed players. ${game1.display_names}->${game2.display_names}`)
 			return false;
 		}
 		if (game1.state !== game2.state) {
@@ -198,13 +198,14 @@ export default class LobbyService {
 		// Go through games removing players who are no longer active
 		const empty_games: GameInLobby[] = []
 		for (const game of lobby.games) {
-			const originalNumPlayers = game.player_names.length
-			game.player_names = game.player_names.filter((player_name: string) => lobby.online_player_names.indexOf(player_name)>=0)
-			if (game.player_names.length === 0) {
+			const originalNumPlayers = game.display_names.length
+			game.display_names = game.display_names.filter((player_name: string) => lobby.online_player_names.indexOf(player_name)>=0)
+	  		game.player_names = reorder(game.display_names, game.order)
+			if (game.display_names.length === 0) {
 				// We don't modify the list of games while iterating over it so we save
 				// empty games and delete them afterwards
 				empty_games.push(game)
-			} else if (game.player_names.length !== originalNumPlayers) {
+			} else if (game.display_names.length !== originalNumPlayers) {
 				// We make this call asynchronously.  Don't need to wait for response.
 				GameService.updateGame(game)
 			}

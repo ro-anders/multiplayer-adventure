@@ -23,7 +23,7 @@ export interface LobbyState {
 export function LobbyStateToString(state: LobbyState): String {
     const game_strs: String[] = []
     for (const game of state.games) {
-        game_strs.push(game.player_names.toString())
+        game_strs.push(game.display_names.toString())
     }
     return `games=[${game_strs.toString()}],#chats=${state.recent_chats.length}`
 }

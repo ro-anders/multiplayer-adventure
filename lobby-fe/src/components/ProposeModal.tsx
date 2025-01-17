@@ -32,6 +32,8 @@ function ProposeModal({username, show, onHide, propose_game_callback}: ProposeMo
       fast_dragons: isFastDragonsOn,
       fearful_dragons: isScarySwordOn,
       player_names: [username],
+      display_names: [username],
+      order: Math.floor(Math.random() * 6),
       state: GAMESTATE__PROPOSED
     };
     propose_game_callback(new_game);

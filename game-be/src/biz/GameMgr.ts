@@ -14,6 +14,7 @@ const GAMEMSG_CODE = 0x00; // Code for when running games are sending game messa
 const CONNECT_CODE = 0x01; // Code for when a client first connects
 const READY_CODE = 0x02; // Code to indicate a client is ready to play
 const CHAT_CODE = 0x03; // Code for chat messages
+const GAMECHANGE_CODE = 0x04; // Code for game status changes like winning a game
 
 /** 
  * All the client connections needed to run a game
@@ -59,6 +60,9 @@ export default class GameMgr {
 			else if (data[1] == CHAT_CODE) {
 				console.log("Request to broadcast chat to session " + session);
 				this.broadcast_message(session, data, client_socket);
+			}
+			else if (data[1] == GAMECHANGE_CODE) {
+				this.handle_game_change(session, data);
 			}
 			else {
 			  console.error(`Unexpected message code ${data[1]} in message ${data}`)
@@ -113,7 +117,7 @@ export default class GameMgr {
 	 * @param {WebSocket} client_socket - the websocket of the client (we use it to 
 	 *                    identify the player)
 	 */
-	async player_ready(session, client_socket: WebSocket) {
+	player_ready(session, client_socket: WebSocket) {
 		if (!(session in this.games)) {
 			console.error("Request to start in non-existent session " + session);
 			return;
@@ -136,11 +140,6 @@ export default class GameMgr {
 		// If all players have said they are ready, broadcast a start to all clients.
 		if (game.game_info.ready_players === (2 ** game.game_info.player_names.length)-1) {
 			console.log("Session " + session + " is ready to play.")
-			// Now serialize the game info and send to all clients
-			const jsonData = JSON.stringify(game.game_info);
-			const encoder = new TextEncoder();
-			const encodedGameInfo = encoder.encode(jsonData);
-		
 			const message = new Uint8Array(2);
 			message[0] = session;
 			message[1] = READY_CODE;
@@ -165,6 +164,22 @@ export default class GameMgr {
 			}
 		}
 	}
+
+	/**
+	 * An event has happened in the game that requires the lobby backend being
+	 * updated.  Post the change to the lobby back end
+	 * @param {byte} session - a number indicating the unique key of the game/session
+	 * @param {byte[]} data - the body of the game change message
+	 */
+	handle_game_change(session, data) {
+		// First identify the game and player that generated the event.
+		if (session in this.games) {
+			const game = this.games[session]
+			// TBD
+		}
+	}
+
+	
   
 	/**
 	 * This service pings the lobby for every game that is still running and
