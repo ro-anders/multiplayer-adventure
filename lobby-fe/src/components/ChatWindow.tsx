@@ -36,7 +36,7 @@ function ChatWindow({current_user, chats, new_chat_callback, actions_disabled}: 
 
   return (
 
-    <div className="lobby-chat-column lobby-room">
+    <div className="lobby-column lobby-chat-column lobby-room">
       <h3>Chat</h3>
       <div className="chat-box border p-2">
         {chats.map((chat) => (

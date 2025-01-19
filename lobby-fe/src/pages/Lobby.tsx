@@ -177,7 +177,15 @@ function Lobby({username, experience_level}: LobbyProps) {
   return (
       <div className="lobby-main">
         <Roster player_names={lobbyState.online_player_names}/>
-        <div className="lobby-games-column">
+        {/* Put in a wall between the columns with paths crossing it at top and bottom */}
+        <div className="lobby-separator-column">
+          <div className="lobby-colsep-wall-short"/>
+          <div className="lobby-colsep-path"/>
+          <div className="lobby-colsep-wall-long"/>
+          <div className="lobby-colsep-path"/>
+          <div className="lobby-colsep-wall-short"/>
+        </div>
+        <div className="lobby-column lobby-games-column">
           <div className="lobby-room">
             <GameBroker 
               username={username} 
@@ -187,6 +195,8 @@ function Lobby({username, experience_level}: LobbyProps) {
               actions_disabled={actionsDisabled}
             />
           </div>
+          {/* Put in a horizontal wall between the panels */}
+          <div className="lobby-separator-row"/>
           <div className="lobby-room">
             <ProposedGameList 
               current_user={username} 
@@ -197,6 +207,12 @@ function Lobby({username, experience_level}: LobbyProps) {
               actions_disabled={actionsDisabled}
             />
           </div>
+        </div>
+        {/* Put in a another wall between the columns with paths crossing it at the  bottom */}
+        <div className="lobby-separator-column">
+          <div className="lobby-colsep-wall-long"/>
+          <div className="lobby-colsep-path"/>
+          <div className="lobby-colsep-wall-short"/>
         </div>
         <ChatWindow 
           current_user={username} 

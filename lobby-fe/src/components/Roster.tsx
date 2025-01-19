@@ -13,7 +13,7 @@ interface RosterListProps {
 function Roster({player_names}: RosterListProps) {
   return (
 
-    <div className="lobby-roster-column lobby-room">
+    <div className="lobby-column lobby-room">
       <h3>Online Players</h3>
       <header className="Roster-header">
         <ListGroup>
