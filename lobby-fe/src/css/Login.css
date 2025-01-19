@@ -9,6 +9,18 @@
     align-items: center;
     box-sizing: border-box;
   }
+
+  .login-page::after {
+    content: '';
+    position: absolute;
+    height: 5vh;
+    bottom: 0;
+    left: 50%;
+    width: 64px;
+    background-color: rgb(205, 205, 205);
+    transform: translateX(-50%);
+  }
+
   
   .login-header {
     height: 10%;
@@ -25,7 +37,6 @@
     color: black;
     background: transparent;
     padding: 0.5rem;
-  
   }
 
   .login-error-message {
