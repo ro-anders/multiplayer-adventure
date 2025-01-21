@@ -68,6 +68,26 @@ const initializeSchema = async () => {
     BillingMode: "PAY_PER_REQUEST"
   };
   await ddbDocClient.send(new CreateTableCommand(playersDef))
+  // Create the player stats table.  This only keeps a couple running counts on each player
+  // in hopes that getting all stats doesn't exceed 1MB.  If it does, we'll have to add paging
+  // or an index or something.
+  const playerStatsDef = { 
+    AttributeDefinitions: [ 
+      { 
+        AttributeName: "playername", 
+        AttributeType: "S", 
+      }
+    ],
+    TableName: "PlayerStats", 
+    KeySchema: [ 
+      { 
+        AttributeName: "playername", 
+        KeyType: "HASH", 
+      }
+    ],
+    BillingMode: "PAY_PER_REQUEST"
+  };
+  await ddbDocClient.send(new CreateTableCommand(playerStatsDef))
   // Create the games table
   const gamesDef = { 
     AttributeDefinitions: [ 

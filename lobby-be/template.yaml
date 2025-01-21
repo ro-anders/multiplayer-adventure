@@ -35,7 +35,7 @@ Resources:
 
 
   ###########################
-  # Lambdas for Player management
+  # Lambdas for Player and Player Stats management
   #
   getAllPlayersFunction:
     Type: AWS::Serverless::Function
@@ -58,6 +58,48 @@ Resources:
             Path: /player/
             Method: GET
 
+  getAllPlayerStatsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/get-all-playerstats.getAllPlayerStatsHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Return the stats of all registered players
+      Policies:
+        # Give Create/Read/Update/Delete Permissions
+        - DynamoDBReadPolicy:
+            TableName: !Ref PlayerStatsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /playerstats/
+            Method: GET
+
+  getPlayerStatsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/get-playerstats.getPlayerStatsByNameHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Get the stats on a single player
+      Policies:
+        # Give Create/Read/Update/Delete Permissions
+        - DynamoDBReadPolicy:
+            TableName: !Ref PlayerStatsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /playerstats/{playername}
+            Method: GET
+
   putPlayerFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -77,6 +119,27 @@ Resources:
           Type: Api
           Properties:
             Path: /player/{name}
+            Method: PUT
+
+  putPlayerStatsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/put-playerstats.putPlayerStatsHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Update a player's statistics
+      Policies:
+        # Give Create/Read/Update/Delete Permissions
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlayerStatsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /playerstats/{playername}
             Method: PUT
 
   ###########################
@@ -345,7 +408,7 @@ Resources:
   # Players table
   #  Table of recent players and when they played.  Players that haven't played recently 
   #  are deleted from this table.  More permanent and more detailed info on players is kept
-  #  in a different table, the PlayersDetails table.
+  #  in a different table, the PlayerStats table.
   #
   #  playername (partition key): string - username of the player
   #  lastactive: number - timestamp of last time they were in the lobby or playing the game
@@ -355,6 +418,22 @@ Resources:
     Type: AWS::Serverless::SimpleTable
     Properties:
       TableName: Players
+      PrimaryKey:
+        Name: playername
+        Type: String
+
+  # Player Stats table
+  #  Table of players and statistics about their playing.
+  #
+  #  playername (partition key): string - username of the player
+  #  games: number - the number of games this player has played
+  #  wins: number - the number of games this player has won
+  #  achvmts: number - how many steps has player taken to achieving easter egg
+  #
+  PlayerStatsTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: PlayerStats
       PrimaryKey:
         Name: playername
         Type: String

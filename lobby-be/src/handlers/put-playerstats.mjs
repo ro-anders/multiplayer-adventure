@@ -1,11 +1,13 @@
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
-import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
+import {DDBClient, CheckDDB, ACTIVE_PLAYERS_TTL} from '../dbutils/dbsetup.mjs'
 
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
-/**Updates and existing game
+/**
+ * Create or Update a row with info about a player
  */
-export const putGameHandler = async (event) => {
+export const putPlayerStatsHandler = async (event) => {
     if (event.httpMethod !== 'PUT') {
         throw new Error(`putMethod only accepts PUT method, you tried: ${event.httpMethod} method.`);
     }
@@ -14,21 +16,20 @@ export const putGameHandler = async (event) => {
 
     await CheckDDB();
 
-    // Get session from the URL and the rest of the game from the body
-    const session = event.pathParameters.session;
+    // Get playername from the URL and the stats  from the body
+    const playername = event.pathParameters.playername;
     const body = JSON.parse(event.body);
-    if (body.session != session) {
-        throw new Error(`Invalid request: game session in request URL does not match game session in body.`);
+    if (body.playername != playername) {
+        throw new Error(`Invalid request: player name in request URL does not match player name in body.`);
     }
 
     var params = {
-        TableName : "Games",
+        TableName : "PlayerStats",
         Item: body
     };
 
     try {
         const data = await ddbDocClient.send(new PutCommand(params));
-        console.log("Success - item added or updated", data);
     } catch (err) {
         console.log("Error", err.stack);
     }
@@ -39,11 +40,8 @@ export const putGameHandler = async (event) => {
             "Access-Control-Allow-Headers" : "Content-Type",
             "Access-Control-Allow-Origin": "*", // Allow from anywhere 
             "Access-Control-Allow-Methods": "PUT" // Allow only PUT request 
-        },
-        body: JSON.stringify(body)
+        }
     };
 
-    // All log statements are written to CloudWatch
-    console.info(`response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
     return response;
 };
