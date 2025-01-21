@@ -150,6 +150,7 @@ export default class LobbyBackend {
 				player_stats = await response.json()
 			} else if (response.status == 404) {
 				player_stats = {
+					playername: playername,
 					games: 0,
 					wins: 0,
 					achvmts: 0

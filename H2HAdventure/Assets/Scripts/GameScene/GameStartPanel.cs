@@ -41,13 +41,13 @@ public class GameStartPanel : MonoBehaviour
             p1placement.text = p1placement.text.Replace("Player1", players[0]);
         }
         if (setup.Slot == 1) {
-            p2placement.text = p2placement.text.Replace("Player 2 is", "You are");
+            p2placement.text = p2placement.text.Replace("Player2 is", "You are");
         } else {
             p2placement.text = p2placement.text.Replace("Player2", players[1]);
         }
         if (players.Length > 2) {
             if (setup.Slot == 2) {
-                p3placement.text = p3placement.text.Replace("Player 3 is", "You are");
+                p3placement.text = p3placement.text.Replace("Player3 is", "You are");
             } else {
                 p3placement.text = p3placement.text.Replace("Player3", players[2]);
             }
