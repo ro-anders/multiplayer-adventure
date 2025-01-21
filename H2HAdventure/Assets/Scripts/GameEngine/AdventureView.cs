@@ -39,6 +39,15 @@ namespace GameEngine
         public const string FOUND_CRYSTAL_KEY = "Crystal key found";
         public const string OPENED_CRYSTAL_GATE = "Crystal gate opened";
         public const string BEAT_CRYSTAL_CHALLENGE = "Crystal challenge beaten";
+        public static string[] ALL_REPORTS = new string[] {
+            WON_GAME,
+            FOUND_ROBINETT_ROOM,
+            GLIMPSED_CRYSTAL_CASTLE,
+            FOUND_CRYSTAL_CASTLE,
+            FOUND_CRYSTAL_KEY,
+            OPENED_CRYSTAL_GATE,
+            BEAT_CRYSTAL_CHALLENGE
+        };
     }
 
 }

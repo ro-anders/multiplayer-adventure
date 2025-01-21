@@ -14,7 +14,7 @@ const GAMEMSG_CODE = 0x00; // Code for when running games are sending game messa
 const CONNECT_CODE = 0x01; // Code for when a client first connects
 const READY_CODE = 0x02; // Code to indicate a client is ready to play
 const CHAT_CODE = 0x03; // Code for chat messages
-const GAMECHANGE_CODE = 0x04; // Code for game status changes like winning a game
+const MSG_TO_LOBBY_CODE = 0x04; // Code for player status changes like winning a game
 
 /** 
  * All the client connections needed to run a game
@@ -61,8 +61,8 @@ export default class GameMgr {
 				console.log("Request to broadcast chat to session " + session);
 				this.broadcast_message(session, data, client_socket);
 			}
-			else if (data[1] == GAMECHANGE_CODE) {
-				this.handle_game_change(session, data);
+			else if (data[1] == MSG_TO_LOBBY_CODE) {
+				this.message_to_lobby(session, data);
 			}
 			else {
 			  console.error(`Unexpected message code ${data[1]} in message ${data}`)
@@ -91,7 +91,7 @@ export default class GameMgr {
 		game.clients.push(client_socket)
 		game.game_info.joined_players = game.clients.length
 		if (game.clients.length === game.game_info.player_names.length) {
-			game.game_info.state = 1
+			game.game_info.state = 1 /* started */
 		}
 		console.log("client joined session " + session + ".");
 	
@@ -171,15 +171,60 @@ export default class GameMgr {
 	 * @param {byte} session - a number indicating the unique key of the game/session
 	 * @param {byte[]} data - the body of the game change message
 	 */
-	handle_game_change(session, data) {
+	async message_to_lobby(session, data) {
 		// First identify the game and player that generated the event.
-		if (session in this.games) {
-			const game = this.games[session]
-			// TBD
+		if (!(session in this.games)) {
+			console.error(`Request to report to server for non-existent session ${session}`)
+			return;
 		}
-	}
 
-	
+		const game = this.games[session]
+		// With a game change message, it's a simple array of 4 bytes
+		// byte 0 = session
+		// byte 1 = GAMECHANGE_CODE
+		// byte 2 = player slot (0-2)
+		// byte 3 = message code (e.g. 0 == WON_GAME)
+
+		const player_slot = data[2]
+		const player_name = game.game_info.player_names[player_slot]
+		const player_stats = await this.lobby_backend.get_player_stats(player_name)
+
+		const code = data[3]
+		if (code === 0 /* WON_GAME */) {
+			// The GAME_WON code requires very different handling from all other codes.
+			// If a game is won, we have to update the game that it is finished, then
+			// update the winner's stats that they have won and update the losers' stats
+			// that they have played a game without winning.
+
+			// Update the game is finished
+			game.game_info.state = 2 /* finished */;
+			this.lobby_backend.update_game(game.game_info)
+
+			// Update the winner's stats
+			player_stats.wins += 1;
+			player_stats.games += 1;
+			this.lobby_backend.update_player_stats(player_stats);
+
+			// Update the loser's stats
+			for(var next_player of game.game_info.player_names) {
+				if (next_player != player_name) {
+					const next_player_stats = await this.lobby_backend.get_player_stats(next_player);
+					next_player_stats.games += 1;
+					this.lobby_backend.update_player_stats(next_player_stats);
+				}
+			}
+		}
+		else {
+			// For any other code, it's an achievment along the easter egg path.  
+			// Update the achievment in the database if the new achievment is
+			// further than the one in the database.
+			if (code > player_stats.achvmts) {
+				player_stats.achvmts = code;
+				this.lobby_backend.update_player_stats(player_stats)
+			}
+		}
+
+	}
   
 	/**
 	 * This service pings the lobby for every game that is still running and

@@ -58,7 +58,7 @@ namespace GameScene
         private const byte CONNECT_CODE = 0x01;
         private const byte READY_CODE = 0x02;
         private const byte CHAT_CODE = 0x03;
-        private const byte GAME_CHANGES_CODE = 0x04;
+        private const byte REPORT_TO_SERVER_CODE = 0x04;
 
         /** For testing and debugging purposes DUMMY mode will not try
          * to connect to a back end server and will fake that the game is running
@@ -339,11 +339,16 @@ namespace GameScene
         }
 
         /// <summary>
-        /// When the game status changes.  Usually this is someone won the game, but
+        /// When the player stats change.  Usually this is someone won the game, but
         /// can also be used for discoveries
         /// </summary>
-        public void sendGameChange() {
-            // TBD
+        public void reportToServer(int messageCode) {
+            if (websocket.State != WebSocketState.Open)
+            {
+                throw new Exception("Cannot start game before web socket is open");
+            }
+            byte[] bytes = new byte[] {session, REPORT_TO_SERVER_CODE, (byte)thisPlayerSlot, (byte)messageCode };
+            websocket.Send(bytes);
         }
         
         private async void OnApplicationQuit()

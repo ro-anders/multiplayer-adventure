@@ -4,7 +4,8 @@ import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
 /**
- * Get the info on a single player
+ * Get the info on a single player.  
+ * Returns a 404 if player is not found
  */
 export const getPlayerStatsByNameHandler = async (event) => {
     if (event.httpMethod !== 'GET') {
@@ -28,7 +29,7 @@ export const getPlayerStatsByNameHandler = async (event) => {
 
     const response = (item == null ? 
         {
-            statusCode: 400,
+            statusCode: 404,
             headers: {
                 "Access-Control-Allow-Headers" : "Content-Type",
                 "Access-Control-Allow-Origin": "*", // Allow from anywhere 

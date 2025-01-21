@@ -1,3 +1,4 @@
+import { PlayerStats } from "../domain/PlayerStats";
 import { RunningGame } from "../domain/RunningGame";
 
 /**
@@ -65,6 +66,7 @@ export default class LobbyBackend {
 			console.log(`GET ${response.status}`)
 			if (response.status != 200) {
 				console.log(`Get game info received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+				throw new Error("GET /game failed.")
 			}
 			const game_info = await response.json()
 			return game_info
@@ -128,5 +130,63 @@ export default class LobbyBackend {
 		}
 	}
 
+	/**
+	 * Requests the stats of a player.  
+	 * Note, if the player is not found, that is not an error.  Will just return blank stats.
+	 */	
+	async get_player_stats(playername: string): Promise<PlayerStats> {
+		const headers: Headers = new Headers()
+		headers.set('Content-Type', 'application/json')
+		headers.set('Accept', 'application/json')
+		const request: RequestInfo = new Request(`${this.lobby_url}/playerstats/${playername}`, {
+			method: 'GET',
+			headers: headers
+		})
+
+		try {
+			const response = await fetch(request)
+			var player_stats;
+			if (response.status == 200) {
+				player_stats = await response.json()
+			} else if (response.status == 404) {
+				player_stats = {
+					games: 0,
+					wins: 0,
+					achvmts: 0
+				}
+			} else {
+				console.log(`Get player stats ${request.url} received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+				throw new Error("GET /playerstats failed")
+			}
+			return player_stats
+		}
+		catch (e) {
+			console.log(`Error encountered: ${e}`)
+		}
+	}
+
+	/**
+	 * Updates the stats of the player in the Lobby.  
+	 */	
+	async update_player_stats(player_stats: PlayerStats) {
+		const headers: Headers = new Headers()
+		headers.set('Content-Type', 'application/json')
+		headers.set('Accept', 'application/json')
+		const request: RequestInfo = new Request(`${this.lobby_url}/playerstats/${player_stats.playername}`, {
+			method: 'PUT',
+			headers: headers,
+			body: JSON.stringify(player_stats)
+		})
+
+		try {
+			const response = await fetch(request)
+			if (response.status != 200) {
+				console.log(`Update player stats ${request.url} received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+			}
+		}
+		catch (e) {
+			console.log(`Error encountered: ${e}`)
+		}
+	}
 
 }

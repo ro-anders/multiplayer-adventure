@@ -67,12 +67,13 @@ namespace GameScene
 
         public override void Platform_ReportToServer(string message)
         {
-
             base.Platform_ReportToServer(message);
-            if (message == AdventureReports.WON_GAME)
-            {
-                transport.sendGameChange();
+            // Map the string message to an int code.
+            int message_index = Array.IndexOf(AdventureReports.ALL_REPORTS, message);
+            if (message_index < 0) {
+                throw new Exception("Unknown message \"" + message + "\".  Cannot send to server.");
             }
+            transport.reportToServer(message_index);
         }
 
         /// <summary>
