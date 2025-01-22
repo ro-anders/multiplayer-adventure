@@ -16,9 +16,30 @@ import Constants from './Constants';
 
 function App() {
 
-  let [username, setUsername] = useState<string>("");
-  let [experienceLevel, setExperienceLevel] = useState<number>(0);
-  useEffect(() => {
+  // Username is state, but we persist it across sessions in local storage
+  let [username, setUsername] = useState<string>(getInitialUsername());
+  function getInitialUsername(): string {
+      return localStorage.getItem( 'h2h.username' ) || "";    
+  }
+  function setNewUsername(new_username: string) {
+    if (new_username) {
+      localStorage.setItem("h2h.username", new_username);
+    }
+    setUsername(new_username);
+  }
+
+  // Experience level is also state persisted in local storage
+  let [experienceLevel, setExperienceLevel] = useState<number>(getInitialExperienceLevel());
+  function getInitialExperienceLevel(): number {
+    const exp_level_str: string = localStorage.getItem( 'h2h.experience_level' ) || "0"; 
+    return parseInt(exp_level_str)   
+  }
+  function setNewExperienceLevel(new_exp_level: number) {
+    localStorage.setItem("h2h.experience_level", new_exp_level.toString());
+    setExperienceLevel(new_exp_level);
+  }
+
+useEffect(() => {
     async function registerCurrentPlayer() {
       if (username) {
         await PlayerService.registerPlayer(username);
@@ -36,7 +57,7 @@ function App() {
   }, [username]);
 
 
-  let loginPage = <LoginPage username={username} setUsername={setUsername} experienceLevel={experienceLevel} setExperienceLevel={setExperienceLevel}/>
+  let loginPage = <LoginPage username={username} setUsername={setNewUsername} experienceLevel={experienceLevel} setExperienceLevel={setExperienceLevel}/>
   const router = createBrowserRouter([
     {
       path: "/",

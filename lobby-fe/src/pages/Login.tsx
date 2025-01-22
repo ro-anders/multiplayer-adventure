@@ -1,13 +1,9 @@
-import Cookies from 'js-cookie';
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { useNavigate } from "react-router-dom";
 
 import '../App.css';
 import '../css/Login.css'
-
-const USERNAME_COOKIE = 'h2hadventure.username';
-const EXPERIENCE_LEVEL_COOKIE = 'h2hadventure.experience';
 
 interface LoginProps {
   /** The name of the currently logged in user */
@@ -29,33 +25,11 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
   let [formUsername, setFormUsername] = useState<string>(username);
   let [warning, setWarning] = useState<string>("");
 
-  /* We store the last used name and experience in a cookie.  Try to load it. */
-  useEffect(() => {
-    if (!!!formUsername) {
-      const lastUsername = Cookies.get(USERNAME_COOKIE);
-      if (lastUsername) {
-        setFormUsername(lastUsername);
-      }
-    }
-    if (!!!experienceLevel) {
-      const cookieStr = Cookies.get(EXPERIENCE_LEVEL_COOKIE)
-      const lastExperienceLevel = (cookieStr ? parseInt(cookieStr) : 0) 
-      if (lastExperienceLevel) {
-        setExperienceLevel(lastExperienceLevel);
-      }
-      else {
-        setExperienceLevel(3);
-      }
-    }
-  }, [experienceLevel, formUsername, setExperienceLevel]);  
-
   function handlePlayOthers() {
     if (!formUsername) {
       setWarning("Please enter a name")
     }
     else {
-      Cookies.set(USERNAME_COOKIE, formUsername)
-      Cookies.set(EXPERIENCE_LEVEL_COOKIE, experienceLevel.toString())
       setUsername(formUsername)
       navigate("/lobby");
     }
@@ -63,12 +37,10 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
 
   function handlePlayAi() {
     if (formUsername) {
-      Cookies.set(USERNAME_COOKIE, formUsername)
+      setUsername(formUsername)
     }
-    Cookies.set(EXPERIENCE_LEVEL_COOKIE, experienceLevel.toString())
-    setUsername(formUsername)
     const url = process.env.REACT_APP_MPLAYER_GAME_URL?.replace('H2HAdventureMP','H2HAdventure1P')
-    const code = (experienceLevel == 1 ? 3 : (experienceLevel == 2 ? 1 : 0))
+    const code = (experienceLevel === 1 ? 3 : (experienceLevel === 2 ? 1 : 0))
     window.open(`${url}/index.html?gamecode=${code}`, '_self')
   }
 
