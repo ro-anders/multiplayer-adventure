@@ -22,7 +22,7 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
 
   /** What the user has typed into the form for username. 
    * We don't actually set the App username until the user takes an action. */
-  let [formUsername, setFormUsername] = useState<string>(username);
+  let [formUsername, setFormUsername] = useState<string>(username || localStorage.getItem('h2h.username') || "");
   let [warning, setWarning] = useState<string>("");
 
   function handlePlayOthers() {

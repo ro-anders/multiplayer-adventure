@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   createBrowserRouter,
+  Navigate,
   RouterProvider,
 } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -16,26 +17,34 @@ import Constants from './Constants';
 
 function App() {
 
-  // Username is state, but we persist it across sessions in local storage
+  // Username is state, but it's also kept in session storage to survive reloads.
+  // We also put it in local storage, but isn't used automatically.  It's only used to populate the 
+  // login field if username is undefined.
   let [username, setUsername] = useState<string>(getInitialUsername());
   function getInitialUsername(): string {
-      return localStorage.getItem( 'h2h.username' ) || "";    
+      return sessionStorage.getItem( 'h2h.username' ) || "";    
   }
   function setNewUsername(new_username: string) {
     if (new_username) {
-      localStorage.setItem("h2h.username", new_username);
+      sessionStorage.setItem("h2h.username", new_username);
+      if (new_username !== username) {
+        localStorage.setItem("h2h.username", new_username);
+      }
     }
     setUsername(new_username);
   }
 
-  // Experience level is also state persisted in local storage
+  // Experience level is also state persisted in session storage and in local storage.
   let [experienceLevel, setExperienceLevel] = useState<number>(getInitialExperienceLevel());
   function getInitialExperienceLevel(): number {
-    const exp_level_str: string = localStorage.getItem( 'h2h.experience_level' ) || "0"; 
+    const exp_level_str: string = sessionStorage.getItem( 'h2h.experience_level' ) || localStorage.getItem( 'h2h.experience_level' ) || "0"; 
     return parseInt(exp_level_str)   
   }
   function setNewExperienceLevel(new_exp_level: number) {
-    localStorage.setItem("h2h.experience_level", new_exp_level.toString());
+    sessionStorage.setItem("h2h.experience_level", new_exp_level.toString());
+    if (new_exp_level !== experienceLevel) {
+      localStorage.setItem("h2h.experience_level", new_exp_level.toString())
+    }
     setExperienceLevel(new_exp_level);
   }
 
@@ -57,19 +66,19 @@ useEffect(() => {
   }, [username]);
 
 
-  let loginPage = <LoginPage username={username} setUsername={setNewUsername} experienceLevel={experienceLevel} setExperienceLevel={setExperienceLevel}/>
   const router = createBrowserRouter([
     {
       path: "/",
-      element: loginPage
+      element: <Navigate to="/login" replace />
     },
     {
       path: "/login",
-      element: loginPage
+      element: <LoginPage username={username} setUsername={setNewUsername} experienceLevel={experienceLevel} setExperienceLevel={setNewExperienceLevel}/>
     },
     {
       path: "/lobby",
-      element: <LobbyPage username={username} experience_level={experienceLevel}/>
+      element: username ? <LobbyPage username={username} experience_level={experienceLevel}/> :
+        <Navigate to="/login" replace />
     },
     {
       path: "/retro",
