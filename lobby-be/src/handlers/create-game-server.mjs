@@ -4,6 +4,10 @@ import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
 
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
+/** How often the game backend pings the lobby backend to let it know it's still up */
+const GAMEBACKEND_PING_PERIOD = 1 * 60 * 1000 // milliseconds
+// DON'T CHANGE THIS WITHOUT CHANGING LOBBY FRONTEND AND GAME BACKEND CONSTANTS!!!
+
 export const createGameServerHandler = async (event) => {
     console.info('received:', event);
     console.log(`Calling ${event.httpMethod} ${event.path} while ENVIRONMENT_TYPE=${process.env.ENVIRONMENT_TYPE}` +
@@ -16,9 +20,16 @@ export const createGameServerHandler = async (event) => {
     await CheckDDB();
 
     let status_code = 200
-    if (process.env.ENVIRONMENT_TYPE !== 'development') {        
-        // Set the game server setting to "starting", but only if the setting doesn't
-        // already exist.  If it does, return an error that we can catch.
+    if (process.env.ENVIRONMENT_TYPE !== 'development') {  
+      
+      if (isGameServerRunning()) {
+        status_code = 302;
+      } else {
+        // Set the game server setting to "starting".
+        // I know we just checked if the server is already running, but
+        // we need to check and update in a single transaction, so
+        // change to "starting" but abort if someone else has added an
+        // entry between when we checked and now.
         const setting_name='game_server_ip'
         const dynamo_params = {
             TableName: "Settings",
@@ -103,3 +114,53 @@ export const createGameServerHandler = async (event) => {
 
     return response;
 };
+
+/**
+ * Check the database to see if a game server is already running.
+ * Make sure the database entry is recent.  If it isn't, delete the entry.  It must
+ * be left behind from a crashed instance.
+ * @returns true if a recent setting exists in the database.
+ */
+const isGameServerRunning = async () => {
+  var found_server = false;
+  try {
+    // Query the database for the game server setting.
+    var params = {
+      TableName : "Settings",
+      Key: { setting_name: "game_server_ip" },
+    };
+    const data = await ddbDocClient.send(new GetCommand(params));
+    if (data.Item) {
+      // There is a game setting in the database.  See if it is recent.
+      const value = data.Item.setting_value;
+      const time_set = data.Item.time_set;
+      const time_since = Date.now() - time_set;
+      // If the game server is starting it may take a few minutes to start up.
+      // Otherwise it should have been updated within the last minute.
+      const max_time = (value === "starting" ? 240000 /* four minutes */ : 2 * GAMEBACKEND_PING_PERIOD)
+      const too_old = time_since > max_time;
+      if (too_old) {
+        // There is an entry in the database, but it's out of date and
+        // probably from a crashed process.  Delete it and report no server.
+        var delete_params = {
+          TableName : "Settings",
+          Key: { setting_name: "game_server_ip" }
+        };
+        try {
+          await ddbDocClient.send(new DeleteCommand(params));
+        } catch (err) {
+          console.log("Error deleting game_server_ip setting", err.stack);
+        }
+      }
+      else {
+        // Found a server that looks recent
+        found_server = true
+      }
+    }
+  } catch (err) {
+    console.log("Error retrieving game_server_ip setting", err);
+  }
+
+  return found_server;
+}
+

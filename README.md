@@ -28,11 +28,19 @@ To Deploy and Run the System:
   - export AWS_PROFILE=h2hadventure
   - export AWS_REGION=us-east-2
 2. Build SinglePlayer game package
- - ????
- - Unity File->Build and Run
+ - Open Unity
+ - Unity File->Build
+ - Select Scenes/SinglePlayerScreen and unselect others
+ - Uncheck "Development Build"
+ - Select "Runtime Speed" for "Code Optimization"
+ - Click "Build"
+ - Enter "H2HAdventure1P"
+ - Click Save and then click Replace
 3. Build MultiPlayer game package
- - ???
- - Unity File->Build and Run
+ - Select Scenes/ProtoMPlayer and unselect others
+ - Click "Build"
+ - Enter "H2HAdventureMP"
+ - Click Save and then click Replace
 3. Deploy game package
  - aws cloudformation update-stack --stack-name s3-website  --template-body file://lobby-fe/deploy/s3website.cfn.yml
  - aws s3 cp --recursive H2HAdventure/target s3://h2adventure-website/game

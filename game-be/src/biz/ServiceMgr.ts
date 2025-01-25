@@ -69,7 +69,7 @@ export default class ServiceMgr {
 		console.log("Game Backend shutting down due to inactivity");
 		clearInterval(this.interval_id);
 
-		this.lobby_backend.set_gamesever_ip(null);
+		await this.lobby_backend.set_gamesever_ip(null);
 
 		// Shutdown
 		process.exit(0);
