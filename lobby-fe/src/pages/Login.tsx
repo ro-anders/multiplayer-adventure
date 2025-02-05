@@ -44,6 +44,16 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
     window.open(`${url}/index.html?gamecode=${code}`, '_self')
   }
 
+  function handleFindOthers() {
+    if (!formUsername) {
+      setWarning("Please enter a name")
+    }
+    else {
+      setUsername(formUsername)
+      navigate("/connect");
+    }
+  }
+
   return (
 
     <div className="login-page">
@@ -91,7 +101,7 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
       </Form>
       <Button onClick={handlePlayOthers}>Play Against Others</Button>
       <Button onClick={handlePlayAi}>Play Against the Computer</Button>
-      <Button>Find Other Players</Button>
+      <Button onClick={handleFindOthers}>Find Other Players</Button>
       <Button>More Info</Button>
     </div>
   );

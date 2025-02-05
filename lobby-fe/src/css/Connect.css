@@ -1,0 +1,21 @@
+.connect-page {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: space-between;
+  flex-grow: 1;
+  background-color:  rgb(250, 82, 85);
+  border: 2.5vw solid rgb(250, 82, 85); /* 40px purple border around the container */
+}
+
+.connect-room {
+  width: 46vw;
+  background-color: rgb(205, 205, 205);
+}
+
+.connect-separator {
+  width: 3vw; /* Fixed width for the entire orange column */
+  display: flex;
+  flex-direction: column;  
+  background-color: rgb(250, 82, 85);
+}

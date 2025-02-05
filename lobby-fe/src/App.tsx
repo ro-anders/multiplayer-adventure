@@ -7,6 +7,7 @@ import {
 import 'bootstrap/dist/css/bootstrap.min.css';
 import LoginPage from "./pages/Login";
 import LobbyPage from "./pages/Lobby";
+import ConnectPage from "./pages/Connect";
 import PlayerService from './services/PlayerService'
 import RetroGamePage from './pages/RetroGamePage';
 import './App.css';
@@ -79,6 +80,10 @@ useEffect(() => {
       path: "/lobby",
       element: username ? <LobbyPage username={username} experience_level={experienceLevel}/> :
         <Navigate to="/login" replace />
+    },
+    {
+      path: "/connect",
+      element: username ? <ConnectPage username={username}/> : <Navigate to="/login" replace />
     },
     {
       path: "/retro",
