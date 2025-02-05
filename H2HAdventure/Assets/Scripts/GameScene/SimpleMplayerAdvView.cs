@@ -3,6 +3,7 @@ using System.IO.Compression;
 using GameEngine;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Analytics;
 
 namespace GameScene
 {
@@ -114,8 +115,10 @@ namespace GameScene
                 // Strip off the last line
                 roster.text = roster.text.Remove(roster.text.LastIndexOf(Environment.NewLine));
             }
+            roster.gameObject.SetActive(true);
             // Also set the watermark.  Gold=0, Copper=1, Jade=11
             homeCastleWatermark.text = "<sprite=" + (currentPlayer == 2 ? 11 : currentPlayer) + ">";
+            homeCastleWatermark.gameObject.SetActive(true);
         }
 
     }

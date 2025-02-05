@@ -29,7 +29,7 @@ To Deploy and Run the System:
   - export AWS_REGION=us-east-2
 2. Build SinglePlayer game package
  - Open Unity
- - Unity File->Build
+ - Unity File->Build Settings...
  - Select Scenes/SinglePlayerScreen and unselect others
  - Uncheck "Development Build"
  - Select "Runtime Speed" for "Code Optimization"

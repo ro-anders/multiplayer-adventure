@@ -1,5 +1,5 @@
 import { ECSClient, RunTaskCommand } from "@aws-sdk/client-ecs";
-import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
 import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
 
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
@@ -10,7 +10,7 @@ const GAMEBACKEND_PING_PERIOD = 1 * 60 * 1000 // milliseconds
 
 export const createGameServerHandler = async (event) => {
     console.info('received:', event);
-    console.log(`Calling ${event.httpMethod} ${event.path} while ENVIRONMENT_TYPE=${process.env.ENVIRONMENT_TYPE}` +
+    console.log(`Calling ${event.httpMethod} ${event.path} while ENVIRONMENT_TYPE=${process.env.ENVIRONMENT_TYPE} ` +
       `fullpath=https://${event.requestContext.domainName}/${event.requestContext.path}`
     )
     if (event.httpMethod !== 'POST') {
@@ -22,9 +22,12 @@ export const createGameServerHandler = async (event) => {
     let status_code = 200
     if (process.env.ENVIRONMENT_TYPE !== 'development') {  
       
-      if (isGameServerRunning()) {
+      const game_server_running = await isGameServerRunning()
+      if (game_server_running) {
+        console.log("Game server is already running")
         status_code = 302;
       } else {
+        console.log('Setting game server ip to "starting"')
         // Set the game server setting to "starting".
         // I know we just checked if the server is already running, but
         // we need to check and update in a single transaction, so
@@ -101,8 +104,9 @@ export const createGameServerHandler = async (event) => {
             }
         }
           
+      }
     }
-
+    
     const response = {
         statusCode: status_code,
         headers: {
@@ -140,6 +144,7 @@ const isGameServerRunning = async () => {
       const max_time = (value === "starting" ? 240000 /* four minutes */ : 2 * GAMEBACKEND_PING_PERIOD)
       const too_old = time_since > max_time;
       if (too_old) {
+        console.log("Found server that is old.  Deleting")
         // There is an entry in the database, but it's out of date and
         // probably from a crashed process.  Delete it and report no server.
         var delete_params = {

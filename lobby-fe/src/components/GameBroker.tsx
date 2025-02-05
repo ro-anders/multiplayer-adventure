@@ -13,7 +13,9 @@ interface GameBrokerProps {
   /** The experience level of the currently logged in user 1, 2 or 3. */
   experience_level: number;
 
-  /** List of currently proposed games */
+  /** List of currently proposed games.  Actually it's all games, so make
+   * sure, when you use it, you filter out non-proposed games.
+   */
   proposed_games: GameInLobby[];
 
   /** Callback to call if we change something about the currently proposed games (e.g. we
@@ -44,7 +46,8 @@ function GameBroker({username,
   function playerCommitted(): boolean {
     let committed = false;
     for (const proposed_game of proposed_games) {
-      committed = committed || (proposed_game.display_names.indexOf(username) >= 0);
+      committed = committed || 
+        (proposed_game.state==GAMESTATE__PROPOSED && proposed_game.display_names.indexOf(username) >= 0);
     }
     return committed;
   }
