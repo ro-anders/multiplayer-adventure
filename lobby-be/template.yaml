@@ -309,6 +309,50 @@ Resources:
             Path: /game/{session}
             Method: DELETE
 
+  ###########################
+  # Lambdas for Scheduled Event management
+  #
+  getAllEventsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/get-all-events.getAllScheduledEventsHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Return a list of all future scheduled events
+      Policies:
+        # Give Create/Read/Update/Delete Permissions
+        - DynamoDBReadPolicy:
+            TableName: !Ref ScheduledEventsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /event
+            Method: GET
+
+  createEventFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/put-event.upsertScheduledEventHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Register a scheduled event
+      Policies:
+        # Give Create/Read/Update/Delete Permissions
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ScheduledEventsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /event
+            Method: PUT
 
   ###########################
   # Convenience method for getting all player, game and chat updates
@@ -455,6 +499,31 @@ Resources:
       PrimaryKey:
         Name: session
         Type: Number
+
+  # Scheduled Events table
+  #  Table of scheduled events (times people have said they will come online to play)
+  #  
+  #  partitionkey (partition key): string - just the string "EVENT"
+  #  starttime (partition key): number - time when the event will start
+  #  notes: string - a short, optional description of the event
+  #  players: string[] - those who said they will join at the time 
+  #     (the first one is the planner)
+  #  
+  ScheduledEventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ScheduledEvents
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: "partitionkey"
+          AttributeType: "S"
+        - AttributeName: "starttime"
+          AttributeType: "N"
+      KeySchema:
+        - AttributeName: "partitionkey"
+          KeyType: "HASH"
+        - AttributeName: "starttime"
+          KeyType: "RANGE"
 
   # Chat table
   #  Table of chat messages sent in the lobby.

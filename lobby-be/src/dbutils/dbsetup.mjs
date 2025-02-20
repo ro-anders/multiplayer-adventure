@@ -48,6 +48,8 @@ const initializeSchema = async () => {
     BillingMode: "PAY_PER_REQUEST"
   };
   await ddbDocClient.send(new CreateTableCommand(settingsDef))
+
+
   // Create the players table.  This only keeps the players last active time.
   // All other player info is kept in another table, and this drops non-recent players
   // so all players can be returned in a 1MB call. 
@@ -68,6 +70,8 @@ const initializeSchema = async () => {
     BillingMode: "PAY_PER_REQUEST"
   };
   await ddbDocClient.send(new CreateTableCommand(playersDef))
+
+
   // Create the player stats table.  This only keeps a couple running counts on each player
   // in hopes that getting all stats doesn't exceed 1MB.  If it does, we'll have to add paging
   // or an index or something.
@@ -88,6 +92,8 @@ const initializeSchema = async () => {
     BillingMode: "PAY_PER_REQUEST"
   };
   await ddbDocClient.send(new CreateTableCommand(playerStatsDef))
+
+
   // Create the games table
   const gamesDef = { 
     AttributeDefinitions: [ 
@@ -106,6 +112,35 @@ const initializeSchema = async () => {
     BillingMode: "PAY_PER_REQUEST"
   };
   await ddbDocClient.send(new CreateTableCommand(gamesDef))
+
+
+  // Create the scheduled events table
+  const eventsDef = { 
+    TableName: "ScheduledEvents", 
+    AttributeDefinitions: [ 
+      { 
+        AttributeName: "partitionkey", 
+        AttributeType: "S", 
+      },
+      {
+        AttributeName: "starttime", 
+        AttributeType: "N", 
+      }
+    ],
+    KeySchema: [ 
+      { 
+        AttributeName: "partitionkey", 
+        KeyType: "HASH", 
+      },
+      { 
+        AttributeName: "starttime", 
+        KeyType: "RANGE", 
+      },
+    ],
+    BillingMode: "PAY_PER_REQUEST"
+  };
+  await ddbDocClient.send(new CreateTableCommand(eventsDef))
+
 
   // Create the chat table
   const chatDef = { 

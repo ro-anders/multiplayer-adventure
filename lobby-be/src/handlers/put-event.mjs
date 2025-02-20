@@ -3,42 +3,29 @@ import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
 
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
-/**
- * 
- * @returns Generate a unique session id
- */
-const generateSessionId = async () => {
-    // TODO: actually check with existing sessions to make sure it's unique.
-    // Needs to fit in a byte, and, just to be safe, in a signed byte. 
-    return Math.floor(100 * Math.random())
-}
-
-export const createGameHandler = async (event) => {
-    if (event.httpMethod !== 'POST') {
+export const upsertScheduledEventHandler = async (event) => {
+    if (event.httpMethod !== 'PUT') {
         throw new Error(`postMethod only accepts POST method, you tried: ${event.httpMethod} method.`);
     }
-    // All log statements are written to CloudWatch
-    //console.info('received:', event);
 
     await CheckDDB();
 
     // Get body of the request
     const body = JSON.parse(event.body);
-    body.session = await generateSessionId();
 
     // For right now we just trust that the client is giving us the right structure.
-
-    // Creates a new game
+    // Though we do set the partition key
+    body.partitionkey="EVENT"    
     var params = {
-        TableName : "Games",
+        TableName: "ScheduledEvents",
         Item: body
     };
 
     try {
         const data = await ddbDocClient.send(new PutCommand(params));
-        console.log("Success - game added", data);
+        console.log("Success - event added", data);
       } catch (err) {
-        console.log("Error", err.stack);
+        console.log(`Error sending Dynamo PUT ${JSON.stringify(params)}`, err.stack);
       }
 
     const response = {

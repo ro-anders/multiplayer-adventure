@@ -15,8 +15,7 @@ interface ProposeModalProps {
   }
   
 /**
- * Displays the list of proposed games, allowing the user to join one.
- * Also displays an option to propose a new game.
+ * Displays a popup modal that allows you to propose a new game.
  */
 function ProposeModal({username, show, onHide, propose_game_callback}: ProposeModalProps) {
   const [selectedGame, setSelectedGame] = useState("2");

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Button } from 'react-bootstrap';
 
 import '../App.css';
 import '../css/Connect.css'
+import EventsList from '../components/EventsList';
 
 interface ConnectProps {
   /** The name of the currently logged in user */
@@ -16,29 +16,28 @@ function ConnectPage({username}: ConnectProps) {
 
   let [selected, setSelected] = useState<string>('none');
   
-  function showSchedule() {
-
-  }
-  
   return (
     <div className="connect-page">
       <div className="connect-room">
-        <Button onClick={()=>{setSelected('schedule')}}>Join a scheduled event</Button>
-        <Button onClick={()=>{setSelected('call')}}>Send out a call</Button>
-        <Button onClick={()=>{setSelected('notify')}}>Get notified</Button>
-        <Button onClick={()=>{setSelected('engage')}}>Reach out</Button>
+        <div onClick={()=>{setSelected('schedule')}}>Join a scheduled event</div>
+        <div onClick={()=>{setSelected('call')}}>Send out a call</div>
+        <div onClick={()=>{setSelected('notify')}}>Get notified</div>
+        <div onClick={()=>{setSelected('engage')}}>Reach out</div>
       </div>
       <div className="connect-room">
-      {(selected == 'schedule') &&
-          <div>Below is the schedule ...</div>
+        {(selected === 'schedule') &&
+          <div>
+            <h3>Scheduled Events</h3>
+            <EventsList current_user={username}/>
+          </div>
         }
-        {(selected == 'call') &&
+        {(selected === 'call') &&
           <div>Notify others that you want to play ...</div>
         }
-        {(selected == 'notify') &&
+        {(selected === 'notify') &&
           <div>Receive email when someone is looking to play ...</div>
         }
-        {(selected == 'engage') &&
+        {(selected === 'engage') &&
           <div>You must know someone who will like this. ...</div>
         }
       </div>

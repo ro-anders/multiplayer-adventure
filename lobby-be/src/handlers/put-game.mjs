@@ -22,7 +22,7 @@ export const putGameHandler = async (event) => {
     }
 
     var params = {
-        TableName : "Games",
+        TableName: "Games",
         Item: body
     };
 
