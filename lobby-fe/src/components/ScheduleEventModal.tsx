@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import "../css/ProposeModal.css"
 import { ScheduledEvent } from '../domain/ScheduledEvent';
 
@@ -19,12 +21,22 @@ interface ScheduleEventModalProps {
  */
 function ScheduleEventModalModal({current_user, show, schedule_event_callback, onHide}: ScheduleEventModalProps) {
   const [start, setStart] = useState<Date>(new Date());
-  const [dateValid, setDateValid] = useState<boolean>(true);
-  const [timeValid, setTimeValid] = useState<boolean>(true);
+  const [eventDate, setEventDate] = useState<Date>(new Date())
+  const [eventHour, setEventHour] = useState<number>(0);
+  const [eventMinute, setEventMinutes] = useState<number>(0);
+  const [hasTimeHasBeenPicked, setHasTimeBeenPicked] = useState<boolean>(false)
+  const [isTimeValid, setIsTimeValid] = useState<boolean>(true);
 
+  /**
+   * Event handler for when the user clicks the "Schedule" button.
+   * Construct the events full data and time, pass that back to the page,
+   * and close the modal.
+   */
   function scheduleClicked() {
+    // Add the time to the picked date
+    eventDate.setHours(eventHour, eventMinute, 0, 0); 
     const new_event: ScheduledEvent = {
-      starttime: start.getTime(),
+      starttime: eventDate.getTime(),
       note: "",
       players: [current_user]
     }
@@ -32,16 +44,22 @@ function ScheduleEventModalModal({current_user, show, schedule_event_callback, o
     onHide();
   }
 
-  function validateTime(e: React.ChangeEvent<HTMLInputElement >) {
+  /**
+   * Event handler for when a user types a time in the form.
+   * Validates that it is a valid time and then saves the time
+   * chosen.
+   * @param e React event of changing the form value
+   */
+  function timePicked(e: React.ChangeEvent<HTMLInputElement >) {
     // See if the value is of the correct format.  If not, do not process it, but
     // flag an error.
     const timeStr = e.currentTarget.value;
     const timeRegex = /^(1[0-2]|0?[1-9]):([0-5][0-9])(AM|PM)$/i;
     const match = timeStr.match(timeRegex);
     if (!match) {
-        setTimeValid(false)
+        setIsTimeValid(false)
     } else {
-      setTimeValid(true)
+      setIsTimeValid(true)
       // Time is valid.  Parse it and put it in the time part of the startDate.
       let [_, hour, minute, period] = match;
       let hours = parseInt(hour, 10);
@@ -52,11 +70,23 @@ function ScheduleEventModalModal({current_user, show, schedule_event_callback, o
       } else if (period.toUpperCase() === "AM" && hours === 12) {
           hours = 0;
       }
-      start.setHours(hours, minutes, 0, 0); // Set time while keeping today's date
-      setStart(start)
-
+      setEventHour(hours)
+      setEventMinutes(minutes)
+      setHasTimeBeenPicked(true);
     }
 
+  }
+
+  /**
+   * Event handler when user clicks a date int the date picker.
+   * Just stores the date chosen.
+   * @param date date passed back from the DatePicker
+   * @param event ReactEvent like mouse click that triggered data being picked
+   */
+  function datePicked(date: Date | null, event: any) {
+    if (date) {
+      setEventDate(date);
+    }
   }
 
   return (
@@ -72,7 +102,12 @@ function ScheduleEventModalModal({current_user, show, schedule_event_callback, o
 
           <div className="schedule-modal-field">
             <Form.Label>Choose a date to play</Form.Label>
-            <Form.Control className="schedule-form-field" type="text" placeholder="April 1"/>
+            <Form.Group>
+              <DatePicker
+                selected={eventDate}
+                onChange={datePicked}
+              />
+            </Form.Group>
           </div>
           <div className="schedule-modal-field">
             <Form.Label>Choose a time to play</Form.Label>
@@ -80,10 +115,9 @@ function ScheduleEventModalModal({current_user, show, schedule_event_callback, o
               className="schedule-form-field" 
               type="text" 
               placeholder="10:00PM" 
-              isInvalid={!timeValid}
-              onChange={validateTime}/>
+              isInvalid={!isTimeValid}
+              onChange={timePicked}/>
           </div>
-          Computed={start.toISOString()}={new Date(start.getTime()).toISOString()}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={onHide}>
@@ -92,7 +126,7 @@ function ScheduleEventModalModal({current_user, show, schedule_event_callback, o
           <Button 
             variant="primary" 
             onClick={scheduleClicked}
-            disabled={!timeValid}>
+            disabled={!isTimeValid || !hasTimeHasBeenPicked}>
             Schedule
           </Button>
         </Modal.Footer>
