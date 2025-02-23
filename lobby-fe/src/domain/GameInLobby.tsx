@@ -18,7 +18,7 @@ export interface GameInLobby extends GameDetails {
  * and return a list of players in the order they will appear in the game.
  */
 export function reorder(display_names: string[], order: number) : string[] {
-    if (display_names.length == 3) {
+    if (display_names.length === 3) {
         switch (order) {
             case 0:
                 return [display_names[0], display_names[1], display_names[2]];
@@ -33,7 +33,7 @@ export function reorder(display_names: string[], order: number) : string[] {
             case 5: default:
                 return [display_names[2], display_names[1], display_names[0]];
         }
-    } else if (display_names.length == 2) {
+    } else if (display_names.length === 2) {
         if (order % 2 === 0) {
            return [display_names[0], display_names[1]];
         } else {

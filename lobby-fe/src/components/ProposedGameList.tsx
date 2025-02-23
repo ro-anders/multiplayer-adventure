@@ -4,7 +4,6 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import '../App.css';
 import {GameInLobby, GAMESTATE__PROPOSED, reorder} from '../domain/GameInLobby'
 import GameStartingModal from './GameStartingModal'
-import GameService from '../services/GameService'
 import SettingsService from '../services/SettingsService';
 
 interface ProposedGameListProps {
@@ -29,8 +28,6 @@ interface ProposedGameListProps {
 
 const MODAL_HIDDEN='no game'
 const MODAL_WAITING_ON_SERVER='server starting'
-const MODAL_WAITING_MINIMUM_TIME='waiting'
-const MODAL_MINIMUM_TIME=10000; // Milliseconds
 
 /**
  * Displays a list of games.
@@ -39,7 +36,7 @@ const MODAL_MINIMUM_TIME=10000; // Milliseconds
  */
 function ProposedGameList({current_user, 
     experience_level, 
-    games: games, 
+    games, 
     game_change_callback, 
     state_to_display,
     actions_disabled}: ProposedGameListProps) {
@@ -47,13 +44,10 @@ function ProposedGameList({current_user,
   /** Whether the modal is shown and, if it is, what it is waiting for to dismiss */
   const [startGameModal, setStartGameModal] = useState<string>(MODAL_HIDDEN);
 
-  /** Whether to display buttons that allow you to manipulate the state of games */
-  const interactive: boolean = state_to_display == GAMESTATE__PROPOSED;
-
   /** Filter the list to only the games we want to display */
-  const games_to_display = games.filter((game: GameInLobby)=>{return game.state==state_to_display})
+  const games_to_display = games.filter((game: GameInLobby)=>{return game.state===state_to_display})
 
-  const list_title = (state_to_display == GAMESTATE__PROPOSED ? "Join a Game" : "Running Games")
+  const list_title = (state_to_display === GAMESTATE__PROPOSED ? "Join a Game" : "Running Games")
 
   /**
    * User has just pressed "Join" on a game.
@@ -75,7 +69,7 @@ function ProposedGameList({current_user,
    */
   function quitGame(game: GameInLobby) {
     // Remove the player from the game
-    game.display_names = game.display_names.filter((name: string) => name != current_user)
+    game.display_names = game.display_names.filter((name: string) => name !== current_user)
     game.player_names = reorder(game.display_names, game.order)
     game_change_callback(game)
   }
@@ -93,7 +87,7 @@ function ProposedGameList({current_user,
       // Next two bits hold the slot number
       4 * slot +
       // next bit holds the help popups flag
-      2 * (experience_level == 1 ? 1 : 0) +
+      2 * (experience_level === 1 ? 1 : 0) +
       // last bit holds the maze guide flag
       (experience_level <= 2 ? 1 : 0);
     setStartGameModal(MODAL_WAITING_ON_SERVER);

@@ -3,7 +3,6 @@ import Button from 'react-bootstrap/Button';
 import '../App.css';
 import '../css/Lobby.css'
 import { ReceivedChat } from '../domain/LobbyState'
-import ChatService from '../services/ChatService';
 
 interface ChatWindowProps {
   /** The name of the currently logged in user */

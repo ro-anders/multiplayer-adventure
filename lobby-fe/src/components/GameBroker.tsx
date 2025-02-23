@@ -3,7 +3,6 @@ import Button from 'react-bootstrap/Button';
 import '../App.css';
 import ProposedGameList from './ProposedGameList'
 import {GameInLobby, GAMESTATE__PROPOSED} from '../domain/GameInLobby'
-import GameService from '../services/GameService'
 import ProposeModal from './ProposeModal';
 
 interface GameBrokerProps {
@@ -47,7 +46,7 @@ function GameBroker({username,
     let committed = false;
     for (const proposed_game of proposed_games) {
       committed = committed || 
-        (proposed_game.state==GAMESTATE__PROPOSED && proposed_game.display_names.indexOf(username) >= 0);
+        (proposed_game.state===GAMESTATE__PROPOSED && proposed_game.display_names.indexOf(username) >= 0);
     }
     return committed;
   }

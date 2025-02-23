@@ -179,7 +179,7 @@ Resources:
         - x86_64
       MemorySize: 128
       Timeout: 100
-      Description: Return a list of all registered players
+      Description: Return a list of all games
       Policies:
         # Give Create/Read/Update/Delete Permissions
         - DynamoDBReadPolicy:
@@ -200,7 +200,7 @@ Resources:
         - x86_64
       MemorySize: 128
       Timeout: 100
-      Description: Get a configuration setting
+      Description: Get info on a game
       Policies:
         # Give Create/Read/Update/Delete Permissions
         - DynamoDBReadPolicy:
@@ -354,6 +354,27 @@ Resources:
             Path: /event
             Method: PUT
 
+  deleteEventFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/delete-event.deleteScheduledEventHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Delete a scheduled event
+      Policies:
+        # Give Create/Read/Update/Delete Permissions
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ScheduledEventsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /event/{starttime}
+            Method: DELETE
+
   ###########################
   # Convenience method for getting all player, game and chat updates
   #
@@ -381,6 +402,52 @@ Resources:
           Properties:
             Path: /lobby
             Method: GET
+
+  ###########################
+  # Lambdas for Subscriptions management
+  #
+
+  putSubscriptionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/put-subscription.putSubscriptionHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Update or create an existing subscription
+      Policies:
+        # Give Create/Read/Update/Delete Permissions
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SubscriptionsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /subscription/{address}
+            Method: PUT
+
+  deleteSubscriptionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/delete-subscription.deleteSubscriptionHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Delete a subscription
+      Policies:
+        # Give Create/Read/Update/Delete Permissions
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SubscriptionsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /subscription/{address}
+            Method: DELETE
 
   ###########################
   # Lambdas for Settings management
@@ -549,6 +616,23 @@ Resources:
           KeyType: "HASH"
         - AttributeName: "sortkey"
           KeyType: "RANGE"
+
+  # Subscriptions table
+  #  Table of email address (and possibly mobile numbers) to notify
+  #  as well as for what situations they want to be notified
+  #
+  #  address (partition key): string - email address (or possibly mobile number if we ever
+  #           support texting people)
+  #  on_send_call: boolean - whether to notify this person when someone sends out a call
+  #  on_new_event: boolean - whether to notify this person when a new event is scheduled
+  #  
+  SubscriptionsTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: Subscriptions
+      PrimaryKey:
+        Name: address
+        Type: String
 
   # Settings table
   #  Table of name value settings of the system.  At time of creation "game_server_ip" is the only

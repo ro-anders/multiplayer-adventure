@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { Button, Form } from 'react-bootstrap';
 import '../App.css';
 import '../css/Connect.css'
 import EventsList from '../components/EventsList';
@@ -35,7 +36,33 @@ function ConnectPage({username}: ConnectProps) {
           <div>Notify others that you want to play ...</div>
         }
         {(selected === 'notify') &&
-          <div>Receive email when someone is looking to play ...</div>
+          <div>
+            <div>Receive email when someone is looking to play.</div>
+            <div>
+              <Form>
+                <Form.Label>Notify me at</Form.Label>
+                <Form.Control placeholder="acererak@gmail.com"/>
+                <Form.Check
+                  type="checkbox"
+                  id="call"
+                  label="when someone sends out a call (is online ready to play)"
+                />
+                <Form.Check
+                  type="checkbox"
+                  id="event"
+                  label="when a new event is scheduled"
+                />
+                <Button>Subscribe</Button>
+              </Form>
+            </div>
+            <div>
+              <Form>
+                <Form.Label>Unsubscribe from all notifications</Form.Label>
+                <Form.Control placeholder="acererak@gmail.com"/>
+                <Button>Unsubscribe</Button>
+              </Form>
+            </div>
+          </div>
         }
         {(selected === 'engage') &&
           <div>You must know someone who will like this. ...</div>

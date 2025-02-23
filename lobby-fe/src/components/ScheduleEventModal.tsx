@@ -19,8 +19,7 @@ interface ScheduleEventModalProps {
 /**
  * Modal that lets user schedule a new event.
  */
-function ScheduleEventModalModal({current_user, show, schedule_event_callback, onHide}: ScheduleEventModalProps) {
-  const [start, setStart] = useState<Date>(new Date());
+function ScheduleEventModal({current_user, show, schedule_event_callback, onHide}: ScheduleEventModalProps) {
   const [eventDate, setEventDate] = useState<Date>(new Date())
   const [eventHour, setEventHour] = useState<number>(0);
   const [eventMinute, setEventMinutes] = useState<number>(0);
@@ -61,7 +60,7 @@ function ScheduleEventModalModal({current_user, show, schedule_event_callback, o
     } else {
       setIsTimeValid(true)
       // Time is valid.  Parse it and put it in the time part of the startDate.
-      let [_, hour, minute, period] = match;
+      let [, hour, minute, period] = match;
       let hours = parseInt(hour, 10);
       let minutes = parseInt(minute, 10);
   
@@ -134,5 +133,5 @@ function ScheduleEventModalModal({current_user, show, schedule_event_callback, o
       );
 }
     
-export default ScheduleEventModalModal;
+export default ScheduleEventModal;
     

@@ -69,6 +69,8 @@ function EventsList({current_user}: EventsListProps) {
 
   function createNewEvent(new_event: ScheduledEvent) {
     events.push(new_event)
+    events.sort((a: ScheduledEvent, b: ScheduledEvent) => a.starttime - b.starttime)
+    ScheduledEventService.upsertScheduleEvent(new_event)
     setEvents(events.slice())
   }
 

@@ -168,6 +168,26 @@ const initializeSchema = async () => {
     BillingMode: "PAY_PER_REQUEST"
   };
   await ddbDocClient.send(new CreateTableCommand(chatDef))
+
+  // Create the subscriptions  table
+  const subsDef = { 
+    TableName: "Subscriptions", 
+    AttributeDefinitions: [ 
+      { 
+        AttributeName: "address", 
+        AttributeType: "S", 
+      }
+    ],
+    KeySchema: [ 
+      { 
+        AttributeName: "address", 
+        KeyType: "HASH", 
+      }
+    ],
+    BillingMode: "PAY_PER_REQUEST"
+  };
+  await ddbDocClient.send(new CreateTableCommand(subsDef))
+
 } 
 
 /**
