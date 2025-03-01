@@ -1,5 +1,5 @@
 
-import { DeleteCommand, DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { DeleteCommand, DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
 
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
@@ -15,7 +15,7 @@ export const deleteSubscriptionHandler = async (event) => {
     await CheckDDB();
 
     // Get address from the request path
-    const session = parseInt(event.pathParameters.address);
+    const address = decodeURIComponent(event.pathParameters.address);
     var params = {
         TableName : "Subscriptions",
         Key: { address: address },

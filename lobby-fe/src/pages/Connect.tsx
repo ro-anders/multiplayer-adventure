@@ -4,6 +4,8 @@ import { Button, Form } from 'react-bootstrap';
 import '../App.css';
 import '../css/Connect.css'
 import EventsList from '../components/EventsList';
+import Subscribe from '../components/Subscribe';
+import SendCall from '../components/SendCall';
 
 interface ConnectProps {
   /** The name of the currently logged in user */
@@ -33,36 +35,10 @@ function ConnectPage({username}: ConnectProps) {
           </div>
         }
         {(selected === 'call') &&
-          <div>Notify others that you want to play ...</div>
+          <SendCall/>
         }
         {(selected === 'notify') &&
-          <div>
-            <div>Receive email when someone is looking to play.</div>
-            <div>
-              <Form>
-                <Form.Label>Notify me at</Form.Label>
-                <Form.Control placeholder="acererak@gmail.com"/>
-                <Form.Check
-                  type="checkbox"
-                  id="call"
-                  label="when someone sends out a call (is online ready to play)"
-                />
-                <Form.Check
-                  type="checkbox"
-                  id="event"
-                  label="when a new event is scheduled"
-                />
-                <Button>Subscribe</Button>
-              </Form>
-            </div>
-            <div>
-              <Form>
-                <Form.Label>Unsubscribe from all notifications</Form.Label>
-                <Form.Control placeholder="acererak@gmail.com"/>
-                <Button>Unsubscribe</Button>
-              </Form>
-            </div>
-          </div>
+          <Subscribe/>
         }
         {(selected === 'engage') &&
           <div>You must know someone who will like this. ...</div>

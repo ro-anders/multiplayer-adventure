@@ -15,7 +15,7 @@ export const putSubscriptionHandler = async (event) => {
     await CheckDDB();
 
     // Get address from the URL and the rest of the game from the body
-    const address = event.pathParameters.address;
+    const address = decodeURIComponent(event.pathParameters.address);
     const body = JSON.parse(event.body);
     if (body.address != address) {
         throw new Error(`Invalid request: address in request URL does not match address in body.`);

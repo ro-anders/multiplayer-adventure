@@ -11,4 +11,5 @@ To hit the API run:
   curl http://localhost:3000/
 
 You can debug the dynamodb by running aws commandline against it,
-  aws dynamodb --endpoint-url http://localhost:8000 list-tables
+  - aws dynamodb --endpoint-url http://localhost:8000 list-tables
+  - aws dynamodb --endpoint-url http://localhost:8000 scan --table-name ScheduledEvents
