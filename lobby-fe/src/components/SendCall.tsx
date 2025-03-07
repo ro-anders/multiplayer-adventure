@@ -28,6 +28,7 @@ function Subscribe() {
 
   function sendCall() {
     setShowModal(false)
+    SubscriptionService.notify('sendcall')
     setCallSent(true)
 
   }

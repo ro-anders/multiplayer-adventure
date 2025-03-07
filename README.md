@@ -10,7 +10,10 @@ To Run the Whole Suite Locally:
   - `docker run -p 8000:8000 amazon/dynamodb-local`
 2. Run the Lobby Backend lambdas using SAM (port 3000)
   - `sam local start-api`
-  This mimics the APIGateway & Lambda
+  This mimics the APIGateway & Lambda.
+  If you want to actually send emails, you need to specify the gmail password with
+  - `sam local start-api --parameter-overrides EnvironmentType=development GMailPassword=<<password>>`
+  You can get the password from `lobby-be/.password` but never check that file into Github.
 3. Run the game-be backend game server (port 4000) 
   - `docker build --platform linux/amd64 . -t roanders/h2hadv-server`
   - `docker run -p 4000:4000 -e NODE_ENV=development --network=host roanders/h2hadv-server`
@@ -27,7 +30,7 @@ To Deploy and Run the System:
 1. Authenticate with AWS, credentials stored in ~/.aws/credentials
   - export AWS_PROFILE=h2hadventure
   - export AWS_REGION=us-east-2
-2. Build SinglePlayer game package
+2. Build SinglePlayer Unity game package
  - Open Unity
  - Unity File->Build Settings...
  - Select Scenes/SinglePlayerScreen and unselect others
@@ -36,20 +39,21 @@ To Deploy and Run the System:
  - Click "Build"
  - Enter "H2HAdventure1P"
  - Click Save and then click Replace
-3. Build MultiPlayer game package
+3. Build MultiPlayer Unity game package
  - Select Scenes/ProtoMPlayer and unselect others
  - Click "Build"
  - Enter "H2HAdventureMP"
  - Click Save and then click Replace
-3. Deploy game package
+4. Deploy Unity game packages
  - aws cloudformation update-stack --stack-name s3-website  --template-body file://lobby-fe/deploy/s3website.cfn.yml
  - aws s3 cp --recursive H2HAdventure/target s3://h2adventure-website/game
-4. Build and deploy lobby-be
+5. Build and deploy lobby-be
  - cd lobby-be
  - sam build
  - sam deploy
-5. Build and deploy lobby-fe
+6. Build and deploy lobby-fe
  - cd lobby-fe
+ - if you rebuilt the backend from scratch, put the new API gateway URL (e.g. https://qt69wijl94.execute-api.us-east-2.amazonaws.com/Prod) in lobby-fe/.env.production
  - npm run build
  - aws s3 cp --recursive build/ s3://h2adventure-website/
 7. Build the Game Back-End Server
@@ -57,13 +61,5 @@ To Deploy and Run the System:
 8. Define the backend server by standing up deploy/fargateservice.cfn.yml
   - aws cloudformation update-stack --stack-name game-be \
    --template-body file://game-be/deploy/fargateservice.cfn.yml --capabilities "CAPABILITY_NAMED_IAM"
-8. Play game
+9. Play game
  - goto http://h2adventure-website.s3-website.us-east-2.amazonaws.com 
-9. Until H2HAdventure knows how to launch it's own Fargate task, when ready to play a game manually start the task.
-  - aws ecs run-task \
-   --cluster h2hadv-serverCluster \ 
-   --task-definition arn:aws:ecs:us-east-2:637423607158:task-definition/h2hadv-serverTaskDefinition \
-   --launch-type FARGATE \
-   --network-configuration "awsvpcConfiguration={subnets=[subnet-0d46ce42b6ae7a1ee,subnet-011083badbc3f216e],securityGroups=[sg-07539077994dfb96c],assignPublicIp=ENABLED}" \
-   --overrides '{ "containerOverrides": [ { "name": "h2hadv-server", "environment": [ { "name": "LOBBY_URL", "value": "https://g0g3vzs6qf.execute-api.us-east-2.amazonaws.com/Prod" } ] } ] }'
-

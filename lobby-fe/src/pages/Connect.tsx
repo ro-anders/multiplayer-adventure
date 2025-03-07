@@ -1,6 +1,5 @@
 import { useState } from 'react';
 
-import { Button, Form } from 'react-bootstrap';
 import '../App.css';
 import '../css/Connect.css'
 import EventsList from '../components/EventsList';

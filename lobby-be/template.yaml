@@ -17,6 +17,11 @@ Parameters:
     Description: Environment.  Either 'production' or 'development'
     Type: String
 
+  GMailPassword:
+    Description: 'Password to the gmail account used to send notifications'
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: '/passwords/h2hatariadventure-gmail' 
+
 Globals:
     Function:
         Environment:
@@ -404,7 +409,7 @@ Resources:
             Method: GET
 
   ###########################
-  # Lambdas for Subscriptions management
+  # Lambdas for Subscriptions
   #
 
   putSubscriptionFunction:
@@ -448,6 +453,27 @@ Resources:
           Properties:
             Path: /subscription/{address}
             Method: DELETE
+
+  createNotificationEventFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/create-notification-event.createNotificationEventHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Notify all people subscribed to an event
+      Policies:
+      Environment:
+        Variables:
+          GMAIL_PASSWORD: !Ref GMailPassword
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /notify
+            Method: POST
 
   ###########################
   # Lambdas for Settings management

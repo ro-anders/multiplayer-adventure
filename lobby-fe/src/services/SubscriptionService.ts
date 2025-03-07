@@ -46,5 +46,26 @@ export default class SubscriptionService {
 		await fetch(request);
 	}
 
+	/**
+	 * Notify anyone subscribed to a certain type of event.
+	 * @param notification_event_type the type of event (sendcall or newscheduledevent)
+	 */
+	static async notify(notification_event_type: string) {
+		const headers: Headers = new Headers()
+		headers.set('Content-Type', 'application/json')
+		headers.set('Accept', 'application/json')
+
+		const newNotificationEvent = {
+			notification_event_type: notification_event_type
+		};
+		const request: RequestInfo = new Request(`${SubscriptionService.back_end}/notify`, {
+			method: 'POST',
+			headers: headers,
+			body: JSON.stringify(newNotificationEvent)
+		})
+
+		await fetch(request);
+	}
+
 }
 
