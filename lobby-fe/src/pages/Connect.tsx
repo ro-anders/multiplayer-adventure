@@ -5,6 +5,7 @@ import '../css/Connect.css'
 import EventsList from '../components/EventsList';
 import Subscribe from '../components/Subscribe';
 import SendCall from '../components/SendCall';
+import TitleBar from '../components/TitleBar';
 
 interface ConnectProps {
   /** The name of the currently logged in user */
@@ -20,6 +21,7 @@ function ConnectPage({username}: ConnectProps) {
   
   return (
     <div className="connect-page">
+      <TitleBar/>
       <div className="connect-room">
         <div onClick={()=>{setSelected('schedule')}}>Join a scheduled event</div>
         <div onClick={()=>{setSelected('call')}}>Send out a call</div>

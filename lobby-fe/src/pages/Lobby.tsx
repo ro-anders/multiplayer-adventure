@@ -9,6 +9,7 @@ import Roster from '../components/Roster'
 import ProposedGameList from '../components/ProposedGameList';
 import ChatService from '../services/ChatService';
 import GameService from '../services/GameService';
+import TitleBar from '../components/TitleBar';
 
 
 interface LobbyProps {
@@ -175,51 +176,54 @@ function Lobby({username, experience_level}: LobbyProps) {
 
   console.log("Rendering lobby")
   return (
+    <div>
+      <TitleBar/>
       <div className="lobby-main">
-        <Roster player_names={lobbyState.online_player_names}/>
-        {/* Put in a wall between the columns with paths crossing it at top and bottom */}
-        <div className="lobby-separator-column">
-          <div className="lobby-colsep-wall-short"/>
-          <div className="lobby-colsep-path"/>
-          <div className="lobby-colsep-wall-long"/>
-          <div className="lobby-colsep-path"/>
-          <div className="lobby-colsep-wall-short"/>
-        </div>
-        <div className="lobby-column lobby-games-column">
-          <div className="lobby-room">
-            <GameBroker 
-              username={username} 
-              experience_level={experience_level}
-              proposed_games={lobbyState.games}
-              game_change_callback={game_change_callback}
-              actions_disabled={actionsDisabled}
-            />
+          <Roster player_names={lobbyState.online_player_names}/>
+          {/* Put in a wall between the columns with paths crossing it at top and bottom */}
+          <div className="lobby-separator-column">
+            <div className="lobby-colsep-wall-short"/>
+            <div className="lobby-colsep-path"/>
+            <div className="lobby-colsep-wall-long"/>
+            <div className="lobby-colsep-path"/>
+            <div className="lobby-colsep-wall-short"/>
           </div>
-          {/* Put in a horizontal wall between the panels */}
-          <div className="lobby-separator-row"/>
-          <div className="lobby-room">
-            <ProposedGameList 
-              current_user={username} 
-              experience_level={experience_level}
-              games={lobbyState.games}
-              game_change_callback={(games)=>{}} // A noop callback
-              state_to_display={GAMESTATE_RUNNING}
-              actions_disabled={actionsDisabled}
-            />
+          <div className="lobby-column lobby-games-column">
+            <div className="lobby-room">
+              <GameBroker 
+                username={username} 
+                experience_level={experience_level}
+                proposed_games={lobbyState.games}
+                game_change_callback={game_change_callback}
+                actions_disabled={actionsDisabled}
+              />
+            </div>
+            {/* Put in a horizontal wall between the panels */}
+            <div className="lobby-separator-row"/>
+            <div className="lobby-room">
+              <ProposedGameList 
+                current_user={username} 
+                experience_level={experience_level}
+                games={lobbyState.games}
+                game_change_callback={(games)=>{}} // A noop callback
+                state_to_display={GAMESTATE_RUNNING}
+                actions_disabled={actionsDisabled}
+              />
+            </div>
           </div>
-        </div>
-        {/* Put in a another wall between the columns with paths crossing it at the  bottom */}
-        <div className="lobby-separator-column">
-          <div className="lobby-colsep-wall-long"/>
-          <div className="lobby-colsep-path"/>
-          <div className="lobby-colsep-wall-short"/>
-        </div>
-        <ChatWindow 
-          current_user={username} 
-          chats={allChats}
-          new_chat_callback={new_chat_callback}
-          actions_disabled={actionsDisabled}/>
+          {/* Put in a another wall between the columns with paths crossing it at the  bottom */}
+          <div className="lobby-separator-column">
+            <div className="lobby-colsep-wall-long"/>
+            <div className="lobby-colsep-path"/>
+            <div className="lobby-colsep-wall-short"/>
+          </div>
+          <ChatWindow 
+            current_user={username} 
+            chats={allChats}
+            new_chat_callback={new_chat_callback}
+            actions_disabled={actionsDisabled}/>
       </div>
+    </div>
   );
 }
 
