@@ -5,6 +5,10 @@ import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
 
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
+/** This is a string used in the body of the email which we search
+ * for and replace with an actual uuencoded email. */
+const EMAIL_REPLACEMENT="<<UUENCODED_EMAIL>>"
+
 /**
  * Run a database query to get the emails of everyone who wants to be notified
  * @param {str} notification_event_type the type of notification (sendcall or newscheduledevent)
@@ -26,6 +30,7 @@ const getSubscribers = async (notification_event_type) => {
 /**
  * Generates the email to send to each user
  * @param {str} notification_event_type the type of notification (sendcall or newscheduledevent)
+ * @param {dict} data data about the event including the initiator's name
  * @returns a mail object like {
  *  from: "h2h.atari.adventure@gmail.com",
  *  subject: "Testing Mailer",
@@ -33,18 +38,61 @@ const getSubscribers = async (notification_event_type) => {
  * }
  * The mail object needs a "to" entry before it can be sent
  */
-const generateEmail = (notification_event_type) => {
+const generateEmail = (notification_event_type, data) => {
+    const site_root =   (process.env.ENVIRONMENT_TYPE === 'development' ?
+        'http://localhost:5000' : 'https://play.h2hadventure.com')
+    const unsubscribe_url = site_root + "/unsubscribe?email="+EMAIL_REPLACEMENT
     if (notification_event_type === "sendcall") {
+        // For send call events the data only has the initiator
+        const initiator = data.initiator || "someone"
         return {
             from: "h2h.atari.adventure@gmail.com",
             subject: "Someone wants to play H2H Atari Adventure",
-            text: "You indicated you want to be notified when someone is online and wants to play.",
+            text: `You inidicated you want to be notified when someone wants ` +
+                  `to play.  ` +
+                  `${initiator} is online and has sent out a call.` +
+                  `Visit ${site_root} to play.` +
+                  `\n\n` +
+                  `If you no longer wish to receive these notifications you can ` +
+                  `unsubscribe at ${unsubscribe_url}`,
+            html: `<p>` +
+                  `You inidicated you want to be notified when someone wants ` +
+                  `to play.  ` +
+                  `${initiator} is online and has sent out a call.  ` +
+                  `Visit <a href="${site_root}">h2hadventure.com</a> to play.` +
+                  `</p><p>` +
+                  `If you no longer wish to receive these notifications you can ` +
+                  `<a href="${unsubscribe_url}">unsubscribe</a>.` +
+                  `</p>`
         }
     } else if (notification_event_type == "newscheduledevent") {
+        const dateFormatter = new Intl.DateTimeFormat(undefined, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+          });
+        dateString = dateFormatter.format(date);
+        const visit_url = site_root + "/connect"
         return {
             from: "h2h.atari.adventure@gmail.com",
             subject: "A new H2H Atari Adventure event has been scheduled",
-            text: "You indicated you want to be notified when someone schedules a new event.",
+            text: `You inidicated you want to be notified when someone schedules ` +
+                  `a new H2HAdventure event.  ` +
+                  `${initiator} is planning to play ${dateString}.` +
+                  `Visit ${visit_url} to add yourself to the roster.` +
+                  `\n\n` +
+                  `If you no longer wish to receive these notifications you can ` +
+                  `unsubscribe at ${unsubscribe_url}`,
+            html: `<p>` +
+                  `You inidicated you want to be notified when someone schedules ` +
+                  `a new H2HAdventure event.  ` +
+                  `${initiator} is planning to play ${dateString}.  ` +
+                  `Visit <a href="${visit_url}">Scheduled Events</a> to add ` +
+                  `youself to the roster.` +
+                  `</p><p>` +
+                  `If you no longer wish to receive these notifications you can ` +
+                  `<a href="${unsubscribe_url}">unsubscribe</a>.` +
+                  `</p>`
         }
     } else {
         return null
@@ -80,6 +128,8 @@ const emailSubscribers = (emails, mail) => {
     console.log(`Sending email to ${email}`)
     const mail_to_send = {...mail}
     mail_to_send.to = email
+    mail_to_send.text = mail_to_send.text.replace(EMAIL_REPLACEMENT, encodeURIComponent(email))
+    mail_to_send.html = mail_to_send.html.replace(EMAIL_REPLACEMENT, encodeURIComponent(email))
     console.log(`Sending email to ${email}`)
     transporter.sendMail(mail_to_send, (error, info) => {
         if (error) {
@@ -95,8 +145,13 @@ const emailSubscribers = (emails, mail) => {
 /**
  * This generates and sends email for everyone who is subscribed to the given event.
  * This does not modify the database.
- * @param {*} event 
- * @returns 
+ * Body parameters
+ *   notification_event_type: str - what type of event has happened.  Will be
+ *     sendcall or newscheduledevent
+ *   data: any - a dictionary contain event information with different structure 
+ *     for each event type
+ *     for sendcall will have {initiator: acererak}
+ *     for newscheduledevent will have {initiator: acererak, timestamp: 114384343}
  */
 export const createNotificationEventHandler = async (event) => {
     if (event.httpMethod !== 'POST') {
@@ -111,16 +166,12 @@ export const createNotificationEventHandler = async (event) => {
     const body = JSON.parse(event.body);
     console.info('received JSON body:', body);
 
-    // body will be of the form 
-    // { 
-    //   "notification_event_type": "sendcall",
-    // }
     if (!!!body.notification_event_type) {
         throw new Error(`Cannot notify without notification_event_type: ${event.body}`)
     }
 
     const subscriber_list = await getSubscribers(body.notification_event_type)
-    const email = generateEmail(body.notification_event_type)
+    const email = generateEmail(body.notification_event_type, body.data)
     if (email) {
         emailSubscribers(subscriber_list, email)
     }

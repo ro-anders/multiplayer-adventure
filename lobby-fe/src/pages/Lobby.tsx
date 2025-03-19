@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import '../App.css';
+import '../css/Lobby.css'
 import GameBroker from '../components/GameBroker'
 import LobbyService from '../services/LobbyService'
 import { GameInLobby, GAMESTATE_RUNNING } from '../domain/GameInLobby'
@@ -10,6 +11,7 @@ import ProposedGameList from '../components/ProposedGameList';
 import ChatService from '../services/ChatService';
 import GameService from '../services/GameService';
 import TitleBar from '../components/TitleBar';
+import { Modal } from 'react-bootstrap';
 
 
 interface LobbyProps {
@@ -20,11 +22,13 @@ interface LobbyProps {
 }
 
 function Lobby({username, experience_level}: LobbyProps) {
+  const INITIAL_MESSAGE='loading...'
   const [lobbyState, setLobbyState] = useState<LobbyState>(
-    {online_player_names: ['loading...'], games: [], recent_chats: []}
+    {online_player_names: [INITIAL_MESSAGE], games: [], recent_chats: []}
   )
   const [allChats, setAllChats] = useState<ReceivedChat[]>([]);
   const [actionsDisabled, setActionsDisabled] = useState<boolean>(false);
+  const [noOneModal, setNoOneModal] = useState<boolean>(false);
 
   /**
    * Callback called when a new chat message needs to be posted.
@@ -138,6 +142,14 @@ function Lobby({username, experience_level}: LobbyProps) {
    */
   function updateLobbyState(new_lobby_state: LobbyState) {
     console.log(`Received new lobby state from server.  Updating local lobby state to ${LobbyStateToString(new_lobby_state)}.`)
+    
+    // If this is the first time we've gotten data from the server and there's
+    // no one but us, then put up a modal telling them no one's here.
+    // We can tell that this is the first time if the player list still has "loading..."
+    if (lobbyState.online_player_names[0]==INITIAL_MESSAGE) {
+      setNoOneModal(true)
+    }
+
     const new_all_chats = mergeChats(allChats, new_lobby_state.recent_chats)
     console.log(`Merging ${allChats.length} old with ${new_lobby_state.recent_chats.length} new = ${new_all_chats.length} chats`)
     // We do limit the number of chats we track
@@ -156,7 +168,8 @@ function Lobby({username, experience_level}: LobbyProps) {
   useEffect(() => {
     async function refreshLobbyState() {
       try {
-        const new_lobby_state = await LobbyService.getLobbyState();
+        const need_state = (lobbyState.online_player_names[0] == INITIAL_MESSAGE)
+        const new_lobby_state = await LobbyService.getLobbyState(need_state);
         if (new_lobby_state) {
           updateLobbyState(new_lobby_state)
         }
@@ -222,6 +235,19 @@ function Lobby({username, experience_level}: LobbyProps) {
             chats={allChats}
             new_chat_callback={new_chat_callback}
             actions_disabled={actionsDisabled}/>
+          <Modal 
+            show={noOneModal} 
+            onHide={()=>setNoOneModal(false)} 
+            centered
+            dialogClassName="App"
+            contentClassName='no-one-modal-content' 
+          >
+            <Modal.Header closeButton/>
+            <Modal.Body>
+              <p>Looks like no one is here right now.</p>
+              <p>Visit <a href="/connect">Find Other Players</a> to recruit others.</p>
+            </Modal.Body>
+          </Modal>
       </div>
     </div>
   );

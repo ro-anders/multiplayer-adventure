@@ -43,13 +43,14 @@ export default class LobbyService {
 	 * Query for the latest lobby state, though this may return no changes
 	 * without querying if it has queried recently enough, and it may
 	 * return no changes without querying if it is synching local changes.
-	 * @param since how far back in history to go for chats
+	 * @param force Return the last good state even if there were no changes, but
+	 * still returns no changes if syncing state.
 	 * @returns if there have been changes to the lobby state will return the new
 	 * lobby state.  if not, will return null
 	 */
-	static async getLobbyState(): Promise<LobbyState | null> {
+	static async getLobbyState(force = false): Promise<LobbyState | null> {
 		if (Date.now() < this.next_poll) {
-			return null;
+			return (force ? this.last_state : null);
 		} else if (this.syncing_local_changes > 0) {
 			return null;
 		} else {
@@ -70,7 +71,7 @@ export default class LobbyService {
 			if (this.isLobbyStateEqual(this.last_state, new_state)) {
 				// No changes.
 				console.log(`${new Date().toISOString().substring(11,23)} - Waiting ${this.poll_wait/1000} seconds`)
-				return null;
+				return (force ? this.last_state : null);
 			}
 			// Register a change, adjust the next poll time and last chat time,
 			// and return the new state

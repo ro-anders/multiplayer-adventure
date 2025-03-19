@@ -36,7 +36,7 @@ function ConnectPage({username}: ConnectProps) {
           </div>
         }
         {(selected === 'call') &&
-          <SendCall/>
+          <SendCall current_user={username}/>
         }
         {(selected === 'notify') &&
           <Subscribe/>

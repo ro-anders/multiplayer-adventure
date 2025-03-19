@@ -4,6 +4,10 @@
     height: null;
 }
 
+.propose-modal-content {
+    border-width: 10px;
+}
+
 .propose-modal-body {
     padding: 0px;
 }

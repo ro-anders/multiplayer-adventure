@@ -1,30 +1,30 @@
 import { useEffect, useState } from 'react';
-import { Form, Button } from 'react-bootstrap';
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 import '../App.css';
-import '../css/Login.css'
+import '../css/Unsubscribe.css'
 import SubscriptionService from '../services/SubscriptionService';
 
 function UnsubscribePage() {
 
   const [unsubscribed, setUnsubscribed] = useState<boolean>(false)
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, ] = useSearchParams();
 
   useEffect(() => {
     async function unsubscribe() {
       const email = searchParams.get("email")
       if (email) {
-        await SubscriptionService.deleteSubscription(email);
+        const uudecoded_email = decodeURIComponent(email)
+        await SubscriptionService.deleteSubscription(uudecoded_email);
         setUnsubscribed(true)
       }
     }
     unsubscribe();
-  }, [unsubscribed]);
+  }, [unsubscribed, searchParams]);
 
   const email = searchParams.get("email");
   return (
-    <div>
+    <div className="unsubscribe-main">
       {!email &&
         <p>No operation.</p>
       }

@@ -5,12 +5,18 @@ import { Form } from 'react-bootstrap';
 import '../App.css';
 import SubscriptionService from '../services/SubscriptionService';
 
+interface SendCallProps {
+  /** The name of the currently logged in user */
+  current_user: string;
+}
+
+
 
 /**
  * Displays a button to send an email to all subscribed users that
  * someone is online and wants to play.
  */
-function Subscribe() {
+function Subscribe({current_user}: SendCallProps) {
 
   const [showModal, setShowModal] = useState<boolean>(false)
   const [callSent, setCallSent] = useState<boolean>(false)
@@ -28,7 +34,7 @@ function Subscribe() {
 
   function sendCall() {
     setShowModal(false)
-    SubscriptionService.notify('sendcall')
+    SubscriptionService.notify('sendcall', {initiator: current_user} )
     setCallSent(true)
 
   }

@@ -49,14 +49,19 @@ export default class SubscriptionService {
 	/**
 	 * Notify anyone subscribed to a certain type of event.
 	 * @param notification_event_type the type of event (sendcall or newscheduledevent)
+	 * @param data if this is a sendcall event, data will look like
+	 *   {initiator: "acererak"}
+	 * if this is a newscheduledevent event, data will look like
+	 *   {initiator: "acererak", starttime: 154738455}
 	 */
-	static async notify(notification_event_type: string) {
+	static async notify(notification_event_type: string, data: any) {
 		const headers: Headers = new Headers()
 		headers.set('Content-Type', 'application/json')
 		headers.set('Accept', 'application/json')
 
 		const newNotificationEvent = {
-			notification_event_type: notification_event_type
+			notification_event_type: notification_event_type,
+			data: data
 		};
 		const request: RequestInfo = new Request(`${SubscriptionService.back_end}/notify`, {
 			method: 'POST',

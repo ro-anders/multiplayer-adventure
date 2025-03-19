@@ -117,3 +117,9 @@
   text-align: left;
   padding: 5px;
 }
+
+.no-one-modal-content {
+  border-color: rgb(107, 100, 255);
+  border-width: 10px;
+  background-color:rgb(205, 205, 205)
+}

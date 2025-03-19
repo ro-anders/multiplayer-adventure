@@ -41,7 +41,7 @@ function EventsList({current_user}: EventsListProps) {
   function joinEvent(event: ScheduledEvent) {
     if (!event.players.includes(current_user)) {
       event.players.push(current_user)
-      ScheduledEventService.upsertScheduleEvent(event)
+      ScheduledEventService.upsertScheduleEvent(event, false)
       setEvents(events.slice())
     }
   }
@@ -61,7 +61,7 @@ function EventsList({current_user}: EventsListProps) {
         // Remove the player from the list of players
         const newPlayerList = event.players.filter(player => player !== current_user)
         event.players = newPlayerList
-        ScheduledEventService.upsertScheduleEvent(event)
+        ScheduledEventService.upsertScheduleEvent(event, false)
         setEvents(events.slice())
       }
     }
@@ -70,7 +70,7 @@ function EventsList({current_user}: EventsListProps) {
   function createNewEvent(new_event: ScheduledEvent) {
     events.push(new_event)
     events.sort((a: ScheduledEvent, b: ScheduledEvent) => a.starttime - b.starttime)
-    ScheduledEventService.upsertScheduleEvent(new_event)
+    ScheduledEventService.upsertScheduleEvent(new_event, true)
     setEvents(events.slice())
   }
 

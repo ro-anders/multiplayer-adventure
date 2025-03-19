@@ -1,4 +1,5 @@
 import {ScheduledEvent} from '../domain/ScheduledEvent'
+import SubscriptionService from './SubscriptionService'
 
 /**
  * A class for performing CRUD operations on the Game database table.
@@ -32,8 +33,12 @@ export default class GameService {
 	/**
 	 * Create a new scheduled event or update an existing scheduled event
 	 * @param scheduled_event the details of the event
+	 * @param isNew true if this is a brand new event
 	 */
-	static async upsertScheduleEvent(event: ScheduledEvent): Promise<void> {
+	static async upsertScheduleEvent(
+		event: ScheduledEvent,
+		isNew: boolean
+	): Promise<void> {
 		const headers: Headers = new Headers()
 		headers.set('Content-Type', 'application/json')
 		headers.set('Accept', 'application/json')
@@ -45,8 +50,14 @@ export default class GameService {
 			headers: headers,
 			body: JSON.stringify(event)
 		})
-
 		await fetch(request);
+
+		// If this is a brand new event, notify everyone who subscribed
+		// to new events.
+		if (isNew) {
+			await SubscriptionService.notify('newscheduledevent', 
+				{ initiator: event.players[0], starttime: event.starttime })
+		}
 	}
 
 	/**

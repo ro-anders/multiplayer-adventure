@@ -6,6 +6,8 @@ const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
 /**
  * HTTP delete method to delete a subscription in the DynamoDB table.
+ * Path parameters
+ *   address - URI encoded email address
  */
 export const deleteSubscriptionHandler = async (event) => {
     if (event.httpMethod !== 'DELETE') {

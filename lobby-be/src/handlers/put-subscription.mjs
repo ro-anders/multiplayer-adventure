@@ -3,7 +3,14 @@ import {DDBClient, CheckDDB} from '../dbutils/dbsetup.mjs'
 
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
-/**Updates or creates a subscription
+/**
+ * Updates or creates a subscription
+ * Path parameters
+ *   address - URI encoded email address
+ * Body parameters
+ *   address: str - email address (NOT URI encoded)
+ *   on_new_event: boolean - whether to subscribe to new scheduled events
+ *   on_send_call: boolean - whether to subscribe to send call events
  */
 export const putSubscriptionHandler = async (event) => {
     if (event.httpMethod !== 'PUT') {

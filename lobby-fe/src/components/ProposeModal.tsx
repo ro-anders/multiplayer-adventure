@@ -41,7 +41,8 @@ function ProposeModal({username, show, onHide, propose_game_callback}: ProposeMo
 
   return (
         <Modal 
-          dialogClassName="propose-modal App" 
+          dialogClassName="propose-modal App"
+          contentClassName='propose-modal-content' 
           size="lg"
           show={show} 
           onHide={onHide}>
