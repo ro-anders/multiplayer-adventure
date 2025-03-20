@@ -5,23 +5,17 @@
   justify-content: space-between;
   flex-grow: 1;
   background-color:  rgb(250, 82, 85);
-  border: 2.5vw solid rgb(250, 82, 85); /* 40px purple border around the container */
+  border-top: 2.5vw solid rgb(250, 82, 85); /* 40px purple border around the container */
+  border-bottom: 2.5vw solid rgb(250, 82, 85); /* 40px purple border around the container */
 }
 
 .connect-room {
-  width: 46vw;
-  padding: 2.5vw;
+  width: 44vw;
+  padding: 6vw;
   background-color: rgb(205, 205, 205);
   display: flex;
   flex-direction: column;
   justify-content: space-between;  
-}
-
-.connect-separator {
-  width: 3vw; /* Fixed width for the entire orange column */
-  display: flex;
-  flex-direction: column;  
-  background-color: rgb(250, 82, 85);
 }
 
 .connect-event {
@@ -31,3 +25,21 @@
 .connect-event-action {
   font-size: calc(5px + 1vmin);  
 }
+
+.connect-separator-column {
+  width: 4vw; /* Fixed width for the entire orange column */
+  display: flex;
+  flex-direction: column;
+}
+
+.connect-separator-wall{
+  width: 100%;
+  flex: 1;
+  background-color: rgb(250, 82, 85);
+}
+
+.connect-separator-path {
+  height: 80px;
+  background-color: rgb(205, 205, 205);
+}
+
