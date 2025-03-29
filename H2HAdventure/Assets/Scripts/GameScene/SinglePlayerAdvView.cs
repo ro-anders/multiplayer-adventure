@@ -10,11 +10,15 @@ using UnityEngine;
  **/
 public class SinglePlayerAdvView : UnityAdventureBase
 {
+    // If set to true will force it to a basic 
+    // game (2 player Game 1 game where you
+    // always start in the gold castle)
+    private const bool DEMO = true;
 
     private System.Random randomGen = new System.Random();
 
     // The slot of the player.  -1 means to randomly generate.
-    public int slot = -1;
+    public int slot =-1;
 
     // Start is called before the first frame update
     public override void Start()
@@ -55,18 +59,30 @@ public class SinglePlayerAdvView : UnityAdventureBase
         // First bit of gamecode is map guides boolean
         bool map_guides = gamecode_int % 2 == 1;
         // Second bit is help popups boolean
-        bool help_popups = (gamecode_int/2) % 2 == 1;
+        bool help_popups = gamecode_int/2 % 2 == 1;
         return (help_popups ? 1 : (map_guides ? 2 : 3) );
     }
 
     public void PlayGame()
     {
+        // If we set DEMO, then game will be
+        // a two player Game 1 game where you 
+        // are always in the gold castle.
+        // Otherwise will be a three player
+        // Game 3 game in a random castle.
+
         // Randomly pick which player to play
+        if (DEMO) {
+            slot = 0;
+        }
         int slot_to_play = (slot == -1 ? randomGen.Next(3) : slot);
-        bool[] useAi = { true, true, true };
+        UnityEngine.Debug.Log("DEMO=" + DEMO + ", slot=" + slot + ", slot_to_play=" + slot_to_play);
+        int num_players = (DEMO ? 2 : 3);
+        int game_num = (DEMO ? 0 : 2);
+        bool[] useAi = { true, true, num_players==3 };
         useAi[slot_to_play] = false;
         int experience_level = deduceExperienceLevel();
-        gameEngine = new AdventureGame(this, 3, slot_to_play, null, 2,
+        gameEngine = new AdventureGame(this, num_players, slot_to_play, null, game_num,
             false, false, 
             experience_level <= 1, 
             experience_level <= 2,

@@ -41,6 +41,7 @@ server_socket.on('connection', (ws: WebSocket) => {
   ws.on('message', function(data: WebSocket.RawData, isBinary: boolean) {
     if (isBinary) {
       gamemgr.process_message(data as Uint8Array, ws)
+      servicemgr.got_game_message()
     }
   });
 

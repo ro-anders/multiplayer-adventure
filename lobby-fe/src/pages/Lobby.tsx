@@ -146,7 +146,7 @@ function Lobby({username, experience_level}: LobbyProps) {
     // If this is the first time we've gotten data from the server and there's
     // no one but us, then put up a modal telling them no one's here.
     // We can tell that this is the first time if the player list still has "loading..."
-    if (lobbyState.online_player_names[0]==INITIAL_MESSAGE) {
+    if ((lobbyState.online_player_names[0]===INITIAL_MESSAGE) && (new_lobby_state.online_player_names.length === 1)) {
       setNoOneModal(true)
     }
 
@@ -168,7 +168,7 @@ function Lobby({username, experience_level}: LobbyProps) {
   useEffect(() => {
     async function refreshLobbyState() {
       try {
-        const need_state = (lobbyState.online_player_names[0] == INITIAL_MESSAGE)
+        const need_state = (lobbyState.online_player_names[0] === INITIAL_MESSAGE)
         const new_lobby_state = await LobbyService.getLobbyState(need_state);
         if (new_lobby_state) {
           updateLobbyState(new_lobby_state)

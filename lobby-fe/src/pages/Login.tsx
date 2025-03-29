@@ -54,6 +54,13 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
     }
   }
 
+  function handleLeaderBoard() {
+    if (formUsername) {
+      setUsername(formUsername)
+    }
+    navigate("/leaders");
+  }
+
   return (
 
     <div className="login-page">
@@ -99,9 +106,11 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
           />
         </Form.Group>
       </Form>
+      <Button>Play Now</Button>
       <Button onClick={handlePlayOthers}>Play Against Others</Button>
       <Button onClick={handlePlayAi}>Play Against the Computer</Button>
       <Button onClick={handleFindOthers}>Find Other Players</Button>
+      <Button onClick={handleLeaderBoard}>Leader Board</Button>
       <Button>More Info</Button>
     </div>
   );

@@ -66,12 +66,13 @@ const generateEmail = (notification_event_type, data) => {
                   `</p>`
         }
     } else if (notification_event_type == "newscheduledevent") {
+        const initiator = data.initiator || "someone"
         const dateFormatter = new Intl.DateTimeFormat(undefined, {
             weekday: 'short',
             month: 'short',
             day: 'numeric',
           });
-        dateString = dateFormatter.format(date);
+        const dateString = dateFormatter.format(data.timestamp);
         const visit_url = site_root + "/connect"
         return {
             from: "h2h.atari.adventure@gmail.com",

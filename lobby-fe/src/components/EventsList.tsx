@@ -125,30 +125,36 @@ function EventsList({current_user}: EventsListProps) {
 
     <div className="schedule-list">
       <header>
-        <ListGroup>
-            {/* List all the events */}
-            {events.map((event: ScheduledEvent) => (
-            <ListGroup.Item className="connect-event" key={event.starttime}>
+        {events.length > 0 && 
+          <ListGroup>
+              {/* List all the events */}
+              {events.map((event: ScheduledEvent) => (
+              <ListGroup.Item className="connect-event" key={event.starttime}>
 
-              {/* An event has two lines, first being the date and
-              a button to Join or Quit and second being list of people 
-              registered for the event */}
-              <div>
-              {formatTimestamp(event.starttime)}:
-                {event.players.includes(current_user) && 
-                  <Button size="sm" className='connect-event-action' 
-                    onClick={() => quitEvent(event)}>Leave</Button>}
-                {!event.players.includes(current_user) && 
-                  <Button size="sm" className='connect-event-action' 
-                    onClick={() => joinEvent(event)}>Register</Button>}
-              </div>
-              <div>{event.players.join(", ")}</div>
-
-            </ListGroup.Item>
-            ))}
-        </ListGroup>
+                {/* An event has two lines, first being the date and
+                a button to Join or Quit and second being list of people 
+                registered for the event */}
+                <div>
+                {formatTimestamp(event.starttime)}:
+                  {event.players.includes(current_user) && 
+                    <Button size="sm" className='connect-event-action' 
+                      onClick={() => quitEvent(event)}>Leave</Button>}
+                  {!event.players.includes(current_user) && 
+                    <Button size="sm" className='connect-event-action' 
+                      onClick={() => joinEvent(event)}>Register</Button>}
+                </div>
+                <div>Attending: {event.players.join(", ")}</div>
+              </ListGroup.Item>
+              ))}
+          </ListGroup>
+      }
+      {events.length == 0 &&
+        <div>
+          No one has indicated a time they plan to play.
+        </div>
+      }
       </header>
-      <Button onClick={()=>setShowModal(true)}>Schedule a new event</Button>
+      <Button onClick={()=>setShowModal(true)}>Schedule a time</Button>
       <ScheduleEventModal 
         current_user={current_user} 
         show={showModal} 

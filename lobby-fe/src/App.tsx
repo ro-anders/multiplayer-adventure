@@ -13,6 +13,7 @@ import RetroGamePage from './pages/RetroGamePage';
 import './App.css';
 import Constants from './Constants';
 import UnsubscribePage from './pages/Unsubscribe';
+import LeaderBoard from './pages/Leaders';
 
 
 
@@ -85,6 +86,10 @@ useEffect(() => {
     {
       path: "/connect",
       element: username ? <ConnectPage username={username}/> : <Navigate to="/login" replace />
+    },
+    {
+      path: "/leaders",
+      element: <LeaderBoard/>
     },
     {
       path: "/unsubscribe",

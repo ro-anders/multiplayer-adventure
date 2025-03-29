@@ -63,3 +63,23 @@ To Deploy and Run the System:
    --template-body file://game-be/deploy/fargateservice.cfn.yml --capabilities "CAPABILITY_NAMED_IAM"
 9. Play game
  - goto http://play.h2hadventure.com.s3-website.us-east-2.amazonaws.com 
+
+ To Deploy the Demo (an AI game restricted to Game 1 two players)
+1. Authenticate with AWS, credentials stored in ~/.aws/credentials
+  - export AWS_PROFILE=h2hadventure
+  - export AWS_REGION=us-east-2
+2. Build the Demo Unity game package
+  - Open Unity
+  - In SinglePlayerAdvView.cs line 16, set DEMO to true
+  -  - Unity File->Build Settings...
+  - Select Scenes/SinglePlayerScreen and unselect others
+  - Uncheck "Development Build"
+  - Select "Runtime Speed" for "Code Optimization"
+  - Click "Build"
+  - Enter "H2HAdventureDemo"
+  - Click Save and then click Replace if prompted
+3. Deploy Unity game packages
+  - aws cloudformation update-stack --stack-name demo-s3-website  --template-body file://lobby-fe/deploy/s3websiteDemo.cfn.yml
+  - aws s3 cp --recursive H2HAdventure/target/H2HAdventureDemo/* s3://demo.h2hadventure.com/
+4. Play demo
+  - goto: http://demo.h2hadventure.com.s3-website.us-east-2.amazonaws.com/H2HAdventureDemo/index.html
