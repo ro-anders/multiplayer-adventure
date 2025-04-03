@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { useNavigate } from "react-router-dom";
 
@@ -25,13 +25,23 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
   let [formUsername, setFormUsername] = useState<string>(username || localStorage.getItem('h2h.username') || "");
   let [warning, setWarning] = useState<string>("");
 
+  // Super annoying, but navigating to any page that needs username has to be called in a way
+  // that waits until username is set.  So don't call navigate(), call setNavigateTo().
+  let [navigateTo, setNavigateTo] = useState<string>("");
+  useEffect(() => {
+    if (navigateTo !== "") {
+      navigate(navigateTo)
+    }
+    }, [navigateTo]);
+  
+
   function handlePlayOthers() {
     if (!formUsername) {
       setWarning("Please enter a name")
     }
     else {
       setUsername(formUsername)
-      navigate("/lobby");
+      setNavigateTo("/lobby");
     }
   }
 
@@ -50,7 +60,7 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
     }
     else {
       setUsername(formUsername)
-      navigate("/connect");
+      setNavigateTo("/connect");
     }
   }
 
@@ -58,7 +68,7 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
     if (formUsername) {
       setUsername(formUsername)
     }
-    navigate("/leaders");
+    setNavigateTo("/leaders");
   }
 
   return (
@@ -106,7 +116,6 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
           />
         </Form.Group>
       </Form>
-      <Button>Play Now</Button>
       <Button onClick={handlePlayOthers}>Play Against Others</Button>
       <Button onClick={handlePlayAi}>Play Against the Computer</Button>
       <Button onClick={handleFindOthers}>Find Other Players</Button>

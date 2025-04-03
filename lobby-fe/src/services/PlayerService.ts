@@ -1,3 +1,4 @@
+import { PlayerStat } from "../domain/PlayerStat"
 
 
 export default class PlayerService {
@@ -30,6 +31,29 @@ export default class PlayerService {
 				return player_names
 			})
 	 }	  
+
+	 /**
+	  * Get all the stats about all the players that have played.
+	  * @returns a list of PlayerStat.
+	  */
+	 static async getAllPlayerStats(): Promise<PlayerStat[]> {
+		const headers: Headers = new Headers()
+		// Add a few headers
+		headers.set('Content-Type', 'application/json')
+		headers.set('Accept', 'application/json')
+
+		const request: RequestInfo = new Request(`${PlayerService.back_end}/playerstats/`, {
+			method: 'GET',
+			headers: headers
+		})
+
+		return fetch(request)
+			.then(res => res.json())
+			.then(res => {
+				return res;
+			})
+	 }	  
+
 
 	 static async registerPlayer(username: string): Promise<void> {
 		// We can use the `Headers` constructor to create headers
