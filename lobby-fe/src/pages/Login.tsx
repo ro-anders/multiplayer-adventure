@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Form, Button } from 'react-bootstrap';
+import { Form, Button, Modal } from 'react-bootstrap';
 import { useNavigate } from "react-router-dom";
 
 import '../App.css';
@@ -24,6 +24,7 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
    * We don't actually set the App username until the user takes an action. */
   let [formUsername, setFormUsername] = useState<string>(username || localStorage.getItem('h2h.username') || "");
   let [warning, setWarning] = useState<string>("");
+  const [showBotDisclaimer, setshowBotDisclaimer] = useState<boolean>(false)
 
   // Super annoying, but navigating to any page that needs username has to be called in a way
   // that waits until username is set.  So don't call navigate(), call setNavigateTo().
@@ -117,10 +118,34 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
         </Form.Group>
       </Form>
       <Button onClick={handlePlayOthers}>Play Against Others</Button>
-      <Button onClick={handlePlayAi}>Play Against the Computer</Button>
+      <Button onClick={()=>setshowBotDisclaimer(true)}>Play Against the Computer</Button>
       <Button onClick={handleFindOthers}>Find Other Players</Button>
       <Button onClick={handleLeaderBoard}>Leader Board</Button>
       <Button>More Info</Button>
+
+      {/* The bot disclaimer modal */}
+      <Modal 
+          dialogClassName="bot-modal App" 
+          size="lg"
+          show={showBotDisclaimer} 
+          onHide={()=>setshowBotDisclaimer(false)}>
+        <Modal.Body className="bot-modal-body">
+          <p>A warning about playing against the computer.</p>
+          <p>
+            The bot opponents are not worthy adversaries.  It is not hard to
+            find patterns that confound them.  Instead, treat them as you would
+            a real player and get a feel for how fun Head-to-Head Adventure could be.
+            Then go out and find a real person to play against. 
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button 
+            variant="primary" 
+            onClick={handlePlayAi}>
+            Let's Go
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

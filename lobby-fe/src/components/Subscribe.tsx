@@ -14,8 +14,10 @@ function Subscribe() {
   const [subscribeEmailValid, setSubscribeEmailValid] = useState<boolean>(true);
   const [subscribeCall, setSubscribeCall] = useState<boolean>(false);
   const [subscribeEvent, setSubscribeEvent] = useState<boolean>(false);
+  const [subscriptionChanged, setSubscriptionChanged] = useState<boolean>(true)
   const [unsubscribeEmail, setUnsubscribeEmail] = useState<string>('');
   const [unsubscribeEmailValid, setUnsubscribeEmailValid] = useState<boolean>(true);
+  const [unsubscriptionChanged, setUnsubscriptionChanged] = useState<boolean>(true)
 
   /**
    * Returns true if the passed in string is of the form of an email
@@ -32,6 +34,7 @@ function Subscribe() {
    * @param new_value the value in the field
    */
   function subscribeEmailChanged(new_value: string) {
+    setSubscriptionChanged(true);
     if (isValidEmail(new_value)) {
       setSubscribeEmail(new_value);
       setSubscribeEmailValid(true);
@@ -45,6 +48,7 @@ function Subscribe() {
    * @param new_value the value in the field
    */
     function unsubscribeEmailChanged(new_value: string) {
+      setUnsubscriptionChanged(true);
       if (isValidEmail(new_value)) {
         setUnsubscribeEmail(new_value);
         setUnsubscribeEmailValid(true);
@@ -58,6 +62,7 @@ function Subscribe() {
    */
   function subscribeClicked() {
     SubscriptionService.upsertSubscription(subscribeEmail, subscribeCall, subscribeEvent)
+    setSubscriptionChanged(false)
   }
   
   /**
@@ -65,6 +70,7 @@ function Subscribe() {
    */
   function unsubscribeClicked() {
     SubscriptionService.deleteSubscription(unsubscribeEmail)
+    setUnsubscriptionChanged(false)
   }
 
   return (
@@ -83,17 +89,17 @@ function Subscribe() {
           id="call"
           label="when someone sends out a call (is online ready to play)"
           checked={subscribeCall}
-          onChange={()=>setSubscribeCall(!subscribeCall)}
+          onChange={()=>{setSubscribeCall(!subscribeCall);setSubscriptionChanged(true);}}
         />          
         <Form.Check
           type="checkbox"
           id="event"
           label="when a new event is scheduled"
           checked={subscribeEvent}
-          onChange={()=>setSubscribeEvent(!subscribeEvent)}
+          onChange={()=>{setSubscribeEvent(!subscribeEvent);setSubscriptionChanged(true);}}
         />
         <Button 
-          disabled={(!subscribeCall && !subscribeEvent) || !subscribeEmail || !subscribeEmailValid} 
+          disabled={(!subscribeCall && !subscribeEvent) || !subscribeEmail || !subscribeEmailValid || !subscriptionChanged} 
           onClick={subscribeClicked}
         >
           Subscribe
@@ -109,7 +115,7 @@ function Subscribe() {
           isValid={unsubscribeEmailValid}
           onChange={(event)=>unsubscribeEmailChanged(event.target.value)} />
         <Button
-          disabled={!unsubscribeEmail || !unsubscribeEmailValid}
+          disabled={!unsubscribeEmail || !unsubscribeEmailValid || !unsubscriptionChanged}
           onClick={unsubscribeClicked}
         >
           Unsubscribe
