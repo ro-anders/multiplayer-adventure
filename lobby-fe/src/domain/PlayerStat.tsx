@@ -13,5 +13,8 @@ export interface PlayerStat {
 
     /** how many steps has player taken to achieving easter egg */
     achvmts: number
+
+    /** timestamp of last achievment achieved */
+    achvmt_time: number
 }
 

@@ -83,6 +83,7 @@ export const createGameServerHandler = async (event) => {
                       name: "h2hadv-server",               
                       environment: [
                         { name: "LOBBY_URL", value: lobby_url },
+                        { name: "NODE_ENV", value: "production" },
                       ],
                     },
                   ],

@@ -9,6 +9,7 @@ import PlayerService from '../services/PlayerService';
 function LeaderBoard() {
 
   let [topScorers, setTopScorers] = useState<PlayerStat[]>([]);
+  let [achievers, setAchievers] = useState<{[achivmt: string]: string[];}>({})
   let [topScorersLoaded, setTopScorersLoaded] = useState<boolean>(false);
 
   /**
@@ -31,6 +32,56 @@ function LeaderBoard() {
   }
 
   /**
+   * This looks at all stats and collects the list of those who have
+   * scored achievments into lists, one for each achievment.
+   * @param stats all players stats
+   * @returns a dictionary mapping an achievment to the players that
+   * achieved it in order of who achieved it first, though each player is
+   * only listed for their last achievment.
+   */
+  function collect_achievers(stats: PlayerStat[]): {[achvmt: string]: string[]} {
+
+    let achievments: {[id: number]: string} = {3: "castle", 4: "key", 5: "gate", 6: "challenge"}
+
+    // Collate all players into the lists, ingnoring any stats that have
+    // achievments we aren't tracking.
+    const collated: {[achvmt_name: string]: PlayerStat[]} = {}
+    for(let stat of stats) {
+      if (stat.achvmts in achievments) {
+        const achvmt_name = achievments[stat.achvmts]
+        if (achvmt_name in collated) {
+          collated[achvmt_name].push(stat)
+        }
+        else {
+        // First time we've seen this achievment, make a new list.
+        collated[achvmt_name] = [stat]
+        }
+      }
+    }
+
+    // Sort the lists.
+    for (const achvmt_name in collated) {
+      collated[achvmt_name].sort((a, b) => a.achvmt_time - b.achvmt_time)
+    }
+
+    // The very first "challenge" achiever gets the "egg" achievment
+    if ("challenge" in collated) {
+      collated["egg"] = [collated["challenge"].shift() as PlayerStat]
+      if (collated["challenge"].length == 0) {
+        delete collated["challenge"]
+      }
+    }
+
+    // Now map player stats to player names
+    const achievers_list: {[achvmt: string]: string[]} = {}
+    for (let key in collated) {
+      // Map through the list of objects and extract the 'name' attribute
+      achievers_list[key] = collated[key].map(stat => stat.playername);
+    }
+    return achievers_list
+  }
+
+  /**
    * Load the scheduled events from the backend.
    */
   async function loadPlayerStats() {
@@ -38,6 +89,8 @@ function LeaderBoard() {
     // Sort the list by best players score, which is a little funky in that
     // we do wins / (games+2) so that 3 out of 3 doesn't look more impressive than 26 out of 27.
     const score_list = [...stats].sort(scoreSort)
+    const achiever_lists: {[achvmt:string]: string[]} = collect_achievers(stats)
+    setAchievers(achiever_lists)
     setTopScorers(score_list)
     setTopScorersLoaded(true)
   }

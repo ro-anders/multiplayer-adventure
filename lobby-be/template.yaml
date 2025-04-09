@@ -566,6 +566,7 @@ Resources:
   #  games: number - the number of games this player has played
   #  wins: number - the number of games this player has won
   #  achvmts: number - how many steps has player taken to achieving easter egg
+  #  achvmt_time: number - time that they last gained a new achievment
   #
   PlayerStatsTable:
     Type: AWS::Serverless::SimpleTable

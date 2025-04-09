@@ -3,9 +3,8 @@
   -  Easter Egg Leaderboard
   -  More Info button
   -  Clean up logs
-  -  Notify on People joining/leaving your event
   -  Notify people via text
-  - ability to rejoin game
+  -  ability to rejoin game
 
 # Bugs
   -  Handle exceptions without showing to the user

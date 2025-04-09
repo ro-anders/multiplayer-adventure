@@ -86,6 +86,8 @@ Resources:
           Environment:
             - Name: ENVIRONMENT
               Value: 'production'
+            - Name: LOG_LEVEL
+              Value: 'INFO'
             # The LOBBY_URL needs to be defined when the service is launched
             # - Name: LOBBY_URL
             #   Value: Undefined
@@ -96,6 +98,7 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-group: !Ref LogGroup
               awslogs-stream-prefix: ecs
+
 
   # A role needed by ECS
   ExecutionRole:
@@ -156,27 +159,4 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Join ['', [/service/, !Ref ServiceName]]
-
-
-  # Uncomment if deploying as a service
-  # Service:
-  #   Type: AWS::ECS::Service
-  #   Properties: 
-  #     ServiceName: !Ref ServiceName
-  #     Cluster: !Ref Cluster
-  #     TaskDefinition: !Ref TaskDefinition
-  #     DeploymentConfiguration:
-  #       MinimumHealthyPercent: 100
-  #       MaximumPercent: 200
-  #     DesiredCount: 1
-  #     LaunchType: FARGATE
-  #     NetworkConfiguration: 
-  #       AwsvpcConfiguration:
-  #         # change to DISABLED if you're using private subnets that have access to a NAT gateway
-  #         AssignPublicIp: ENABLED
-  #         Subnets:
-  #           - !Ref SubnetA
-  #           - !Ref SubnetB
-  #         SecurityGroups:
-  #           - !Ref ContainerSecurityGroup
-
+      RetentionInDays: 30

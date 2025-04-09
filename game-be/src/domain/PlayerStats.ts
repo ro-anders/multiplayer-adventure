@@ -7,4 +7,5 @@ export interface PlayerStats {
 	games: number; // number games played
 	wins: number;  // number games won
 	achvmts: number;  // number steps along path to easter egg have been achieved
+	achvmt_time: number; // timestamp when the last achievment was achieved
 }

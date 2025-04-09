@@ -8,6 +8,7 @@ import {
 	EC2Client,
     DescribeNetworkInterfacesCommand, DescribeNetworkInterfacesCommandInput, DescribeNetworkInterfacesCommandOutput,
  } from '@aws-sdk/client-ec2'
+import output from '../Output'
 import LobbyBackend from './LobbyBackend'
 import Constants from './Constants'
 
@@ -42,6 +43,7 @@ export default class ServiceMgr {
 	async report_to_lobby() {
 		if (this.ip === null) {
 			this.ip = await this.get_ip()
+			output.log(`Reporting game backend IP ${this.ip} to lobby backend`)
 		}
 		this.lobby_backend.set_gamesever_ip(this.ip)
 	}
@@ -53,7 +55,6 @@ export default class ServiceMgr {
 	 * decides it is not being used and shuts down.
 	 */
 	periodic_update() {
-		console.log("Running periodic update")
 		if (Date.now() - this.last_comm_time > Constants.SHUTDOWN_SERVICE_TIMEOUT) {
 			this.shutdown()
 		}
@@ -66,7 +67,7 @@ export default class ServiceMgr {
 	 * No games are currently being played.  Shut down the game backend service.
 	 */
 	async shutdown() {
-		console.log("Game Backend shutting down due to inactivity");
+		output.log("Game Backend shutting down due to inactivity");
 		clearInterval(this.interval_id);
 
 		await this.lobby_backend.set_gamesever_ip(null);
@@ -85,7 +86,6 @@ export default class ServiceMgr {
 		}
 		
 		try {
-			console.log("Determining IP")
 			// aws ecs list-tasks --cluster h2hadv-serverCluster | jq -re ".taskArns[0]
 			const ecs_client: ECSClient = new ECSClient();
 			const list_tasks_req: ListTasksCommandInput = {
@@ -94,7 +94,6 @@ export default class ServiceMgr {
 			const list_tasks_resp: ListTasksCommandOutput = 
 				await ecs_client.send(new ListTasksCommand(list_tasks_req))
 			const task_arn: string = list_tasks_resp.taskArns[0]
-			console.log(`Task ARN = ${task_arn}`)
 
 			// aws ecs describe-tasks --cluster h2hadv-serverCluster --task $TASKARN | \
 			//   jq -r -e '.tasks[0].attachments[0].details[] | select(.name=="networkInterfaceId").value'
@@ -116,7 +115,6 @@ export default class ServiceMgr {
 			if (!eni) {
 				throw new Error(`Could not find ENI for task ${task_arn}`)
 			}
-			console.log(`ENI = ${eni}`)
 
 			// aws ec2 describe-network-interfaces --network-interface-ids $ENI | \
 			//   jq -r -e ".NetworkInterfaces[0].Association.PublicIp"
@@ -127,13 +125,13 @@ export default class ServiceMgr {
 			const desc_net_resp: DescribeNetworkInterfacesCommandOutput =
 				await ec2_client.send(new DescribeNetworkInterfacesCommand(desc_net_req))
 			const ip = desc_net_resp.NetworkInterfaces[0].Association.PublicIp
-			console.log(`IP = ${ip}`)
+			output.log(`Game Backend IP = ${ip}`)
 			return ip
 		}
 		catch (err: any) {
-			console.log(`Encountered error determining IP: ${err.message}`)
+			output.error(`Encountered error determining IP: ${err.message}`)
 			const stack = err.stack.split("\n").slice(1, 4).join("\n");
-			console.log(stack); 
+			output.error(stack); 
 			
 			return null;
 		}

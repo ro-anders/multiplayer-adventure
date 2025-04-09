@@ -10,6 +10,7 @@
 import express, { Express, Request, Response } from "express";
 import WebSocket from 'ws';
 
+import output from "./Output"
 import GameMgr from "./biz/GameMgr";
 import ServiceMgr from "./biz/ServiceMgr";
 import LobbyBackend from "./biz/LobbyBackend";
@@ -17,9 +18,10 @@ import LobbyBackend from "./biz/LobbyBackend";
 const { createServer } = require('http');
 
 
-console.log("Starting game back end")
-console.log(`Environment = ${process.env.NODE_ENV}`)
-console.log(`Lobby URL = ${process.env.LOBBY_URL}`)
+output.log("Starting game back end")
+output.log(`Environment = ${process.env.NODE_ENV}`)
+output.log(`Lobby URL = ${process.env.LOBBY_URL}`)
+output.log(`Log level = ${process.env.LOG_LEVEL}`)
 
 // If running in production we need a lobby url.  
 // If running locally, we assume the standard localhost lobby port.
@@ -34,9 +36,15 @@ const port = 4000;
 const server = createServer(app);
 const server_socket: WebSocket.Server = new WebSocket.Server({ server: server, path: '/ws' });
 
-server_socket.on('connection', (ws: WebSocket) => {
-  console.log("client connected.  Waiting for join message.");
+/**
+ * Produce a string to identify a web socket
+ */
+const wsToString = (ws: WebSocket) => {
+  return (ws as any)._socket?.remoteAddress + ":" + (ws as any)._socket?.remotePort
+}
 
+server_socket.on('connection', (ws: WebSocket) => {
+  output.debug(`client ${wsToString(ws)} connected.  Waiting for join message.`);
 
   ws.on('message', function(data: WebSocket.RawData, isBinary: boolean) {
     if (isBinary) {

@@ -5,6 +5,7 @@
  */
 
 import WebSocket from 'ws';
+import output from '../Output'
 import LobbyBackend from './LobbyBackend';
 import Constants from './Constants';
 import { RunningGame } from '../domain/RunningGame';
@@ -24,6 +25,13 @@ interface GamePlatform {
 	game_info: RunningGame;
 }
 
+/**
+ * Produce a string to identify a web socket
+ */
+const wsToString = (ws: WebSocket) => {
+  return (ws as any)._socket?.remoteAddress + ":" + (ws as any)._socket?.remotePort
+}
+
 
 /**
  * This class broadcasts messages to all the players in a game.
@@ -39,33 +47,32 @@ export default class GameMgr {
 
 	process_message(data: Uint8Array, client_socket: WebSocket) {
 		if (data.length < 2) {
-			console.log("Unexpected message too short. " + Array.from(data).join(", ") + "")
+			output.error("Unexpected message too short. " + Array.from(data).join(", ") + "")
 		} else {
-			console.log("Received " + typeof(data) + " " + Object.prototype.toString.call(data) + " with data [" + Array.from(data).join(" ") + "]")
+			output.debug("Received message [" + Array.from(data).join(" ") + "]")
 			// The very first byte should indicate the session
 			const session = data[0]
 			// The second byte indicates the type of message
 			if (data[1] == GAMEMSG_CODE) {
-				console.log("Request to broadcast message to " + session)
+				output.debug(`Request from ${wsToString(client_socket)} to broadcast message to ${session}`)
 				this.broadcast_message(session, data, client_socket);
 			}
 			else if (data[1] == CONNECT_CODE) {
-				console.log("Request to join session " + session)
 				this.join_session(session, client_socket)        
 			}
 			else if (data[1] == READY_CODE) {
-				console.log("Request to start game " + session)
+				output.log(`Request from ${wsToString(client_socket)} to start game ${session}`)
 				this.player_ready(session, client_socket);
 			}
 			else if (data[1] == CHAT_CODE) {
-				console.log("Request to broadcast chat to session " + session);
+				output.debug(`Request from ${wsToString(client_socket)} to broadcast chat to session ${session}`);
 				this.broadcast_message(session, data, client_socket);
 			}
 			else if (data[1] == MSG_TO_LOBBY_CODE) {
 				this.message_to_lobby(session, data);
 			}
 			else {
-			  console.error(`Unexpected message code ${data[1]} in message ${data}`)
+			  output.error(`Unexpected message code ${data[1]} in message ${data} from ${wsToString(client_socket)}`)
 			}
 		}
 	}
@@ -79,12 +86,16 @@ export default class GameMgr {
 	 */
 	async join_session(session, client_socket: WebSocket) {
 		if (!(session in this.games)) {
+			output.log(`Request from ${wsToString(client_socket)} to join new session ${session}`)
 			const game_info = await this.lobby_backend.get_game_info(session)
-			console.log(`Read game info ${JSON.stringify(game_info)}`)
-			game_info.ready_players = 0;
-			this.games[session] = {
-				clients: [],
-				game_info: game_info
+			// Double check.  Other player could have populated game info while awaiting
+			if (!(session in this.games)) {
+				output.log(`Retrieved game ${session} info from lobby: ${JSON.stringify(game_info)}`)
+				game_info.ready_players = 0;
+				this.games[session] = {
+					clients: [],
+					game_info: game_info
+				}
 			}
 		}
 		const game = this.games[session]
@@ -92,8 +103,10 @@ export default class GameMgr {
 		game.game_info.joined_players = game.clients.length
 		if (game.clients.length === game.game_info.player_names.length) {
 			game.game_info.state = 1 /* started */
+			output.log(`client ${wsToString(client_socket)} joined session ${session} as final player.  Game ready to start.`);
+		} else {
+			output.log(`client ${wsToString(client_socket)} joined session ${session}.  ${game.clients.length} of ${game.game_info.player_names.length} joined.`);
 		}
-		console.log("client joined session " + session + ".");
 	
 		// Now serialize the game info and send to all clients
 		const jsonData = JSON.stringify(game.game_info);
@@ -119,14 +132,14 @@ export default class GameMgr {
 	 */
 	player_ready(session, client_socket: WebSocket) {
 		if (!(session in this.games)) {
-			console.error("Request to start in non-existent session " + session);
+			output.error(`Request to start in non-existent session ${session}`);
 			return;
 		}
 
 		const game = this.games[session]
 		const client_index = game.clients.indexOf(client_socket);
 		if (client_index < 0) {
-			console.error("Request to start session " + session + " from unknown client")
+			output.error(`Request to start session ${session} from unknown client ${wsToString(client_socket)}`)
 			return
 		}
 
@@ -134,12 +147,13 @@ export default class GameMgr {
 		// to play.  When bitmask reaches 7 (or 3 in a 2 player game)
 		// broadcast the start of the game.
 		game.game_info.ready_players = game.game_info.ready_players | 2 ** client_index;
-		console.log("client" + client_index + " ready to start session " + session + 
-			".  All ready clients = " + game.game_info.ready_players);
+		output.log(`client ${wsToString(client_socket)} (#${client_index}) ` +
+			`is ready to start session ${session}.` + 
+			`  All ready clients = ${game.game_info.ready_players}`);
 	
 		// If all players have said they are ready, broadcast a start to all clients.
 		if (game.game_info.ready_players === (2 ** game.game_info.player_names.length)-1) {
-			console.log("Session " + session + " is ready to play.")
+			output.log("Session " + session + " is ready to play.")
 			const message = new Uint8Array(2);
 			message[0] = session;
 			message[1] = READY_CODE;
@@ -174,7 +188,7 @@ export default class GameMgr {
 	async message_to_lobby(session, data) {
 		// First identify the game and player that generated the event.
 		if (!(session in this.games)) {
-			console.error(`Request to report to server for non-existent session ${session}`)
+			output.error(`Request to report to server for non-existent session ${session}`)
 			return;
 		}
 
@@ -195,6 +209,7 @@ export default class GameMgr {
 			// If a game is won, we have to update the game that it is finished, then
 			// update the winner's stats that they have won and update the losers' stats
 			// that they have played a game without winning.
+			output.log(`Game ${session} over. ${player_name} has won.  Notifying lobby.`)
 
 			// Update the game is finished
 			game.game_info.state = 2 /* finished */;
@@ -219,7 +234,9 @@ export default class GameMgr {
 			// Update the achievment in the database if the new achievment is
 			// further than the one in the database.
 			if (code > player_stats.achvmts) {
+				output.log(`${player_name} has achieved easter egg step ${code}.  Notifying lobby.`)
 				player_stats.achvmts = code;
+				player_stats.achvmt_time = Date.now()
 				this.lobby_backend.update_player_stats(player_stats)
 			}
 		}

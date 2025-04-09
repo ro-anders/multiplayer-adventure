@@ -1,3 +1,4 @@
+import output from "../Output"
 import { PlayerStats } from "../domain/PlayerStats";
 import { RunningGame } from "../domain/RunningGame";
 
@@ -36,15 +37,13 @@ export default class LobbyBackend {
 		})
 
 		try {
-			console.log(`${method} ${request.url}`)
 			const response = await fetch(request)
-			console.log(`${method} ${response.status}`)
 			if (response.status != 200) {
-				console.log(`Update lobby's Server IP received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+				output.error(`Update lobby's Server IP received ${response.status} response: ${JSON.stringify(await response.json())}`)		
 			}
 		}
 		catch (e) {
-			console.log(`Error encountered: ${e}`)
+			output.error(`Error encountered: ${e}`)
 		}
 	}
 
@@ -61,18 +60,16 @@ export default class LobbyBackend {
 		})
 
 		try {
-			console.log(`GET ${request.url}`)
 			const response = await fetch(request)
-			console.log(`GET ${response.status}`)
 			if (response.status != 200) {
-				console.log(`Get game info received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+				output.error(`Get game info received ${response.status} response: ${JSON.stringify(await response.json())}`)		
 				throw new Error("GET /game failed.")
 			}
 			const game_info = await response.json()
 			return game_info
 		}
 		catch (e) {
-			console.log(`Error encountered: ${e}`)
+			output.log(`Error encountered: ${e}`)
 		}
 	}
 
@@ -94,17 +91,16 @@ export default class LobbyBackend {
 		try {
 			const response = await fetch(request)
 			if (response.status != 200) {
-				console.log(`Update game ${game_info.session} received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+				output.log(`Update game ${game_info.session} received ${response.status} response: ${JSON.stringify(await response.json())}`)		
 			}
 		}
 		catch (e) {
-			console.log(`Error encountered: ${e}`)
+			output.log(`Error encountered: ${e}`)
 		}
 	}
 
 	/**
-	 * Reports the IP of the game server to the lobby backend, or clears
-     * the IP if ip is null.
+	 * Updates the lobby backend that a player is still active.
 	 */	
 	async update_player(player_name: string) {
 		const headers: Headers = new Headers()
@@ -118,15 +114,13 @@ export default class LobbyBackend {
 		})
 
 		try {
-			console.log(`PUT ${request.url}`)
 			const response = await fetch(request)
-			console.log(`PUT ${response.status}`)
 			if (response.status != 200) {
-				console.log(`Update player ${player_name} received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+				output.log(`Update player ${player_name} received ${response.status} response: ${JSON.stringify(await response.json())}`)		
 			}
 		}
 		catch (e) {
-			console.log(`Error encountered: ${e}`)
+			output.log(`Error encountered: ${e}`)
 		}
 	}
 
@@ -153,16 +147,17 @@ export default class LobbyBackend {
 					playername: playername,
 					games: 0,
 					wins: 0,
-					achvmts: 0
+					achvmts: 0,
+					achvmt_time: 0
 				}
 			} else {
-				console.log(`Get player stats ${request.url} received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+				output.log(`Get player stats ${request.url} received ${response.status} response: ${JSON.stringify(await response.json())}`)		
 				throw new Error("GET /playerstats failed")
 			}
 			return player_stats
 		}
 		catch (e) {
-			console.log(`Error encountered: ${e}`)
+			output.log(`Error encountered: ${e}`)
 		}
 	}
 
@@ -182,11 +177,11 @@ export default class LobbyBackend {
 		try {
 			const response = await fetch(request)
 			if (response.status != 200) {
-				console.log(`Update player stats ${request.url} received ${response.status} response: ${JSON.stringify(await response.json())}`)		
+				output.log(`Update player stats ${request.url} received ${response.status} response: ${JSON.stringify(await response.json())}`)		
 			}
 		}
 		catch (e) {
-			console.log(`Error encountered: ${e}`)
+			output.log(`Error encountered: ${e}`)
 		}
 	}
 
