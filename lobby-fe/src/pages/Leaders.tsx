@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Form, Button } from 'react-bootstrap';
 
 import '../App.css';
 import '../css/Leaders.css'
 import { PlayerStat } from '../domain/PlayerStat';
 import PlayerService from '../services/PlayerService';
+import AchieverList from '../components/AchieverList';
 
 function LeaderBoard() {
 
   let [topScorers, setTopScorers] = useState<PlayerStat[]>([]);
   let [achievers, setAchievers] = useState<{[achivmt: string]: string[];}>({})
+  let [topAchievment, setTopAchievment] = useState<string>("")
   let [topScorersLoaded, setTopScorersLoaded] = useState<boolean>(false);
 
   /**
@@ -64,41 +65,43 @@ function LeaderBoard() {
       collated[achvmt_name].sort((a, b) => a.achvmt_time - b.achvmt_time)
     }
 
-    // The very first "challenge" achiever gets the "egg" achievment
-    if ("challenge" in collated) {
-      collated["egg"] = [collated["challenge"].shift() as PlayerStat]
-      if (collated["challenge"].length == 0) {
-        delete collated["challenge"]
-      }
-    }
-
     // Now map player stats to player names
     const achievers_list: {[achvmt: string]: string[]} = {}
     for (let key in collated) {
       // Map through the list of objects and extract the 'name' attribute
       achievers_list[key] = collated[key].map(stat => stat.playername);
     }
+
     return achievers_list
   }
 
-  /**
-   * Load the scheduled events from the backend.
-   */
-  async function loadPlayerStats() {
-    const stats = await PlayerService.getAllPlayerStats()
-    // Sort the list by best players score, which is a little funky in that
-    // we do wins / (games+2) so that 3 out of 3 doesn't look more impressive than 26 out of 27.
-    const score_list = [...stats].sort(scoreSort)
-    const achiever_lists: {[achvmt:string]: string[]} = collect_achievers(stats)
-    setAchievers(achiever_lists)
-    setTopScorers(score_list)
-    setTopScorersLoaded(true)
-  }
 
   // Load the scheduled events, but only do this once.
   // We don't poll the server for updates.  You'll have to 
   // refresh the page to do that.
   useEffect(() => {
+
+      /**
+       * Load the scheduled events from the backend.
+       */
+      async function loadPlayerStats() {
+        const MIN_WINS = 1
+        const stats = await PlayerService.getAllPlayerStats()
+        // Sort the list by best players score, which is mostly win ratio but
+        // modified so that more games played counts for something.
+        // Also filter out anyone who hasn't won enough games.
+        const score_list = [...stats].sort(scoreSort).filter(stat=>stat.wins >= MIN_WINS)
+        const achiever_lists: {[achvmt:string]: string[]} = collect_achievers(stats)
+
+        // Figure out what is the most important achiemvment achieved
+        const ordered = ['egg', 'challenge', 'gate', 'key', 'castle']
+        const achieved = ordered.filter(achvmt => achvmt in achiever_lists)
+        setTopAchievment(achieved.length > 0 ? achieved[0] : "")
+        setAchievers(achiever_lists)
+        setTopScorers(score_list)
+        setTopScorersLoaded(true)
+      }
+
     if (!topScorersLoaded) {
       loadPlayerStats();
     }
@@ -109,14 +112,26 @@ function LeaderBoard() {
     <div className="leaders-page">
       <h1>Leader Board</h1>
       <div className="leaders-box">
+        {Object.keys(achievers).length > 0 &&
+          <div>
+            <AchieverList achievment_description='beat the crystal challenge' achievers={achievers['challenge']} isTop={topAchievment==='challenge'}/>
+            <AchieverList achievment_description='opened the crystal gate' achievers={achievers['gate']} isTop={topAchievment==='gate'}/>
+            <AchieverList achievment_description='found the crystal key' achievers={achievers['key']} isTop={topAchievment==='key'}/>
+            <AchieverList achievment_description='found the crystal castle' achievers={achievers['castle']} isTop={topAchievment==='castle'}/>
+            </div>
+        }
         <h2>Top Scorers</h2>
         {!topScorersLoaded && <p>loading...</p>}
         {topScorersLoaded && 
           <table>
-            <tr><td><h4>Name</h4></td><td><h4>Wins</h4></td><td><h4>Games</h4></td></tr>
-            {topScorers.map((stat: PlayerStat) => (
-              <tr><td>{stat.playername}</td><td>{stat.wins}</td><td>{stat.games}</td></tr>
-            ))}
+            <thead>
+              <tr><td><h4>Name</h4></td><td><h4>Wins</h4></td><td><h4>Games</h4></td></tr>
+            </thead>
+            <tbody>
+              {topScorers.map((stat: PlayerStat) => (
+                <tr key={stat.playername}><td>{stat.playername}</td><td>{stat.wins}</td><td>{stat.games}</td></tr>
+              ))}
+            </tbody>
           </table>
         }
       </div>
