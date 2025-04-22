@@ -33,7 +33,7 @@ export default class LobbyBackend {
             setting_name: setting_name,
             setting_value: ip
         }));
-		const request: RequestInfo = new Request(`${this.lobby_url}/setting/game_server_ip`, {
+		const request: RequestInfo = new Request(`${this.lobby_url}/setting/${setting_name}`, {
 			method: method,
 			headers: headers,
 			body: body

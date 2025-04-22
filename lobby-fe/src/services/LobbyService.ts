@@ -70,7 +70,6 @@ export default class LobbyService {
 			}
 			if (this.isLobbyStateEqual(this.last_state, new_state)) {
 				// No changes.
-				console.log(`${new Date().toISOString().substring(11,23)} - Waiting ${this.poll_wait/1000} seconds`)
 				return (force ? this.last_state : null);
 			}
 			// Register a change, adjust the next poll time and last chat time,
@@ -82,7 +81,6 @@ export default class LobbyService {
 			}
 			this.poll_wait = LobbyService.MIN_TIME_BETWEEN_POLL;
 			this.next_poll = Date.now() + this.poll_wait;
-			console.log(`${new Date().toISOString().substring(11,23)} - Waiting ${this.poll_wait/1000} seconds`)
 			return new_state;
 		}
 	}

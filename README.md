@@ -62,7 +62,7 @@ To Deploy and Run the System:
   - aws cloudformation update-stack --stack-name game-be \
    --template-body file://game-be/deploy/fargateservice.cfn.yml --capabilities "CAPABILITY_NAMED_IAM"
 9. Play game
- - goto http://prerelease1414.h2hadventure.com
+ - goto https://prerelease1414.h2hadventure.com
 
  To Deploy the Demo (an AI game restricted to Game 1 two players)
 1. Authenticate with AWS, credentials stored in ~/.aws/credentials

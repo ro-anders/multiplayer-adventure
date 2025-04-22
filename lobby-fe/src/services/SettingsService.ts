@@ -15,6 +15,7 @@ export default class SettingsService {
 	static async getGameServerIP(): Promise<String> {
 		var ip: string = ''
 		var just_spawned = false
+		var first_time = true // We log some things on the first try, but not subsequent tries
 		while (ip === '') {
 			// We can use the `Headers` constructor to create headers
 			// and assign it as the type of the `headers` variable
@@ -49,12 +50,27 @@ export default class SettingsService {
 				just_spawned = false
 			}
 
+			// The first time through, log what's happening.
+			if (first_time) {
+				if (too_old) {
+					console.log(`Found game server ip, but server appears to have aborted abnormally.  Respawning.`)
+				} else if (just_spawned) {
+					console.log(`No game server running.  Spawning new game server.`)
+				} else if (response_ip === "starting") {
+					console.log(`Game server is in the process of starting up.`)
+				} else {
+					console.log("Game server in unknown state.")
+				}
+				first_time = false;
+			}
+
 			// If we don't yet have an ip, wait.
 			if (!ip) {
 				await new Promise((resolve) => setTimeout(resolve, SettingsService.GAMESERVER_START_POLL_TIME));
 			}
 
 		}
+		console.log(`Game Server running at ${ip}.  Proceeding.`)
 		return ip;
 	}
 
