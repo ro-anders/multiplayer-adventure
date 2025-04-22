@@ -176,7 +176,10 @@ namespace GameScene
 
             var thisTask = new TaskCompletionSource<bool>();
 
-            websocket = new WebSocket("ws://" + host_address + ":4000/ws");
+            // When running locally we use unsecured web socket.  When 
+            // running in production we use a secured web socket.
+            string protocol = Debug.isDebugBuild ? "ws" : "wss";
+            websocket = new WebSocket(protocol + "://" + host_address + ":4000/ws");
 
             websocket.OnOpen += async () =>
             {

@@ -22,12 +22,15 @@ export default class LobbyBackend {
      * the IP if ip is null.
 	 */	
 	async set_gamesever_ip(ip: string) {
+		// In development we use a raw ip and connect with ws, in production we use a 
+		// a name proxied by cloudflare and use wss
+		const setting_name = (process.env.NODE_ENV === 'development' ? "game_server_ip" : "game_server_raw_ip")
 		const headers: Headers = new Headers()
 		headers.set('Content-Type', 'application/json')
 		headers.set('Accept', 'application/json')
         const method = (!ip ? 'DELETE': 'PUT')
         const body = (!ip ? null : JSON.stringify({
-            setting_name: "game_server_ip",
+            setting_name: setting_name,
             setting_value: ip
         }));
 		const request: RequestInfo = new Request(`${this.lobby_url}/setting/game_server_ip`, {
