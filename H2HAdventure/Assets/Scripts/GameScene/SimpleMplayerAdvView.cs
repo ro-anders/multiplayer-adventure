@@ -89,7 +89,7 @@ namespace GameScene
         private void PlayGame()
         {
             // Start the game
-            Debug.Log("Starting game " + (setup.GameNumber + 1)  + ".  This player is " 
+            GameEngine.Logger.Debug("Starting game " + (setup.GameNumber + 1)  + ".  This player is " 
                 + (setup.Slot + 1 ) + " of " + setup.NumPlayers);
             if (setup.DummyMode) {
                 bool[] useAi = { false, true, true };

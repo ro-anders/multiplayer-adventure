@@ -138,7 +138,7 @@ public class UnityAdventureView : UnityAdventureBase, AdventureView, ChatSubmitt
     }
 
     public void AdventureSetup(int inLocalPlayerSlot) {
-        Debug.Log("Starting game.");
+        GameEngine.Logger.Debug("Starting game.");
         GameInLobby game = SessionInfo.GameToPlay;
         // TODOX: Right now we are manually jamming the AI
         bool[] useAi = { false, true, true };

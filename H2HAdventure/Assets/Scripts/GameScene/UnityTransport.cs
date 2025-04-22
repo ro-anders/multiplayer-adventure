@@ -58,7 +58,7 @@ public class UnityTransport : MonoBehaviour, Transport
         }
         else if (SessionInfo.NetworkSetup == SessionInfo.Network.NONE)
         {
-            Debug.Log("Running in single player mode");
+            GameEngine.Logger.Debug("Running in single player mode");
             needMatch = false;
             state = ConnectionStates.CONNECTED;
         }
@@ -129,13 +129,13 @@ public class UnityTransport : MonoBehaviour, Transport
     {
         if (!success)
         {
-            Debug.Log("Error creating Adventure game match.");
+            GameEngine.Logger.Debug("Error creating Adventure game match.");
             // TODO: FIX0001
         }
         else
         {
             // RIPPED
-            Debug.Log("Now hosting h2h game " + matchName);
+            GameEngine.Logger.Debug("Now hosting h2h game " + matchName);
         }
     }
 
@@ -143,7 +143,7 @@ public class UnityTransport : MonoBehaviour, Transport
     {
         if (!success)
         {
-            Debug.Log("Error looking for match.");
+            GameEngine.Logger.Debug("Error looking for match.");
             // Try again
             waitingOnListMatch = false;
         }
@@ -157,7 +157,7 @@ public class UnityTransport : MonoBehaviour, Transport
     {
         if (!success)
         {
-            Debug.Log("Error joining lobby");
+            GameEngine.Logger.Debug("Error joining lobby");
             // TODO: FIX0001
         }
         else
@@ -173,11 +173,11 @@ public class UnityTransport : MonoBehaviour, Transport
             // Just report and try to continue with leaving the game.
             // Theoretically possible that match has already been brought down because
             // player hosting match has moved back to lobby
-            Debug.Log("Error trying to disconnect from match");
+            GameEngine.Logger.Debug("Error trying to disconnect from match");
         }
         else
         {
-            Debug.Log("Disconnected from match");
+            GameEngine.Logger.Debug("Disconnected from match");
         }
         // RIPPED
         ShutdownNetworkManager();
@@ -189,11 +189,11 @@ public class UnityTransport : MonoBehaviour, Transport
         if (!success)
         {
             // Just report and continue with joining game.
-            Debug.Log("Error trying to shutdown match");
+            GameEngine.Logger.Debug("Error trying to shutdown match");
         }
         else
         {
-            Debug.Log("Shutdown match");
+            GameEngine.Logger.Debug("Shutdown match");
         }
         // RIPPED
         ShutdownNetworkManager();
@@ -203,12 +203,12 @@ public class UnityTransport : MonoBehaviour, Transport
 
     public void registerSync(PlayerSync inPlayerSync)
     {
-        Debug.Log("Registering " + (inPlayerSync.isLocalPlayer ? "local " : "remote ") + "player # " + inPlayerSync.getSlot());
+        GameEngine.Logger.Debug("Registering " + (inPlayerSync.isLocalPlayer ? "local " : "remote ") + "player # " + inPlayerSync.getSlot());
         allPlayers.Add(inPlayerSync);
         if (inPlayerSync.isLocalPlayer)
         {
             thisPlayer = inPlayerSync;
-            Debug.Log("Adventure game has been setup for player " + thisPlayer.getSlot());
+            GameEngine.Logger.Debug("Adventure game has been setup for player " + thisPlayer.getSlot());
         }
     }
 

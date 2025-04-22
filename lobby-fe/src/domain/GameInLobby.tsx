@@ -14,6 +14,26 @@ export interface GameInLobby extends GameDetails {
 }
 
 /**
+ * Creates a copy of a game
+ * @param game game to copy
+ * @returns independent copy of game
+ */
+export function cloneGameInLobby(game: GameInLobby) : GameInLobby {
+    const new_game: GameInLobby = {
+        session: game.session,
+        game_number: game.game_number,
+        number_players: game.number_players,
+        fast_dragons: game.fast_dragons,
+        fearful_dragons: game.fearful_dragons,
+        player_names: game.player_names.slice(),
+        state: game.state,
+        display_names: game.display_names.slice(),
+        order: game.order
+    }
+    return new_game
+}
+
+/**
  * Take a list of players in the order they joined and an ordering
  * and return a list of players in the order they will appear in the game.
  */

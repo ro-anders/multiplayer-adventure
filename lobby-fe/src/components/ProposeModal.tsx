@@ -9,7 +9,7 @@ interface ProposeModalProps {
     /** Whether the modal is visible */
     show: boolean;
     /** The callback to register a newly proposed game */
-    propose_game_callback: (new_game: GameInLobby) => void;
+    propose_game_callback: (updated_game: GameInLobby, original_version: GameInLobby | null) => Promise<boolean>
     /** The callback to hide the modal */
     onHide: () => void;
   }
@@ -35,7 +35,7 @@ function ProposeModal({username, show, onHide, propose_game_callback}: ProposeMo
       order: Math.floor(Math.random() * 6),
       state: GAMESTATE__PROPOSED
     };
-    propose_game_callback(new_game);
+    propose_game_callback(new_game, null);
     onHide();
   }
 

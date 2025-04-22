@@ -3,7 +3,7 @@ Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: play.h2hadventure.com
+      BucketName: prerelease1414.h2hadventure.com
       PublicAccessBlockConfiguration:
         BlockPublicAcls: false
         BlockPublicPolicy: false

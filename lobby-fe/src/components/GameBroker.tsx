@@ -19,7 +19,7 @@ interface GameBrokerProps {
 
   /** Callback to call if we change something about the currently proposed games (e.g. we
    * proposed a new one, or withdrew the current player from an existing one) */
-  game_change_callback: (games:GameInLobby) => void;
+  game_change_callback: (updated_game: GameInLobby, original_version: GameInLobby | null) => Promise<boolean>;
 
   /** Whether to enable creating new games or changing game state. */
   actions_disabled: boolean;

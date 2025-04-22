@@ -145,7 +145,7 @@
                 if (!found.IsValid)
                 {
                     // Something went wrong.  Shoudn't get that here
-                    UnityEngine.Debug.LogError("Request to pick up object " + objectToPickup.label + " that is at not reachable place (" +
+                    GameEngine.Logger.Error("Request to pick up object " + objectToPickup.label + " that is at not reachable place (" +
                         objectToPickup.x + "," + objectToPickup.y + ")@" + objectToPickup.room);
                 }
                 return found;

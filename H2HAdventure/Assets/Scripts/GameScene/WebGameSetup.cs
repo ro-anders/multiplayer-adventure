@@ -104,11 +104,11 @@ namespace GameScene
             help_popups = false;
             map_guides = false;
 
-            Debug.Log("Reading URL");
+            GameEngine.Logger.Debug("Reading URL");
             string urlstr = Application.absoluteURL;
-            Debug.Log("URL = " + urlstr);
+            GameEngine.Logger.Debug("URL = " + urlstr);
             Uri url = ((urlstr != null) && (urlstr.Length > 0) ? new Uri(urlstr): null);
-            Debug.Log("With query part: " + (url != null ? url.Query : ""));
+            GameEngine.Logger.Debug("With query part: " + (url != null ? url.Query : ""));
 
             // Need to determine if we are running in dummy mode.  We are running in 
             // dummy mode if we are running inside the Unity Editor or if we
@@ -144,7 +144,7 @@ namespace GameScene
                 if (host_str != null) {
                     backend_host = host_str;
                 }
-                Debug.Log("Game setup: session=" + session + ", slot=" + slot);
+                GameEngine.Logger.Debug("Game setup: session=" + session + ", slot=" + slot);
             }
         }
 

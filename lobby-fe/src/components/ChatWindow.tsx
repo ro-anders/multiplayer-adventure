@@ -33,6 +33,17 @@ function ChatWindow({current_user, chats, new_chat_callback, actions_disabled}: 
     }
   }
 
+  /**
+   * The user posts a chat either with the post button or the return key.
+   * Monitor the input field for the return key.
+   * @param event the key down event 
+   */
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      postChatMessage()
+    }
+  };
+
   return (
 
     <div className="lobby-column lobby-chat-column lobby-room">
@@ -43,7 +54,10 @@ function ChatWindow({current_user, chats, new_chat_callback, actions_disabled}: 
         ))}
           <div id="scroll-anchor"></div>
         </div>
-      <input type="text" placeholder="Type a message..." value={newChatText} onChange={(event) => setNewChatText(event.target.value)}/>
+      <input type="text" placeholder="Type a message..." 
+        value={newChatText} 
+        onChange={(event) => setNewChatText(event.target.value)}
+        onKeyDown={handleKeyDown} />
       <Button disabled={actions_disabled} onClick={postChatMessage}>Send</Button>
     </div>
   );

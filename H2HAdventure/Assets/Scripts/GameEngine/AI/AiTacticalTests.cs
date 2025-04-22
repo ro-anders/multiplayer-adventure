@@ -10,14 +10,15 @@ namespace GameEngine.Ai
         AiPathNode path;
         AiObjective obj;
 
-        public static bool tests_run = false;
+        // Set to false if we are mucking with the AI algorithms and want to run the unit tests.
+        public static bool tests_run = true;
 
         byte[][] blockGfx = { new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF } };
 
         public AiTacticalTests()
         {
-            UnityEngine.Debug.Log("RUNNING AI TACTICAL TESTS!!!!!!!!!!");
-            UnityEngine.Debug.Log("You probably want to disable these before release");
+            GameEngine.Logger.Debug("RUNNING AI TACTICAL TESTS!!!!!!!!!!");
+            GameEngine.Logger.Debug("You probably want to disable these before release");
 
             // First thing we do is set that the tests have run (otherwise creating a tactical below will
             // create an infinite loop)

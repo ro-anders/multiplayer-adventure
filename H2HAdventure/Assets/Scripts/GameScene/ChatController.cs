@@ -43,7 +43,7 @@ public class ChatController : MonoBehaviour
         // Put any new messages in the chat window
         ChatMessage nextChat = xport.getChat();
         while (nextChat != null) {
-            Debug.Log("Display chat from player #" + nextChat.slot);
+            GameEngine.Logger.Debug("Display chat from player #" + nextChat.slot);
             displayChat(nextChat);
             nextChat = xport.getChat();
         }
@@ -52,7 +52,7 @@ public class ChatController : MonoBehaviour
     // Post a chat message in the display, applying rich text markup.
     // If there are too many chat messages in the display, truncate them.
     private void displayChat(ChatMessage chat) {
-        Debug.Log("Chat from player #" + chat.slot + ": " + chat.message);
+        GameEngine.Logger.Debug("Chat from player #" + chat.slot + ": " + chat.message);
         // If there are too many lines, truncate it by 20%
         if (numChats > MAX_CHATS) {
             int lines_to_truncate = (numChats-MAX_CHATS) + MAX_CHATS/5;
@@ -65,7 +65,7 @@ public class ChatController : MonoBehaviour
         string new_text = "\n<color="+colorCode+">"+playerName+":</color> "+chat.message;
         message_display.text += new_text;
         numChats += 1;
-        Debug.Log("Chat window:\n" + message_display.text);
+        GameEngine.Logger.Debug("Chat window:\n" + message_display.text);
     }
 
     // Event handler for pressing the post button (or hitting enter inside the

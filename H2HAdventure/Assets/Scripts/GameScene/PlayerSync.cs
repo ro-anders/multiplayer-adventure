@@ -36,18 +36,18 @@ public class PlayerSync : MonoBehaviour
             CmdSetPlayerName(SessionInfo.ThisPlayerName);
         } else if (playerId != GameInLobby.NO_PLAYER)
         {                // Not sure if this ever gets called.
-            Debug.Log("THIS GETS CALLED!!!!!!!!!  Called with " + playerName + "(" + playerId + ")");
+            GameEngine.Logger.Debug("THIS GETS CALLED!!!!!!!!!  Called with " + playerName + "(" + playerId + ")");
 
             if (!SessionInfo.GameToPlay.IsInGame(playerId))
             {
-                Debug.Log("Unexpected player id:" + playerId);
+                GameEngine.Logger.Debug("Unexpected player id:" + playerId);
             }
             else
             {
                 deduceSlot(playerId);
                 if (playerName != null)
                 {
-                    Debug.Log("PlayerSync constructor registering player" + playerName + "(" + playerId + ")");
+                    GameEngine.Logger.Debug("PlayerSync constructor registering player" + playerName + "(" + playerId + ")");
                     xport = controller.RegisterNewPlayer(this);
                 }
             }
@@ -56,18 +56,18 @@ public class PlayerSync : MonoBehaviour
 
     void OnChangePlayerId(uint newPlayerId)
     {
-        Debug.Log("Setting player id to " + newPlayerId);
+        GameEngine.Logger.Debug("Setting player id to " + newPlayerId);
         if (newPlayerId != playerId)
         {
             if (!SessionInfo.GameToPlay.IsInGame(newPlayerId))
             {
-                Debug.Log("Unexpected player id:" + newPlayerId);
+                GameEngine.Logger.Debug("Unexpected player id:" + newPlayerId);
             } else {
                 playerId = newPlayerId;
                 deduceSlot(playerId);
                 if (playerName != "")
                 {
-                    Debug.Log("Player \"" + playerName + "\"'s ID changed to " + newPlayerId + ". Registering player.");
+                    GameEngine.Logger.Debug("Player \"" + playerName + "\"'s ID changed to " + newPlayerId + ". Registering player.");
                     xport = controller.RegisterNewPlayer(this);
                 }
             }
@@ -76,7 +76,7 @@ public class PlayerSync : MonoBehaviour
 
     void OnChangePlayerName(string newPlayerName)
     {
-        Debug.Log("Setting player name to " + newPlayerName);
+        GameEngine.Logger.Debug("Setting player name to " + newPlayerName);
         if (newPlayerName != playerName)
         {
             playerName = newPlayerName;

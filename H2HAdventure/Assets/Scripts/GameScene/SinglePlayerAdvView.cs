@@ -39,7 +39,7 @@ public class SinglePlayerAdvView : UnityAdventureBase
 
     public int deduceExperienceLevel() {
         int defaultValue = 3;
-        Debug.Log("Reading URL");
+        GameEngine.Logger.Debug("Reading URL");
         const string GAMECODE_PARAM = "gamecode";
         string urlstr = Application.absoluteURL;
         if ((urlstr == null) || (urlstr.Length == 0)) {
@@ -76,7 +76,7 @@ public class SinglePlayerAdvView : UnityAdventureBase
             slot = 0;
         }
         int slot_to_play = (slot == -1 ? randomGen.Next(3) : slot);
-        UnityEngine.Debug.Log("DEMO=" + DEMO + ", slot=" + slot + ", slot_to_play=" + slot_to_play);
+        GameEngine.Logger.Debug("DEMO=" + DEMO + ", slot=" + slot + ", slot_to_play=" + slot_to_play);
         int num_players = (DEMO ? 2 : 3);
         int game_num = (DEMO ? 0 : 2);
         bool[] useAi = { true, true, num_players==3 };

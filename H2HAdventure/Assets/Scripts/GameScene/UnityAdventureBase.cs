@@ -209,7 +209,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
 
     public virtual void Platform_ReportToServer(string message)
     {
-        Debug.Log("Message to server: " + message);
+        GameEngine.Logger.Debug("Message to server: " + message);
     }
 
 
@@ -220,7 +220,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
 
     public void Platform_DisplayStatus(string message, int durationSecs)
     {
-        Debug.Log("Message for player: " + message);
+        GameEngine.Logger.Debug("Message for player: " + message);
         StartCoroutine(DisplayStatus(message, durationSecs));
     }
 
@@ -266,7 +266,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
         // overlap, but put this in to check that.
         if (painting)
         {
-            Debug.Log("DisplayRectangles called while in the middle of paint loop");
+            GameEngine.Logger.Debug("DisplayRectangles called while in the middle of paint loop");
         }
         if (numRects >= 0)
         {
@@ -296,7 +296,7 @@ abstract public class UnityAdventureBase : MonoBehaviour, AdventureView
         // overlap, but put this in to check that.
         if (displaying)
         {
-            Debug.Log("AdventureUpdate called while in the middle of display loop");
+            GameEngine.Logger.Debug("AdventureUpdate called while in the middle of display loop");
         }
         painting = true;
         numRects = 0;

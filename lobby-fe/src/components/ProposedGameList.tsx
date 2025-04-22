@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import '../App.css';
-import {GameInLobby, GAMESTATE__PROPOSED, reorder} from '../domain/GameInLobby'
+import {cloneGameInLobby, GameInLobby, GAMESTATE__PROPOSED, reorder} from '../domain/GameInLobby'
 import GameStartingModal from './GameStartingModal'
 import SettingsService from '../services/SettingsService';
 
@@ -17,7 +17,7 @@ interface ProposedGameListProps {
   games: GameInLobby[];
 
   /** A callback to call if a game is modified */
-  game_change_callback: (games:GameInLobby) => void;
+  game_change_callback: (updated_game: GameInLobby, original_version: GameInLobby | null) => Promise<boolean>;
 
   /** Whether this list is for displaying proposed games or running games */
   state_to_display: number; 
@@ -57,9 +57,10 @@ function ProposedGameList({current_user,
     // Figure out the next open slot in the game and add the user
     // to that slot.
     if (game.display_names.length < game.number_players) {
+      const original_version = cloneGameInLobby(game)
       game.display_names.push(current_user)
       game.player_names = reorder(game.display_names, game.order)
-      game_change_callback(game)
+      game_change_callback(game, original_version)
     }
   }
 
@@ -69,9 +70,10 @@ function ProposedGameList({current_user,
    */
   function quitGame(game: GameInLobby) {
     // Remove the player from the game
+    const original_version = cloneGameInLobby(game)
     game.display_names = game.display_names.filter((name: string) => name !== current_user)
     game.player_names = reorder(game.display_names, game.order)
-    game_change_callback(game)
+    game_change_callback(game, original_version)
   }
 
   /**
@@ -79,7 +81,15 @@ function ProposedGameList({current_user,
    * @param game Which game the have started
    */
   async function startGame(game: GameInLobby) {
-    // TODO: Randomize the order of players
+    // If this is a 2/3 person game and only 2 have joined, lock it at 2 at this point.
+    if (game.number_players == 2.5) {
+      const original_version = cloneGameInLobby(game)
+      game.number_players = game.display_names.length
+      const success = await game_change_callback(game, original_version)
+      if (!success) {
+        return
+      }
+    }
     const slot = game.player_names.indexOf(current_user);
     const code =
       // highest bits hold the session

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using GameEngine;
 
 namespace GameEngine.Ai
 {
@@ -40,7 +41,7 @@ namespace GameEngine.Ai
             int fromPlot = FindPlot(fromRoom, fromBX, fromBY);
             if (fromPlot < 0)
             {
-                UnityEngine.Debug.LogError("Couldn't find starting plot");
+                GameEngine.Logger.Error("Couldn't find starting plot");
                 return null;
             }
 
@@ -48,7 +49,7 @@ namespace GameEngine.Ai
             int toPlot = FindPlot(toRoom, toBX, toBY);
             if (toPlot < 0)
             {
-                UnityEngine.Debug.LogError("Couldn't find ending plot");
+                GameEngine.Logger.Error("Couldn't find ending plot");
                 return null;
             }
 
@@ -272,7 +273,7 @@ namespace GameEngine.Ai
                     }
                     else
                     {
-                        UnityEngine.Debug.LogError("Player has fallen off the AI path!\n" +
+                        GameEngine.Logger.Error("Player has fallen off the AI path!\n" +
                             currentRoom + "(" + currentX + "," +
                             currentY + ") not in " +
                             desiredPath.ThisPlot +

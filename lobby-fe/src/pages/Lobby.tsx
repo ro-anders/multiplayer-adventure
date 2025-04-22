@@ -46,8 +46,8 @@ function Lobby({username, experience_level}: LobbyProps) {
     }
     setActionsDisabled(true);
     setAllChats([...allChats, localChat])
-    const action = async function (): Promise<void> {await ChatService.postChat(username, new_chat_message)};
-    const new_lobby_state = await LobbyService.sync_action_with_backend(action);
+    const action = async function (): Promise<boolean> {return await ChatService.postChat(username, new_chat_message)};
+    const [new_lobby_state, _ ] = await LobbyService.sync_action_with_backend(action);
     updateLobbyState(new_lobby_state);
     setActionsDisabled(false);
   }
@@ -55,12 +55,16 @@ function Lobby({username, experience_level}: LobbyProps) {
   /**
    * Callback called by subcomponents that change the game state.
    * It immediately updates the list, but then syncs the change
-   * with the backend server.
-   * @param new_game_list a modified list of games
+   * with the backend server.  If the server has more recent changes then the
+   * change is aborted
+   * @param updated_game a modified games
+   * @param original_version a version of the game before updates were made.  Used to check
+   *   that the game has not been changed by others
    */
-  async function game_change_callback(updated_game: GameInLobby) {
+  async function game_change_callback(updated_game: GameInLobby, original_version: GameInLobby | null): Promise<boolean> {
     setActionsDisabled(true);
     const updated_game_in_list = lobbyState.games.find((game)=> game.session === updated_game.session)
+    let return_val = true
     if (!updated_game_in_list) {
       // This is a new game.  Add a new game to the lobby state then post a create game request
       const new_lobby_state: LobbyState = {
@@ -71,8 +75,8 @@ function Lobby({username, experience_level}: LobbyProps) {
       console.log(`Locally created new game.  Updating local lobby state to ${LobbyStateToString(new_lobby_state)}.`)
       setLobbyState(new_lobby_state);
       console.log("Sending game change to server.")
-      const action = async function (): Promise<void> {await GameService.proposeNewGame(updated_game)}
-      const synced_lobby_state = await LobbyService.sync_action_with_backend(action);
+      const action = async function (): Promise<boolean> {return await GameService.proposeNewGame(updated_game)}
+      const [synced_lobby_state, _] = await LobbyService.sync_action_with_backend(action);
       updateLobbyState(synced_lobby_state);
     } else {
       // Player has either joined or left a game
@@ -87,11 +91,13 @@ function Lobby({username, experience_level}: LobbyProps) {
       console.log(`Locally updated game.  Updating local lobby state to ${LobbyStateToString(new_lobby_state)}.`)
       setLobbyState(new_lobby_state);
       console.log("Sending game change to server.")
-      const action = async function (): Promise<void> {await GameService.updateGame(updated_game)}
-      const synced_lobby_state = await LobbyService.sync_action_with_backend(action);
+      const action = async function (): Promise<boolean> {return await GameService.updateGame(updated_game, original_version)}
+      const [ synced_lobby_state, success] = await LobbyService.sync_action_with_backend(action);
+      return_val = success
       updateLobbyState(synced_lobby_state);
     }
     setActionsDisabled(false);
+    return return_val
   }
 
   /**
@@ -187,7 +193,6 @@ function Lobby({username, experience_level}: LobbyProps) {
     };
   }, [lobbyState]);
 
-  console.log("Rendering lobby")
   return (
     <div>
       <TitleBar/>
@@ -214,13 +219,15 @@ function Lobby({username, experience_level}: LobbyProps) {
             {/* Put in a horizontal wall between the panels */}
             <div className="lobby-separator-row"/>
             <div className="lobby-room">
+              {/* This list will not be interactable, so set most
+                  of the parameters to dummy parameters */}
               <ProposedGameList 
-                current_user={username} 
-                experience_level={experience_level}
+                current_user= ""
+                experience_level={3}
                 games={lobbyState.games}
-                game_change_callback={(games)=>{}} // A noop callback
+                game_change_callback={(game, original)=>{return Promise.resolve(true);}} // A noop callback
                 state_to_display={GAMESTATE_RUNNING}
-                actions_disabled={actionsDisabled}
+                actions_disabled={true}
               />
             </div>
           </div>

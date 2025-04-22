@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 using GameEngine;
-using UnityEngine.Purchasing.MiniJSON;
 using System.Linq;
 
 
@@ -152,7 +151,7 @@ namespace GameScene
         /// <param name="session_in">the unique id of the game to play</param>         
         /// <param name="slot_in">the player number of this player (0-2)</param>         
         public async Task<bool> Connect(String backend_host_in, byte session_in, int slot_in) {
-            UnityEngine.Debug.Log("Setting up backend server connection");
+            GameEngine.Logger.Info("Setting up backend server connection");
 
             // If running in dummy mode, set some fake setup values and return
             if (backend_host_in == DUMMY_HOST) {
@@ -183,17 +182,17 @@ namespace GameScene
             {
                 // Send a request to open a connection to the server.
                 // An open request is 2 bytes, the first being the session and the second being 0x01.
-                Debug.Log("Connection open!");
+                GameEngine.Logger.Debug("Connection open!");
                 connected = true;
                 byte[] bytes = new byte[] {session, CONNECT_CODE};
-                Debug.Log("Requesting connect with session " + session + ": [ " + String.Join(", ", bytes) + "]");
+                GameEngine.Logger.Info("Requesting connect with session " + session + ": [ " + String.Join(", ", bytes) + "]");
                 await websocket.Send(bytes);
                 thisTask.SetResult(true);
             };
 
             websocket.OnError += (e) =>
             {
-                Debug.Log("Error! " + e);
+                GameEngine.Logger.Error("Error! " + e);
                 if (!connected) {
                     thisTask.SetResult(false);
                 }
@@ -201,7 +200,7 @@ namespace GameScene
 
             websocket.OnClose += (e) =>
             {
-                Debug.Log("Connection closed!");
+                GameEngine.Logger.Info("Connection closed!");
                 if (!connected) {
                     thisTask.SetResult(false);
                 }
@@ -210,20 +209,20 @@ namespace GameScene
             websocket.OnMessage += (bytes) =>
             {
                 if (bytes.Length < 2) {
-                    Debug.LogWarning("Unexpected " + (bytes.Length == 0 ? "empty" : "short") + "message.");
+                    GameEngine.Logger.Warn("Unexpected " + (bytes.Length == 0 ? "empty" : "short") + "message.");
                     return;
                 }
                 byte msg_session = bytes[0];
-                Debug.Log("Received [" + string.Join(" ", bytes) + "] for session " + msg_session);
+                GameEngine.Logger.Debug("Received [" + string.Join(" ", bytes) + "] for session " + msg_session);
 
                 if (session != msg_session) {
-                    Debug.LogWarning("Unexpected message.  Session mismatch.  '" + msg_session + "' != '" + session + "'");
+                    GameEngine.Logger.Warn("Unexpected message.  Session mismatch.  '" + msg_session + "' != '" + session + "'");
                     return;
                 }
 
                 byte msg_code = bytes[1];
                 if (msg_code == READY_CODE) {
-                    Debug.Log("Received message game is ready to start");
+                    GameEngine.Logger.Info("Received message game is ready to start");
                     receivedReady = true;
                 }
                 else if (msg_code == CONNECT_CODE) {
@@ -232,9 +231,9 @@ namespace GameScene
                     byte[] json_bytes = bytes.Skip(SERVER_BYTES).ToArray();
                     char[] json_chars = System.Text.Encoding.UTF8.GetChars(json_bytes);
                     string json_str = new string(json_chars);
-                    Debug.Log("Deserializing game info from \"" + json_str + "\"");
+                    GameEngine.Logger.Debug("Deserializing game info from \"" + json_str + "\"");
                     gameInfo = JsonUtility.FromJson<RunningGame>(json_str);
-                    Debug.Log("Read game info for Game #" + (gameInfo.game_number+1) +
+                    GameEngine.Logger.Info("Read game info for Game #" + (gameInfo.game_number+1) +
                         " (" + gameInfo.session + ") with " + gameInfo.joined_players + " of " + 
                         gameInfo.number_players + " players joined.");
                 }
@@ -244,9 +243,8 @@ namespace GameScene
                     byte[] json_bytes = bytes.Skip(SERVER_BYTES).ToArray();
                     char[] json_chars = System.Text.Encoding.UTF8.GetChars(json_bytes);
                     string json_str = new string(json_chars);
-                    Debug.Log("Deserializing chat message from \"" + json_str + "\"");
                     ChatMessage chat = JsonUtility.FromJson<ChatMessage>(json_str);
-                    Debug.Log("Read chat message from player #" + chat.slot + ": \"" +
+                    GameEngine.Logger.Debug("Read chat message from player #" + chat.slot + ": \"" +
                         chat.message);
                     receivedChats.Enqueue(chat);
                 }
@@ -254,7 +252,7 @@ namespace GameScene
                     // Process a game message
                     const int MIN_GAME_MESSAGE_SIZE = 10; // 1 for session, 1 for server code, 4 for slot, 4 for message code
                     if (bytes.Length < MIN_GAME_MESSAGE_SIZE) {
-                        Debug.LogWarning("Unexpected short message: " + bytes);
+                        GameEngine.Logger.Warn("Unexpected short message: " + bytes);
                         return;
                     }
 
@@ -264,19 +262,19 @@ namespace GameScene
                     Buffer.BlockCopy(bytes, SERVER_BYTES, ints, 0, bytes.Length - SERVER_BYTES);
                     
                     RemoteAction nextAction = deserializeAction(ints);
-                    UnityEngine.Debug.Log("Decoded action " + nextAction);
+                    GameEngine.Logger.Debug("Decoded action " + nextAction);
                     if (nextAction != null) {
                         receviedActions.Enqueue(nextAction);
                     }
                 }
             };
 
-            UnityEngine.Debug.Log("Initiating connection");
+            GameEngine.Logger.Info("Initiating connection");
             _ = websocket.Connect();
-            UnityEngine.Debug.Log("waiting for callbacks");
+            GameEngine.Logger.Info("waiting for callbacks");
 
             bool return_val = await thisTask.Task;
-            UnityEngine.Debug.Log("Connection setup complete");
+            GameEngine.Logger.Info("Connection setup complete");
             return return_val;
         }
 
@@ -291,8 +289,8 @@ namespace GameScene
                 bytes[0] = session;
                 bytes[1] = MESSAGE_CODE;
                 Buffer.BlockCopy(ints, 0, bytes, SERVER_BYTES, bytes.Length-SERVER_BYTES);
-                Debug.Log("Sending action " + action.ToString() + " on session " + session);
-                Debug.Log("Sending [" + string.Join(" ", bytes) + "]");
+                GameEngine.Logger.Debug("Sending action " + action.ToString() + " on session " + session);
+                GameEngine.Logger.Debug("Sending [" + string.Join(" ", bytes) + "]");
                 websocket.Send(bytes);
             }
         }
@@ -303,12 +301,10 @@ namespace GameScene
                 // First, express the player number and message as a JSON string
                 // and encode it as a byte array.
                 ChatMessage chat = new ChatMessage {slot = thisPlayerSlot, message = message};
-                Debug.Log("Sending chat \"" + chat.message + "\" on session " + session);
+                GameEngine.Logger.Debug("Sending chat \"" + chat.message + "\" on session " + session);
                 string json = JsonUtility.ToJson(chat);
-                Debug.Log("Chat json: " + json);
                 char[] json_chars = json.ToCharArray();
                 byte[] json_bytes = System.Text.Encoding.UTF8.GetBytes(json_chars);
-                Debug.Log("Chat bytes [" + string.Join(" ", json_bytes) + "]");
 
                 // The byte array to send starts with the session and code as the first
                 // two bytes and the encoded JSON string as the rest.
@@ -316,7 +312,7 @@ namespace GameScene
                 msg_bytes[0] = session;
                 msg_bytes[1] = CHAT_CODE;
                 Buffer.BlockCopy(json_bytes, 0, msg_bytes, SERVER_BYTES, json_bytes.Length);
-                Debug.Log("Sending [" + string.Join(" ", msg_bytes) + "]");
+                GameEngine.Logger.Debug("Sending [" + string.Join(" ", msg_bytes) + "]");
                 websocket.Send(msg_bytes);
             }
         }
@@ -333,7 +329,7 @@ namespace GameScene
                     throw new Exception("Cannot start game before web socket is open");
                 }
                 byte[] bytes = new byte[] {session, READY_CODE};
-                Debug.Log("Requesting start game " + session);
+                GameEngine.Logger.Info("Requesting start game " + session);
                 websocket.Send(bytes);
             }
         }

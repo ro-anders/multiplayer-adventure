@@ -8,5 +8,5 @@
 
 # Bugs
   -  Handle exceptions without showing to the user
-  -  Return on chat should submit message
   -  Game chat not obvious
+

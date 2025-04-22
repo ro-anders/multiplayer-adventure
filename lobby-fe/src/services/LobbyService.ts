@@ -56,7 +56,7 @@ export default class LobbyService {
 		} else {
 			// Preemptively increases poll wait
 			this.poll_wait = (this.poll_wait < LobbyService.MAX_TIME_BETWEEN_POLL/2 ?
-				this.poll_wait * 2 : 
+				this.poll_wait * 1.25 : 
 				LobbyService.MAX_TIME_BETWEEN_POLL
 		    )
 		    this.next_poll = Date.now() + this.poll_wait;
@@ -208,7 +208,7 @@ export default class LobbyService {
 				empty_games.push(game)
 			} else if (game.display_names.length !== originalNumPlayers) {
 				// We make this call asynchronously.  Don't need to wait for response.
-				GameService.updateGame(game)
+				GameService.updateGame(game, null)
 			}
 		}
 
@@ -236,14 +236,15 @@ export default class LobbyService {
 	 * in server state.
 	 * @param action a function that will perform the network request like 
 	 *   creating a game or posting a chat
+	 * @returns a tuple of the new lobby state and whether the update was successful
 	 */
-	static async sync_action_with_backend(action: () => Promise<void>): Promise<LobbyState> {
+	static async sync_action_with_backend(action: () => Promise<boolean>): Promise<[LobbyState, boolean]> {
 		// First, stop all regular refreshes
 		// Once syncing_local_changes is non-zero, refreshes are halted
 		this.syncing_local_changes += 1;
 		console.log(`${new Date().toISOString().substring(11,23)} - Locking changes.  Executing action.`)
 		// Second, submit the network call
-		await action();
+		const success = await action();
 
 		console.log(`${new Date().toISOString().substring(11,23)} - Action returned.  Getting new state.`)
 		// Third, request a refresh from the server
@@ -259,7 +260,7 @@ export default class LobbyService {
 		--this.syncing_local_changes;
 
 		console.log(`${new Date().toISOString().substring(11,23)} - Received synced state: ${LobbyStateToString(new_lobby_state)}.  Unlocking changes.`)
-		return new_lobby_state;
+		return [new_lobby_state, success];
   	}
 
 }

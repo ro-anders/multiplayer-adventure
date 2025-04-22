@@ -204,7 +204,7 @@ namespace GameEngine.Ai
 
             if ((nextVelX != thisBall.velx) || (nextVelY != thisBall.vely))
             {
-                //UnityEngine.Debug.Log("Changing (" + thisBall.velx + "," + thisBall.vely +
+                //GameEngine.Logger.Debug("Changing (" + thisBall.velx + "," + thisBall.vely +
                 //    ") to (" + nextVelX + ", " + nextVelY +
                 //    ") at " + thisBall.room + "-(" + thisBall.midX + "," + thisBall.midY + ")");
             }

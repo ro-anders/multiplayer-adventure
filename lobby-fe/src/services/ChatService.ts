@@ -10,7 +10,14 @@ export default class ChatService {
 	 static back_end = process.env.REACT_APP_LOBBY_BE_HOST
 
 
-	 static async postChat(current_player: string, message: string): Promise<void> {
+	 /**
+	  * Post a new chat message to the server to be sent to all players
+	  * @param current_player name of this player who is authoring the chat
+	  * @param message message of the chat
+	  * @returns supposed to return false if a concurrent action by another player
+	  *   blocks this, but that can never happen with a new chat, so always returns true
+	  */
+	 static async postChat(current_player: string, message: string): Promise<boolean> {
 		const headers: Headers = new Headers()
 		// Add a few headers
 		headers.set('Content-Type', 'application/json')
@@ -29,6 +36,7 @@ export default class ChatService {
 		})
 
 		await fetch(request)
+		return true
 	 }	  
 
 

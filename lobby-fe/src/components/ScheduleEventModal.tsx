@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import "../css/ProposeModal.css"
 import { ScheduledEvent } from '../domain/ScheduledEvent';
 
 interface ScheduleEventModalProps {

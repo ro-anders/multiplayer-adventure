@@ -23,6 +23,7 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
   /** What the user has typed into the form for username. 
    * We don't actually set the App username until the user takes an action. */
   let [formUsername, setFormUsername] = useState<string>(username || localStorage.getItem('h2h.username') || "");
+  let [formExperience, setFormExperience] = useState<number>(experienceLevel || 3)
   let [warning, setWarning] = useState<string>("");
   const [showBotDisclaimer, setshowBotDisclaimer] = useState<boolean>(false)
 
@@ -34,7 +35,11 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
       navigate(navigateTo)
     }
     }, [navigateTo]);
-  
+
+  function handleExperienceChecked(value: number) {
+    setFormExperience(value)
+    setExperienceLevel(value)
+  }
 
   function handlePlayOthers() {
     if (!formUsername) {
@@ -94,8 +99,8 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
             id="experienced" 
             label="I don't need help" 
             value="3"
-            checked={experienceLevel === 3}
-            onChange={(event) => setExperienceLevel(parseInt(event.target.value))}    
+            checked={formExperience === 3}
+            onChange={() => handleExperienceChecked(3)}    
           />
           <Form.Check 
             type="radio" 
@@ -103,8 +108,8 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
             id="helpWithMaps" 
             label="I need help with the maps" 
             value="2"
-            checked={experienceLevel === 2}
-            onChange={(event) => setExperienceLevel(parseInt(event.target.value))}    
+            checked={formExperience === 2}
+            onChange={() => handleExperienceChecked(2)}    
           />
           <Form.Check 
             type="radio" 
@@ -112,8 +117,8 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
             id="firstTime" 
             label="Help, this is my first time!" 
             value="1"
-            checked={experienceLevel === 1}
-            onChange={(event) => setExperienceLevel(parseInt(event.target.value))}    
+            checked={formExperience === 1}
+            onChange={() => handleExperienceChecked(1)}    
           />
         </Form.Group>
       </Form>

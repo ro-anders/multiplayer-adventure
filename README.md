@@ -46,7 +46,7 @@ To Deploy and Run the System:
  - Click Save and then click Replace
 4. Deploy Unity game packages
  - aws cloudformation update-stack --stack-name s3-website  --template-body file://lobby-fe/deploy/s3website.cfn.yml
- - aws s3 cp --recursive H2HAdventure/target s3://play.h2hadventure.com/game
+ - aws s3 cp --recursive H2HAdventure/target s3://prerelease1414.h2hadventure.com/game
 5. Build and deploy lobby-be
  - cd lobby-be
  - sam build
@@ -55,14 +55,14 @@ To Deploy and Run the System:
  - cd lobby-fe
  - if you rebuilt the backend from scratch, put the new API gateway URL (e.g. https://qt69wijl94.execute-api.us-east-2.amazonaws.com/Prod) in lobby-fe/.env.production
  - npm run build
- - aws s3 cp --recursive build/ s3://play.h2hadventure.com/
+ - aws s3 cp --recursive build/ s3://prerelease1414.h2hadventure.com/
 7. Build the Game Back-End Server
   - commit to Github and Github action will deploy the latest to Docker.io
 8. Define the backend server by standing up deploy/fargateservice.cfn.yml
   - aws cloudformation update-stack --stack-name game-be \
    --template-body file://game-be/deploy/fargateservice.cfn.yml --capabilities "CAPABILITY_NAMED_IAM"
 9. Play game
- - goto http://play.h2hadventure.com.s3-website.us-east-2.amazonaws.com 
+ - goto http://prerelease1414.h2hadventure.com
 
  To Deploy the Demo (an AI game restricted to Game 1 two players)
 1. Authenticate with AWS, credentials stored in ~/.aws/credentials
