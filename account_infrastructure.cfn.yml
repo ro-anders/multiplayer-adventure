@@ -1,0 +1,129 @@
+# This sets up resources that are used by all services.
+# It creates a VPC with two public subnets, a route53 domain, and a wildcard certificate
+
+Resources:
+
+  # Route53 domain (after creation setup NS entries in cloudflare to point to this)
+  HostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: aws.h2hadventure.com
+
+  # Wildcard certificate for whole domain
+  WildcardCertificate:
+    Type: AWS::CertificateManager::Certificate
+    DependsOn: HostedZone
+    Properties:
+      DomainName: aws.h2hadventure.com
+      ValidationMethod: DNS
+      SubjectAlternativeNames:
+        - "*.aws.h2hadventure.com"
+      DomainValidationOptions:
+        - DomainName: aws.h2hadventure.com
+          HostedZoneId: !Ref HostedZone
+
+  # VPC with two subnets.  Includes an internet gateway to give the subnets public
+  # access and route tables to route non-local traffic through the internet gateway
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      CidrBlock: 172.32.0.0/16
+      Tags:
+      - Key: Name
+        Value: main
+
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 172.32.1.0/24
+      AvailabilityZone: !Sub ${AWS::Region}a
+      Tags:
+        - Key: Network
+          Value: Public
+        - Key: Name
+          Value: !Sub public-aza
+
+  PublicSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 172.32.2.0/24
+      AvailabilityZone: !Sub ${AWS::Region}b
+      Tags:
+        - Key: Network
+          Value: Public
+        - Key: Name
+          Value: !Sub public-azb
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+
+  InternetRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachment
+    Properties:
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+
+  RouteTableAssociationPublicSubnetA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetA
+      RouteTableId: !Ref RouteTable
+
+  RouteTableAssociationPublicSubnetB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetB
+      RouteTableId: !Ref RouteTable
+
+Outputs:
+  # Route 53 domain
+  HostedZone:
+    Value: !Ref HostedZone
+    Export:
+      Name: AwsH2haventureHostedZoneId
+
+  # Wildcard certificate
+  WildcardCertificate:
+    Value: !Ref WildcardCertificate
+    Export:
+      Name: AwsH2hadventureCert
+
+  # VPC and subnets
+  Vpc:
+    Value: !Ref Vpc
+    Export:
+      Name: MainVpcId
+  PublicSubnetA:
+    Value: !Ref PublicSubnetA
+    Export:
+      Name: MainPublicSubnetA
+  PublicSubnetB:
+    Value: !Ref PublicSubnetB
+    Export:
+      Name: MainPublicSubnetB
+  PublicSubnets:
+    Value: 
+      Fn::Join:
+        - ','
+        -
+          - !Ref PublicSubnetA
+          - !Ref PublicSubnetB
+    Export:
+      Name: MainPublicSubnets

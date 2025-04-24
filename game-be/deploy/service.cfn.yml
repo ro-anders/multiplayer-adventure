@@ -1,0 +1,254 @@
+# This declares all the infrastructure needed to run a fargate service fronted by API Gateway
+# This declares the fargate service along with its security group and roles, a cluster to run
+# the service.  For fronting the service, creates the API Gateway, CloudMap to make the service 
+# discoverable and VPC Link to communicate with the service. 
+
+Parameters:
+  Environment:
+    Type: String
+    Description: Environment type
+    AllowedValues:
+      - prod
+      - stage
+  ServiceName:
+    Description: Name of the service (independent of environment)
+    Type: String
+    Default: h2hadv-gamebe
+  Image:
+    Description: Docker image to run
+    Type: String
+    Default: roanders/h2hadv-server:latest
+  ServicePort:
+    Type: Number
+    Default: 4000
+    
+Resources:
+
+  # Declare the service and its supporting resources.
+  # Includes a cluster, service, task definition, security group and roles
+
+  Service:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: !Sub "${ServiceName}-${Environment}"
+      Cluster: !Ref Cluster
+      LaunchType: FARGATE
+      TaskDefinition: !Ref TaskDefinition
+      # We start the desired count as 0 and only increase it when needed
+      DesiredCount: 0
+      ServiceRegistries:
+        - RegistryArn: !GetAtt CloudMapService.Arn
+          Port: !Ref ServicePort
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: !Split [",", !ImportValue MainPublicSubnets]
+          SecurityGroups:
+            - !Ref ContainerSecurityGroup
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "${ServiceName}-${Environment}"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Volumes: []
+      # 256 (.25 vCPU) - Available memory values: 0.5GB, 1GB, 2GB
+      # 512 (.5 vCPU) - Available memory values: 1GB, 2GB, 3GB, 4GB
+      # 1024 (1 vCPU) - Available memory values: 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB
+      # 2048 (2 vCPU) - Available memory values: Between 4GB and 16GB in 1GB increments
+      # 4096 (4 vCPU) - Available memory values: Between 8GB and 30GB in 1GB increments
+      Cpu: 256
+      # 512, 1GB, 2GB - Available cpu values: 256 (.25 vCPU)
+      # 1GB, 2GB, 3GB, 4GB - Available cpu values: 512 (.5 vCPU)
+      # 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB - Available cpu values: 1024 (1 vCPU)
+      # Between 4GB and 16GB in 1GB increments - Available cpu values: 2048 (2 vCPU)
+      # Between 8GB and 30GB in 1GB increments - Available cpu values: 4096 (4 vCPU)
+      Memory: 512
+      TaskRoleArn: !Ref TaskRole
+      ExecutionRoleArn: !Ref ExecutionRole
+      ContainerDefinitions:
+        - Name: !Ref ServiceName
+          Image: !Ref Image
+          PortMappings:
+            - ContainerPort: !Ref ServicePort
+              Protocol: tcp
+          Environment:
+            - Name: NODE_ENV
+              Value: !Ref Environment
+            - Name: LOG_LEVEL
+              Value: 'INFO'
+            # The LOBBY_URL needs to be defined when the service is launched
+            - Name: LOBBY_URL
+              Value: http://0.0.0.0
+          # Send logs to CloudWatch Logs
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref LogGroup
+              awslogs-stream-prefix: ecs
+          # Can't get this to work
+          # HealthCheck:
+          #   Command:
+          #     - CMD-SHELL
+          #     - !Sub echo healthcheck >> /proc/1/fd/1 && wget --no-verbose --tries=1 --spider http://127.0.0.1:${ServicePort}/health >> /proc/1/fd/1 2>> /proc/1/fd/1
+
+  Cluster:
+    # Right now the cluster only holds a single service
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub "${ServiceName}-${Environment}"
+
+  CloudMapService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      NamespaceId: !Ref CloudMapNamespace
+      Name: gamebe.h2hadv
+      DnsConfig:
+        DnsRecords:
+          - Type: SRV
+            TTL: 60
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  # The role ECS uses to launch the service
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ServiceName}-${Environment}-Exec"
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: [ecs-tasks.amazonaws.com]
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  # The role the service uses
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ServiceName}-${Environment}-Task"      
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [ecs-tasks.amazonaws.com]
+            Action: sts:AssumeRole
+
+  TaskPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref TaskRole
+      PolicyName: h2hadv-server
+      PolicyDocument:
+        Statement:
+          # Permissions to allow the game server to determine it's own IP
+          - Effect: Allow
+            Action:
+              - 'ec2:DescribeNetworkInterfaces'
+              - 'ecs:DescribeTasks'
+              - 'ecs:ListTasks'
+            Resource: '*'
+
+  ContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub "${ServiceName}-${Environment}-sg"
+      VpcId: !ImportValue MainVpcId
+      SecurityGroupIngress:
+        - SourceSecurityGroupId: !Ref VpcLinkSecurityGroup
+          FromPort: !Ref ServicePort
+          ToPort: !Ref ServicePort
+          IpProtocol: tcp
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/service/${ServiceName}-${Environment}"
+      RetentionInDays: 30
+
+  # Declare the API Gateway along with the cloudmap and vpclink to connect it
+  # to the service
+  # TBD: Add an environment to this
+
+  ApiGateway:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      ProtocolType: HTTP
+      Name: !Sub "${ServiceName}-${Environment}"
+
+  Integration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref ApiGateway
+      ConnectionId: !Ref VpcLink
+      ConnectionType: VPC_LINK
+      IntegrationMethod: ANY
+      IntegrationType: HTTP_PROXY
+      IntegrationUri: !GetAtt CloudMapService.Arn
+      PayloadFormatVersion: 1.0
+
+  Stage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref ApiGateway
+      StageName: $default
+      AutoDeploy: true
+
+  Route:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApiGateway
+      RouteKey: $default
+      Target: !Sub integrations/${Integration}
+
+  GatewayDomain:
+    Type: AWS::ApiGatewayV2::DomainName
+    Properties:
+      DomainName: my-app.aws.h2hadventure.com
+      DomainNameConfigurations:
+        - EndpointType: REGIONAL
+          CertificateArn: !ImportValue AwsH2hadventureCert
+
+  GatewayMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      ApiId: !Ref ApiGateway
+      DomainName: !Ref GatewayDomain
+      Stage: !Ref Stage
+
+  Record:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !ImportValue AwsH2haventureHostedZoneId
+      Name: my-app.aws.h2hadventure.com
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt GatewayDomain.RegionalDomainName
+        HostedZoneId: !GetAtt GatewayDomain.RegionalHostedZoneId
+
+  CloudMapNamespace:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
+    Properties:
+      Vpc: !ImportValue MainVpcId
+      Name: h2hadv
+
+  VpcLink:
+    Type: AWS::ApiGatewayV2::VpcLink
+    Properties:
+      Name: vpclink
+      SecurityGroupIds:
+        - !Ref VpcLinkSecurityGroup
+      SubnetIds: !Split [",", !ImportValue MainPublicSubnets]
+
+  VpcLinkSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: vpc link
+      VpcId: !ImportValue MainVpcId
+      SecurityGroupIngress: []
