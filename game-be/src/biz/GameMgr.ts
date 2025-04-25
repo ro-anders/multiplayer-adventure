@@ -16,7 +16,7 @@ const CONNECT_CODE = 0x01; // Code for when a client first connects
 const READY_CODE = 0x02; // Code to indicate a client is ready to play
 const CHAT_CODE = 0x03; // Code for chat messages
 const MSG_TO_LOBBY_CODE = 0x04; // Code for player status changes like winning a game
-
+const LATENCY_CHECK_CODE = 0x05; // Code for sending messages for the sole purpose of seeing how long they take to mirror back
 /** 
  * All the client connections needed to run a game
  */
@@ -70,6 +70,10 @@ export default class GameMgr {
 			}
 			else if (data[1] == MSG_TO_LOBBY_CODE) {
 				this.message_to_lobby(session, data);
+			}
+			else if (data[1] == LATENCY_CHECK_CODE) {
+				// Just send the message right back to the originator
+				client_socket.send(data);
 			}
 			else {
 			  output.error(`Unexpected message code ${data[1]} in message ${data} from ${wsToString(client_socket)}`)

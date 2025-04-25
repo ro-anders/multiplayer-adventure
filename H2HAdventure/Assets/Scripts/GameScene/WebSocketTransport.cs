@@ -6,6 +6,7 @@ using UnityEngine;
 
 using GameEngine;
 using System.Linq;
+using System.Xml;
 
 
 namespace GameScene
@@ -58,6 +59,7 @@ namespace GameScene
         private const byte READY_CODE = 0x02;
         private const byte CHAT_CODE = 0x03;
         private const byte REPORT_TO_SERVER_CODE = 0x04;
+        private const byte LATENCY_CHECK_CODE = 0x05;
 
         /** For testing and debugging purposes DUMMY mode will not try
          * to connect to a back end server and will fake that the game is running
@@ -88,6 +90,10 @@ namespace GameScene
         private Queue<RemoteAction> receviedActions = new Queue<RemoteAction>();
 
         private Queue<ChatMessage> receivedChats = new Queue<ChatMessage>();
+
+        /** Keep some stats for latency */
+        private float ave_latency = 0;
+        private int num_latency_readings = 0;
 
         public int ThisPlayerSlot
         {
@@ -176,10 +182,13 @@ namespace GameScene
 
             var thisTask = new TaskCompletionSource<bool>();
 
-            // When running locally we use unsecured web socket.  When 
-            // running in production we use a secured web socket.
-            string protocol = Debug.isDebugBuild ? "ws" : "wss";
-            websocket = new WebSocket(protocol + "://" + host_address + ":4000/ws");
+            // When running locally we use unsecured web socket on
+            // port 4000.  When running in production we use a 
+            // secured web socket on port 80.
+            string wsurl = host_address == "127.0.0.1" ? 
+                "ws://127.0.0.1:4000/ws" : 
+                "ws://" + host_address + ":4000/ws";
+            websocket = new WebSocket(wsurl);
 
             websocket.OnOpen += async () =>
             {
@@ -195,7 +204,7 @@ namespace GameScene
 
             websocket.OnError += (e) =>
             {
-                GameEngine.Logger.Error("Error! " + e);
+                GameEngine.Logger.Error("Error connecting to " + wsurl + "! " + e);
                 if (!connected) {
                     thisTask.SetResult(false);
                 }
@@ -251,6 +260,21 @@ namespace GameScene
                         chat.message);
                     receivedChats.Enqueue(chat);
                 }
+                else if (msg_code == LATENCY_CHECK_CODE) {
+                    // Pull out the timestamp and compare it to the current time stamp
+                    // The message contains the last 16 bits of a UNIX timestamp
+                    long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    int receivedMs = (int)(timestamp & 0xFFFF);
+                    int sentMs = bytes[2]*256 + bytes[3];
+                    int latency = receivedMs-sentMs;
+                    ave_latency = ((ave_latency * num_latency_readings) + latency) / (num_latency_readings +1);
+                    num_latency_readings += 1;
+                    GameEngine.Logger.Info("Average latency = " + (int)(ave_latency) + "ms");
+                    // Downgrade latency readings older than 3 minutes
+                    if (num_latency_readings == 8) {
+                        num_latency_readings = 4;
+                    }
+                }
                 else {
                     // Process a game message
                     const int MIN_GAME_MESSAGE_SIZE = 10; // 1 for session, 1 for server code, 4 for slot, 4 for message code
@@ -295,6 +319,11 @@ namespace GameScene
                 GameEngine.Logger.Debug("Sending action " + action.ToString() + " on session " + session);
                 GameEngine.Logger.Debug("Sending [" + string.Join(" ", bytes) + "]");
                 websocket.Send(bytes);
+
+                // Every time we send a ping, we also check the latency
+                if (action.typeCode == ActionType.PING) {
+                    sendLatencyCheck();
+                }
             }
         }
 
@@ -333,6 +362,21 @@ namespace GameScene
                 }
                 byte[] bytes = new byte[] {session, READY_CODE};
                 GameEngine.Logger.Info("Requesting start game " + session);
+                websocket.Send(bytes);
+            }
+        }
+
+        // <summary>
+        /// Send a message that the server sends right back so we can
+        /// check how much latgency there is in the game
+        /// </summary>
+        private void sendLatencyCheck() {
+            if (!dummy_mode && websocket.State == WebSocketState.Open) {
+                long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                // Don't need the whole time stamp, just the seconds and milliseconds
+                byte byte0 = (byte)(timestamp & 0xFF);
+                byte byte1 = (byte)((timestamp >> 8) & 0xFF);               
+                byte[] bytes = new byte[] {session, LATENCY_CHECK_CODE, byte1, byte0};
                 websocket.Send(bytes);
             }
         }
