@@ -2,7 +2,6 @@
 # This declares the fargate service along with its security group and roles, a cluster to run
 # the service.  For fronting the service, creates the API Gateway, CloudMap to make the service 
 # discoverable and VPC Link to communicate with the service. 
-
 Parameters:
   Environment:
     Type: String
@@ -101,18 +100,6 @@ Resources:
     Properties:
       ClusterName: !Sub "${ServiceName}-${Environment}"
 
-  CloudMapService:
-    Type: AWS::ServiceDiscovery::Service
-    Properties:
-      NamespaceId: !Ref CloudMapNamespace
-      Name: gamebe.h2hadv
-      DnsConfig:
-        DnsRecords:
-          - Type: SRV
-            TTL: 60
-      HealthCheckCustomConfig:
-        FailureThreshold: 1
-
   # The role ECS uses to launch the service
   ExecutionRole:
     Type: AWS::IAM::Role
@@ -161,10 +148,12 @@ Resources:
       GroupDescription: !Sub "${ServiceName}-${Environment}-sg"
       VpcId: !ImportValue MainVpcId
       SecurityGroupIngress:
-        - SourceSecurityGroupId: !Ref VpcLinkSecurityGroup
+        - 
+          IpProtocol: tcp
           FromPort: !Ref ServicePort
           ToPort: !Ref ServicePort
-          IpProtocol: tcp
+          CidrIp: "0.0.0.0/0"
+          # SourceSecurityGroupId: !Ref VpcLinkSecurityGroup
 
   LogGroup:
     Type: AWS::Logs::LogGroup
@@ -172,65 +161,7 @@ Resources:
       LogGroupName: !Sub "/service/${ServiceName}-${Environment}"
       RetentionInDays: 30
 
-  # Declare the API Gateway along with the cloudmap and vpclink to connect it
-  # to the service
-  # TBD: Add an environment to this
-
-  ApiGateway:
-    Type: AWS::ApiGatewayV2::Api
-    Properties:
-      ProtocolType: HTTP
-      Name: !Sub "${ServiceName}-${Environment}"
-
-  Integration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref ApiGateway
-      ConnectionId: !Ref VpcLink
-      ConnectionType: VPC_LINK
-      IntegrationMethod: ANY
-      IntegrationType: HTTP_PROXY
-      IntegrationUri: !GetAtt CloudMapService.Arn
-      PayloadFormatVersion: 1.0
-
-  Stage:
-    Type: AWS::ApiGatewayV2::Stage
-    Properties:
-      ApiId: !Ref ApiGateway
-      StageName: $default
-      AutoDeploy: true
-
-  Route:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref ApiGateway
-      RouteKey: $default
-      Target: !Sub integrations/${Integration}
-
-  GatewayDomain:
-    Type: AWS::ApiGatewayV2::DomainName
-    Properties:
-      DomainName: my-app.aws.h2hadventure.com
-      DomainNameConfigurations:
-        - EndpointType: REGIONAL
-          CertificateArn: !ImportValue AwsH2hadventureCert
-
-  GatewayMapping:
-    Type: AWS::ApiGatewayV2::ApiMapping
-    Properties:
-      ApiId: !Ref ApiGateway
-      DomainName: !Ref GatewayDomain
-      Stage: !Ref Stage
-
-  Record:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !ImportValue AwsH2haventureHostedZoneId
-      Name: my-app.aws.h2hadventure.com
-      Type: A
-      AliasTarget:
-        DNSName: !GetAtt GatewayDomain.RegionalDomainName
-        HostedZoneId: !GetAtt GatewayDomain.RegionalHostedZoneId
+  # Declare the cloudmap to discover the service
 
   CloudMapNamespace:
     Type: AWS::ServiceDiscovery::PrivateDnsNamespace
@@ -238,17 +169,105 @@ Resources:
       Vpc: !ImportValue MainVpcId
       Name: h2hadv
 
-  VpcLink:
-    Type: AWS::ApiGatewayV2::VpcLink
+  CloudMapService:
+    Type: AWS::ServiceDiscovery::Service
     Properties:
-      Name: vpclink
-      SecurityGroupIds:
-        - !Ref VpcLinkSecurityGroup
-      SubnetIds: !Split [",", !ImportValue MainPublicSubnets]
+      NamespaceId: !Ref CloudMapNamespace
+      Name: gamebe.h2hadv
+      DnsConfig:
+        DnsRecords:
+          - Type: SRV
+            TTL: 60
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
 
-  VpcLinkSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: vpc link
-      VpcId: !ImportValue MainVpcId
-      SecurityGroupIngress: []
+  # # Declare the API Gateway along with the cloudmap and vpclink to connect it
+  # # to the service
+  # # TBD: Add an environment to this
+
+
+  # WebsocketApi:
+  #   Type: AWS::ApiGatewayV2::Api
+  #   Properties:
+  #     Name: !Sub "${ServiceName}-${Environment}-ws"
+  #     ProtocolType: WEBSOCKET
+  #     RouteSelectionExpression: "$request.body.action"
+
+  # WebsocketIntegration:
+  #   Type: AWS::ApiGatewayV2::Integration
+  #   Properties:
+  #     ApiId: !Ref WebsocketApi
+  #     IntegrationType: HTTP_PROXY
+  #     IntegrationUri: !GetAtt CloudMapService.Arn
+  #     IntegrationMethod: ANY
+  #     PayloadFormatVersion: 1.0
+
+  # Stage:
+  #   Type: AWS::ApiGatewayV2::Stage
+  #   Properties:
+  #     ApiId: !Ref WebsocketApi
+  #     StageName: $default
+  #     AutoDeploy: true
+
+  # ConnectRoute:
+  #   Type: AWS::ApiGatewayV2::Route
+  #   Properties:
+  #     ApiId: !Ref WebsocketApi
+  #     RouteKey: "$connect"
+  #     AuthorizationType: NONE
+  #     Target: !Sub integrations/${WebsocketIntegration}
+  # DisconncectRoute:
+  #   Type: AWS::ApiGatewayV2::Route
+  #   Properties:
+  #     ApiId: !Ref WebsocketApi
+  #     RouteKey: "$disconnect"
+  #     AuthorizationType: NONE
+  #     Target: !Sub integrations/${WebsocketIntegration}
+  # DefaultRoute:
+  #   Type: AWS::ApiGatewayV2::Route
+  #   Properties:
+  #     ApiId: !Ref WebsocketApi
+  #     RouteKey: $default
+  #     AuthorizationType: NONE
+  #     Target: !Sub integrations/${WebsocketIntegration}
+
+
+  # GatewayDomain:
+  #   Type: AWS::ApiGatewayV2::DomainName
+  #   Properties:
+  #     DomainName: my-app.aws.h2hadventure.com
+  #     DomainNameConfigurations:
+  #       - EndpointType: REGIONAL
+  #         CertificateArn: !ImportValue AwsH2hadventureCert
+
+  # GatewayMapping:
+  #   Type: AWS::ApiGatewayV2::ApiMapping
+  #   Properties:
+  #     ApiId: !Ref WebsocketApi
+  #     DomainName: !Ref GatewayDomain
+  #     Stage: !Ref Stage
+
+  # Record:
+  #   Type: AWS::Route53::RecordSet
+  #   Properties:
+  #     HostedZoneId: !ImportValue AwsH2haventureHostedZoneId
+  #     Name: my-app.aws.h2hadventure.com
+  #     Type: A
+  #     AliasTarget:
+  #       DNSName: !GetAtt GatewayDomain.RegionalDomainName
+  #       HostedZoneId: !GetAtt GatewayDomain.RegionalHostedZoneId
+
+  # VpcLink:
+  #   Type: AWS::ApiGatewayV2::VpcLink
+  #   Properties:
+  #     Name: vpclink
+  #     SecurityGroupIds:
+  #       - !Ref VpcLinkSecurityGroup
+  #     SubnetIds: !Split [",", !ImportValue MainPublicSubnets]
+
+  # VpcLinkSecurityGroup:
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupDescription: vpc link
+  #     VpcId: !ImportValue MainVpcId
+  #     SecurityGroupIngress: []

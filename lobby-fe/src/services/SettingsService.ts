@@ -43,7 +43,7 @@ export default class SettingsService {
 			// spawn if we just recently tried to spawn.
 			if ((!response_ip || too_old)) {
 				if (!just_spawned) {
-					SettingsService.spawnGameServer()
+					// TEMP SettingsService.spawnGameServer()
 					just_spawned = true
 				}
 			} else {

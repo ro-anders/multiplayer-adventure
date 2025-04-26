@@ -31,7 +31,7 @@ const gamemgr: GameMgr = new GameMgr(lobby_backend);
 const servicemgr: ServiceMgr = new ServiceMgr(lobby_backend);
 
 const app: Express = express();
-const port = 4000;
+const port = 80;
 
 const server = createServer(app);
 const server_socket: WebSocket.Server = new WebSocket.Server({ server: server, path: '/ws' });

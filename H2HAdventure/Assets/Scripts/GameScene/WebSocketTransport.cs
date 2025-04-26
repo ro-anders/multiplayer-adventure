@@ -187,7 +187,8 @@ namespace GameScene
             // secured web socket on port 80.
             string wsurl = host_address == "127.0.0.1" ? 
                 "ws://127.0.0.1:4000/ws" : 
-                "ws://" + host_address + ":4000/ws";
+                "wss://" + host_address + "/ws";
+                GameEngine.Logger.Info($"Connecting to {wsurl}");
             websocket = new WebSocket(wsurl);
 
             websocket.OnOpen += async () =>
