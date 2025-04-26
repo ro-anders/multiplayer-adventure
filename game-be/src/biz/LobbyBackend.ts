@@ -24,7 +24,8 @@ export default class LobbyBackend {
 	async set_gamesever_ip(ip: string) {
 		// In development we use a raw ip and connect with ws, in production we use a 
 		// a name proxied by cloudflare and use wss
-		const setting_name = "game_server_ip"
+		const setting_name = "game_server_raw_ip"
+		// TEMP const setting_name = "game_server_ip"
 		const headers: Headers = new Headers()
 		headers.set('Content-Type', 'application/json')
 		headers.set('Accept', 'application/json')
