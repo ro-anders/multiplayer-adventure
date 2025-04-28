@@ -14,5 +14,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Check the Docker stuff
-      run: echo ${{ secrets.DOCKERHUB_USERNAME }}
+    - name: Check the username length
+      run: echo ${{ secrets.DOCKERHUB_USERNAME }} | wc
+    - name: Check the token length
+      run: echo ${{ secrets.DOCKERHUB_TOKEN }} | wc
+
