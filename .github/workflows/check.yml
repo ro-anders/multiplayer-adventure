@@ -18,5 +18,9 @@ jobs:
       run: echo ${{ secrets.DOCKERHUB_USERNAME }} | wc
     - name: Check the token length
       run: echo ${{ secrets.DOCKERHUB_TOKEN }} | wc
-    - name: Check the first half of username
+    - name: Check copying of username
       run:  export VAL=`echo ${{ secrets.DOCKERHUB_USERNAME }}` && echo $VAL | wc
+    - name: Check echoing of username
+      run:  export VAL=`echo ${{ secrets.DOCKERHUB_USERNAME }}` && echo $VAL
+    - name: Check echoing half of username
+      run:  export VAL=`echo ${{ secrets.DOCKERHUB_USERNAME }}` && echo ${VAL:0:4}
