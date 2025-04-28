@@ -19,10 +19,4 @@ jobs:
     - name: Check the token length
       run: echo ${{ secrets.DOCKERHUB_TOKEN }} | wc
     - name: Check the first half of username
-      run: echo ${{ secrets.DOCKERHUB_USERNAME:0:4 }}
-    - name: Check the second half of username
-      run: echo ${{ secrets.DOCKERHUB_USERNAME:4:9 }}
-    - name: Check the first half of token
-      run: echo ${{ secrets.DOCKERHUB_TOKEN:0:20 }}
-    - name: Check the second half of username
-      run: echo ${{ secrets.DOCKERHUB_TOKEN:20:37 }}
+      run:  export VAL=`echo ${{ secrets.DOCKERHUB_USERNAME }}` && echo $VAL | wc
