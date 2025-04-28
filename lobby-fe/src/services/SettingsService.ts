@@ -12,7 +12,7 @@ export default class SettingsService {
 	 * not return until it has a valid IP or hits an error.
 	 * @returns the IP of the GameServer
 	 */
-	static async getGameServerIP(): Promise<String> {
+	static async getGameServerIP(): Promise<string> {
 		var ip: string = ''
 		var just_spawned = false
 		var first_time = true // We log some things on the first try, but not subsequent tries
@@ -43,7 +43,7 @@ export default class SettingsService {
 			// spawn if we just recently tried to spawn.
 			if ((!response_ip || too_old)) {
 				if (!just_spawned) {
-					// TEMP SettingsService.spawnGameServer()
+					SettingsService.spawnGameServer()
 					just_spawned = true
 				}
 			} else {

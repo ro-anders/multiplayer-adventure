@@ -84,7 +84,7 @@ Resources:
             - Name: ENVIRONMENT
               Value: 'production'
             - Name: LOG_LEVEL
-              Value: 'INFO'
+              Value: 'DEBUG'
             # The LOBBY_URL needs to be defined when the service is launched
             # - Name: LOBBY_URL
             #   Value: Undefined

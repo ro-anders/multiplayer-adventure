@@ -26,9 +26,6 @@ interface ProposedGameListProps {
   actions_disabled: boolean;
 }
 
-const MODAL_HIDDEN='no game'
-const MODAL_WAITING_ON_SERVER='server starting'
-
 /**
  * Displays a list of games.
  * This is used both to display a list of proposed games that allows the user
@@ -42,7 +39,7 @@ function ProposedGameList({current_user,
     actions_disabled}: ProposedGameListProps) {
 
   /** Whether the modal is shown and, if it is, what it is waiting for to dismiss */
-  const [startGameModal, setStartGameModal] = useState<string>(MODAL_HIDDEN);
+  const [showStartModal, setShowStartModal] = useState<boolean>(false);
 
   /** Filter the list to only the games we want to display */
   const games_to_display = games.filter((game: GameInLobby)=>{return game.state===state_to_display})
@@ -80,7 +77,7 @@ function ProposedGameList({current_user,
    * User has just pressed "Start" on a game.
    * @param game Which game the have started
    */
-  async function startGame(game: GameInLobby) {
+  async function startGamePressed(game: GameInLobby) {
     // If this is a 2/3 person game and only 2 have joined, lock it at 2 at this point.
     if (game.number_players == 2.5) {
       const original_version = cloneGameInLobby(game)
@@ -90,21 +87,7 @@ function ProposedGameList({current_user,
         return
       }
     }
-    const slot = game.player_names.indexOf(current_user);
-    const code =
-      // highest bits hold the session
-      16 * game.session +
-      // Next two bits hold the slot number
-      4 * slot +
-      // next bit holds the help popups flag
-      2 * (experience_level === 1 ? 1 : 0) +
-      // last bit holds the maze guide flag
-      (experience_level <= 2 ? 1 : 0);
-    setStartGameModal(MODAL_WAITING_ON_SERVER);
-    const game_server_ip = await SettingsService.getGameServerIP();
-    // Bring down the modal
-    setStartGameModal(MODAL_HIDDEN)
-    window.open(`${process.env.REACT_APP_MPLAYER_GAME_URL}/index.html?gamecode=${code}&host=${game_server_ip}`, '_self')
+    setShowStartModal(true)
   }
 
   /**
@@ -186,15 +169,17 @@ function ProposedGameList({current_user,
                 {isStartable(game) && 
                   <Button size="sm" className='lobby-game-action' 
                     disabled={actions_disabled} 
-                    onClick={() => startGame(game)}>Start</Button>}
+                    onClick={() => startGamePressed(game)}>Start</Button>}
+                {isStartable(game) && showStartModal &&
+                  <GameStartingModal 
+                    game={game} 
+                    slot={ game.player_names.indexOf(current_user)} 
+                    experience_level={experience_level}/>}
               </div>
               <div>{gameLabel(game)}</div>
             </ListGroup.Item>
             ))}
         </ListGroup>
-        {(startGameModal !== MODAL_HIDDEN) && 
-          <GameStartingModal waiting_on_server={startGameModal===MODAL_WAITING_ON_SERVER}/>
-        }
       </header>
     </div>
   );
