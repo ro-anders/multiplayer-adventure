@@ -52,7 +52,8 @@ function GameStartingModal({game, slot, experience_level}: GameStartingModalProp
       2 * (experience_level === 1 ? 1 : 0) +
       // last bit holds the maze guide flag
       (experience_level <= 2 ? 1 : 0);
-    window.open(`${process.env.REACT_APP_MPLAYER_GAME_URL}/index.html?gamecode=${code}&host=${gameServer}`, '_self')
+    const url = process.env.REACT_APP_MPLAYER_GAME_URL
+    window.open(`${url}/index.html?gamecode=${code}&host=${gameServer}`, '_self')
   }
 
     return (
