@@ -3,7 +3,7 @@ Description: An example CloudFormation template for Fargate.
 Parameters:
   ContainerPort:
     Type: Number
-    Default: 80
+    Default: 4000
   # Subdomain:
   #   Type: String
   #   Default: h2hadv

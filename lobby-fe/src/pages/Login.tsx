@@ -24,7 +24,7 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
    * We don't actually set the App username until the user takes an action. */
   let [formUsername, setFormUsername] = useState<string>(username || localStorage.getItem('h2h.username') || "");
   let [formExperience, setFormExperience] = useState<number>(experienceLevel || 3)
-  let [warning, setWarning] = useState<string>("");
+  let [warning, setWarning] = useState<string>(checkBrowserCompatability());
   const [showBotDisclaimer, setshowBotDisclaimer] = useState<boolean>(false)
 
   // Super annoying, but navigating to any page that needs username has to be called in a way
@@ -35,6 +35,37 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
       navigate(navigateTo)
     }
     }, [navigateTo]);
+
+  /**
+   * Return a warning if the current browser is not supported.
+   * @returns a warning string or an empty string if the browser is 
+   * supported.
+   */
+  function checkBrowserCompatability() : string {
+    // Throw a warning if not on a desktop
+    let isDesktop = false
+    let isMac = false
+    if ('userAgentData' in navigator) {
+      const uad: any = navigator.userAgentData
+      const platform = uad.platform.toLowerCase();
+      isDesktop = /windows|mac|linux|chrome os/.test(platform);
+      isMac = platform === 'macos'
+    } else {
+      const platform = navigator.platform.toLowerCase();
+      isDesktop = /win|mac|linux|cros/.test(platform);
+      isMac = /mac/.test(platform)
+    }
+    if (!isDesktop) {
+      return "H2H Adventure only works on desktops or platforms with physical keyboards."
+    }
+
+    // Throw a warning if on Safari
+    const isSafari = /^((?!chrome|chromium|crios|edg).)*safari/i.test(navigator.userAgent)
+    if (isSafari && isMac) {
+      return 'Safari browser does not support "Play Against Others".'
+    }
+    return ""
+  }
 
   function handleExperienceChecked(value: number) {
     setFormExperience(value)

@@ -31,6 +31,7 @@ To Deploy and Run the System:
   - export AWS_PROFILE=h2hadventure
   - export AWS_REGION=us-east-2
 2. Build SinglePlayer Unity game package
+ - rm -rf H2HAdventure/target/*
  - Open Unity
  - Unity File->Build Settings...
  - Select Scenes/SinglePlayerScreen and unselect others

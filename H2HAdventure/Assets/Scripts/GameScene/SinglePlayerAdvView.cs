@@ -13,7 +13,7 @@ public class SinglePlayerAdvView : UnityAdventureBase
     // If set to true will force it to a basic 
     // game (2 player Game 1 game where you
     // always start in the gold castle)
-    private const bool DEMO = true;
+    private const bool DEMO = false;
 
     private System.Random randomGen = new System.Random();
 
