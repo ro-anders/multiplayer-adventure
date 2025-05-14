@@ -157,7 +157,8 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
       <Button onClick={()=>setshowBotDisclaimer(true)}>Play Against the Computer</Button>
       <Button onClick={handleFindOthers}>Find Other Players</Button>
       <Button onClick={handleLeaderBoard}>Leader Board</Button>
-      <Button>More Info</Button>
+      <Button onClick={()=>window.open(`https://h2hadventure.com`, '_self')
+}>More Info</Button>
 
       {/* The bot disclaimer modal */}
       <Modal 
