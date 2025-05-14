@@ -87,7 +87,7 @@ function LoginPage({username, setUsername, experienceLevel, setExperienceLevel}:
       setUsername(formUsername)
     }
     const url = process.env.REACT_APP_MPLAYER_GAME_URL?.replace('H2HAdventureMP','H2HAdventure1P')
-    const code = (experienceLevel === 1 ? 3 : (experienceLevel === 2 ? 1 : 0))
+    const code = (formExperience === 1 ? 3 : (formExperience === 2 ? 1 : 0))
     window.open(`${url}/index.html?gamecode=${code}`, '_self')
   }
 
