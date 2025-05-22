@@ -65,7 +65,7 @@
             }
             catch (Abort a)
             {
-                GameEngine.Logger.Error(a.ToString());
+                GameEngine.Logger.Debug(a.ToString());
                 this.removeChild(retrieveChalice);
 
                 // Nothing to do but block other players

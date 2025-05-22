@@ -34,7 +34,7 @@ public class ChatController : MonoBehaviour
 
     // On startup clear the dummy text from the text chat display
     void Start() {
-        message_display.text = "";
+        message_display.text = "<color=#FFFFFF>Type below to send chat messages</color>";
     }
 
     // Every frame see if there are new chat messages to display

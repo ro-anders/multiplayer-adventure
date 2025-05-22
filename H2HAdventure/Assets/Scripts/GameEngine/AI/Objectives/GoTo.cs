@@ -108,7 +108,7 @@ namespace GameEngine.Ai
                 // Nothing to do but abort.
                 if (desiredZone == NavZone.NO_ZONE)
                 {
-                    GameEngine.Logger.Error("Being asked to go to invalid place, " + btarget);
+                    GameEngine.Logger.Debug("AI player being asked to go to invalid place, " + btarget);
                     throw new Abort();
                 }
 

@@ -35,7 +35,7 @@ public class MultiPlayerScreen : MonoBehaviour
     {
         gamePanel.SetActive(true);
         instructionPanel.SetActive(false);
-        startButtonText.text = "Restart";
+        startButtonText.text = "New Game";
         advView.PlayGame();
     }
 

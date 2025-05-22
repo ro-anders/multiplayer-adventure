@@ -166,7 +166,7 @@ namespace GameEngine.Ai
             if (desiredPath == null)
             {
                 // ABORT PATH
-                GameEngine.Logger.Error("Ball " + thisBall.playerNum + " has fallen off the AI path! Aborting.");
+                GameEngine.Logger.Debug("AI player " + thisBall.playerNum + " has fallen off the AI path! Aborting.");
                 doNothing();
                 return;
             }
@@ -182,7 +182,7 @@ namespace GameEngine.Ai
             }
             else
             {
-                GameEngine.Logger.Error("Ball cannot get where it needs to go.");
+                GameEngine.Logger.Debug("AI player cannot get where it needs to go.");
                 doNothing();
                 return;
             }

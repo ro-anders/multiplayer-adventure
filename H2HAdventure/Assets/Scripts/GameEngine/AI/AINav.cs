@@ -41,7 +41,7 @@ namespace GameEngine.Ai
             int fromPlot = FindPlot(fromRoom, fromBX, fromBY);
             if (fromPlot < 0)
             {
-                GameEngine.Logger.Error("Couldn't find starting plot");
+                GameEngine.Logger.Debug("AI couldn't find starting plot");
                 return null;
             }
 
@@ -49,7 +49,7 @@ namespace GameEngine.Ai
             int toPlot = FindPlot(toRoom, toBX, toBY);
             if (toPlot < 0)
             {
-                GameEngine.Logger.Error("Couldn't find ending plot");
+                GameEngine.Logger.Debug("AI couldn't find ending plot");
                 return null;
             }
 
@@ -273,7 +273,7 @@ namespace GameEngine.Ai
                     }
                     else
                     {
-                        GameEngine.Logger.Error("Player has fallen off the AI path!\n" +
+                        GameEngine.Logger.Debug("Player has fallen off the AI path!\n" +
                             currentRoom + "(" + currentX + "," +
                             currentY + ") not in " +
                             desiredPath.ThisPlot +
