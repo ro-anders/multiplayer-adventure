@@ -54,7 +54,7 @@ To Deploy and Run the System:
  - sam deploy
 6. Build and deploy lobby-fe
  - cd lobby-fe
- - if you rebuilt the backend from scratch, put the new API gateway URL (e.g. https://qt69wijl94.execute-api.us-east-2.amazonaws.com/Prod) in lobby-fe/.env.production
+ - if you rebuilt the backend from scratch, put the new API gateway URL (e.g. https://xx11yyyy22.execute-api.us-east-2.amazonaws.com/Prod) in lobby-fe/.env.production
  - npm run build
  - aws s3 cp --recursive build/ s3://prerelease1414.h2hadventure.com/
 7. Build the Game Back-End Server
