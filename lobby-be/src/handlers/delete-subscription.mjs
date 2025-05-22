@@ -19,7 +19,7 @@ export const deleteSubscriptionHandler = async (event) => {
     // Get address from the request path
     const address = decodeURIComponent(event.pathParameters.address);
     var params = {
-        TableName : "Subscriptions",
+        TableName : "Subscriptions"+process.env.ENVIRONMENT_TYPE,
         Key: { address: address },
     };
 

@@ -17,7 +17,7 @@ export const deleteScheduledEventHandler = async (event) => {
     // Get event key from the request path
     const starttime = parseInt(event.pathParameters.starttime);
     var params = {
-        TableName : "ScheduledEvents",
+        TableName : "ScheduledEvents"+process.env.ENVIRONMENT_TYPE,
         Key: {
             partitionkey: 'EVENT',
             starttime: starttime 

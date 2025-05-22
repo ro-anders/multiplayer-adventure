@@ -1,9 +1,24 @@
 AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  Environment:
+    Description: the environment
+    Type: String
+    Default: stage
+    AllowedValues:
+      - prod
+      - stage
+
+Conditions:
+  IsProd: !Equals [ !Ref Environment, prod ]
+
 Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: prerelease1414.h2hadventure.com
+      BucketName: !If
+        - IsProd
+        - prerelease1414.h2hadventure.com
+        - !Sub prerelease1414-${Environment}.h2hadventure.com
       PublicAccessBlockConfiguration:
         BlockPublicAcls: false
         BlockPublicPolicy: false
@@ -16,7 +31,7 @@ Resources:
     Type: 'AWS::S3::BucketPolicy'
     Properties:
       PolicyDocument:
-        Id: MyPolicy
+        Id: !Sub MyPolicy${Environment}
         Version: 2012-10-17
         Statement:
           - Sid: PublicReadForGetBucketObjects

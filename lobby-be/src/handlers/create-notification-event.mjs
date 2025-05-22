@@ -15,7 +15,7 @@ const EMAIL_REPLACEMENT="<<UUENCODED_EMAIL>>"
  */
 const getSubscribers = async (notification_event_type) => {
     var params = {
-        TableName : "Subscriptions"
+        TableName : "Subscriptions"+process.env.ENVIRONMENT_TYPE
     };
 
     const data = await ddbDocClient.send(new ScanCommand(params));
@@ -39,8 +39,12 @@ const getSubscribers = async (notification_event_type) => {
  * The mail object needs a "to" entry before it can be sent
  */
 const generateEmail = (notification_event_type, data) => {
-    const site_root =   (process.env.ENVIRONMENT_TYPE === 'development' ?
-        'http://localhost:5000' : 'https://play.h2hadventure.com')
+    const site_root =   (
+        process.env.ENVIRONMENT_TYPE === 'Dev' ? 
+            'http://localhost:5000' : (
+        process.env.ENVIRONMENT_TYPE === 'Stage' ?
+            'https://play-stage.h2hadventure.com' : 
+            'https://play.h2hadventure.com'))
     const unsubscribe_url = site_root + "/unsubscribe?email="+EMAIL_REPLACEMENT
     if (notification_event_type === "sendcall") {
         // For send call events the data only has the initiator

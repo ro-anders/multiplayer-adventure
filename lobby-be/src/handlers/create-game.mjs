@@ -30,7 +30,7 @@ export const createGameHandler = async (event) => {
 
     // Creates a new game
     var params = {
-        TableName : "Games",
+        TableName : "Games"+process.env.ENVIRONMENT_TYPE,
         Item: body
     };
 

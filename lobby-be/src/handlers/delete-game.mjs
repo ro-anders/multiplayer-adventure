@@ -17,7 +17,7 @@ export const deleteGameHandler = async (event) => {
     // Get game session from the request path
     const session = parseInt(event.pathParameters.session);
     var params = {
-        TableName : "Games",
+        TableName : "Games"+process.env.ENVIRONMENT_TYPE,
         Key: { session: session },
     };
 

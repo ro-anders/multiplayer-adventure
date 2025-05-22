@@ -17,7 +17,7 @@ export const upsertScheduledEventHandler = async (event) => {
     // Though we do set the partition key
     body.partitionkey="EVENT"    
     var params = {
-        TableName: "ScheduledEvents",
+        TableName: "ScheduledEvents"+process.env.ENVIRONMENT_TYPE,
         Item: body
     };
 

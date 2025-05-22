@@ -12,7 +12,7 @@ To Run the Whole Suite Locally:
   - `sam local start-api`
   This mimics the APIGateway & Lambda.
   If you want to actually send emails, you need to specify the gmail password with
-  - `sam local start-api --parameter-overrides EnvironmentType=development GMailPassword=<<password>>`
+  - `sam local start-api --parameter-overrides EnvironmentType=Dev GMailPassword=<<password>>`
   You can get the password from `lobby-be/.password` but never check that file into Github.
 3. Run the game-be backend game server (port 4000) 
   - `docker build --platform linux/amd64 . -t roanders/h2hadv-server`

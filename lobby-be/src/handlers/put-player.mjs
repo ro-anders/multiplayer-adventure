@@ -25,7 +25,7 @@ export const putPlayerHandler = async (event) => {
     // Creates a new item, or replaces an old item with a new item
     // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#put-property
     var params = {
-        TableName : "Players",
+        TableName : "Players"+process.env.ENVIRONMENT_TYPE,
         Item: { playername : name, lastactive: Date.now(), ttl: Date.now() + ACTIVE_PLAYERS_TTL }
     };
 

@@ -22,7 +22,7 @@ export const getSettingByNameHandler = async (event) => {
   // Get the item from the table
   // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#get-property
   var params = {
-    TableName : "Settings",
+    TableName : "Settings"+process.env.ENVIRONMENT_TYPE,
     Key: { setting_name: setting_name },
   };
 

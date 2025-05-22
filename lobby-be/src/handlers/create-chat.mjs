@@ -31,7 +31,7 @@ export const createChatHandler = async (event) => {
     body.partitionkey = "CHAT"
 
     var params = {
-        TableName : "Chat",
+        TableName : "Chat"+process.env.ENVIRONMENT_TYPE,
         Item: body
     };
 

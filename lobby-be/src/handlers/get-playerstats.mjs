@@ -16,7 +16,7 @@ export const getPlayerStatsByNameHandler = async (event) => {
     /** PlayerStats is identified by playername which is passed on path */
     const playername = event.pathParameters.playername;
     var params = {
-        TableName : "PlayerStats",
+        TableName : "PlayerStats"+process.env.ENVIRONMENT_TYPE,
         Key: { playername: playername },
       };
     

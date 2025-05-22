@@ -16,7 +16,7 @@ export const getAllScheduledEventsHandler = async (event) => {
     await CheckDDB();
 
      var params = {
-         TableName : "ScheduledEvents",
+         TableName : "ScheduledEvents"+process.env.ENVIRONMENT_TYPE,
          KeyConditionExpression: 'partitionkey = :pkey AND starttime >= :skey',
          ExpressionAttributeValues: {
              ":pkey": "EVENT",

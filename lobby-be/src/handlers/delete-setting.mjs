@@ -17,7 +17,7 @@ export const deleteSettingHandler = async (event) => {
     // Get setting_name from the request path
     const setting_name = event.pathParameters.setting_name;
     var params = {
-        TableName : "Settings",
+        TableName : "Settings"+process.env.ENVIRONMENT_TYPE,
         Key: { setting_name: setting_name }
     };
 

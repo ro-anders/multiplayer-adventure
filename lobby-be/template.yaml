@@ -14,8 +14,12 @@ Transform:
 
 Parameters:
   EnvironmentType:
-    Description: Environment.  Either 'production' or 'development'
+    Description: Environment.  Either 'Prod', 'Test' or 'Dev'
     Type: String
+    AllowedValues:
+      - Prod
+      - Test
+      - Dev
 
   GMailPassword:
     Description: 'Password to the gmail account used to send notifications'
@@ -40,8 +44,8 @@ Resources:
   H2HAdvApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: H2HAdvApiProd
-      StageName: Prod
+      Name: !Sub H2HAdvApi${EnvironmentType}
+      StageName: !Ref EnvironmentType
       OpenApiVersion: 3.0.1
 
 
@@ -586,7 +590,7 @@ Resources:
   PlayersTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
-      TableName: Players
+      TableName: !Sub Players${EnvironmentType}
       PrimaryKey:
         Name: playername
         Type: String
@@ -603,7 +607,7 @@ Resources:
   PlayerStatsTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
-      TableName: PlayerStats
+      TableName: !Sub PlayerStats${EnvironmentType}
       PrimaryKey:
         Name: playername
         Type: String
@@ -621,7 +625,7 @@ Resources:
   GamesTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
-      TableName: Games
+      TableName: !Sub Games${EnvironmentType}
       PrimaryKey:
         Name: session
         Type: Number
@@ -638,7 +642,7 @@ Resources:
   ScheduledEventsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: ScheduledEvents
+      TableName: !Sub ScheduledEvents${EnvironmentType}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: "partitionkey"
@@ -663,7 +667,7 @@ Resources:
   ChatTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: Chat
+      TableName: !Sub Chat${EnvironmentType}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: "partitionkey"
@@ -688,7 +692,7 @@ Resources:
   SubscriptionsTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
-      TableName: Subscriptions
+      TableName: !Sub Subscriptions${EnvironmentType}
       PrimaryKey:
         Name: address
         Type: String
@@ -704,12 +708,12 @@ Resources:
   SettingsTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
-      TableName: Settings
+      TableName: !Sub Settings${EnvironmentType}
       PrimaryKey:
         Name: setting_name
         Type: String
 
 Outputs:
   WebEndpoint:
-    Description: "API Gateway endpoint URL for Prod stage"
-    Value: !Sub "https://${H2HAdvApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${H2HAdvApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentType/"

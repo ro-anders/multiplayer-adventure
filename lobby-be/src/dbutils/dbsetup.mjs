@@ -21,7 +21,7 @@ const production_dynamo_connect_config = {
 export const ACTIVE_PLAYERS_TTL = 60 * 60 * 1000; // One hour
 
 export const DDBClient = new DynamoDBClient(
-  (process.env.ENVIRONMENT_TYPE === 'development' ? local_dynamo_connect_config : production_dynamo_connect_config)
+  (process.env.ENVIRONMENT_TYPE === 'Dev' ? local_dynamo_connect_config : production_dynamo_connect_config)
 );
 const ddbDocClient = DynamoDBDocumentClient.from(DDBClient);
 
@@ -38,7 +38,7 @@ const initializeSchema = async () => {
         AttributeType: "S", 
       },
     ],
-    TableName: "Settings", 
+    TableName: "Settings"+process.env.ENVIRONMENT_TYPE, 
     KeySchema: [ 
       { 
         AttributeName: "setting_name", 
@@ -60,7 +60,7 @@ const initializeSchema = async () => {
         AttributeType: "S", 
       }
     ],
-    TableName: "Players", 
+    TableName: "Players"+process.env.ENVIRONMENT_TYPE, 
     KeySchema: [ 
       { 
         AttributeName: "playername", 
@@ -82,7 +82,7 @@ const initializeSchema = async () => {
         AttributeType: "S", 
       }
     ],
-    TableName: "PlayerStats", 
+    TableName: "PlayerStats"+process.env.ENVIRONMENT_TYPE, 
     KeySchema: [ 
       { 
         AttributeName: "playername", 
@@ -102,7 +102,7 @@ const initializeSchema = async () => {
         AttributeType: "N", 
       },
     ],
-    TableName: "Games", 
+    TableName: "Games"+process.env.ENVIRONMENT_TYPE, 
     KeySchema: [ 
       { 
         AttributeName: "session", 
@@ -116,7 +116,7 @@ const initializeSchema = async () => {
 
   // Create the scheduled events table
   const eventsDef = { 
-    TableName: "ScheduledEvents", 
+    TableName: "ScheduledEvents"+process.env.ENVIRONMENT_TYPE, 
     AttributeDefinitions: [ 
       { 
         AttributeName: "partitionkey", 
@@ -154,7 +154,7 @@ const initializeSchema = async () => {
         AttributeType: "S", 
       }
     ],
-    TableName: "Chat", 
+    TableName: "Chat"+process.env.ENVIRONMENT_TYPE, 
     KeySchema: [ 
       { 
         AttributeName: "partitionkey", 
@@ -171,7 +171,7 @@ const initializeSchema = async () => {
 
   // Create the subscriptions  table
   const subsDef = { 
-    TableName: "Subscriptions", 
+    TableName: "Subscriptions"+process.env.ENVIRONMENT_TYPE, 
     AttributeDefinitions: [ 
       { 
         AttributeName: "address", 
@@ -195,12 +195,12 @@ const initializeSchema = async () => {
  */
 export const CheckDDB = async () => {
   // Only needs to check schema in development
-  if (process.env.ENVIRONMENT_TYPE === 'development') {
+  if (process.env.ENVIRONMENT_TYPE === 'Dev') {
     const data = await ddbDocClient.send(new ListTablesCommand());
     if (!'TableNames' in data) {
       throw new Error(`Unexpected response from database.: ${data}`);
     }
-    if (!data.TableNames.includes('Players')) {
+    if (!data.TableNames.includes('Players'+process.env.ENVIRONMENT_TYPE)) {
       console.log("No schema detected.  Initializing database schema.")
       await initializeSchema();
     }

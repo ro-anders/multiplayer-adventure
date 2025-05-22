@@ -29,7 +29,7 @@ export const putSubscriptionHandler = async (event) => {
     }
 
     var params = {
-        TableName: "Subscriptions",
+        TableName: "Subscriptions"+process.env.ENVIRONMENT_TYPE,
         Item: body
     };
 

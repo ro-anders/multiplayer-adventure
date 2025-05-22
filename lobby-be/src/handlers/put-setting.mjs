@@ -27,7 +27,7 @@ export const putSettingHandler = async (event) => {
     body.time_set = Date.now()
 
     var params = {
-        TableName : "Settings",
+        TableName : "Settings"+process.env.ENVIRONMENT_TYPE,
         Item: body
     };
 

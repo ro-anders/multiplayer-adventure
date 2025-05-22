@@ -5,7 +5,7 @@ version = 0.1
 [default]
 [default.global.parameters]
 stack_name = "lobby-be-prod"
-parameter_overrides = "EnvironmentType=\"production\""
+parameter_overrides = "EnvironmentType=\"Prod\""
 
 [default.build.parameters]
 cached = true
@@ -15,11 +15,11 @@ parallel = true
 lint = true
 
 [default.deploy.parameters]
+region = "us-east-2"
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
+s3_prefix = "lobby-be-prod"
 resolve_s3 = true
-s3_prefix = "lobby-be"
-region = "us-east-2"
 image_repositories = []
 
 [default.package.parameters]
@@ -30,8 +30,29 @@ watch = true
 
 [default.local_start_api.parameters]
 warm_containers = "EAGER"
-parameter_overrides = "EnvironmentType=\"development\""
+parameter_overrides = "EnvironmentType=\"Dev\""
 
 [default.local_start_lambda.parameters]
 warm_containers = "EAGER"
-parameter_overrides = "EnvironmentType=\"development\""
+parameter_overrides = "EnvironmentType=\"Dev\""
+
+
+[prod.global.parameters]
+stack_name = "lobby-be-prod"
+parameter_overrides = "EnvironmentType=\"Prod\""
+
+[prod.deploy.parameters]
+region = "us-east-2"
+capabilities = "CAPABILITY_IAM"
+s3_prefix = "lobby-be-prod"
+resolve_s3 = true
+
+[test.global.parameters]
+stack_name = "lobby-be-test"
+parameter_overrides = "EnvironmentType=\"Test\""
+
+[test.deploy.parameters]
+region = "us-east-2"
+capabilities = "CAPABILITY_IAM"
+s3_prefix = "lobby-be-test"
+resolve_s3 = true

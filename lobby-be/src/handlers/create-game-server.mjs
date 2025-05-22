@@ -20,7 +20,7 @@ export const createGameServerHandler = async (event) => {
     await CheckDDB();
 
     let status_code = 200
-    if (process.env.ENVIRONMENT_TYPE !== 'development') {  
+    if (process.env.ENVIRONMENT_TYPE !== 'Dev') {  
       
       const game_server_running = await isGameServerRunning()
       if (game_server_running) {
@@ -35,7 +35,7 @@ export const createGameServerHandler = async (event) => {
         // entry between when we checked and now.
         const setting_name='game_server_ip'
         const dynamo_params = {
-            TableName: "Settings",
+            TableName: "Settings"+process.env.ENVIRONMENT_TYPE,
             Item: {
                 setting_name: setting_name,
                 setting_value: 'starting',
@@ -131,7 +131,7 @@ const isGameServerRunning = async () => {
   try {
     // Query the database for the game server setting.
     var params = {
-      TableName : "Settings",
+      TableName : "Settings"+process.env.ENVIRONMENT_TYPE,
       Key: { setting_name: "game_server_ip" },
     };
     const data = await ddbDocClient.send(new GetCommand(params));
@@ -149,7 +149,7 @@ const isGameServerRunning = async () => {
         // There is an entry in the database, but it's out of date and
         // probably from a crashed process.  Delete it and report no server.
         var delete_params = {
-          TableName : "Settings",
+          TableName : "Settings"+process.env.ENVIRONMENT_TYPE,
           Key: { setting_name: "game_server_ip" }
         };
         try {

@@ -24,7 +24,7 @@ export const putPlayerStatsHandler = async (event) => {
     }
 
     var params = {
-        TableName : "PlayerStats",
+        TableName : "PlayerStats"+process.env.ENVIRONMENT_TYPE,
         Item: body
     };
 

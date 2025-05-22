@@ -46,7 +46,7 @@ const getPlayerNames = async () => {
     // Get all active players.  Players update their lastactive every minute,
     // so throw out anyone more than two minutes old
     var params = {
-        TableName : "Players"
+        TableName : "Players"+process.env.ENVIRONMENT_TYPE
     };
     try {
         const data = await ddbDocClient.send(new ScanCommand(params));
@@ -68,7 +68,7 @@ const getActiveGames = async () => {
     
     // get all items from the table (only first 1MB data, but we shouldn't have that much game data)
     var params = {
-        TableName : "Games"
+        TableName : "Games"+process.env.ENVIRONMENT_TYPE
     };
     try {
         const data = await ddbDocClient.send(new ScanCommand(params));
@@ -94,7 +94,7 @@ const getRecentChats = async (since) => {
         since = (parseInt(since)+1).toString()
     }
     var params = {
-        TableName : "Chat",
+        TableName : "Chat"+process.env.ENVIRONMENT_TYPE,
         KeyConditionExpression: 'partitionkey = :pkey AND sortkey >= :skey',
         ExpressionAttributeValues: {
             ":pkey": "CHAT",

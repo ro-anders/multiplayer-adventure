@@ -17,7 +17,7 @@ export const getAllGamesHandler = async (event) => {
 
     // get all items from the table (only first 1MB data, but we shouldn't have that much game data)
     var params = {
-        TableName : "Games"
+        TableName : "Games"+process.env.ENVIRONMENT_TYPE
     };
 
     try {
