@@ -4,7 +4,7 @@ version = 0.1
 
 [default]
 [default.global.parameters]
-stack_name = "lobby-be"
+stack_name = "lobby-be-prod"
 parameter_overrides = "EnvironmentType=\"production\""
 
 [default.build.parameters]
