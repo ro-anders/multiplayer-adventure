@@ -28,7 +28,7 @@ jobs:
         run: docker build . --tag roanders/$IMAGE_NAME
       - name: Tag the Docker image
         working-directory: ./game-be
-        run: docker tag roanders/h2hadv-server roanders/$IMAGE_NAME
+        run: docker tag roanders/$IMAGE_NAME roanders/$IMAGE_NAME
       - name: Deploy the Docker image
         working-directory: ./game-be
         run: docker push roanders/$IMAGE_NAME
