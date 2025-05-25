@@ -1067,7 +1067,7 @@ namespace GameEngine
                 {
                     popupMgr.ShowPopupNow(new Popup("chalice",
                         "Oh no! You lost.  Player " + (winningPlayer + 1) +
-                        "has won the game.", popupMgr));
+                        " has won the game.", popupMgr));
                 }
             }
 

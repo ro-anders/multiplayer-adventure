@@ -3,10 +3,10 @@ Parameters:
   Environment:
     Description: the environment
     Type: String
-    Default: stage
+    Default: test
     AllowedValues:
       - prod
-      - stage
+      - test
 
 Conditions:
   IsProd: !Equals [ !Ref Environment, prod ]
@@ -17,8 +17,8 @@ Resources:
     Properties:
       BucketName: !If
         - IsProd
-        - prerelease1414.h2hadventure.com
-        - !Sub prerelease1414-${Environment}.h2hadventure.com
+        - play.h2hadventure.com
+        - test.h2hadventure.com
       PublicAccessBlockConfiguration:
         BlockPublicAcls: false
         BlockPublicPolicy: false

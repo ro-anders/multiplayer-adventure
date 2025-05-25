@@ -1,0 +1,128 @@
+Resources:
+  HostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: aws.h2hadventure.com
+
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: aws.h2hadventure.com
+      ValidationMethod: DNS
+      SubjectAlternativeNames:
+        - "*.aws.h2hadventure.com"
+      DomainValidationOptions:
+        - DomainName: aws.h2hadventure.com
+          HostedZoneId: !Ref HostedZone
+
+  CloudMapNamespace:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
+    Properties:
+      Vpc: !Ref Vpc
+      Name: example
+
+  VpcLink:
+    Type: AWS::ApiGatewayV2::VpcLink
+    Properties:
+      Name: vpclink
+      SecurityGroupIds:
+        - !Ref VpcLinkSecurityGroup
+      SubnetIds:
+        - !Ref SubnetA
+        - !Ref SubnetB
+
+  VpcLinkSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: vpc link
+      VpcId: !Ref Vpc
+      SecurityGroupIngress: []
+      
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      CidrBlock: 10.1.0.0/16
+
+  SubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.1.1.0/24
+      AvailabilityZone: !Sub ${AWS::Region}a
+
+  SubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.1.2.0/24
+      AvailabilityZone: !Sub ${AWS::Region}b
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+
+  InternetRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachment
+    Properties:
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+
+  RouteTableAssociationSubnetA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetA
+      RouteTableId: !Ref RouteTable
+
+  RouteTableAssociationSubnetB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetB
+      RouteTableId: !Ref RouteTable
+
+Outputs:
+  HostedZone:
+    Value: !Ref HostedZone
+    Export:
+      Name: HostedZoneId
+  Certificate:
+    Value: !Ref Certificate
+    Export:
+      Name: Certificate
+  CloudMapNamespace:
+    Value: !Ref CloudMapNamespace
+    Export:
+      Name: CloudMapNamespace      
+  VpcLink:
+    Value: !Ref VpcLink
+    Export:
+      Name: VpcLink
+  VpcLinkSecurityGroup:
+    Value: !Ref VpcLinkSecurityGroup
+    Export:
+      Name: VpcLinkSecurityGroup
+  Vpc:
+    Value: !Ref Vpc
+    Export:
+      Name: VpcId
+  SubnetA:
+    Value: !Ref SubnetA
+    Export:
+      Name: SubnetA
+  SubnetB:
+    Value: !Ref SubnetB
+    Export:
+      Name: SubnetB  
