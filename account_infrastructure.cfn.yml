@@ -92,6 +92,19 @@ Resources:
       SubnetId: !Ref PublicSubnetB
       RouteTableId: !Ref RouteTable
 
+  WebsocketSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: h2hadv-websockets
+      GroupDescription: Security group used by the game backend.  Allows websocket connections.
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 4000
+          ToPort: 4000
+          CidrIp: "0.0.0.0/0"
+
+
 Outputs:
   # Route 53 domain
   HostedZone:
@@ -127,3 +140,7 @@ Outputs:
           - !Ref PublicSubnetB
     Export:
       Name: MainPublicSubnets
+  WebsocketSecurityGroup:
+    Value: !Ref WebsocketSecurityGroup
+    Export:
+      Name: WebsocketSecurityGroup

@@ -40,7 +40,7 @@ function App() {
   // Experience level is also state persisted in session storage and in local storage.
   let [experienceLevel, setExperienceLevel] = useState<number>(getInitialExperienceLevel());
   function getInitialExperienceLevel(): number {
-    const exp_level_str: string = sessionStorage.getItem( 'h2h.experience_level' ) || localStorage.getItem( 'h2h.experience_level' ) || "0"; 
+    const exp_level_str: string = sessionStorage.getItem( 'h2h.experience_level' ) || localStorage.getItem( 'h2h.experience_level' ) || "3"; 
     return parseInt(exp_level_str)   
   }
   function setNewExperienceLevel(new_exp_level: number) {

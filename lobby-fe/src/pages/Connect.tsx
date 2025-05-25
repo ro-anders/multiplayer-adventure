@@ -83,7 +83,7 @@ function ConnectPage({username}: ConnectProps) {
             <h2>No one knows this games exists.</h2>
             <h4>That's why the lobby is usually empty.</h4>
             <p>
-              Did you play Adventure as a kid.  Reach out to an old
+              Did you play Adventure as a kid?  Reach out to an old
               friend and see if they want to play.
             </p>
             <p>

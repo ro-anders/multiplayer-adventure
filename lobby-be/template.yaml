@@ -280,10 +280,7 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref SettingsTable
         - EcsRunTaskPolicy:
-            TaskDefinition: !If
-              - IsProd
-              - h2hadv-server-prod
-              - h2hadv-server-test
+            TaskDefinition: "h2hadv-server-*"
         - Statement:
           - Sid: PassRolePolicy
             Effect: Allow

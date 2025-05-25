@@ -122,18 +122,6 @@ Resources:
               - 'ecs:ListTasks'
             Resource: '*'
 
-  ContainerSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: !Join ['', [!Ref ServiceName, '-', !Ref Environment]]
-      VpcId: !ImportValue MainVpcId
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: !Ref ContainerPort
-          ToPort: !Ref ContainerPort
-          CidrIp: "0.0.0.0/0"
-          #SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
-
   LogGroup:
     Condition: LogToAWS
     Type: AWS::Logs::LogGroup

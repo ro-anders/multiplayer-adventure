@@ -85,3 +85,6 @@
   .login-form-field {
     width: 24ch;
   }
+
+  .login-form-field::placeholder {
+  color: rgb(192, 192, 192);

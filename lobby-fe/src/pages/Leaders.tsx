@@ -5,6 +5,7 @@ import '../css/Leaders.css'
 import { PlayerStat } from '../domain/PlayerStat';
 import PlayerService from '../services/PlayerService';
 import AchieverList from '../components/AchieverList';
+import TitleBar from '../components/TitleBar';
 
 function LeaderBoard() {
 
@@ -110,6 +111,7 @@ function LeaderBoard() {
   return (
 
     <div className="leaders-page">
+      <TitleBar/>
       <h1>Leader Board</h1>
       <div className="leaders-box">
         {Object.keys(achievers).length > 0 &&

@@ -63,8 +63,8 @@ export const createGameServerHandler = async (event) => {
             // --overrides '{ "containerOverrides": [ { "name": "h2hadv-server", "environment": [ { "name": "LOBBY_URL", "value": "https://xx11yyyy11.execute-api.us-east-2.amazonaws.com/Prod" } ] } ] }'
             // Couple of things are hard-coded that we eventually want to make dynamic
             const env = process.env.ENVIRONMENT_TYPE.toLowerCase();
-            const subnets = ["subnet-0d46ce42b6ae7a1ee","subnet-011083badbc3f216e"]
-            const security_group = "sg-07539077994dfb96c"
+            const subnets = ["subnet-0c44e576c4fac371a","subnet-09e03cf1c39ce1750"]
+            const security_group = "sg-043e02889facdb317"
             const region = `us-east-2`
             const ecsClient = new ECSClient();
             const ecs_params = {
@@ -81,7 +81,7 @@ export const createGameServerHandler = async (event) => {
                 overrides: {
                   containerOverrides: [
                     {
-                      name: `h2hadv-server-${env}`,               
+                      name: `h2hadv-server`,             
                       environment: [
                         { name: "LOBBY_URL", value: lobby_url },
                         { name: "NODE_ENV", value: (env === 'prod' ? 'production' : 'test') }
