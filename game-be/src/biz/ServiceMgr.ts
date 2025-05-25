@@ -80,13 +80,16 @@ export default class ServiceMgr {
 	 * Query AWS for the IP address that this service's Fargate Service is using.
 	 */
 	async get_ip(): Promise<string> {
-		const cluster_name = 'h2hadv-serverCluster'
 		if (process.env.NODE_ENV === 'development') {
 			return '127.0.0.1'
 		}
 		
 		try {
-			// aws ecs list-tasks --cluster h2hadv-serverCluster | jq -re ".taskArns[0]
+			const cluster_name = (process.env.NODE_ENV === 'production' ?
+				'h2hadv-server-prod' :
+				'h2hadv-server-test')
+
+			// aws ecs list-tasks --cluster h2hadv-server-prod | jq -re ".taskArns[0]
 			const ecs_client: ECSClient = new ECSClient();
 			const list_tasks_req: ListTasksCommandInput = {
 				cluster: cluster_name
@@ -98,7 +101,7 @@ export default class ServiceMgr {
 			}
 			const task_arn: string = list_tasks_resp.taskArns[0]
 
-			// aws ecs describe-tasks --cluster h2hadv-serverCluster --task $TASKARN | \
+			// aws ecs describe-tasks --cluster h2hadv-server-prod --task $TASKARN | \
 			//   jq -r -e '.tasks[0].attachments[0].details[] | select(.name=="networkInterfaceId").value'
 			const desc_tasks_req: DescribeTasksCommandInput = {
 				cluster: cluster_name,

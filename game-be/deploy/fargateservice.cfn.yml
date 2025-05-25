@@ -4,30 +4,16 @@ Parameters:
   ContainerPort:
     Type: Number
     Default: 4000
-  # Subdomain:
-  #   Type: String
-  #   Default: h2hadv
-  # HostedZoneName:
-  #   Type: String
-  #   Default: h2hatariadventure.com
-  Image:
+  Environment:
+    Description: the environment
     Type: String
-    # Update with the Docker image. "You can use images in the Docker Hub registry or specify other repositories (repository-url/image:tag)."
-    # Default: 123456789012.dkr.ecr.region.amazonaws.com/image:tag
-    Default: roanders/h2hadv-server:latest
+    Default: test
+    AllowedValues:
+      - prod
+      - test
   ServiceName:
     Type: String
-    # update with the name of the service
     Default: h2hadv-server
-  SubnetA:
-    Type: AWS::EC2::Subnet::Id
-    Default: subnet-0d46ce42b6ae7a1ee
-  SubnetB:
-    Type: AWS::EC2::Subnet::Id
-    Default: subnet-011083badbc3f216e
-  VPC:
-    Type: AWS::EC2::VPC::Id
-    Default: vpc-0598605f272198f50
   HealthCheckPath:
     Type: String
     Default: /health
@@ -46,13 +32,13 @@ Resources:
   Cluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: !Join ['', [!Ref ServiceName, Cluster]]
+      ClusterName: !Join ['', [!Ref ServiceName, '-', !Ref Environment]]
 
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
       # Name of the task definition. Subsequent versions of the task definition are grouped together under this name.
-      Family: !Join ['', [!Ref ServiceName, TaskDefinition]]
+      Family: !Join ['', [!Ref ServiceName, '-', !Ref Environment]]
       # awsvpc is required for Fargate
       NetworkMode: awsvpc
       RequiresCompatibilities:
@@ -77,7 +63,7 @@ Resources:
       TaskRoleArn: !Ref TaskRole
       ContainerDefinitions:
         - Name: !Ref ServiceName
-          Image: !Ref Image
+          Image: !Sub roanders/${ServiceName}-${Environment}:latest
           PortMappings:
             - ContainerPort: !Ref ContainerPort
           Environment:
@@ -85,9 +71,6 @@ Resources:
               Value: 'production'
             - Name: LOG_LEVEL
               Value: 'DEBUG'
-            # The LOBBY_URL needs to be defined when the service is launched
-            # - Name: LOBBY_URL
-            #   Value: Undefined
           # Send logs to CloudWatch Logs
           LogConfiguration:
             LogDriver: awslogs
@@ -101,7 +84,7 @@ Resources:
   ExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Join ['', [!Ref ServiceName, ExecutionRole]]
+      RoleName: !Join ['', [!Ref ServiceName, '-', !Ref Environment, '-execution-role']]
       AssumeRolePolicyDocument:
         Statement:
           - Effect: Allow
@@ -115,7 +98,7 @@ Resources:
   TaskRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Join ['', [!Ref ServiceName, TaskRole]]
+      RoleName: !Join ['', [!Ref ServiceName, '-', !Ref Environment, '-task-role']]
       AssumeRolePolicyDocument:
         Statement:
           - Effect: Allow
@@ -128,7 +111,7 @@ Resources:
     Properties:
       Roles:
         - !Ref TaskRole
-      PolicyName: h2hadv-server
+      PolicyName: !Join ['', [!Ref ServiceName, '-', !Ref Environment, '-task-policy']]
       PolicyDocument:
         Statement:
           # Permissions to allow the game server to determine it's own IP
@@ -142,8 +125,8 @@ Resources:
   ContainerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: !Join ['', [!Ref ServiceName, ContainerSecurityGroup]]
-      VpcId: !Ref VPC
+      GroupDescription: !Join ['', [!Ref ServiceName, '-', !Ref Environment]]
+      VpcId: !ImportValue MainVpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: !Ref ContainerPort
@@ -155,5 +138,5 @@ Resources:
     Condition: LogToAWS
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Join ['', [/service/, !Ref ServiceName]]
+      LogGroupName: !Join ['', [/service/, !Ref ServiceName, '-', !Ref Environment]]
       RetentionInDays: 30

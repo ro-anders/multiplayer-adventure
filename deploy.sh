@@ -34,7 +34,7 @@ aws cloudformation deploy --stack-name s3-website-${env} \
    --parameter-overrides Environment=${env}
 
 # Copy the game files to the website bucket
-# aws s3 cp --recursive H2HAdventure/target s3://${bucket_name}/game
+aws s3 cp --recursive H2HAdventure/target s3://${bucket_name}/game
 
 # Build lobby backend
 echo "Building ${env} lobby back end"
@@ -63,8 +63,17 @@ popd
 # Build lobby front end
 echo "Building ${env} front end"
 pushd lobby-fe
+npm run build
 aws s3 cp --recursive build/ s3://${bucket_name}/
+popd
 
+# Build game back end
+echo "Building game backend"
+aws cloudformation deploy --stack-name game-be-${env} \
+   --no-fail-on-empty-changeset \
+   --template-file game-be/deploy/fargateservice.cfn.yml \
+   --capabilities "CAPABILITY_NAMED_IAM" \
+   --parameter-overrides Environment=${env}
 
 
 

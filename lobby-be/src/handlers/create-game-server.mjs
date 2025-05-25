@@ -56,19 +56,20 @@ export const createGameServerHandler = async (event) => {
             const accountId = event.requestContext.accountId
             // Then issue the AWS commands to spawn a server in a fargate task
             // aws ecs run-task \
-            // --cluster h2hadv-serverCluster \ 
-            // --task-definition arn:aws:ecs:us-east-2:637423607158:task-definition/h2hadv-serverTaskDefinition \
+            // --cluster h2hadv-server-prod \ 
+            // --task-definition arn:aws:ecs:us-east-2:637423607158:task-definition/h2hadv-server-prod \
             // --launch-type FARGATE \
             // --network-configuration "awsvpcConfiguration={subnets=[subnet-0d46ce42b6ae7a1ee,subnet-011083badbc3f216e],securityGroups=[sg-07539077994dfb96c],assignPublicIp=ENABLED}" \
             // --overrides '{ "containerOverrides": [ { "name": "h2hadv-server", "environment": [ { "name": "LOBBY_URL", "value": "https://xx11yyyy11.execute-api.us-east-2.amazonaws.com/Prod" } ] } ] }'
             // Couple of things are hard-coded that we eventually want to make dynamic
+            const env = process.env.NODE_ENV.toLowerCase();
             const subnets = ["subnet-0d46ce42b6ae7a1ee","subnet-011083badbc3f216e"]
             const security_group = "sg-07539077994dfb96c"
             const region = `us-east-2`
             const ecsClient = new ECSClient();
             const ecs_params = {
-                cluster: "h2hadv-serverCluster",              
-                taskDefinition: `arn:aws:ecs:${region}:${accountId}:task-definition/h2hadv-serverTaskDefinition`,    
+                cluster: `h2hadv-server-${env}`,              
+                taskDefinition: `arn:aws:ecs:${region}:${accountId}:task-definition/h2hadv-server-${env}`,    
                 launchType: "FARGATE",
                 networkConfiguration: {
                   awsvpcConfiguration: {
@@ -80,10 +81,10 @@ export const createGameServerHandler = async (event) => {
                 overrides: {
                   containerOverrides: [
                     {
-                      name: "h2hadv-server",               
+                      name: `h2hadv-server-${env}`,               
                       environment: [
                         { name: "LOBBY_URL", value: lobby_url },
-                        { name: "NODE_ENV", value: "production" },
+                        { name: "NODE_ENV", value: (env === 'prod' ? 'production' : 'test') }
                       ],
                     },
                   ],

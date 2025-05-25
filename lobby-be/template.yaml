@@ -38,6 +38,9 @@ Globals:
             AllowOrigin: "'*'"
             # AllowCredentials: true  Uncomment only if you choose a specific origin instead of the * wildcard.
             
+Conditions:
+  IsProd: !Equals [ !Ref EnvironmentType, Prod ]
+
 Resources:
 
 
@@ -277,7 +280,10 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref SettingsTable
         - EcsRunTaskPolicy:
-            TaskDefinition: "h2hadv-serverTaskDefinition*"
+            TaskDefinition: !If
+              - IsProd
+              - h2hadv-server-prod
+              - h2hadv-server-test
         - Statement:
           - Sid: PassRolePolicy
             Effect: Allow
