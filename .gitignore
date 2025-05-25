@@ -43,3 +43,4 @@ recorder.txt
 lobby-be/.password
 unused_images
 publicity
+lobby-fe/.env.production

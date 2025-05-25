@@ -63,6 +63,8 @@ popd
 # Build lobby front end
 echo "Building ${env} front end"
 pushd lobby-fe
+# React ALWAYS uses .env.production
+cp .env.${env} .env.production
 npm run build
 aws s3 cp --recursive build/ s3://${bucket_name}/
 popd
