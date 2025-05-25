@@ -2,15 +2,18 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "deploy-test" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "deploy-test" ]
 
 jobs:
 
   build:
 
     runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: ${{ github.ref_name == 'master' && 'h2hadv-server-prod' || 'h2hadv-server-test' }}
 
     steps:
       - name: Load Source
@@ -22,10 +25,10 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build Docker image
         working-directory: ./game-be
-        run: docker build . --tag roanders/h2hadv-server
+        run: docker build . --tag roanders/$IMAGE_NAME
       - name: Tag the Docker image
         working-directory: ./game-be
-        run: docker tag roanders/h2hadv-server roanders/h2hadv-server
+        run: docker tag roanders/h2hadv-server roanders/$IMAGE_NAME
       - name: Deploy the Docker image
         working-directory: ./game-be
-        run: docker push roanders/h2hadv-server
+        run: docker push roanders/$IMAGE_NAME
