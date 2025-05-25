@@ -87,4 +87,5 @@
   }
 
   .login-form-field::placeholder {
-  color: rgb(192, 192, 192);
+    color: rgb(192, 192, 192);
+  }
