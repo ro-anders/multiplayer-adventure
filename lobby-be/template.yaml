@@ -500,6 +500,8 @@ Resources:
       Timeout: 100
       Description: Notify all people subscribed to an event
       Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SubscriptionsTable
       Environment:
         Variables:
           GMAIL_PASSWORD: !Ref GMailPassword

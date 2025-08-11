@@ -21,7 +21,7 @@ To Run the Whole Suite Locally:
 4. Run the webserver serving the game (port 8080)
   - open the Unity project and selecting File --> Build and Run
   - cd multiplayer-adventure/H2HAdventure/target
-  - docker run -it --rm -p 8080:80 --name web -v ./H2HAdventure2P:/usr/share/nginx/html nginx
+  - docker run -it --rm -p 8080:80 --name web -v ./H2HAdventureMP:/usr/share/nginx/html nginx
 5. Run the Lobby Frontend webapp (port 5000)
   - npm start
   This mimics a webapp hosted on a webserver or S3 bucket

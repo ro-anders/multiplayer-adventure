@@ -44,3 +44,6 @@ lobby-be/.password
 unused_images
 publicity
 lobby-fe/.env.production
+lobby-fe/node_modules
+H2HAdventure/.vscode
+lobby-be/.aws-sam
